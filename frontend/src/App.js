@@ -311,11 +311,11 @@ const audiences = [
 
 const AudienceSection = () => (
   <section className="section" style={{background: 'var(--bg-section)'}} data-testid="audience-section">
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="text-center mb-12">
+    <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="text-center mb-10 md:mb-12">
         <h2 className="section-title">À qui s'adresse <span className="gradient-text">nos solutions</span> ?</h2>
       </div>
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-3 md:gap-4">
         {audiences.map((audience, index) => (
           <div key={index} className="audience-tag" data-testid={`audience-tag-${index}`}>
             {audience}
