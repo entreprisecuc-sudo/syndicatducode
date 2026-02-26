@@ -239,10 +239,10 @@ const whyUsItems = [
 
 const WhyUsSection = () => (
   <section id="pourquoi" className="section" style={{background: 'var(--bg-section)'}} data-testid="why-section">
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="grid md:grid-cols-2 gap-16 items-center">
+    <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
         <div>
-          <h2 className="section-title mb-8">
+          <h2 className="section-title mb-6 md:mb-8">
             Pourquoi <span className="gradient-text">nous choisir</span> ?
           </h2>
           <div>
@@ -257,7 +257,7 @@ const WhyUsSection = () => (
           </div>
         </div>
         <div className="card" style={{background: 'linear-gradient(135deg, var(--bg-card), var(--bg-section))'}}>
-          <blockquote className="text-xl italic" style={{color: 'var(--text-secondary)', lineHeight: 1.8}}>
+          <blockquote className="text-lg md:text-xl italic" style={{color: 'var(--text-secondary)', lineHeight: 1.8}}>
             "Nous ne vendons pas juste un site, nous créons un <span className="gradient-text font-semibold">outil de croissance</span> pour votre entreprise."
           </blockquote>
           <p className="mt-6 font-semibold" style={{color: 'var(--sage)'}}>— {CONFIG.companyName}</p>
