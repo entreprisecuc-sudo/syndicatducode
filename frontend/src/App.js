@@ -98,7 +98,7 @@ const HeroSection = () => (
     <div className="glow-orb glow-orb-2"></div>
     
     <div className="max-w-7xl mx-auto px-6 hero-content">
-      <p className="text-sage-light mb-4 font-medium opacity-0 animate-fade-in-up" style={{color: 'var(--sage-light)'}}>
+      <p className="text-sage-light mb-4 font-medium opacity-0 animate-fade-in-up" style={{color: 'var(--sage)'}}>
         {CONFIG.companyName} — {CONFIG.city}
       </p>
       <h1 className="hero-title opacity-0 animate-fade-in-up delay-100">
@@ -204,7 +204,7 @@ const whyUsItems = [
 ];
 
 const WhyUsSection = () => (
-  <section id="pourquoi" className="section" data-testid="why-section">
+  <section id="pourquoi" className="section" style={{background: 'var(--bg-section)'}} data-testid="why-section">
     <div className="max-w-7xl mx-auto px-6">
       <div className="grid md:grid-cols-2 gap-16 items-center">
         <div>
@@ -222,11 +222,11 @@ const WhyUsSection = () => (
             ))}
           </div>
         </div>
-        <div className="card" style={{background: 'linear-gradient(135deg, var(--bg-card), var(--bg-card-hover))'}}>
+        <div className="card" style={{background: 'linear-gradient(135deg, var(--bg-card), var(--bg-section))'}}>
           <blockquote className="text-xl italic" style={{color: 'var(--text-secondary)', lineHeight: 1.8}}>
             "Nous ne vendons pas juste un site, nous créons un <span className="gradient-text font-semibold">outil de croissance</span> pour votre entreprise."
           </blockquote>
-          <p className="mt-6 font-semibold" style={{color: 'var(--sage-light)'}}>— {CONFIG.companyName}</p>
+          <p className="mt-6 font-semibold" style={{color: 'var(--sage)'}}>— {CONFIG.companyName}</p>
         </div>
       </div>
     </div>
@@ -276,7 +276,7 @@ const audiences = [
 ];
 
 const AudienceSection = () => (
-  <section className="section" data-testid="audience-section">
+  <section className="section" style={{background: 'var(--bg-section)'}} data-testid="audience-section">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-12">
         <h2 className="section-title">À qui s'adresse <span className="gradient-text">nos solutions</span> ?</h2>
