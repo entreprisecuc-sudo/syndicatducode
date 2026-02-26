@@ -460,7 +460,7 @@ const ContactSection = () => {
                     />
                   </label>
                   <p className="mt-2 text-sm" style={{color: 'var(--text-muted)'}}>
-                    Partagez vos idées : maquettes, croquis, même un simple dessin sur papier nous aide à comprendre votre vision !
+                    Présentez vos idées : maquettes, croquis, même un simple dessin sur papier nous aide à comprendre votre vision !
                   </p>
                   
                   {files.length > 0 && (
