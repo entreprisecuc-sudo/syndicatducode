@@ -232,7 +232,7 @@ const whyUsItems = [
   "Double expertise technique & commerciale",
   "Solutions 100 % personnalisées",
   "Technologies modernes et évolutives",
-  "Développement rapide, résultats concrets",
+  "Réactivité et rapidité d'exécution",
   "Accompagnement de A à Z",
   "Support et maintenance continue"
 ];
