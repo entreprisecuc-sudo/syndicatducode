@@ -278,10 +278,10 @@ const processSteps = [
 
 const ProcessSection = () => (
   <section id="approche" className="section" data-testid="process-section">
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="text-center mb-16">
+    <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="text-center mb-12 md:mb-16">
         <h2 className="section-title">Notre <span className="gradient-text">approche</span></h2>
-        <p className="section-subtitle">
+        <p className="section-subtitle px-4">
           Une méthodologie éprouvée pour des résultats concrets
         </p>
       </div>
