@@ -459,6 +459,9 @@ const ContactSection = () => {
                       accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
                     />
                   </label>
+                  <p className="mt-2 text-sm" style={{color: 'var(--text-muted)'}}>
+                    Partagez vos idées : maquettes, croquis, même un simple dessin sur papier nous aide à comprendre votre vision !
+                  </p>
                   
                   {files.length > 0 && (
                     <div className="mt-3 space-y-2">
