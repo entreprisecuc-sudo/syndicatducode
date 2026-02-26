@@ -195,15 +195,15 @@ const services = [
 
 const ServicesSection = () => (
   <section id="services" className="section" data-testid="services-section">
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="text-center mb-16">
+    <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="text-center mb-12 md:mb-16">
         <h2 className="section-title">Nos <span className="gradient-text">services</span></h2>
-        <p className="section-subtitle">
+        <p className="section-subtitle px-4">
           Des solutions digitales complètes pour accompagner votre croissance
         </p>
       </div>
       
-      <div className="grid md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {services.map((service, index) => (
           <div 
             key={index} 
@@ -211,7 +211,7 @@ const ServicesSection = () => (
             data-testid={`service-card-${index}`}
           >
             <div className="icon-box">
-              <service.icon size={32} color="white" />
+              <service.icon size={28} color="white" />
             </div>
             <h3>{service.title}</h3>
             <p>{service.description}</p>
