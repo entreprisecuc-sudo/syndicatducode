@@ -97,8 +97,8 @@ const HeroSection = () => (
     <div className="glow-orb glow-orb-1"></div>
     <div className="glow-orb glow-orb-2"></div>
     
-    <div className="max-w-7xl mx-auto px-6 hero-content">
-      <p className="text-sage-light mb-4 font-medium opacity-0 animate-fade-in-up" style={{color: 'var(--sage)'}}>
+    <div className="max-w-7xl mx-auto px-4 md:px-6 hero-content">
+      <p className="text-sage-light mb-3 md:mb-4 font-medium opacity-0 animate-fade-in-up text-sm md:text-base" style={{color: 'var(--sage)'}}>
         {CONFIG.companyName} — {CONFIG.city}
       </p>
       <h1 className="hero-title opacity-0 animate-fade-in-up delay-100">
@@ -110,7 +110,7 @@ const HeroSection = () => (
         Du site vitrine au CRM & ERP sur mesure, avec intégration de solutions 
         d'intelligence artificielle adaptées à votre business.
       </p>
-      <div className="flex flex-wrap gap-4 opacity-0 animate-fade-in-up delay-300">
+      <div className="flex flex-col sm:flex-row gap-3 md:gap-4 opacity-0 animate-fade-in-up delay-300">
         <a href="#contact" className="btn-primary" data-testid="hero-cta-devis">
           Demander un devis
           <ChevronRight className="inline ml-2" size={18} />
