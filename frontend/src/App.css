@@ -282,33 +282,30 @@
 
 /* Hamburger */
 .hamburger {
-  width: 28px;
-  height: 22px;
+  width: 32px;
+  height: 24px;
   position: relative;
   cursor: pointer;
   z-index: 300;
   background: none;
   border: none;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .hamburger span {
   display: block;
-  position: absolute;
-  height: 3px;
+  height: 4px;
   width: 100%;
-  background: var(--sage-dark);
-  border-radius: 2px;
+  background: #1A1A1A;
+  border-radius: 4px;
   transition: all 0.3s ease;
 }
 
-.hamburger span:nth-child(1) { top: 0; }
-.hamburger span:nth-child(2) { top: 9px; }
-.hamburger span:nth-child(3) { top: 18px; }
-
 .hamburger.open span:nth-child(1) {
-  top: 9px;
-  transform: rotate(45deg);
+  transform: translateY(10px) rotate(45deg);
 }
 
 .hamburger.open span:nth-child(2) {
@@ -316,8 +313,7 @@
 }
 
 .hamburger.open span:nth-child(3) {
-  top: 9px;
-  transform: rotate(-45deg);
+  transform: translateY(-10px) rotate(-45deg);
 }
 
 /* Logo */
