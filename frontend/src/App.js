@@ -384,18 +384,18 @@ const ContactSection = () => {
   return (
     <section id="contact" className="section" data-testid="contact-section">
       <div className="glow-orb glow-orb-1"></div>
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
+        <div className="text-center mb-12 md:mb-16">
           <h2 className="section-title">Prêt à <span className="gradient-text">digitaliser</span> votre activité ?</h2>
-          <p className="section-subtitle">
+          <p className="section-subtitle px-4">
             Contactez-nous pour discuter de votre projet
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-12">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
           <div className="contact-form" data-testid="contact-form">
             <form onSubmit={handleSubmit}>
-              <div className="space-y-6">
+              <div className="space-y-5 md:space-y-6">
                 <div>
                   <input
                     type="text"
