@@ -334,11 +334,21 @@ const ContactSection = () => {
     phone: "",
     message: ""
   });
+  const [files, setFiles] = useState([]);
   const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(selectedFiles);
+  };
+
+  const removeFile = (index) => {
+    setFiles(files.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -347,9 +357,23 @@ const ContactSection = () => {
     setStatus({ type: "", message: "" });
 
     try {
-      await axios.post(`${API}/contact`, formData);
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone", formData.phone || "");
+      formDataToSend.append("message", formData.message);
+      
+      files.forEach((file) => {
+        formDataToSend.append("files", file);
+      });
+
+      await axios.post(`${API}/contact`, formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      
       setStatus({ type: "success", message: "Message envoyé avec succès ! Nous vous recontacterons rapidement." });
       setFormData({ name: "", email: "", phone: "", message: "" });
+      setFiles([]);
     } catch (error) {
       setStatus({ type: "error", message: "Erreur lors de l'envoi. Veuillez réessayer." });
     } finally {
@@ -416,9 +440,59 @@ const ContactSection = () => {
                   ></textarea>
                 </div>
                 
+                {/* File Upload */}
+                <div>
+                  <label 
+                    className="flex items-center gap-3 p-4 border-2 border-dashed rounded-xl cursor-pointer transition-all hover:border-[var(--sage)]"
+                    style={{borderColor: 'var(--border-color)', background: 'var(--bg-section)'}}
+                    data-testid="contact-file-upload"
+                  >
+                    <Paperclip size={20} style={{color: 'var(--sage)'}} />
+                    <span style={{color: 'var(--text-secondary)'}}>
+                      Joindre des fichiers (images, vidéos, documents...)
+                    </span>
+                    <input
+                      type="file"
+                      multiple
+                      onChange={handleFileChange}
+                      className="hidden"
+                      accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                    />
+                  </label>
+                  
+                  {files.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {files.map((file, index) => (
+                        <div 
+                          key={index} 
+                          className="flex items-center justify-between p-3 rounded-lg"
+                          style={{background: 'var(--bg-section)'}}
+                        >
+                          <div className="flex items-center gap-2">
+                            <FileText size={16} style={{color: 'var(--sage)'}} />
+                            <span className="text-sm" style={{color: 'var(--text-secondary)'}}>
+                              {file.name}
+                            </span>
+                            <span className="text-xs" style={{color: 'var(--text-muted)'}}>
+                              ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                            </span>
+                          </div>
+                          <button 
+                            type="button"
+                            onClick={() => removeFile(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
                 {status.message && (
                   <div 
-                    className={`p-4 rounded-lg ${status.type === "success" ? "bg-green-900/30 text-green-400" : "bg-red-900/30 text-red-400"}`}
+                    className={`p-4 rounded-lg ${status.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
                     data-testid="contact-status"
                   >
                     {status.message}
