@@ -40,11 +40,11 @@
 }
 
 .nav.scrolled {
-  background: rgba(10, 10, 10, 0.95);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   padding: 15px 0;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
 }
 
 .nav-link {
@@ -78,18 +78,19 @@
 /* Service Card */
 .service-card {
   background: var(--bg-card);
-  border: 1px solid rgba(90, 107, 90, 0.15);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 40px 32px;
   transition: all 0.4s ease;
   height: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .service-card:hover {
-  background: var(--bg-card-hover);
+  background: var(--bg-card);
   border-color: var(--sage);
   transform: translateY(-8px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
 }
 
 .service-card .icon-box {
@@ -195,8 +196,8 @@
 
 /* Audience Tags */
 .audience-tag {
-  background: var(--bg-card);
-  border: 1px solid rgba(90, 107, 90, 0.2);
+  background: var(--bg-section);
+  border: 1px solid var(--border-color);
   border-radius: 50px;
   padding: 16px 28px;
   color: var(--text-secondary);
@@ -214,9 +215,10 @@
 /* Contact Form */
 .contact-form {
   background: var(--bg-card);
-  border: 1px solid rgba(90, 107, 90, 0.15);
+  border: 1px solid var(--border-color);
   border-radius: 24px;
   padding: 48px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .contact-info-item {
@@ -239,8 +241,8 @@
 
 /* Footer */
 .footer {
-  background: var(--bg-card);
-  border-top: 1px solid rgba(90, 107, 90, 0.15);
+  background: var(--bg-section);
+  border-top: 1px solid var(--border-color);
   padding: 40px 0 20px;
 }
 
@@ -251,7 +253,7 @@
   right: -100%;
   width: 100%;
   height: 100vh;
-  background: var(--bg-dark);
+  background: var(--bg-light);
   z-index: 200;
   transition: right 0.3s ease;
   display: flex;
@@ -283,7 +285,7 @@
   position: absolute;
   height: 3px;
   width: 100%;
-  background: var(--sage-light);
+  background: var(--sage);
   border-radius: 2px;
   transition: all 0.3s ease;
 }
@@ -308,10 +310,10 @@
 
 /* Logo */
 .logo {
-  font-family: 'Space Mono', monospace;
+  font-family: 'DM Sans', sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--sage-light);
+  color: var(--sage-dark);
   text-decoration: none;
   letter-spacing: -0.02em;
 }
