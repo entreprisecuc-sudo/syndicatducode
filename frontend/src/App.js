@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "@/App.css";
 import axios from "axios";
-import { Monitor, Settings, Bot, Check, Phone, MapPin, Mail, Menu, X, ChevronRight } from "lucide-react";
+import { Monitor, Settings, Bot, Check, Phone, MapPin, Mail, Menu, X, ChevronRight, Store, Smartphone, Wrench } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -156,6 +156,39 @@ const services = [
       "Chatbots intelligents",
       "Analyse de données",
       "IA personnalisée"
+    ]
+  },
+  {
+    icon: Store,
+    title: "Marketplace",
+    description: "Création de places de marché multi-vendeurs performantes",
+    features: [
+      "Plateforme multi-vendeurs",
+      "Gestion des commissions",
+      "Paiements sécurisés",
+      "Back-office complet"
+    ]
+  },
+  {
+    icon: Smartphone,
+    title: "Applications mobiles",
+    description: "Apps iOS & Android natives ou hybrides sur mesure",
+    features: [
+      "Applications iOS & Android",
+      "Design UX/UI moderne",
+      "Notifications push",
+      "Publication stores"
+    ]
+  },
+  {
+    icon: Wrench,
+    title: "Maintenance & Infogérance",
+    description: "Support technique continu et gestion de votre infrastructure",
+    features: [
+      "Support technique réactif",
+      "Mises à jour régulières",
+      "Sécurité & sauvegardes",
+      "Monitoring 24/7"
     ]
   }
 ];
