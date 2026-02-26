@@ -38,7 +38,7 @@ const Navigation = () => {
   return (
     <>
       <nav className={`nav ${scrolled ? "scrolled" : ""}`} data-testid="navigation">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between">
           <a href="#" className="logo" data-testid="logo">{CONFIG.companyName}</a>
           
           <div className="hidden md:flex items-center gap-8">
@@ -52,23 +52,25 @@ const Navigation = () => {
             </a>
           </div>
 
-          <div 
+          <button 
             className={`hamburger md:hidden ${mobileOpen ? "open" : ""}`} 
             onClick={() => setMobileOpen(!mobileOpen)}
             data-testid="mobile-menu-toggle"
+            aria-label="Menu"
           >
             <span></span>
             <span></span>
             <span></span>
-          </div>
+          </button>
         </div>
       </nav>
 
       <div className={`mobile-menu ${mobileOpen ? "open" : ""}`} data-testid="mobile-menu">
         <button 
-          className="absolute top-6 right-6 text-white"
+          className="absolute top-6 right-6"
           onClick={() => setMobileOpen(false)}
           data-testid="mobile-menu-close"
+          style={{color: 'var(--text-primary)'}}
         >
           <X size={32} />
         </button>
@@ -76,7 +78,7 @@ const Navigation = () => {
           <a 
             key={link.href} 
             href={link.href} 
-            className="nav-link"
+            className="mobile-nav-link"
             onClick={() => setMobileOpen(false)}
           >
             {link.label}
