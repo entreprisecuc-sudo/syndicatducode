@@ -45,6 +45,7 @@ class ContactResponse(BaseModel):
     email: str
     phone: Optional[str]
     message: str
+    files: List[str] = []
     created_at: str
     status: str = "pending"
 
