@@ -63,16 +63,36 @@ async def get_config():
     }
 
 @api_router.post("/contact", response_model=ContactResponse)
-async def create_contact(data: ContactRequest):
+async def create_contact(
+    name: str = Form(...),
+    email: str = Form(...),
+    phone: Optional[str] = Form(None),
+    message: str = Form(...),
+    files: List[UploadFile] = File(default=[])
+):
     contact_id = str(uuid.uuid4())
     created_at = datetime.now(timezone.utc).isoformat()
     
+    # Save uploaded files
+    saved_files = []
+    for file in files:
+        if file.filename:
+            file_ext = Path(file.filename).suffix
+            file_id = f"{contact_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+            file_path = UPLOADS_DIR / file_id
+            
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            
+            saved_files.append(file_id)
+    
     doc = {
         "id": contact_id,
-        "name": data.name,
-        "email": data.email,
-        "phone": data.phone,
-        "message": data.message,
+        "name": name,
+        "email": email,
+        "phone": phone,
+        "message": message,
+        "files": saved_files,
         "created_at": created_at,
         "status": "pending"
     }
@@ -81,10 +101,11 @@ async def create_contact(data: ContactRequest):
     
     return ContactResponse(
         id=contact_id,
-        name=data.name,
-        email=data.email,
-        phone=data.phone,
-        message=data.message,
+        name=name,
+        email=email,
+        phone=phone,
+        message=message,
+        files=saved_files,
         created_at=created_at,
         status="pending"
     )
