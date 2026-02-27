@@ -6,12 +6,12 @@
   position: relative;
   overflow: hidden;
   width: 100%;
-  padding-top: 300px;
+  padding-top: 200px;
 }
 
 @media (max-width: 768px) {
   .hero {
-    padding-top: 200px;
+    padding-top: 160px;
   }
 }
 
