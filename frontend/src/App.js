@@ -847,6 +847,7 @@ function App() {
             <Route path="/cgv" element={<><Navigation /><CGV /><Footer /><DevisModal /></>} />
             <Route path="/cgu" element={<><Navigation /><CGU /><Footer /><DevisModal /></>} />
             <Route path="/rgpd" element={<><Navigation /><RGPD /><Footer /><DevisModal /></>} />
+            <Route path="/rejoindre" element={<><Navigation /><Rejoindre /><Footer /><DevisModal /></>} />
           </Routes>
         </BrowserRouter>
       </div>
