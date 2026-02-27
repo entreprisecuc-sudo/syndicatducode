@@ -9,7 +9,7 @@ const API = `${BACKEND_URL}/api`;
 // Configuration
 const CONFIG = {
   companyName: "Le Syndicat du Code",
-  slogan: "Construisons votre futur digital",
+  slogan: "Notre loi, unis par le code.",
   phone: "0660420665",
   city: "Troyes",
   email: "contact@lesyndicatducode.fr",
