@@ -153,6 +153,9 @@ async def create_contact(
     
     await db.contacts.insert_one(doc)
     
+    # Envoyer notification par email
+    send_email_notification(name, email, phone or "", message, saved_files)
+    
     return ContactResponse(
         id=contact_id,
         name=name,
