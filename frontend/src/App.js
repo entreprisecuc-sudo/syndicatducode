@@ -775,10 +775,10 @@ const Footer = () => (
         <div>
           <h4 className="font-semibold mb-4" style={{color: 'var(--text-primary)'}}>Navigation</h4>
           <ul className="space-y-2">
-            <li><a href="#services" className="footer-link">Services</a></li>
-            <li><a href="#pourquoi" className="footer-link">Pourquoi nous</a></li>
-            <li><a href="#approche" className="footer-link">Notre approche</a></li>
-            <li><a href="#contact" className="footer-link">Contact</a></li>
+            <li><a href="/#services" className="footer-link">Services</a></li>
+            <li><a href="/#pourquoi" className="footer-link">Pourquoi nous</a></li>
+            <li><a href="/#approche" className="footer-link">Notre approche</a></li>
+            <li><a href="/#contact" className="footer-link">Contact</a></li>
             <li><a href="/rejoindre" className="footer-link">Rejoindre le Syndicat</a></li>
           </ul>
         </div>
