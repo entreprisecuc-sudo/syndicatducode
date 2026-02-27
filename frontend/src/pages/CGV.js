@@ -21,7 +21,7 @@ const CGV = () => {
             <p>Les présentes Conditions Générales de Vente sont conclues entre :</p>
             <p>
               <strong>JOERKE.B</strong>,<br />
-              Société par actions simplifiée unipersonnelle (SASU) au capital social de 250 €,<br />
+              Société par actions simplifiée unipersonnelle (SASU),<br />
               dont le siège social est situé 11 rue Urbain IV, 10000 Troyes,<br />
               immatriculée au Registre du Commerce et des Sociétés de Troyes sous le numéro 892 906 728,<br />
               représentée par Monsieur Arnaud Becam, agissant en qualité de Président,<br />

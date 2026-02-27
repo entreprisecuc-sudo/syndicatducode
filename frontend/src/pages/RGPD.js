@@ -21,7 +21,7 @@ const RGPD = () => {
             <p>Le responsable du traitement des données personnelles collectées sur le site est :</p>
             <p>
               <strong>JOERKE.B</strong>,<br />
-              Société par actions simplifiée unipersonnelle (SASU) au capital social de 250 €,<br />
+              Société par actions simplifiée unipersonnelle (SASU),<br />
               siège social : 11 rue Urbain IV, 10000 Troyes,<br />
               immatriculée au Registre du Commerce et des Sociétés de Troyes sous le numéro 892 906 728,<br />
               représentée par Monsieur Arnaud Becam, Président,
