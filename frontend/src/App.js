@@ -779,6 +779,7 @@ const Footer = () => (
             <li><a href="#pourquoi" className="footer-link">Pourquoi nous</a></li>
             <li><a href="#approche" className="footer-link">Notre approche</a></li>
             <li><a href="#contact" className="footer-link">Contact</a></li>
+            <li><a href="/rejoindre" className="footer-link">Rejoindre le Syndicat</a></li>
           </ul>
         </div>
         
