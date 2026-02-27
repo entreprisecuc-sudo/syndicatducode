@@ -779,22 +779,38 @@ const HomePage = () => (
     <AudienceSection />
     <ContactSection />
     <Footer />
+    <DevisModal />
   </>
 );
+
+// Modal Provider Wrapper
+const ModalProvider = ({ children }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  return (
+    <ModalContext.Provider value={{ isModalOpen, openModal, closeModal }}>
+      {children}
+    </ModalContext.Provider>
+  );
+};
 
 // Main App
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/cgv" element={<><Navigation /><CGV /><Footer /></>} />
-          <Route path="/cgu" element={<><Navigation /><CGU /><Footer /></>} />
-          <Route path="/rgpd" element={<><Navigation /><RGPD /><Footer /></>} />
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <ModalProvider>
+      <div className="App">
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/cgv" element={<><Navigation /><CGV /><Footer /><DevisModal /></>} />
+            <Route path="/cgu" element={<><Navigation /><CGU /><Footer /><DevisModal /></>} />
+            <Route path="/rgpd" element={<><Navigation /><RGPD /><Footer /><DevisModal /></>} />
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </ModalProvider>
   );
 }
 
