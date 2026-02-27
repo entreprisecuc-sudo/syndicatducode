@@ -523,16 +523,6 @@ const ContactSection = () => {
           </div>
           
           <div className="flex flex-col justify-center">
-            <div className="contact-info-item" data-testid="contact-phone-info">
-              <div className="contact-icon">
-                <Phone size={24} color="white" />
-              </div>
-              <div>
-                <p style={{color: 'var(--text-muted)', fontSize: '0.9rem'}}>Téléphone</p>
-                <p className="font-semibold text-lg">{CONFIG.phone}</p>
-              </div>
-            </div>
-            
             <div className="contact-info-item" data-testid="contact-location-info">
               <div className="contact-icon">
                 <MapPin size={24} color="white" />
