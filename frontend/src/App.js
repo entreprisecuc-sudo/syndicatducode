@@ -612,9 +612,9 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/cgv" element={<CGV />} />
-          <Route path="/cgu" element={<CGU />} />
-          <Route path="/rgpd" element={<RGPD />} />
+          <Route path="/cgv" element={<><Navigation /><CGV /><Footer /></>} />
+          <Route path="/cgu" element={<><Navigation /><CGU /><Footer /></>} />
+          <Route path="/rgpd" element={<><Navigation /><RGPD /><Footer /></>} />
         </Routes>
       </BrowserRouter>
     </div>
