@@ -612,6 +612,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/cgv" element={<CGV />} />
+          <Route path="/cgu" element={<CGU />} />
         </Routes>
       </BrowserRouter>
     </div>
