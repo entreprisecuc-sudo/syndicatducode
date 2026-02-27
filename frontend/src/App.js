@@ -561,7 +561,9 @@ const Footer = () => (
   <footer className="footer" data-testid="footer">
     <div className="max-w-7xl mx-auto px-4 md:px-6">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
-        <a href="#" className="logo">{CONFIG.companyName}</a>
+        <a href="#" className="logo">
+          <img src={CONFIG.logo} alt={CONFIG.companyName} className="h-8" />
+        </a>
         <p style={{color: 'var(--text-muted)', fontSize: '0.85rem'}}>
           © {new Date().getFullYear()} {CONFIG.companyName}. {CONFIG.slogan}
         </p>
