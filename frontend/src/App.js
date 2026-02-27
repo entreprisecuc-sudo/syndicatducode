@@ -115,6 +115,9 @@ const HeroSection = () => (
         Du site vitrine au CRM & ERP sur mesure, avec intégration de solutions 
         d'intelligence artificielle adaptées à votre business.
       </p>
+      <p className="mb-6 font-semibold opacity-0 animate-fade-in-up delay-200" style={{color: 'var(--sage-dark)', fontSize: '1.1rem'}}>
+        Pas de rançon. Un prix. Technologies actuelles incluses.
+      </p>
       <div className="flex flex-col sm:flex-row gap-3 md:gap-4 opacity-0 animate-fade-in-up delay-300">
         <a href="#contact" className="btn-primary" data-testid="hero-cta-devis">
           Demander un devis
