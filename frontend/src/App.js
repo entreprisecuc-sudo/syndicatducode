@@ -41,7 +41,7 @@ const Navigation = () => {
       <nav className={`nav ${scrolled ? "scrolled" : ""}`} data-testid="navigation">
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between">
           <a href="#" className="logo" data-testid="logo">
-            <img src={CONFIG.logo} alt={CONFIG.companyName} style={{height: '60px'}} className="md:h-20" />
+            <img src={CONFIG.logo} alt={CONFIG.companyName} style={{height: '140px'}} />
           </a>
           
           <div className="hidden md:flex items-center gap-8">
