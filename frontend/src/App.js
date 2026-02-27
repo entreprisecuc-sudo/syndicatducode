@@ -113,7 +113,7 @@ const HeroSection = () => (
       </h1>
       <p className="hero-subtitle opacity-0 animate-fade-in-up delay-200">
         Du site vitrine au CRM & ERP sur mesure, avec intégration de solutions 
-        d'intelligence artificielle adaptées à votre business.
+        IA sur mesure pour votre business.
       </p>
       <p className="mb-6 font-semibold opacity-0 animate-fade-in-up delay-200" style={{color: 'var(--sage-dark)', fontSize: '1.1rem'}}>
         Pas de rançon. Un prix. Technologies actuelles incluses.
