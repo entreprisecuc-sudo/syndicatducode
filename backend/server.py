@@ -10,6 +10,9 @@ from typing import Optional, List
 import uuid
 from datetime import datetime, timezone
 import shutil
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -17,6 +20,13 @@ load_dotenv(ROOT_DIR / '.env')
 # Create uploads directory
 UPLOADS_DIR = ROOT_DIR / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
+
+# SMTP Configuration
+SMTP_HOST = os.environ.get('SMTP_HOST', '')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 465))
+SMTP_USER = os.environ.get('SMTP_USER', '')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
+CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', '')
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
