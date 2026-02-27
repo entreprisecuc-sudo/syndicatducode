@@ -12,7 +12,8 @@ const CONFIG = {
   slogan: "Construisons votre futur digital",
   phone: "0660420665",
   city: "Troyes",
-  email: "contact@lesyndicatducode.fr"
+  email: "contact@lesyndicatducode.fr",
+  logo: "https://customer-assets.emergentagent.com/job_simple-start-7/artifacts/xc73oib2_Logo%20le%20syndicat%20du%20code%20.png"
 };
 
 // Navigation Component
