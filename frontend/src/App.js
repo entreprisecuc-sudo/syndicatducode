@@ -8,11 +8,11 @@ const API = `${BACKEND_URL}/api`;
 
 // Configuration
 const CONFIG = {
-  companyName: "Joerke B",
+  companyName: "Le Syndicat du Code",
   slogan: "Construisons votre futur digital",
   phone: "0660420665",
   city: "Troyes",
-  email: "contact@joerkeb.fr"
+  email: "contact@lesyndicatducode.fr"
 };
 
 // Navigation Component
