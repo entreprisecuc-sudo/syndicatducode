@@ -158,6 +158,7 @@ const DevisModal = () => {
               placeholder="Votre téléphone"
               value={formData.phone}
               onChange={handleChange}
+              required
               data-testid="modal-contact-phone"
             />
             <textarea
