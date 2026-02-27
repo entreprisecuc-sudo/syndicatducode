@@ -36,6 +36,7 @@ const DevisModal = () => {
   const [files, setFiles] = useState([]);
   const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -48,6 +49,14 @@ const DevisModal = () => {
 
   const removeFile = (index) => {
     setFiles(files.filter((_, i) => i !== index));
+  };
+
+  const handleClose = () => {
+    setSubmitted(false);
+    setStatus({ type: "", message: "" });
+    setFormData({ name: "", email: "", phone: "", message: "" });
+    setFiles([]);
+    closeModal();
   };
 
   const handleSubmit = async (e) => {
@@ -70,10 +79,7 @@ const DevisModal = () => {
         headers: { "Content-Type": "multipart/form-data" }
       });
       
-      setStatus({ type: "success", message: "Demande envoyée ! Un membre du Syndicat va vous contacter au plus vite." });
-      setFormData({ name: "", email: "", phone: "", message: "" });
-      setFiles([]);
-      setTimeout(() => closeModal(), 3000);
+      setSubmitted(true);
     } catch (error) {
       setStatus({ type: "error", message: "Erreur lors de l'envoi. Veuillez réessayer." });
     } finally {
@@ -83,10 +89,41 @@ const DevisModal = () => {
 
   if (!isModalOpen) return null;
 
+  // Affichage après soumission réussie
+  if (submitted) {
+    return (
+      <div className="modal-overlay" onClick={handleClose}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <button className="modal-close" onClick={handleClose}>
+            <X size={24} />
+          </button>
+          
+          <div className="text-center py-8">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center" style={{background: 'linear-gradient(135deg, var(--sage-dark), var(--sage))'}}>
+              <Check size={40} color="white" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4" style={{color: 'var(--sage-dark)'}}>
+              Demande envoyée !
+            </h2>
+            <p className="text-lg mb-2" style={{color: 'var(--text-secondary)'}}>
+              Un membre du Syndicat va vous contacter au plus vite.
+            </p>
+            <p className="text-sm" style={{color: 'var(--text-muted)'}}>
+              Notre loi. Unis par le code.
+            </p>
+            <button onClick={handleClose} className="btn-primary mt-8">
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="modal-overlay" onClick={closeModal}>
+    <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={closeModal}>
+        <button className="modal-close" onClick={handleClose}>
           <X size={24} />
         </button>
         
