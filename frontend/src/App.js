@@ -196,6 +196,7 @@ const DevisModal = () => {
 const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { openModal } = useModal();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -216,7 +217,7 @@ const Navigation = () => {
     <>
       <nav className={`nav ${scrolled ? "scrolled" : ""}`} data-testid="navigation">
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between">
-          <a href="#" className="logo" data-testid="logo">
+          <a href="/" className="logo" data-testid="logo">
             <img src={CONFIG.logo} alt={CONFIG.companyName} className="h-32 md:h-44" />
           </a>
           
@@ -226,9 +227,9 @@ const Navigation = () => {
                 {link.label}
               </a>
             ))}
-            <a href="#contact" className="btn-primary" data-testid="nav-cta">
+            <button onClick={openModal} className="btn-primary" data-testid="nav-cta">
               Devis gratuit
-            </a>
+            </button>
           </div>
 
           <button 
@@ -263,9 +264,9 @@ const Navigation = () => {
             {link.label}
           </a>
         ))}
-        <a href="#contact" className="btn-primary" onClick={() => setMobileOpen(false)}>
+        <button onClick={() => { openModal(); setMobileOpen(false); }} className="btn-primary">
           Devis gratuit
-        </a>
+        </button>
       </div>
     </>
   );
