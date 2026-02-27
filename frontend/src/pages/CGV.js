@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 const CGV = () => {
   return (
     <div className="legal-page">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-20">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-12">
         <a href="/" className="inline-flex items-center gap-2 mb-8 text-sage hover:underline">
           <ArrowLeft size={20} />
           Retour à l'accueil
