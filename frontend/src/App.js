@@ -103,7 +103,7 @@ const HeroSection = () => (
     <div className="glow-orb glow-orb-2"></div>
     
     <div className="max-w-7xl mx-auto px-4 md:px-6 hero-content">
-      <p className="text-sage-light mb-3 md:mb-4 font-medium opacity-0 animate-fade-in-up text-sm md:text-base" style={{color: 'var(--sage)'}}>
+      <p className="text-sage-light mb-3 md:mb-4 font-medium opacity-0 animate-fade-in-up text-sm md:text-base mt-8" style={{color: 'var(--sage)'}}>
         {CONFIG.slogan}
       </p>
       <h1 className="hero-title opacity-0 animate-fade-in-up delay-100">
