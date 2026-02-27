@@ -6,6 +6,7 @@ import { Monitor, Settings, Bot, Check, Phone, MapPin, Mail, Menu, X, ChevronRig
 import CGV from "@/pages/CGV";
 import CGU from "@/pages/CGU";
 import RGPD from "@/pages/RGPD";
+import Rejoindre from "@/pages/Rejoindre";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
