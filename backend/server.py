@@ -62,15 +62,59 @@ class ContactResponse(BaseModel):
 # Routes
 @api_router.get("/")
 async def root():
-    return {"message": "Joerke B API", "status": "online"}
+    return {"message": "Le Syndicat du Code API", "status": "online"}
 
 @api_router.get("/config")
 async def get_config():
     return {
-        "phone": COMPANY_PHONE,
-        "city": COMPANY_CITY,
         "email": CONTACT_EMAIL
     }
+
+def send_email_notification(name: str, email: str, phone: str, message: str, files: List[str]):
+    """Envoie un email de notification pour une nouvelle demande de devis"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = CONTACT_EMAIL
+        msg['Subject'] = f"Nouvelle demande de devis - {name}"
+        
+        # Corps de l'email
+        body = f"""
+Nouvelle demande de devis reçue sur le site Le Syndicat du Code.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👤 NOM : {name}
+📧 EMAIL : {email}
+📞 TÉLÉPHONE : {phone or 'Non renseigné'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💬 MESSAGE :
+
+{message}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📎 FICHIERS JOINTS : {len(files)} fichier(s)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Notre loi. Unis par le code.
+        """
+        
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        # Connexion SMTP SSL
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+        
+        logger.info(f"Email envoyé pour la demande de {name}")
+        return True
+    except Exception as e:
+        logger.error(f"Erreur envoi email: {e}")
+        return False
 
 @api_router.post("/contact", response_model=ContactResponse)
 async def create_contact(
