@@ -63,6 +63,86 @@
   color: var(--sage);
 }
 
+/* Recruit Cards */
+.recruit-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 40px 32px;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.recruit-card:hover {
+  border-color: var(--sage);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.recruit-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--sage-dark), var(--sage));
+  margin-bottom: 24px;
+}
+
+.recruit-badge {
+  display: inline-block;
+  background: var(--bg-section);
+  color: var(--sage);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 50px;
+  margin-bottom: 16px;
+  letter-spacing: 0.05em;
+}
+
+.recruit-list {
+  list-style: none;
+  padding: 0;
+}
+
+.recruit-list li {
+  color: var(--text-secondary);
+  padding: 8px 0;
+  padding-left: 24px;
+  position: relative;
+  line-height: 1.6;
+}
+
+.recruit-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 16px;
+  width: 8px;
+  height: 8px;
+  background: var(--sage);
+  border-radius: 50%;
+}
+
+.recruit-cta {
+  background: var(--bg-section);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+}
+
+.recruit-cta a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .recruit-card {
+    padding: 32px 24px;
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
