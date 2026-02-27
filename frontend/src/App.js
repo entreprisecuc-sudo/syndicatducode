@@ -522,17 +522,7 @@ const ContactSection = () => {
             </form>
           </div>
           
-          <div className="flex flex-col justify-center">
-            <div className="contact-info-item" data-testid="contact-location-info">
-              <div className="contact-icon">
-                <MapPin size={24} color="white" />
-              </div>
-              <div>
-                <p style={{color: 'var(--text-muted)', fontSize: '0.9rem'}}>Localisation</p>
-                <p className="font-semibold text-lg">{CONFIG.city}, France</p>
-              </div>
-            </div>
-            
+          <div className="flex flex-col justify-center items-start">
             <div className="contact-info-item" data-testid="contact-email-info">
               <div className="contact-icon">
                 <Mail size={24} color="white" />
