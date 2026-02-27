@@ -560,7 +560,7 @@ const ContactSection = () => {
         headers: { "Content-Type": "multipart/form-data" }
       });
       
-      setStatus({ type: "success", message: "Message envoyé avec succès ! Nous vous recontacterons rapidement." });
+      setStatus({ type: "success", message: "Demande envoyée ! Un membre du Syndicat va vous contacter au plus vite." });
       setFormData({ name: "", email: "", phone: "", message: "" });
       setFiles([]);
     } catch (error) {
