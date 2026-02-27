@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import "@/App.css";
 import axios from "axios";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -10,6 +10,10 @@ import RGPD from "@/pages/RGPD";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Modal Context
+const ModalContext = createContext();
+const useModal = () => useContext(ModalContext);
+
 // Configuration
 const CONFIG = {
   companyName: "Le Syndicat du Code",
@@ -18,6 +22,174 @@ const CONFIG = {
   city: "Troyes",
   email: "atelier@syndicatducode.fr",
   logo: "https://customer-assets.emergentagent.com/job_simple-start-7/artifacts/xc73oib2_Logo%20le%20syndicat%20du%20code%20.png"
+};
+
+// Devis Modal Component
+const DevisModal = () => {
+  const { isModalOpen, closeModal } = useModal();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: ""
+  });
+  const [files, setFiles] = useState([]);
+  const [status, setStatus] = useState({ type: "", message: "" });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(selectedFiles);
+  };
+
+  const removeFile = (index) => {
+    setFiles(files.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setStatus({ type: "", message: "" });
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone", formData.phone || "");
+      formDataToSend.append("message", formData.message);
+      
+      files.forEach((file) => {
+        formDataToSend.append("files", file);
+      });
+
+      await axios.post(`${API}/contact`, formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      
+      setStatus({ type: "success", message: "Message envoyé avec succès ! Nous vous recontacterons rapidement." });
+      setFormData({ name: "", email: "", phone: "", message: "" });
+      setFiles([]);
+      setTimeout(() => closeModal(), 3000);
+    } catch (error) {
+      setStatus({ type: "error", message: "Erreur lors de l'envoi. Veuillez réessayer." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isModalOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={closeModal}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={closeModal}>
+          <X size={24} />
+        </button>
+        
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold mb-2">Demander un devis</h2>
+          <p style={{color: 'var(--text-muted)'}}>Pas de rançon. Un prix. Technologies actuelles incluses.</p>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <input
+              type="text"
+              name="name"
+              placeholder="Votre nom"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              data-testid="modal-contact-name"
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Votre email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              data-testid="modal-contact-email"
+            />
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Votre téléphone"
+              value={formData.phone}
+              onChange={handleChange}
+              data-testid="modal-contact-phone"
+            />
+            <textarea
+              name="message"
+              placeholder="Décrivez votre projet..."
+              rows={4}
+              value={formData.message}
+              onChange={handleChange}
+              required
+              data-testid="modal-contact-message"
+            ></textarea>
+            
+            {/* File Upload */}
+            <div>
+              <label 
+                className="flex items-center gap-3 p-3 border-2 border-dashed rounded-xl cursor-pointer transition-all hover:border-[var(--sage)]"
+                style={{borderColor: 'var(--border-color)', background: 'var(--bg-section)'}}
+              >
+                <Paperclip size={18} style={{color: 'var(--sage)'}} />
+                <span style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>
+                  Joindre des fichiers
+                </span>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                />
+              </label>
+              <p className="mt-1 text-xs" style={{color: 'var(--text-muted)'}}>
+                Présentez vos idées : maquettes, croquis, même un simple dessin !
+              </p>
+              
+              {files.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {files.map((file, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center justify-between p-2 rounded-lg text-sm"
+                      style={{background: 'var(--bg-section)'}}
+                    >
+                      <div className="flex items-center gap-2">
+                        <FileText size={14} style={{color: 'var(--sage)'}} />
+                        <span style={{color: 'var(--text-secondary)'}}>{file.name}</span>
+                      </div>
+                      <button type="button" onClick={() => removeFile(index)} className="text-red-500">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {status.message && (
+              <div className={`p-3 rounded-lg text-sm ${status.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                {status.message}
+              </div>
+            )}
+            
+            <button type="submit" className="btn-primary w-full" disabled={loading}>
+              {loading ? "Envoi en cours..." : "Envoyer ma demande"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };
 
 // Navigation Component
