@@ -652,6 +652,7 @@ const ContactSection = () => {
                     placeholder="Votre téléphone"
                     value={formData.phone}
                     onChange={handleChange}
+                    required
                     data-testid="contact-phone"
                   />
                 </div>
