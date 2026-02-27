@@ -291,6 +291,13 @@ body {
   position: relative;
   overflow: hidden;
   width: 100%;
+  scroll-margin-top: 200px;
+}
+
+@media (max-width: 768px) {
+  .section {
+    scroll-margin-top: 150px;
+  }
 }
 
 .section-title {
