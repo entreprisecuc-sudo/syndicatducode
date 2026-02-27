@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Monitor, Settings, Bot, Check, Phone, MapPin, Mail, Menu, X, ChevronRight, Store, Smartphone, Wrench, Paperclip, FileText } from "lucide-react";
 import CGV from "@/pages/CGV";
 import CGU from "@/pages/CGU";
+import RGPD from "@/pages/RGPD";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
