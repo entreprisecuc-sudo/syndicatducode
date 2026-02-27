@@ -589,18 +589,30 @@ const Footer = () => (
   </footer>
 );
 
+// Home Page
+const HomePage = () => (
+  <>
+    <Navigation />
+    <HeroSection />
+    <ServicesSection />
+    <WhyUsSection />
+    <ProcessSection />
+    <AudienceSection />
+    <ContactSection />
+    <Footer />
+  </>
+);
+
 // Main App
 function App() {
   return (
     <div className="App">
-      <Navigation />
-      <HeroSection />
-      <ServicesSection />
-      <WhyUsSection />
-      <ProcessSection />
-      <AudienceSection />
-      <ContactSection />
-      <Footer />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/cgv" element={<CGV />} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
