@@ -293,9 +293,15 @@
   background: none;
   border: none;
   padding: 0;
-  display: flex;
+  display: none;
   flex-direction: column;
   justify-content: space-between;
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: flex;
+  }
 }
 
 .hamburger span {
