@@ -7,7 +7,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ModalProvider } from "@/context/ModalContext";
 import { AuthProvider } from "@/context/AuthContext";
-import { PublicRoute } from "@/components/auth/ProtectedRoute";
+import { PublicRoute, RoleRoute } from "@/components/auth/ProtectedRoute";
 
 // Pages publiques
 import HomePage from "@/pages/HomePage";
@@ -24,6 +24,22 @@ import {
   ResetPasswordPage,
   ChooseRolePage
 } from "@/pages/auth";
+
+// Pages Espace Commercial
+import {
+  CommercialDashboard,
+  CommercialProfile,
+  CommercialDocuments,
+  CommercialAffaires
+} from "@/pages/commercial";
+
+// Pages Espace Développeur
+import {
+  DeveloperDashboard,
+  DeveloperProfile,
+  DeveloperDocuments,
+  DeveloperOpportunities
+} from "@/pages/developer";
 
 // Composants de layout
 import Navigation from "@/components/layout/Navigation";
@@ -56,77 +72,106 @@ function App() {
               {/* PAGES PUBLIQUES */}
               {/* ============================================ */}
               
-              {/* Page d'accueil */}
               <Route path="/" element={<HomePage />} />
-              
-              {/* Pages légales */}
               <Route path="/cgv" element={<PageLayout><CGV /></PageLayout>} />
               <Route path="/cgu" element={<PageLayout><CGU /></PageLayout>} />
               <Route path="/rgpd" element={<PageLayout><RGPD /></PageLayout>} />
-              
-              {/* Recrutement */}
               <Route path="/rejoindre" element={<PageLayout><Rejoindre /></PageLayout>} />
 
               {/* ============================================ */}
               {/* PAGES D'AUTHENTIFICATION */}
               {/* ============================================ */}
               
-              {/* Connexion - redirige si déjà connecté */}
-              <Route 
-                path="/login" 
-                element={
-                  <PublicRoute>
-                    <LoginPage />
-                  </PublicRoute>
-                } 
-              />
-              
-              {/* Inscription - redirige si déjà connecté */}
-              <Route 
-                path="/register" 
-                element={
-                  <PublicRoute>
-                    <RegisterPage />
-                  </PublicRoute>
-                } 
-              />
-              
-              {/* Mot de passe oublié */}
+              <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+              <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              
-              {/* Réinitialisation mot de passe */}
               <Route path="/reset-password" element={<ResetPasswordPage />} />
-              
-              {/* Choix du rôle (première connexion) */}
               <Route path="/choose-role" element={<ChooseRolePage />} />
 
               {/* ============================================ */}
-              {/* ESPACES MEMBRES (à créer en Phase 3) */}
+              {/* ESPACE COMMERCIAL */}
               {/* ============================================ */}
               
-              {/* Placeholder - sera remplacé en Phase 3 */}
               <Route 
                 path="/espace-commercial" 
                 element={
-                  <div className="min-h-screen flex items-center justify-center">
-                    <p>Espace Commercial - À venir</p>
-                  </div>
+                  <RoleRoute allowedRoles={["commercial"]}>
+                    <CommercialDashboard />
+                  </RoleRoute>
                 } 
               />
+              <Route 
+                path="/espace-commercial/profil" 
+                element={
+                  <RoleRoute allowedRoles={["commercial"]}>
+                    <CommercialProfile />
+                  </RoleRoute>
+                } 
+              />
+              <Route 
+                path="/espace-commercial/documents" 
+                element={
+                  <RoleRoute allowedRoles={["commercial"]}>
+                    <CommercialDocuments />
+                  </RoleRoute>
+                } 
+              />
+              <Route 
+                path="/espace-commercial/affaires" 
+                element={
+                  <RoleRoute allowedRoles={["commercial"]}>
+                    <CommercialAffaires />
+                  </RoleRoute>
+                } 
+              />
+
+              {/* ============================================ */}
+              {/* ESPACE DÉVELOPPEUR */}
+              {/* ============================================ */}
+              
               <Route 
                 path="/espace-developpeur" 
                 element={
-                  <div className="min-h-screen flex items-center justify-center">
-                    <p>Espace Développeur - À venir</p>
-                  </div>
+                  <RoleRoute allowedRoles={["developer"]}>
+                    <DeveloperDashboard />
+                  </RoleRoute>
                 } 
               />
               <Route 
+                path="/espace-developpeur/profil" 
+                element={
+                  <RoleRoute allowedRoles={["developer"]}>
+                    <DeveloperProfile />
+                  </RoleRoute>
+                } 
+              />
+              <Route 
+                path="/espace-developpeur/documents" 
+                element={
+                  <RoleRoute allowedRoles={["developer"]}>
+                    <DeveloperDocuments />
+                  </RoleRoute>
+                } 
+              />
+              <Route 
+                path="/espace-developpeur/opportunites" 
+                element={
+                  <RoleRoute allowedRoles={["developer"]}>
+                    <DeveloperOpportunities />
+                  </RoleRoute>
+                } 
+              />
+
+              {/* ============================================ */}
+              {/* REDIRECTION DASHBOARD GÉNÉRIQUE */}
+              {/* ============================================ */}
+              
+              <Route 
                 path="/dashboard" 
                 element={
-                  <div className="min-h-screen flex items-center justify-center">
-                    <p>Dashboard - À venir</p>
-                  </div>
+                  <RoleRoute allowedRoles={["commercial", "developer"]}>
+                    <CommercialDashboard />
+                  </RoleRoute>
                 } 
               />
 
