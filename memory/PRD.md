@@ -83,7 +83,16 @@
 
 ## Changelog
 
-### 17/12/2025 - Refactoring
+### 17/12/2025 - Phase 1 : Backend Authentification
+- **TERMINÉ** : Système d'authentification complet
+- Endpoints : register, login, choose-role, forgot-password, reset-password, /me
+- JWT avec expiration 24h
+- Hash bcrypt pour les mots de passe
+- Validation mot de passe (8 chars, majuscule, minuscule, chiffre)
+- Token de réinitialisation sécurisé (1h, usage unique)
+- Architecture modulaire (config, models, services, middleware, routes)
+
+### 17/12/2025 - Refactoring Frontend
 - **TERMINÉ** : Refactoring complet de App.js (859 → 62 lignes)
 - Création de 13 nouveaux fichiers modulaires
 - Hook `useContactForm` partagé (principe DRY)
