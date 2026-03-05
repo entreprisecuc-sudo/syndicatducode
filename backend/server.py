@@ -1,3 +1,8 @@
+"""
+Serveur principal Le Syndicat du Code
+API FastAPI avec authentification et gestion des contacts
+"""
+
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -14,10 +19,11 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+# Configuration
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# Create uploads directory
+# Uploads directory
 UPLOADS_DIR = ROOT_DIR / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
 
@@ -33,20 +39,34 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Config from env
-CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', '')
-COMPANY_PHONE = os.environ.get('COMPANY_PHONE', '')
-COMPANY_CITY = os.environ.get('COMPANY_CITY', '')
+# Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-app = FastAPI()
+# FastAPI App
+app = FastAPI(
+    title="Le Syndicat du Code API",
+    description="API pour le site Le Syndicat du Code",
+    version="2.0.0"
+)
+
+# Router principal
 api_router = APIRouter(prefix="/api")
 
-# Models
+
+# ============================================
+# MODÈLES CONTACT (existants)
+# ============================================
+
 class ContactRequest(BaseModel):
     name: str = Field(..., min_length=2)
     email: EmailStr
     phone: Optional[str] = None
     message: str = Field(..., min_length=10)
+
 
 class ContactResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -59,16 +79,20 @@ class ContactResponse(BaseModel):
     created_at: str
     status: str = "pending"
 
-# Routes
+
+# ============================================
+# ROUTES EXISTANTES (Contact)
+# ============================================
+
 @api_router.get("/")
 async def root():
-    return {"message": "Le Syndicat du Code API", "status": "online"}
+    return {"message": "Le Syndicat du Code API", "status": "online", "version": "2.0.0"}
+
 
 @api_router.get("/config")
 async def get_config():
-    return {
-        "email": CONTACT_EMAIL
-    }
+    return {"email": CONTACT_EMAIL}
+
 
 def send_email_notification(name: str, email: str, phone: str, message: str, files: List[str]):
     """Envoie un email de notification pour une nouvelle demande de devis"""
@@ -78,7 +102,6 @@ def send_email_notification(name: str, email: str, phone: str, message: str, fil
         msg['To'] = CONTACT_EMAIL
         msg['Subject'] = f"Nouvelle demande de devis - {name}"
         
-        # Corps de l'email
         body = f"""
 Nouvelle demande de devis reçue sur le site Le Syndicat du Code.
 
@@ -105,7 +128,6 @@ Notre loi. Unis par le code.
         
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
         
-        # Connexion SMTP SSL
         with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
             server.login(SMTP_USER, SMTP_PASSWORD)
             server.send_message(msg)
@@ -115,6 +137,7 @@ Notre loi. Unis par le code.
     except Exception as e:
         logger.error(f"Erreur envoi email: {e}")
         return False
+
 
 @api_router.post("/contact", response_model=ContactResponse)
 async def create_contact(
@@ -167,13 +190,36 @@ async def create_contact(
         status="pending"
     )
 
+
 @api_router.get("/contacts")
 async def get_contacts():
     contacts = await db.contacts.find({}, {"_id": 0}).to_list(100)
     return contacts
 
-# Include router
+
+# ============================================
+# IMPORT DES ROUTES D'AUTHENTIFICATION
+# ============================================
+
+from routes.auth import router as auth_router, set_database as set_auth_db
+
+# Injecter la base de données dans le module auth
+set_auth_db(db)
+
+# Inclure les routes d'authentification
+api_router.include_router(auth_router)
+
+
+# ============================================
+# INCLUSION DU ROUTER PRINCIPAL
+# ============================================
+
 app.include_router(api_router)
+
+
+# ============================================
+# MIDDLEWARE CORS
+# ============================================
 
 app.add_middleware(
     CORSMiddleware,
@@ -183,12 +229,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+
+# ============================================
+# ÉVÉNEMENTS
+# ============================================
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialisation au démarrage"""
+    # Créer les index pour la collection users
+    await db.users.create_index("email", unique=True)
+    await db.users.create_index("id", unique=True)
+    await db.password_resets.create_index("user_id")
+    await db.password_resets.create_index("expires_at")
+    logger.info("Indexes créés pour les collections users et password_resets")
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    """Fermeture de la connexion MongoDB"""
     client.close()
