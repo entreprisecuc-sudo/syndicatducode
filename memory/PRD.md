@@ -83,6 +83,16 @@
 
 ## Changelog
 
+### 17/12/2025 - Phase 2 : Frontend Authentification
+- **TERMINÉ** : Pages d'authentification complètes
+- Pages : Login, Register, ForgotPassword, ResetPassword, ChooseRole
+- AuthContext pour gestion état global
+- authService pour appels API
+- ProtectedRoute, PublicRoute, RoleRoute pour protection routes
+- Validation mot de passe en temps réel
+- 100% responsive (mobile-first)
+- Redirection automatique selon état utilisateur
+
 ### 17/12/2025 - Phase 1 : Backend Authentification
 - **TERMINÉ** : Système d'authentification complet
 - Endpoints : register, login, choose-role, forgot-password, reset-password, /me
