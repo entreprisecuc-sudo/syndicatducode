@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { Shield, Code, Briefcase } from "lucide-react";
 import { CONFIG, API_URL } from "@/config/constants";
 import { useAuth } from "@/context/AuthContext";
+import { setAuthData } from "@/services/authService";
 import axios from "axios";
 
 // Identifiants de test pour chaque espace
