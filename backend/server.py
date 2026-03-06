@@ -257,7 +257,10 @@ async def startup_event():
     # Index pour les annonces
     await db.announcements.create_index("id", unique=True)
     await db.announcements.create_index([("is_pinned", -1), ("created_at", -1)])
-    logger.info("Indexes créés pour les collections users, password_resets et announcements")
+    # Index pour les alertes
+    await db.alerts.create_index("id", unique=True)
+    await db.alerts.create_index("is_active")
+    logger.info("Indexes créés pour les collections users, password_resets, announcements et alerts")
 
 
 @app.on_event("shutdown")
