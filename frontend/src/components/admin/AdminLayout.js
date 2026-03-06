@@ -184,7 +184,7 @@ const AdminLayout = ({ children }) => {
           {/* Titre */}
           <div className="hidden lg:block">
             <h1 className="text-lg font-semibold text-white">
-              {ADMIN_MENU.find(item => item.path === location.pathname)?.label || "Administration"}
+              {ALL_MENU_ITEMS.find(item => item.path === location.pathname)?.label || "Administration"}
             </h1>
           </div>
 
