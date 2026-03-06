@@ -23,7 +23,7 @@ const MENU_ITEMS = {
   developer: [
     { path: "/espace-developpeur", label: "Tableau de bord", icon: Home },
     { path: "/espace-developpeur/profil", label: "Mon profil", icon: User },
-    { path: "/espace-developpeur/opportunites", label: "Opportunités", icon: Code },
+    { path: "/espace-developpeur/projets", label: "Projets du Syndicat", icon: Code },
     { path: "/espace-developpeur/documents", label: "Documents", icon: FileText }
   ]
 };
