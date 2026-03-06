@@ -103,6 +103,8 @@ function App() {
               <Route path="/cgu" element={<PageLayout><CGU /></PageLayout>} />
               <Route path="/rgpd" element={<PageLayout><RGPD /></PageLayout>} />
               <Route path="/rejoindre" element={<PageLayout><Rejoindre /></PageLayout>} />
+              <Route path="/membres" element={<MembersPage />} />
+              <Route path="/membres/:memberId" element={<MemberDetailPage />} />
 
               {/* ============================================ */}
               {/* PAGES D'AUTHENTIFICATION */}
