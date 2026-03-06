@@ -105,6 +105,17 @@ const AlertPopup = ({ alert, onDismiss }) => {
         className={`w-full max-w-md rounded-xl overflow-hidden shadow-2xl`}
         style={{ background: "#16213e" }}
       >
+        {/* Image si présente */}
+        {alert.image_url && (
+          <div className="w-full">
+            <img 
+              src={alert.image_url} 
+              alt="" 
+              className="w-full h-48 object-cover"
+            />
+          </div>
+        )}
+        
         {/* Header coloré */}
         <div className={`${styleConfig.bgPopup} px-5 py-4 flex items-center gap-3`}>
           <Icon size={24} className="text-white" />
