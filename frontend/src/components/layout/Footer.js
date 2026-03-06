@@ -89,17 +89,33 @@ const Footer = () => (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
             © {new Date().getFullYear()} {CONFIG.companyName}. Tous droits réservés.
           </p>
-          <div className="flex items-center gap-4">
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }} className="mr-2">
               {CONFIG.email}
             </p>
             <Link 
               to="/syndicat-admin"
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hover:opacity-90"
               style={{ background: '#dc2626', color: 'white' }}
             >
               <Shield size={14} />
               Admin
+            </Link>
+            <Link 
+              to="/espace-developpeur"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hover:opacity-90"
+              style={{ background: '#8b5cf6', color: 'white' }}
+            >
+              <Code size={14} />
+              Espace Dev
+            </Link>
+            <Link 
+              to="/espace-commercial"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hover:opacity-90"
+              style={{ background: '#f59e0b', color: 'white' }}
+            >
+              <Briefcase size={14} />
+              Espace Commercial
             </Link>
           </div>
         </div>
