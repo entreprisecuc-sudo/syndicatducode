@@ -202,12 +202,15 @@ async def get_contacts():
 # ============================================
 
 from routes.auth import router as auth_router, set_database as set_auth_db
+from routes.admin import router as admin_router, set_database as set_admin_db
 
-# Injecter la base de données dans le module auth
+# Injecter la base de données dans les modules
 set_auth_db(db)
+set_admin_db(db)
 
-# Inclure les routes d'authentification
+# Inclure les routes
 api_router.include_router(auth_router)
+api_router.include_router(admin_router)
 
 
 # ============================================
