@@ -38,7 +38,8 @@ import {
   DeveloperDashboard,
   DeveloperProfile,
   DeveloperDocuments,
-  DeveloperOpportunities
+  DeveloperOpportunities,
+  DeveloperProjects
 } from "@/pages/developer";
 
 // Pages Admin
@@ -46,7 +47,9 @@ import {
   AdminDashboard,
   AdminUsers,
   AdminContacts,
-  AdminLogs
+  AdminLogs,
+  AdminProjects,
+  AdminProjectDetail
 } from "@/pages/admin";
 
 // Composants de layout
