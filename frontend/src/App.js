@@ -174,6 +174,10 @@ function App() {
                 element={<RoleRoute allowedRoles={["developer"]}><DeveloperSubscription /></RoleRoute>} 
               />
               <Route 
+                path="/espace-developpeur/book" 
+                element={<RoleRoute allowedRoles={["developer"]}><DeveloperBook /></RoleRoute>} 
+              />
+              <Route 
                 path="/espace-developpeur/partenaires" 
                 element={<RoleRoute allowedRoles={["developer"]}><MemberPartners /></RoleRoute>} 
               />
