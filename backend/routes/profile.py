@@ -374,7 +374,8 @@ async def add_portfolio_project(
     logger.info(f"Projet portfolio ajouté pour user_id: {user_id}")
     
     # Retourner sans _id
-    del project_doc["_id"] if "_id" in project_doc else None
+    if "_id" in project_doc:
+        del project_doc["_id"]
     return project_doc
 
 
