@@ -154,6 +154,8 @@ async def update_alert(
         update_data["style"] = data.style.value
     if data.target is not None:
         update_data["target"] = data.target.value
+    if data.image_url is not None:
+        update_data["image_url"] = data.image_url
     if data.link_url is not None:
         update_data["link_url"] = data.link_url
     if data.link_text is not None:
