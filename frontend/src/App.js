@@ -49,7 +49,8 @@ import {
   AdminContacts,
   AdminLogs,
   AdminProjects,
-  AdminProjectDetail
+  AdminProjectDetail,
+  AdminAnnouncements
 } from "@/pages/admin";
 
 // Composants de layout
