@@ -89,9 +89,19 @@ const Footer = () => (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
             © {new Date().getFullYear()} {CONFIG.companyName}. Tous droits réservés.
           </p>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-            {CONFIG.email}
-          </p>
+          <div className="flex items-center gap-4">
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+              {CONFIG.email}
+            </p>
+            <Link 
+              to="/syndicat-admin"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              style={{ background: '#dc2626', color: 'white' }}
+            >
+              <Shield size={14} />
+              Admin
+            </Link>
+          </div>
         </div>
       </div>
     </div>
