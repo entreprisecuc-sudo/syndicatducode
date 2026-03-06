@@ -141,13 +141,39 @@ const GlobalAlerts = () => {
     const saved = localStorage.getItem('dismissed_alerts');
     return saved ? JSON.parse(saved) : [];
   });
+  const [hasFetched, setHasFetched] = useState(false);
 
+  // Vérifier périodiquement si le token est disponible
   useEffect(() => {
-    // Ne charger que si l'utilisateur est connecté
-    if (getToken()) {
-      fetchAlerts();
-    }
-  }, []);
+    const checkAndFetch = () => {
+      const token = getToken();
+      if (token && !hasFetched) {
+        fetchAlerts();
+        setHasFetched(true);
+      }
+    };
+
+    // Vérifier immédiatement
+    checkAndFetch();
+
+    // Vérifier à nouveau après un court délai (pour les connexions via footer)
+    const timer = setTimeout(checkAndFetch, 1000);
+    
+    // Écouter les changements de storage
+    const handleStorage = () => {
+      if (getToken() && !hasFetched) {
+        fetchAlerts();
+        setHasFetched(true);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorage);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [hasFetched]);
 
   const fetchAlerts = async () => {
     try {
