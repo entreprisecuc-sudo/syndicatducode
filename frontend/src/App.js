@@ -41,6 +41,14 @@ import {
   DeveloperOpportunities
 } from "@/pages/developer";
 
+// Pages Admin
+import {
+  AdminDashboard,
+  AdminUsers,
+  AdminContacts,
+  AdminLogs
+} from "@/pages/admin";
+
 // Composants de layout
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
@@ -94,35 +102,19 @@ function App() {
               
               <Route 
                 path="/espace-commercial" 
-                element={
-                  <RoleRoute allowedRoles={["commercial"]}>
-                    <CommercialDashboard />
-                  </RoleRoute>
-                } 
+                element={<RoleRoute allowedRoles={["commercial"]}><CommercialDashboard /></RoleRoute>} 
               />
               <Route 
                 path="/espace-commercial/profil" 
-                element={
-                  <RoleRoute allowedRoles={["commercial"]}>
-                    <CommercialProfile />
-                  </RoleRoute>
-                } 
+                element={<RoleRoute allowedRoles={["commercial"]}><CommercialProfile /></RoleRoute>} 
               />
               <Route 
                 path="/espace-commercial/documents" 
-                element={
-                  <RoleRoute allowedRoles={["commercial"]}>
-                    <CommercialDocuments />
-                  </RoleRoute>
-                } 
+                element={<RoleRoute allowedRoles={["commercial"]}><CommercialDocuments /></RoleRoute>} 
               />
               <Route 
                 path="/espace-commercial/affaires" 
-                element={
-                  <RoleRoute allowedRoles={["commercial"]}>
-                    <CommercialAffaires />
-                  </RoleRoute>
-                } 
+                element={<RoleRoute allowedRoles={["commercial"]}><CommercialAffaires /></RoleRoute>} 
               />
 
               {/* ============================================ */}
@@ -131,35 +123,40 @@ function App() {
               
               <Route 
                 path="/espace-developpeur" 
-                element={
-                  <RoleRoute allowedRoles={["developer"]}>
-                    <DeveloperDashboard />
-                  </RoleRoute>
-                } 
+                element={<RoleRoute allowedRoles={["developer"]}><DeveloperDashboard /></RoleRoute>} 
               />
               <Route 
                 path="/espace-developpeur/profil" 
-                element={
-                  <RoleRoute allowedRoles={["developer"]}>
-                    <DeveloperProfile />
-                  </RoleRoute>
-                } 
+                element={<RoleRoute allowedRoles={["developer"]}><DeveloperProfile /></RoleRoute>} 
               />
               <Route 
                 path="/espace-developpeur/documents" 
-                element={
-                  <RoleRoute allowedRoles={["developer"]}>
-                    <DeveloperDocuments />
-                  </RoleRoute>
-                } 
+                element={<RoleRoute allowedRoles={["developer"]}><DeveloperDocuments /></RoleRoute>} 
               />
               <Route 
                 path="/espace-developpeur/opportunites" 
-                element={
-                  <RoleRoute allowedRoles={["developer"]}>
-                    <DeveloperOpportunities />
-                  </RoleRoute>
-                } 
+                element={<RoleRoute allowedRoles={["developer"]}><DeveloperOpportunities /></RoleRoute>} 
+              />
+
+              {/* ============================================ */}
+              {/* BACK-OFFICE ADMIN (URL secrète) */}
+              {/* ============================================ */}
+              
+              <Route 
+                path="/syndicat-admin" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminDashboard /></RoleRoute>} 
+              />
+              <Route 
+                path="/syndicat-admin/utilisateurs" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminUsers /></RoleRoute>} 
+              />
+              <Route 
+                path="/syndicat-admin/contacts" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminContacts /></RoleRoute>} 
+              />
+              <Route 
+                path="/syndicat-admin/logs" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminLogs /></RoleRoute>} 
               />
 
               {/* ============================================ */}
@@ -168,11 +165,7 @@ function App() {
               
               <Route 
                 path="/dashboard" 
-                element={
-                  <RoleRoute allowedRoles={["commercial", "developer"]}>
-                    <CommercialDashboard />
-                  </RoleRoute>
-                } 
+                element={<RoleRoute allowedRoles={["commercial", "developer", "admin"]}><CommercialDashboard /></RoleRoute>} 
               />
 
             </Routes>
