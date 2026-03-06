@@ -141,51 +141,35 @@ const GlobalAlerts = () => {
     const saved = localStorage.getItem('dismissed_alerts');
     return saved ? JSON.parse(saved) : [];
   });
-  const [hasFetched, setHasFetched] = useState(false);
-
-  // Vérifier périodiquement si le token est disponible
-  useEffect(() => {
-    const checkAndFetch = () => {
-      const token = getToken();
-      if (token && !hasFetched) {
-        fetchAlerts();
-        setHasFetched(true);
-      }
-    };
-
-    // Vérifier immédiatement
-    checkAndFetch();
-
-    // Vérifier à nouveau après un court délai (pour les connexions via footer)
-    const timer = setTimeout(checkAndFetch, 1000);
-    
-    // Écouter les changements de storage
-    const handleStorage = () => {
-      if (getToken() && !hasFetched) {
-        fetchAlerts();
-        setHasFetched(true);
-      }
-    };
-    
-    window.addEventListener('storage', handleStorage);
-    
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('storage', handleStorage);
-    };
-  }, [hasFetched]);
 
   const fetchAlerts = async () => {
+    const token = getToken();
+    if (!token) return;
+    
     try {
       const response = await axios.get(`${API_URL}/alerts/`, {
         headers: getAuthHeaders()
       });
       setAlerts(response.data.alerts);
     } catch (err) {
-      // Silencieux - ne pas bloquer l'app si les alertes échouent
       console.error("Erreur chargement alertes:", err);
     }
   };
+
+  useEffect(() => {
+    // Fetch initial si token présent
+    fetchAlerts();
+
+    // Polling léger pour détecter les connexions
+    const interval = setInterval(() => {
+      const token = getToken();
+      if (token && alerts.length === 0) {
+        fetchAlerts();
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [alerts.length]);
 
   const handleDismiss = async (alertId) => {
     // Mettre à jour localement
