@@ -4,7 +4,7 @@
  */
 
 import { Link } from "react-router-dom";
-import { Shield } from "lucide-react";
+import { Shield, Code, Briefcase } from "lucide-react";
 import { CONFIG } from "@/config/constants";
 
 const Footer = () => (
