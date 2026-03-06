@@ -49,6 +49,7 @@ const AdminAlerts = () => {
     alert_type: "banner",
     style: "info",
     target: "all",
+    image_url: "",
     link_url: "",
     link_text: "",
     dismissible: true
@@ -81,6 +82,7 @@ const AdminAlerts = () => {
       alert_type: "banner",
       style: "info",
       target: "all",
+      image_url: "",
       link_url: "",
       link_text: "",
       dismissible: true
