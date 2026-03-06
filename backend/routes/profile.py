@@ -288,3 +288,250 @@ async def get_profile_photo(filename: str):
         media_type = "application/octet-stream"
     
     return FileResponse(filepath, media_type=media_type)
+
+
+# ============================================
+# PORTFOLIO / BOOK
+# ============================================
+
+# Dossier pour les images du portfolio
+PORTFOLIO_DIR = "/app/backend/uploads/portfolio"
+os.makedirs(PORTFOLIO_DIR, exist_ok=True)
+
+
+class PortfolioProject(BaseModel):
+    """Modèle pour un projet du portfolio"""
+    title: str
+    description: Optional[str] = None
+    image_url: Optional[str] = None  # URL externe ou chemin local
+    image_data: Optional[str] = None  # Image en base64 (pour upload)
+    project_url: Optional[str] = None  # Lien vers le projet en ligne
+    github_url: Optional[str] = None  # Lien GitHub
+    technologies: Optional[List[str]] = None
+    year: Optional[str] = None
+
+
+class PortfolioProjectUpdate(BaseModel):
+    """Modèle pour la mise à jour d'un projet"""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    image_data: Optional[str] = None
+    project_url: Optional[str] = None
+    github_url: Optional[str] = None
+    technologies: Optional[List[str]] = None
+    year: Optional[str] = None
+
+
+@router.get("/portfolio")
+async def get_my_portfolio(current_user: dict = Depends(get_current_user)):
+    """
+    Récupère tous les projets du portfolio de l'utilisateur
+    """
+    user_id = current_user.get("sub")
+    
+    projects = await db.portfolio.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    return {"projects": projects}
+
+
+@router.post("/portfolio")
+async def add_portfolio_project(
+    project: PortfolioProject,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Ajoute un nouveau projet au portfolio
+    """
+    user_id = current_user.get("sub")
+    now = datetime.now(timezone.utc).isoformat()
+    project_id = str(uuid.uuid4())
+    
+    # Traiter l'image si fournie en base64
+    image_url = project.image_url
+    if project.image_data:
+        image_url = await _save_portfolio_image(project.image_data, user_id, project_id)
+    
+    project_doc = {
+        "id": project_id,
+        "user_id": user_id,
+        "title": project.title,
+        "description": project.description,
+        "image_url": image_url,
+        "project_url": project.project_url,
+        "github_url": project.github_url,
+        "technologies": project.technologies or [],
+        "year": project.year,
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    await db.portfolio.insert_one(project_doc)
+    
+    logger.info(f"Projet portfolio ajouté pour user_id: {user_id}")
+    
+    # Retourner sans _id
+    del project_doc["_id"] if "_id" in project_doc else None
+    return project_doc
+
+
+@router.put("/portfolio/{project_id}")
+async def update_portfolio_project(
+    project_id: str,
+    project_data: PortfolioProjectUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Met à jour un projet du portfolio
+    """
+    user_id = current_user.get("sub")
+    
+    # Vérifier que le projet appartient à l'utilisateur
+    existing = await db.portfolio.find_one({"id": project_id, "user_id": user_id})
+    if not existing:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Projet non trouvé"
+        )
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Préparer les données de mise à jour
+    update_data = {k: v for k, v in project_data.model_dump().items() if v is not None and k != "image_data"}
+    update_data["updated_at"] = now
+    
+    # Traiter l'image si fournie en base64
+    if project_data.image_data:
+        # Supprimer l'ancienne image locale si existante
+        if existing.get("image_url") and existing["image_url"].startswith("/api/profile/portfolio/"):
+            old_filename = existing["image_url"].split("/")[-1]
+            old_path = os.path.join(PORTFOLIO_DIR, old_filename)
+            if os.path.exists(old_path):
+                os.remove(old_path)
+        
+        update_data["image_url"] = await _save_portfolio_image(project_data.image_data, user_id, project_id)
+    
+    await db.portfolio.update_one(
+        {"id": project_id},
+        {"$set": update_data}
+    )
+    
+    logger.info(f"Projet portfolio mis à jour: {project_id}")
+    
+    return {"message": "Projet mis à jour avec succès"}
+
+
+@router.delete("/portfolio/{project_id}")
+async def delete_portfolio_project(
+    project_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Supprime un projet du portfolio
+    """
+    user_id = current_user.get("sub")
+    
+    # Vérifier que le projet appartient à l'utilisateur
+    existing = await db.portfolio.find_one({"id": project_id, "user_id": user_id})
+    if not existing:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Projet non trouvé"
+        )
+    
+    # Supprimer l'image locale si existante
+    if existing.get("image_url") and existing["image_url"].startswith("/api/profile/portfolio/"):
+        filename = existing["image_url"].split("/")[-1]
+        filepath = os.path.join(PORTFOLIO_DIR, filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+    
+    await db.portfolio.delete_one({"id": project_id})
+    
+    logger.info(f"Projet portfolio supprimé: {project_id}")
+    
+    return {"message": "Projet supprimé avec succès"}
+
+
+@router.get("/portfolio/image/{filename}")
+async def get_portfolio_image(filename: str):
+    """
+    Sert une image du portfolio
+    """
+    from fastapi.responses import FileResponse
+    
+    filepath = os.path.join(PORTFOLIO_DIR, filename)
+    
+    if not os.path.exists(filepath):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image non trouvée"
+        )
+    
+    # Déterminer le content-type
+    if filename.endswith(".jpg") or filename.endswith(".jpeg"):
+        media_type = "image/jpeg"
+    elif filename.endswith(".png"):
+        media_type = "image/png"
+    elif filename.endswith(".webp"):
+        media_type = "image/webp"
+    else:
+        media_type = "application/octet-stream"
+    
+    return FileResponse(filepath, media_type=media_type)
+
+
+async def _save_portfolio_image(image_data: str, user_id: str, project_id: str) -> str:
+    """
+    Sauvegarde une image de portfolio et retourne l'URL
+    """
+    try:
+        # Supprimer le préfixe data:image/xxx;base64, si présent
+        if "," in image_data:
+            header, image_data = image_data.split(",", 1)
+        
+        # Décoder
+        image_bytes = base64.b64decode(image_data)
+        
+        # Vérifier la taille (max 5 Mo)
+        if len(image_bytes) > 5 * 1024 * 1024:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="L'image ne doit pas dépasser 5 Mo"
+            )
+        
+        # Détecter le type d'image
+        if image_bytes[:3] == b'\xff\xd8\xff':
+            ext = "jpg"
+        elif image_bytes[:8] == b'\x89PNG\r\n\x1a\n':
+            ext = "png"
+        elif image_bytes[:4] == b'RIFF' and image_bytes[8:12] == b'WEBP':
+            ext = "webp"
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Format d'image non supporté"
+            )
+        
+        # Générer un nom de fichier unique
+        filename = f"{user_id}_{project_id}_{uuid.uuid4().hex[:8]}.{ext}"
+        filepath = os.path.join(PORTFOLIO_DIR, filename)
+        
+        # Sauvegarder le fichier
+        with open(filepath, "wb") as f:
+            f.write(image_bytes)
+        
+        return f"/api/profile/portfolio/image/{filename}"
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erreur sauvegarde image portfolio: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erreur lors de la sauvegarde de l'image"
+        )
+
