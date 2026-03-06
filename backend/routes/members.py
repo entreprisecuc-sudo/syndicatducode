@@ -149,7 +149,7 @@ async def get_public_member_detail(member_id: str):
     """
     
     # Vérifier que le membre a un abonnement actif
-    subscription = await db.user_subscriptions.find_one({
+    subscription = await db.subscriptions.find_one({
         "user_id": member_id,
         "status": "active"
     })
