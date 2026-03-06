@@ -98,6 +98,7 @@ const AdminAlerts = () => {
       alert_type: alert.alert_type,
       style: alert.style,
       target: alert.target,
+      image_url: alert.image_url || "",
       link_url: alert.link_url || "",
       link_text: alert.link_text || "",
       dismissible: alert.dismissible
@@ -112,6 +113,7 @@ const AdminAlerts = () => {
     // Nettoyer les données
     const dataToSend = {
       ...formData,
+      image_url: formData.image_url || null,
       link_url: formData.link_url || null,
       link_text: formData.link_text || null
     };
