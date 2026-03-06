@@ -47,14 +47,25 @@ const Navigation = () => {
           {/* Menu Desktop */}
           <div className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map((link) => (
-              <a 
-                key={link.href} 
-                href={link.href} 
-                className="nav-link" 
-                data-testid={`nav-${link.label.toLowerCase()}`}
-              >
-                {link.label}
-              </a>
+              link.isRoute ? (
+                <Link 
+                  key={link.href} 
+                  to={link.href} 
+                  className="nav-link" 
+                  data-testid={`nav-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a 
+                  key={link.href} 
+                  href={link.href} 
+                  className="nav-link" 
+                  data-testid={`nav-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  {link.label}
+                </a>
+              )
             ))}
             <button 
               onClick={openModal} 
