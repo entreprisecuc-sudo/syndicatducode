@@ -219,23 +219,81 @@ async def update_user_role(
 @router.get("/stats", dependencies=[Depends(admin_only)])
 async def get_admin_stats(current_user: dict = Depends(get_current_user)):
     """
-    Statistiques globales pour le tableau de bord admin
+    Statistiques globales avancées pour le tableau de bord admin
     """
-    # Comptage des utilisateurs par rôle
+    # ---- UTILISATEURS ----
     total_users = await db.users.count_documents({})
     commercial_count = await db.users.count_documents({"role": "commercial"})
     developer_count = await db.users.count_documents({"role": "developer"})
     pending_count = await db.users.count_documents({"status": "pending"})
     suspended_count = await db.users.count_documents({"status": "suspended"})
+    active_count = await db.users.count_documents({"status": "active"})
     
-    # Comptage des contacts
-    contacts_count = await db.contacts.count_documents({})
+    # ---- CONTACTS ----
+    contacts_total = await db.contacts.count_documents({})
+    contacts_pending = await db.contacts.count_documents({"status": "pending"})
+    contacts_contacted = await db.contacts.count_documents({"status": "contacted"})
+    contacts_converted = await db.contacts.count_documents({"status": "converted"})
+    
+    # ---- PROJETS ----
+    projects_total = await db.projects.count_documents({})
+    projects_open = await db.projects.count_documents({"status": "open"})
+    projects_closed = await db.projects.count_documents({"status": "closed"})
+    projects_in_progress = await db.projects.count_documents({"status": "in_progress"})
+    
+    # Comptage des candidatures
+    candidatures_pipeline = [
+        {"$unwind": "$applications"},
+        {"$count": "total"}
+    ]
+    candidatures_result = await db.projects.aggregate(candidatures_pipeline).to_list(1)
+    candidatures_total = candidatures_result[0]["total"] if candidatures_result else 0
+    
+    # ---- ANNONCES ----
+    annonces_total = await db.announcements.count_documents({})
+    annonces_active = await db.announcements.count_documents({"is_active": True})
+    
+    # ---- ALERTES ----
+    alertes_total = await db.alerts.count_documents({})
+    alertes_active = await db.alerts.count_documents({"is_active": True})
+    alertes_popup = await db.alerts.count_documents({"type": "popup"})
+    alertes_banner = await db.alerts.count_documents({"type": "banner"})
+    
+    # ---- ABONNEMENTS ----
+    plans_total = await db.subscription_plans.count_documents({})
+    plans_active = await db.subscription_plans.count_documents({"is_active": True})
+    subscriptions_active = await db.user_subscriptions.count_documents({"status": "active"})
+    
+    # Calcul revenus mensuels estimés (somme des prix des abonnements actifs)
+    revenue_pipeline = [
+        {"$match": {"status": "active"}},
+        {"$lookup": {
+            "from": "subscription_plans",
+            "localField": "plan_id",
+            "foreignField": "id",
+            "as": "plan"
+        }},
+        {"$unwind": "$plan"},
+        {"$group": {"_id": None, "total": {"$sum": "$plan.price"}}}
+    ]
+    revenue_result = await db.user_subscriptions.aggregate(revenue_pipeline).to_list(1)
+    monthly_revenue = revenue_result[0]["total"] if revenue_result else 0
+    
+    # ---- PARTENAIRES ----
+    partners_total = await db.partners.count_documents({})
+    partners_active = await db.partners.count_documents({"is_active": True})
+    
+    # Partenaires par catégorie
+    partners_by_category = await db.partners.aggregate([
+        {"$match": {"is_active": True}},
+        {"$group": {"_id": "$category", "count": {"$sum": 1}}}
+    ]).to_list(20)
     
     # Log de l'action
     await log_admin_action(
         current_user["sub"],
         "VIEW_STATS",
-        "Consultation des statistiques"
+        "Consultation des statistiques avancées"
     )
     
     return {
@@ -244,9 +302,43 @@ async def get_admin_stats(current_user: dict = Depends(get_current_user)):
             "commercial": commercial_count,
             "developer": developer_count,
             "pending": pending_count,
-            "suspended": suspended_count
+            "suspended": suspended_count,
+            "active": active_count
         },
-        "contacts": contacts_count
+        "contacts": {
+            "total": contacts_total,
+            "pending": contacts_pending,
+            "contacted": contacts_contacted,
+            "converted": contacts_converted
+        },
+        "projects": {
+            "total": projects_total,
+            "open": projects_open,
+            "closed": projects_closed,
+            "in_progress": projects_in_progress,
+            "candidatures": candidatures_total
+        },
+        "announcements": {
+            "total": annonces_total,
+            "active": annonces_active
+        },
+        "alerts": {
+            "total": alertes_total,
+            "active": alertes_active,
+            "popup": alertes_popup,
+            "banner": alertes_banner
+        },
+        "subscriptions": {
+            "plans_total": plans_total,
+            "plans_active": plans_active,
+            "subscriptions_active": subscriptions_active,
+            "monthly_revenue": monthly_revenue
+        },
+        "partners": {
+            "total": partners_total,
+            "active": partners_active,
+            "by_category": {item["_id"]: item["count"] for item in partners_by_category if item["_id"]}
+        }
     }
 
 
