@@ -6,6 +6,7 @@ import { Briefcase, FileText, TrendingUp, Users } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import StatCard from "@/components/dashboard/StatCard";
 import InfoCard from "@/components/dashboard/InfoCard";
+import AnnouncementsList from "@/components/dashboard/AnnouncementsList";
 
 const CommercialDashboard = () => {
   return (
@@ -31,6 +32,11 @@ const CommercialDashboard = () => {
         <p className="text-white/80 text-sm">
           Suivez vos affaires et développez votre réseau avec Le Syndicat du Code.
         </p>
+      </div>
+
+      {/* Annonces */}
+      <div className="mb-6">
+        <AnnouncementsList maxItems={3} />
       </div>
 
       {/* Statistiques */}
