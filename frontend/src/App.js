@@ -81,6 +81,9 @@ function App() {
       <ModalProvider>
         <div className="App">
           <BrowserRouter>
+            {/* Alertes globales (bannières et popups) */}
+            <GlobalAlerts />
+            
             <Routes>
               {/* ============================================ */}
               {/* PAGES PUBLIQUES */}
