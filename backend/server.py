@@ -270,10 +270,12 @@ async def startup_event():
     await db.alerts.create_index("id", unique=True)
     await db.alerts.create_index("is_active")
     # Index pour les abonnements
-    await db.subscription_plans.create_index("id", unique=True)
-    await db.subscriptions.create_index("id", unique=True)
-    await db.subscriptions.create_index("user_id")
-    await db.subscriptions.create_index([("user_id", 1), ("status", 1)])
+270|    await db.subscription_plans.create_index("id", unique=True)
+271|    await db.subscriptions.create_index("id", unique=True)
+272|    await db.subscriptions.create_index("user_id")
+273|    await db.subscriptions.create_index([("user_id", 1), ("status", 1)])
+    # Index pour les profils
+    await db.profiles.create_index("user_id", unique=True)
     logger.info("Indexes créés pour toutes les collections")
 
 
