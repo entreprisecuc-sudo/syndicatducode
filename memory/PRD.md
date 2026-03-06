@@ -83,6 +83,16 @@
 
 ## Changelog
 
+### 17/12/2025 - Phase 4 : Back-office Admin
+- **TERMINÉ** : Interface admin complète
+- URL secrète : `/syndicat-admin`
+- Dashboard avec statistiques (users, contacts)
+- Gestion utilisateurs (liste, suspension, modification rôle)
+- Gestion demandes de contact
+- Historique des actions (journalisation)
+- Thème sombre distinctif pour l'admin
+- Script create_admin.py pour initialiser l'admin
+
 ### 17/12/2025 - Phase 3 : Espaces Membres
 - **TERMINÉ** : Espaces Commercial et Développeur complets
 - Layout commun avec sidebar responsive
