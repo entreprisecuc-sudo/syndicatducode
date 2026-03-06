@@ -31,7 +31,7 @@ const TEST_ACCOUNTS = {
 
 const Footer = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { loginUser } = useAuth();
 
   // Connexion automatique et redirection
   const handleQuickLogin = async (accountType) => {
@@ -50,7 +50,7 @@ const Footer = () => {
       localStorage.setItem("user", JSON.stringify(user));
       
       // Mettre à jour le contexte
-      login(access_token, user);
+      loginUser(user);
       
       // Rediriger vers l'espace approprié
       navigate(account.redirect);
