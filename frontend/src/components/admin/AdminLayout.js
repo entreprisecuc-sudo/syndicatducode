@@ -17,6 +17,7 @@ const ADMIN_MENU = [
   { path: "/syndicat-admin", label: "Tableau de bord", icon: BarChart3 },
   { path: "/syndicat-admin/utilisateurs", label: "Utilisateurs", icon: Users },
   { path: "/syndicat-admin/contacts", label: "Demandes contact", icon: FileText },
+  { path: "/syndicat-admin/projets", label: "Projets", icon: Rocket },
   { path: "/syndicat-admin/logs", label: "Historique", icon: History }
 ];
 
