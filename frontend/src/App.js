@@ -40,7 +40,8 @@ import {
   DeveloperDocuments,
   DeveloperOpportunities,
   DeveloperProjects,
-  DeveloperSubscription
+  DeveloperSubscription,
+  DeveloperBook
 } from "@/pages/developer";
 
 // Pages Admin
