@@ -93,6 +93,14 @@ function App() {
               {/* PAGES D'AUTHENTIFICATION */}
               {/* ============================================ */}
               
+              {/* Routes françaises (principales) */}
+              <Route path="/connexion" element={<PublicRoute><LoginPage /></PublicRoute>} />
+              <Route path="/inscription" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+              <Route path="/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
+              <Route path="/reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
+              <Route path="/choisir-role" element={<ChooseRolePage />} />
+              
+              {/* Routes anglaises (rétrocompatibilité) */}
               <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
               <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
