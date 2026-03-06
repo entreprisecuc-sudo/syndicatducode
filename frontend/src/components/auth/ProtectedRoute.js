@@ -52,7 +52,7 @@ export const RoleRequiredRoute = ({ children }) => {
 
   // Redirige vers le choix du rôle si nécessaire
   if (needsRoleChoice()) {
-    return <Navigate to="/choose-role" replace />;
+    return <Navigate to="/choisir-role" replace />;
   }
 
   return children;
@@ -78,7 +78,7 @@ export const RoleRoute = ({ children, allowedRoles }) => {
   }
 
   if (needsRoleChoice()) {
-    return <Navigate to="/choose-role" replace />;
+    return <Navigate to="/choisir-role" replace />;
   }
 
   // Vérifie le rôle
@@ -106,7 +106,7 @@ export const PublicRoute = ({ children }) => {
   // Redirige selon l'état de l'utilisateur
   if (isAuthenticated) {
     if (needsRoleChoice()) {
-      return <Navigate to="/choose-role" replace />;
+      return <Navigate to="/choisir-role" replace />;
     }
     
     // Redirige vers l'espace approprié selon le rôle

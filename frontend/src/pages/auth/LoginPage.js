@@ -34,7 +34,7 @@ const LoginPage = () => {
       
       // Redirige selon l'état du compte
       if (response.user.first_login || !response.user.role) {
-        navigate("/choose-role");
+        navigate("/choisir-role");
       } else {
         // Redirige vers l'espace approprié
         const redirectPath = response.user.role === "commercial"
