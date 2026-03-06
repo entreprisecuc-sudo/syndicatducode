@@ -1,29 +1,56 @@
 /**
  * Layout Admin
- * Interface d'administration avec sidebar spécifique
+ * Interface d'administration avec sidebar organisée en sections
  */
 
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, Users, BarChart3, 
-  FileText, History, Shield, Home, Rocket, Megaphone, Bell, CreditCard, Handshake
+  FileText, History, Shield, Home, Rocket, Megaphone, Bell, CreditCard, Handshake, Settings
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { CONFIG } from "@/config/constants";
 
-// Menu admin
-const ADMIN_MENU = [
-  { path: "/syndicat-admin", label: "Tableau de bord", icon: BarChart3 },
-  { path: "/syndicat-admin/utilisateurs", label: "Utilisateurs", icon: Users },
-  { path: "/syndicat-admin/contacts", label: "Demandes contact", icon: FileText },
-  { path: "/syndicat-admin/projets", label: "Projets", icon: Rocket },
-  { path: "/syndicat-admin/annonces", label: "Annonces", icon: Megaphone },
-  { path: "/syndicat-admin/alertes", label: "Alertes", icon: Bell },
-  { path: "/syndicat-admin/abonnements", label: "Abonnements", icon: CreditCard },
-  { path: "/syndicat-admin/partenaires", label: "Partenaires", icon: Handshake },
-  { path: "/syndicat-admin/logs", label: "Historique", icon: History }
+// Menu admin organisé en sections
+const ADMIN_MENU_SECTIONS = [
+  {
+    title: "Tableau de bord",
+    items: [
+      { path: "/syndicat-admin", label: "Vue d'ensemble", icon: BarChart3 }
+    ]
+  },
+  {
+    title: "Utilisateurs",
+    items: [
+      { path: "/syndicat-admin/utilisateurs", label: "Gestion utilisateurs", icon: Users },
+      { path: "/syndicat-admin/contacts", label: "Demandes contact", icon: FileText }
+    ]
+  },
+  {
+    title: "Contenus",
+    items: [
+      { path: "/syndicat-admin/projets", label: "Projets", icon: Rocket },
+      { path: "/syndicat-admin/annonces", label: "Annonces", icon: Megaphone },
+      { path: "/syndicat-admin/alertes", label: "Alertes", icon: Bell },
+      { path: "/syndicat-admin/partenaires", label: "Partenaires", icon: Handshake }
+    ]
+  },
+  {
+    title: "Abonnements",
+    items: [
+      { path: "/syndicat-admin/abonnements", label: "Gestion forfaits", icon: CreditCard }
+    ]
+  },
+  {
+    title: "Système",
+    items: [
+      { path: "/syndicat-admin/logs", label: "Historique actions", icon: History }
+    ]
+  }
 ];
+
+// Liste plate pour la recherche du titre
+const ALL_MENU_ITEMS = ADMIN_MENU_SECTIONS.flatMap(section => section.items);
 
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
