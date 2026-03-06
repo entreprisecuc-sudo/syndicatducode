@@ -4,3 +4,4 @@ export { default as DeveloperProfile } from "./DeveloperProfile";
 export { default as DeveloperDocuments } from "./DeveloperDocuments";
 export { default as DeveloperOpportunities } from "./DeveloperOpportunities";
 export { default as DeveloperProjects } from "./DeveloperProjects";
+export { default as DeveloperSubscription } from "./DeveloperSubscription";
