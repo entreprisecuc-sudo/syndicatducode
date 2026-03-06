@@ -182,6 +182,10 @@ function App() {
                 path="/syndicat-admin/projets/:projectId" 
                 element={<RoleRoute allowedRoles={["admin"]}><AdminProjectDetail /></RoleRoute>} 
               />
+              <Route 
+                path="/syndicat-admin/annonces" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminAnnouncements /></RoleRoute>} 
+              />
 
               {/* ============================================ */}
               {/* REDIRECTION DASHBOARD GÉNÉRIQUE */}
