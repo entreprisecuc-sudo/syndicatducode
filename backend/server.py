@@ -210,6 +210,7 @@ from routes.subscriptions import router as subscriptions_router, set_database as
 from routes.partners import router as partners_router, set_database as set_partners_db
 from routes.profile import router as profile_router, set_database as set_profile_db
 from routes.members import router as members_router, set_database as set_members_db
+from routes.messages import router as messages_router, set_database as set_messages_db
 
 # Injecter la base de données dans les modules
 set_auth_db(db)
@@ -221,6 +222,7 @@ set_subscriptions_db(db)
 set_partners_db(db)
 set_profile_db(db)
 set_members_db(db)
+set_messages_db(db)
 
 # Inclure les routes
 api_router.include_router(auth_router)
@@ -232,6 +234,7 @@ api_router.include_router(subscriptions_router)
 api_router.include_router(partners_router)
 api_router.include_router(profile_router)
 api_router.include_router(members_router)
+api_router.include_router(messages_router)
 
 
 # ============================================
