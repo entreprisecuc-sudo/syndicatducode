@@ -46,9 +46,8 @@ const Footer = () => {
       
       const { access_token, user } = response.data;
       
-      // Sauvegarder le token et l'utilisateur
-      localStorage.setItem("token", access_token);
-      localStorage.setItem("user", JSON.stringify(user));
+      // Sauvegarder le token et l'utilisateur avec les bonnes clés
+      setAuthData(access_token, user);
       
       // Mettre à jour le contexte
       loginUser(user);
