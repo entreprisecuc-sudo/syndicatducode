@@ -21,7 +21,7 @@ export const CONFIG = {
 export const NAV_LINKS = [
   { href: "#services", label: "Services" },
   { href: "#pourquoi", label: "Pourquoi nous" },
-  { href: "#approche", label: "Notre approche" },
+  { href: "/membres", label: "Nos talents", isRoute: true },
   { href: "#contact", label: "Contact" }
 ];
 
