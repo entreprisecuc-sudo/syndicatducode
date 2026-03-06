@@ -207,6 +207,7 @@ from routes.projects import router as projects_router, set_database as set_proje
 from routes.announcements import router as announcements_router, set_database as set_announcements_db
 from routes.alerts import router as alerts_router, set_database as set_alerts_db
 from routes.subscriptions import router as subscriptions_router, set_database as set_subscriptions_db
+from routes.partners import router as partners_router, set_database as set_partners_db
 
 # Injecter la base de données dans les modules
 set_auth_db(db)
@@ -215,6 +216,7 @@ set_projects_db(db)
 set_announcements_db(db)
 set_alerts_db(db)
 set_subscriptions_db(db)
+set_partners_db(db)
 
 # Inclure les routes
 api_router.include_router(auth_router)
@@ -223,6 +225,7 @@ api_router.include_router(projects_router)
 api_router.include_router(announcements_router)
 api_router.include_router(alerts_router)
 api_router.include_router(subscriptions_router)
+api_router.include_router(partners_router)
 
 
 # ============================================
