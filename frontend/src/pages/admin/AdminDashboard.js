@@ -1,31 +1,55 @@
 /**
  * Dashboard Admin
- * Vue d'ensemble avec statistiques
+ * Vue d'ensemble avec statistiques avancées
  */
 
 import { useState, useEffect } from "react";
-import { Users, UserCheck, UserX, Clock, FileText, TrendingUp } from "lucide-react";
+import { 
+  Users, UserCheck, UserX, Clock, FileText, TrendingUp,
+  Rocket, Megaphone, Bell, CreditCard, Handshake, Euro,
+  Mail, CheckCircle, AlertCircle, FolderOpen
+} from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
 import axios from "axios";
 
-const StatCard = ({ icon: Icon, label, value, color = "#6366f1" }) => (
+/**
+ * Carte de statistique individuelle
+ */
+const StatCard = ({ icon: Icon, label, value, color = "#6366f1", subtext }) => (
   <div 
-    className="p-5 rounded-xl"
+    className="p-4 rounded-xl"
     style={{ background: "#16213e", border: "1px solid #1f4068" }}
   >
     <div className="flex items-start justify-between">
-      <div>
-        <p className="text-sm text-gray-400 mb-1">{label}</p>
-        <p className="text-2xl font-bold text-white">{value}</p>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-gray-400 mb-1 truncate">{label}</p>
+        <p className="text-xl font-bold text-white">{value}</p>
+        {subtext && (
+          <p className="text-xs text-gray-500 mt-1">{subtext}</p>
+        )}
       </div>
       <div 
-        className="p-2.5 rounded-lg"
+        className="p-2 rounded-lg flex-shrink-0 ml-2"
         style={{ background: `${color}20` }}
       >
-        <Icon size={22} style={{ color }} />
+        <Icon size={18} style={{ color }} />
       </div>
+    </div>
+  </div>
+);
+
+/**
+ * Section de statistiques avec titre
+ */
+const StatsSection = ({ title, children, columns = 5 }) => (
+  <div className="mb-6">
+    <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">
+      {title}
+    </h3>
+    <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-${columns} gap-3`}>
+      {children}
     </div>
   </div>
 );
@@ -52,6 +76,17 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+   * Formatage du montant en euros
+   */
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0
+    }).format(amount || 0);
+  };
+
   return (
     <AdminLayout>
       {/* Titre mobile */}
@@ -68,7 +103,7 @@ const AdminDashboard = () => {
           Administration Le Syndicat du Code
         </h2>
         <p className="text-white/80 text-sm">
-          Gérez les utilisateurs, consultez les demandes et supervisez la plateforme.
+          Vue d'ensemble de la plateforme et statistiques en temps réel.
         </p>
       </div>
 
@@ -82,26 +117,31 @@ const AdminDashboard = () => {
         </div>
       ) : (
         <>
-          {/* Statistiques utilisateurs */}
-          <h3 className="font-semibold text-white mb-4">Utilisateurs</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          {/* ===== UTILISATEURS ===== */}
+          <StatsSection title="👥 Utilisateurs" columns={6}>
             <StatCard 
               icon={Users}
-              label="Total utilisateurs"
+              label="Total"
               value={stats?.users?.total || 0}
               color="#6366f1"
+            />
+            <StatCard 
+              icon={UserCheck}
+              label="Actifs"
+              value={stats?.users?.active || 0}
+              color="#10b981"
             />
             <StatCard 
               icon={TrendingUp}
               label="Commerciaux"
               value={stats?.users?.commercial || 0}
-              color="#10b981"
+              color="#3b82f6"
             />
             <StatCard 
               icon={UserCheck}
               label="Développeurs"
               value={stats?.users?.developer || 0}
-              color="#3b82f6"
+              color="#8b5cf6"
             />
             <StatCard 
               icon={Clock}
@@ -115,18 +155,163 @@ const AdminDashboard = () => {
               value={stats?.users?.suspended || 0}
               color="#ef4444"
             />
-          </div>
+          </StatsSection>
 
-          {/* Autres stats */}
-          <h3 className="font-semibold text-white mb-4">Activité</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* ===== DEMANDES DE CONTACT ===== */}
+          <StatsSection title="📬 Demandes de contact" columns={4}>
             <StatCard 
-              icon={FileText}
-              label="Demandes de contact"
-              value={stats?.contacts || 0}
+              icon={Mail}
+              label="Total reçues"
+              value={stats?.contacts?.total || 0}
+              color="#6366f1"
+            />
+            <StatCard 
+              icon={Clock}
+              label="En attente"
+              value={stats?.contacts?.pending || 0}
+              color="#f59e0b"
+            />
+            <StatCard 
+              icon={CheckCircle}
+              label="Contactés"
+              value={stats?.contacts?.contacted || 0}
+              color="#3b82f6"
+            />
+            <StatCard 
+              icon={TrendingUp}
+              label="Convertis"
+              value={stats?.contacts?.converted || 0}
+              color="#10b981"
+            />
+          </StatsSection>
+
+          {/* ===== PROJETS ===== */}
+          <StatsSection title="🚀 Projets du Syndicat" columns={5}>
+            <StatCard 
+              icon={Rocket}
+              label="Total projets"
+              value={stats?.projects?.total || 0}
+              color="#6366f1"
+            />
+            <StatCard 
+              icon={FolderOpen}
+              label="Ouverts"
+              value={stats?.projects?.open || 0}
+              color="#10b981"
+            />
+            <StatCard 
+              icon={Clock}
+              label="En cours"
+              value={stats?.projects?.in_progress || 0}
+              color="#f59e0b"
+            />
+            <StatCard 
+              icon={CheckCircle}
+              label="Terminés"
+              value={stats?.projects?.closed || 0}
+              color="#3b82f6"
+            />
+            <StatCard 
+              icon={Users}
+              label="Candidatures"
+              value={stats?.projects?.candidatures || 0}
               color="#8b5cf6"
             />
-          </div>
+          </StatsSection>
+
+          {/* ===== CONTENUS ===== */}
+          <StatsSection title="📝 Contenus" columns={4}>
+            <StatCard 
+              icon={Megaphone}
+              label="Annonces"
+              value={stats?.announcements?.total || 0}
+              subtext={`${stats?.announcements?.active || 0} actives`}
+              color="#3b82f6"
+            />
+            <StatCard 
+              icon={Bell}
+              label="Alertes"
+              value={stats?.alerts?.total || 0}
+              subtext={`${stats?.alerts?.active || 0} actives`}
+              color="#f59e0b"
+            />
+            <StatCard 
+              icon={AlertCircle}
+              label="Popups"
+              value={stats?.alerts?.popup || 0}
+              color="#ef4444"
+            />
+            <StatCard 
+              icon={AlertCircle}
+              label="Bannières"
+              value={stats?.alerts?.banner || 0}
+              color="#10b981"
+            />
+          </StatsSection>
+
+          {/* ===== ABONNEMENTS ===== */}
+          <StatsSection title="💰 Abonnements" columns={4}>
+            <StatCard 
+              icon={CreditCard}
+              label="Forfaits créés"
+              value={stats?.subscriptions?.plans_total || 0}
+              subtext={`${stats?.subscriptions?.plans_active || 0} actifs`}
+              color="#6366f1"
+            />
+            <StatCard 
+              icon={Users}
+              label="Abonnés actifs"
+              value={stats?.subscriptions?.subscriptions_active || 0}
+              color="#10b981"
+            />
+            <StatCard 
+              icon={Euro}
+              label="Revenus mensuels"
+              value={formatCurrency(stats?.subscriptions?.monthly_revenue)}
+              subtext="Estimation"
+              color="#f59e0b"
+            />
+            <StatCard 
+              icon={TrendingUp}
+              label="Taux conversion"
+              value={stats?.users?.developer > 0 
+                ? `${Math.round((stats?.subscriptions?.subscriptions_active / stats?.users?.developer) * 100)}%`
+                : "0%"
+              }
+              subtext="Devs abonnés"
+              color="#8b5cf6"
+            />
+          </StatsSection>
+
+          {/* ===== PARTENAIRES ===== */}
+          <StatsSection title="🤝 Partenaires" columns={3}>
+            <StatCard 
+              icon={Handshake}
+              label="Total partenaires"
+              value={stats?.partners?.total || 0}
+              subtext={`${stats?.partners?.active || 0} actifs`}
+              color="#6366f1"
+            />
+            {stats?.partners?.by_category && Object.keys(stats.partners.by_category).length > 0 ? (
+              Object.entries(stats.partners.by_category).slice(0, 2).map(([category, count]) => (
+                <StatCard 
+                  key={category}
+                  icon={Handshake}
+                  label={category}
+                  value={count}
+                  color="#3b82f6"
+                />
+              ))
+            ) : (
+              <StatCard 
+                icon={Handshake}
+                label="Catégories"
+                value="0"
+                subtext="Aucune catégorie"
+                color="#3b82f6"
+              />
+            )}
+          </StatsSection>
         </>
       )}
     </AdminLayout>
