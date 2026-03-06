@@ -4,8 +4,10 @@
  */
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { X, LogIn } from "lucide-react";
 import { useModal } from "@/context/ModalContext";
+import { useAuth } from "@/context/AuthContext";
 import { CONFIG, NAV_LINKS } from "@/config/constants";
 
 const Navigation = () => {
