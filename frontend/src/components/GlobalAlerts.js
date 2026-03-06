@@ -54,7 +54,15 @@ const AlertBanner = ({ alert, onDismiss }) => {
       data-testid={`alert-banner-${alert.id}`}
     >
       <div className="flex items-center gap-3 flex-1">
-        <Icon size={20} className={styleConfig.text} />
+        {alert.image_url ? (
+          <img 
+            src={alert.image_url} 
+            alt="" 
+            className="w-8 h-8 rounded object-cover"
+          />
+        ) : (
+          <Icon size={20} className={styleConfig.text} />
+        )}
         <div className="flex-1">
           <span className={`font-medium ${styleConfig.text}`}>{alert.title}</span>
           <span className="text-gray-300 ml-2">{alert.message}</span>
