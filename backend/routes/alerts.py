@@ -55,6 +55,7 @@ async def create_alert(
         "alert_type": data.alert_type.value,
         "style": data.style.value,
         "target": data.target.value,
+        "image_url": data.image_url,
         "link_url": data.link_url,
         "link_text": data.link_text,
         "dismissible": data.dismissible,
