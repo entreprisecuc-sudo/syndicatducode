@@ -5,3 +5,4 @@ export { default as AdminContacts } from "./AdminContacts";
 export { default as AdminLogs } from "./AdminLogs";
 export { default as AdminProjects } from "./AdminProjects";
 export { default as AdminProjectDetail } from "./AdminProjectDetail";
+export { default as AdminAnnouncements } from "./AdminAnnouncements";
