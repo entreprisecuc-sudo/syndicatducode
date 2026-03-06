@@ -165,6 +165,14 @@ function App() {
                 path="/syndicat-admin/logs" 
                 element={<RoleRoute allowedRoles={["admin"]}><AdminLogs /></RoleRoute>} 
               />
+              <Route 
+                path="/syndicat-admin/projets" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminProjects /></RoleRoute>} 
+              />
+              <Route 
+                path="/syndicat-admin/projets/:projectId" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminProjectDetail /></RoleRoute>} 
+              />
 
               {/* ============================================ */}
               {/* REDIRECTION DASHBOARD GÉNÉRIQUE */}
