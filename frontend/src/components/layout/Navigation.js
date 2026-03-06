@@ -73,7 +73,7 @@ const Navigation = () => {
               </Link>
             ) : (
               <Link 
-                to="/login" 
+                to="/connexion" 
                 className="btn-secondary inline-flex items-center gap-2"
                 data-testid="nav-login"
               >
@@ -138,7 +138,7 @@ const Navigation = () => {
           </Link>
         ) : (
           <Link 
-            to="/login" 
+            to="/connexion" 
             className="btn-secondary inline-flex items-center gap-2"
             onClick={() => setMobileOpen(false)}
           >
