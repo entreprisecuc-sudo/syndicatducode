@@ -8,3 +8,4 @@ export { default as AdminProjectDetail } from "./AdminProjectDetail";
 export { default as AdminAnnouncements } from "./AdminAnnouncements";
 export { default as AdminAlerts } from "./AdminAlerts";
 export { default as AdminSubscriptions } from "./AdminSubscriptions";
+export { default as AdminPartners } from "./AdminPartners";
