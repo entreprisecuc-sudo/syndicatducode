@@ -3,6 +3,8 @@
  * Pied de page avec navigation et mentions légales
  */
 
+import { Link } from "react-router-dom";
+import { Shield } from "lucide-react";
 import { CONFIG } from "@/config/constants";
 
 const Footer = () => (
