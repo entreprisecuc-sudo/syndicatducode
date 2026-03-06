@@ -205,18 +205,21 @@ from routes.auth import router as auth_router, set_database as set_auth_db
 from routes.admin import router as admin_router, set_database as set_admin_db
 from routes.projects import router as projects_router, set_database as set_projects_db
 from routes.announcements import router as announcements_router, set_database as set_announcements_db
+from routes.alerts import router as alerts_router, set_database as set_alerts_db
 
 # Injecter la base de données dans les modules
 set_auth_db(db)
 set_admin_db(db)
 set_projects_db(db)
 set_announcements_db(db)
+set_alerts_db(db)
 
 # Inclure les routes
 api_router.include_router(auth_router)
 api_router.include_router(admin_router)
 api_router.include_router(projects_router)
 api_router.include_router(announcements_router)
+api_router.include_router(alerts_router)
 
 
 # ============================================
