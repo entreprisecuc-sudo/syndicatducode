@@ -479,6 +479,30 @@ const AdminAlerts = () => {
                 </select>
               </div>
               
+              {/* Image optionnelle */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  URL de l'image (optionnel)
+                </label>
+                <input
+                  type="url"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  placeholder="https://exemple.com/image.jpg"
+                  className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
+                />
+                {formData.image_url && (
+                  <div className="mt-2 p-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068]">
+                    <img 
+                      src={formData.image_url} 
+                      alt="Aperçu" 
+                      className="max-h-32 rounded mx-auto"
+                      onError={(e) => e.target.style.display = 'none'}
+                    />
+                  </div>
+                )}
+              </div>
+              
               {/* Lien optionnel */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
