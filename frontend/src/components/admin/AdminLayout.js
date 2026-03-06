@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, Users, BarChart3, 
-  FileText, History, Shield, Home, Rocket, Megaphone, Bell
+  FileText, History, Shield, Home, Rocket, Megaphone, Bell, CreditCard
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { CONFIG } from "@/config/constants";
@@ -20,6 +20,7 @@ const ADMIN_MENU = [
   { path: "/syndicat-admin/projets", label: "Projets", icon: Rocket },
   { path: "/syndicat-admin/annonces", label: "Annonces", icon: Megaphone },
   { path: "/syndicat-admin/alertes", label: "Alertes", icon: Bell },
+  { path: "/syndicat-admin/abonnements", label: "Abonnements", icon: CreditCard },
   { path: "/syndicat-admin/logs", label: "Historique", icon: History }
 ];
 
