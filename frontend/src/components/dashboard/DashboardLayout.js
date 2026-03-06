@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, User, FileText, Briefcase, 
-  Code, Home, ChevronRight, Bell
+  Code, Home, ChevronRight, Bell, CreditCard
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { CONFIG } from "@/config/constants";
@@ -24,6 +24,7 @@ const MENU_ITEMS = {
     { path: "/espace-developpeur", label: "Tableau de bord", icon: Home },
     { path: "/espace-developpeur/profil", label: "Mon profil", icon: User },
     { path: "/espace-developpeur/projets", label: "Projets du Syndicat", icon: Code },
+    { path: "/espace-developpeur/abonnement", label: "Mon abonnement", icon: CreditCard },
     { path: "/espace-developpeur/documents", label: "Documents", icon: FileText }
   ]
 };
