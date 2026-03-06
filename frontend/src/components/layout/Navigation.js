@@ -128,6 +128,24 @@ const Navigation = () => {
         >
           Devis gratuit
         </button>
+        {isAuthenticated ? (
+          <Link 
+            to={user?.role === "admin" ? "/syndicat-admin" : user?.role === "commercial" ? "/espace-commercial" : "/espace-developpeur"}
+            className="btn-secondary inline-flex items-center gap-2"
+            onClick={() => setMobileOpen(false)}
+          >
+            Mon espace
+          </Link>
+        ) : (
+          <Link 
+            to="/login" 
+            className="btn-secondary inline-flex items-center gap-2"
+            onClick={() => setMobileOpen(false)}
+          >
+            <LogIn size={18} />
+            Connexion
+          </Link>
+        )}
       </div>
     </>
   );
