@@ -14,6 +14,7 @@ const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openModal } = useModal();
+  const { isAuthenticated, user } = useAuth();
 
   // Détecte le scroll pour changer le style de la navbar
   useEffect(() => {
