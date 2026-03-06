@@ -53,8 +53,12 @@ import {
   AdminProjectDetail,
   AdminAnnouncements,
   AdminAlerts,
-  AdminSubscriptions
+  AdminSubscriptions,
+  AdminPartners
 } from "@/pages/admin";
+
+// Page partagée (tous les membres)
+import MemberPartners from "@/pages/shared/MemberPartners";
 
 // Composants de layout
 import Navigation from "@/components/layout/Navigation";
