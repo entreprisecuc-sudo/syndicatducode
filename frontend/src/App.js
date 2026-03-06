@@ -39,7 +39,8 @@ import {
   DeveloperProfile,
   DeveloperDocuments,
   DeveloperOpportunities,
-  DeveloperProjects
+  DeveloperProjects,
+  DeveloperSubscription
 } from "@/pages/developer";
 
 // Pages Admin
