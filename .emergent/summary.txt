@@ -5,106 +5,60 @@ The user initially requested a professional showcase website. After its completi
 The member area must support two distinct user roles (commercial partner and developer partner) with separate dashboards and functionalities.
 
 -   **Authentication:**
-    -   User registration via email/password.
-    -   Secure login with JWT.
-    -   Mandatory, one-time role selection upon first login. The chosen role is definitive.
-    -   Secure Forgot Password functionality with expiring, single-use tokens.
+    -   User registration, secure login with JWT, and a mandatory, one-time role selection upon first login.
+    -   Secure Forgot Password functionality.
 -   **Role-Based Access Control (RBAC):**
-    -   Users are automatically redirected to their respective dashboards upon login.
-    -   Strict separation between the Commercial and Developer spaces.
--   **Espace Partenaire Commercial (MVP):**
-    -   Profile consultation, access to partnership documents, read-only tracking of brought business.
--   **Espace Partenaire Développeur (MVP):**
-    -   Profile consultation, access to developer services, view project opportunities, access to Syndicat documents.
+    -   Users are automatically redirected to their respective dashboards.
 -   **Back-office Admin:**
-    -   Accessible via a non-public, secret URL.
-    -   Full user management (view list, activate/suspend, change roles).
-    -   Dashboard with platform statistics.
-    -   Logging of admin actions.
--   **Modules (Future Development):**
-    -   **Projets du Syndicat:** Admins can post projects, and developers can apply.
-    -   **Annonces / Actualités:** Admins can publish targeted announcements.
-    -   **Alertes / Popups:** Admins can create popups or banners for members.
-    -   **Abonnements:** Manage member subscriptions.
-    -   **Partenaires:** Manage a list of service partners.
+    -   Accessible via a secret URL ().
+    -   Full user management, platform statistics, and feature management.
+-   **Modules (Implemented & Future):**
+    -   **Projets du Syndicat (DONE):** Admins can post projects, and developers can apply.
+    -   **Annonces / Actualités (DONE):** Admins can publish targeted announcements.
+    -   **Alertes / Popups (DONE):** Admins can create popups or banners for members, with optional images.
+    -   **Abonnements (DONE - Mocked):** Manage member subscriptions (devs only). Stripe integration is prepared but not active.
+    -   **Partenaires (DONE):** Manage a list of service partners.
+    -   **Stats avancées + Restructuration menu (Upcoming):** Enhance the admin dashboard and menu.
 
 **User's preferred language**: The user communicates exclusively in **French**. The next agent MUST respond in French only.
 
 **what currently exists?**
-The project is a full-stack application with a React frontend and FastAPI backend.
--   **Frontend:** The original single-file  was refactored into a modular component-based structure. It now includes a complete authentication flow (Login, Register, Forgot Password, Choose Role), role-protected dashboards for Commercial and Developer partners, and a secure admin area.
--   **Backend:** The backend was restructured into a modular architecture (routes, services, models). It handles user authentication (registration, login with JWT), password resets, role management, and provides secure, role-protected API endpoints. It also includes the original contact form functionality. A script to create an initial admin user has been added.
+The project is a full-stack application with a React frontend and FastAPI backend. It features a complete authentication flow, role-based dashboards for Developer and Commercial partners, and a secure, feature-rich admin back-office. The application has been built in phases, with modules for Projects, Announcements, Alerts (with image support), Subscriptions (with mocked payments), and Partners all completed and verified. A set of quick-login buttons has been added to the footer for easy testing of the different user roles.
 
 **Last working item**:
-The agent was implementing **Phase 5: Projets du Syndicat**, which allows admins to create projects and developers to view and apply for them.
+The agent completed the implementation of **Phase 9: Partenaires**, which allows admins to manage a list of service partners and members to view them.
 
--   Last item agent was working: The backend routes (CRUD for projects, developer application) and the frontend pages (admin project management, developer project list) were created. Backend functionality was successfully tested via . The frontend admin page for projects was verified with a screenshot. The agent was about to verify the developer-side interface.
--   Status: IN PROGRESS
--   Agent Testing Done: Y (for backend via curl, for admin frontend via screenshot)
--   Which testing method agent to use? manual testing by curl and screenshot tool. The user has a strict rule: Ne pas lancer de tests sans mon accord explicite. (Do not run tests without my explicit consent). The agent should continue using  and  and ask for permission before any other form of testing.
+-   Last item agent was working: The agent created the backend models and routes, and the frontend pages for both the admin (management) and members (viewing with filters). The functionality was tested via  and screenshots. The user was then asked for the next steps.
+-   Status: USER VERIFICATION PENDING
+-   Agent Testing Done: Y
+-   Which testing method agent to use? manual testing by curl and screenshot tool. The user has a strict rule: Ne pas lancer de tests sans mon accord explicite. (Do not run tests without my explicit consent). The agent should continue using  and .
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   Issue 1:
-    -   Description: The final verification of the frontend for Phase 5: Projets du Syndicat is incomplete. The developer-side view of the projects list needs to be visually confirmed.
-    -   Priority: P0 (HIGHEST)
-    -   Status: IN PROGRESS
-
-**Issues Detail**:
--   Issue 1:
-    -   Attempted fixes: N/A. The process was interrupted.
-    -   Next debug checklist:
-        1.  Take a screenshot of the developer's project list page to ensure the two test projects are displayed correctly and the Je suis intéressé button works. The developer user created for testing is . Log in as this user and navigate to the projects page.
-        2.  Verify the developer can apply for a project and that the application count is updated on the admin side.
-    -   Why fix this issue and what will be achieved with the fix? This will complete the implementation and verification of the Projets du Syndicat module (Phase 5).
-    -   Status: IN PROGRESS
-    -   Is recurring issue? N
-    -   Should Test frontend/backend/both after fix? Frontend (via screenshot).
-    -   Blocked on other issue: None.
+-   There are no known bugs or technical issues. The primary pending item is user validation of the recently completed phases.
 
 **In progress Task List**:
--   Task 1: Complete and verify the implementation of Phase 5: Projets du Syndicat.
-    -   Where to resume: The agent was about to take a screenshot of the developer's project list. The next step is to execute that screenshot action.
-    -   What will be achieved with this? A core feature connecting admins and developers will be functional, adding significant value to the platform.
-    -   Status: IN PROGRESS
-    -   Should Test frontend/backend/both after fix? Frontend.
-    -   Blocked on something: None.
+-   There are no tasks currently in progress. The agent is awaiting user direction after completing Phase 9.
 
 **Upcoming and Future Tasks**
-As per the user's plan:
 -   **Upcoming Tasks:**
-    -   **P1 - Phase 6: Annonces / Actualités:** Implement a system for admins to publish announcements targeted to specific roles.
-    -   **P1 - Phase 7: Alertes / Popups:** Implement a system for admins to create popups and banners.
-    -   **P0 - Phase 8: Abonnements:** This is a high-priority, high-complexity feature to manage member subscriptions.
+    -   **P0 - Phase 10: Stats avancées + Restructuration menu:** The next logical step as per the user's roadmap. This involves enhancing the admin dashboard with more detailed statistics and reorganizing the admin menu.
 -   **Future Tasks:**
-    -   **P2 - Phase 9: Partenaires:** Create a section to list and manage service partners.
-    -   **P2 - Phase 10: Stats avancées + Restructuration menu:** Enhance the admin dashboard with more detailed statistics and reorganize the admin menu as planned.
+    -   **P1 - Stripe Integration:** The user will provide Stripe API keys at a later date. The agent will then need to integrate these keys into the admin configuration panel and activate the live payment functionality for the Abonnements module (Phase 8).
     -   **P2 - Client Portal Enhancements:** The original idea of a client portal can be expanded based on the new structure.
     -   **P3 - CRM:** The contact form submissions can be the foundation for a future CRM.
 
 **Completed work in this session**
--   **Major Code Refactoring (DONE):**
-    -   Refactored the monolithic  (800+ lines) into a clean, modular structure with components, pages, hooks, and contexts.
-    -   Restructured the backend from a single  file into a scalable architecture with distinct folders for routes, services, models, and config.
--   **Phase 1: Backend Authentication (DONE):**
-    -   Implemented endpoints for user registration, login (JWT), password reset, and role selection ().
-    -   Created  and  models ().
-    -   Added  for password hashing.
--   **Phase 2: Frontend Authentication (DONE):**
-    -   Created pages for Login, Register, Forgot Password, Reset Password, and the critical Choose Role page ().
-    -   Implemented an  to manage user state globally ().
--   **Phase 3: Espace Membres (DONE):**
-    -   Created distinct, role-protected dashboards and layouts for Commercial and Developer users (, ).
--   **Phase 4: Back-office Admin (DONE):**
-    -   Created a secure admin area accessible via a secret URL ().
-    -   Implemented backend routes for user and log management ().
-    -   Developed frontend pages for an admin dashboard, user management, and viewing logs ().
-    -   Added a script to create the initial admin user ().
--   **UI/UX Improvements (DONE):**
-    -   Added a dynamic Connexion / Mon espace button to the main navigation header ().
+-   **Phase 5 Verification (DONE):** Fixed several authentication bugs (route mismatch  vs , password hash key mismatch) and successfully verified the developer-side projects page.
+-   **Footer Quick-Login Buttons (DONE):** Added and debugged auto-login buttons in the footer for Admin, Developer, and Commercial roles to facilitate easy testing, as requested by the user.
+-   **Admin Stats Bug Fix (DONE):** Resolved an issue where admin stats failed to load after the implementation of the quick-login buttons due to a  key mismatch.
+-   **Phase 6: Annonces / Actualités (DONE):** Implemented a full CRUD module for admins to post role-targeted announcements, which are then displayed on member dashboards.
+-   **Phase 7: Alertes / Popups (DONE):** Implemented a system for admins to create and manage global popups and banners, including an enhancement to support adding images.
+-   **Phase 8: Abonnements (DONE):** Built the subscription management module. Admins can create and manage subscription plans. Developers can view and (mock) subscribe to them. The Stripe payment flow is prepared but currently inactive per the user's request.
+-   **Phase 9: Partenaires (DONE):** Implemented a module for admins to manage service partners, which are displayed in a filterable list for all members.
 
 **Earlier issues found/mentioned but not fixed**
--   None. The agent has been diligent in resolving issues as they arise.
+-   None.
 
 **Known issue recurrence from previous fork**
 -   None.
@@ -113,107 +67,88 @@ As per the user's plan:
 
 
 **Key Technical Concepts**
--   **Frontend:** React, TailwindCSS, , Context API for state management.
--   **Backend:** Python (FastAPI), Pydantic for data validation.
+-   **Frontend:** React, TailwindCSS, , Context API.
+-   **Backend:** Python (FastAPI), Pydantic.
 -   **Database:** MongoDB.
--   **Authentication:** JWT (JSON Web Tokens) for stateless session management,  library. Password hashing with .
--   **Email:**  for sending password reset and notification emails.
--   **Deployment Stack:** (On user's server) Hostinger VPS, Ubuntu, Nginx, PM2, Certbot.
+-   **Authentication:** JWT (JSON Web Tokens).
 
 **key DB schema**
--   **Collection:** 
-    -   uid=0(root) gid=0(root) groups=0(root): UUID
-    -   : string (unique)
-    -   : string
-    -   : string (Enum: , , , )
-    -   : string (Enum: , )
-    -   : datetime
-    -   : boolean
--   **Collection:** 
-    -   : string
-    -   : string (hashed)
-    -   : datetime
--   **Collection:** 
-    -   uid=0(root) gid=0(root) groups=0(root): UUID
-    -   : string
-    -   : string
-    -   : list of strings
-    -   : string
-    -   : string (Enum: , , )
-    -   : string
-    -   : datetime
-    -   : list of dicts 
--   **Collection:**  (from original feature)
+-   : Stores user data, including roles (, , ).
+-   : Stores project data for the Projets du Syndicat module.
+-   : (New) Stores announcements created by admins.
+-   : (New) Stores global popups and banners.
+-   : (New) Stores subscription plans created by the admin.
+-   : (New) Stores the active subscription for each user.
+-   : (New) Stores data about service partners.
 
 **changes in tech stack**
--   Added , , and  to the backend for implementing secure JWT authentication and password hashing.
+-   None.
 
 **All files of reference**
--   **/app/memory/PRD.md**: Contains the full product requirements, updated after each phase.
--   **/app/backend/routes/auth.py**: Defines all authentication endpoints.
--   **/app/backend/routes/admin.py**: Defines admin-specific endpoints.
--   **/app/backend/routes/projects.py**: Defines project-related endpoints.
--   **/app/frontend/src/App.js**: The main entry point for the frontend, containing the React Router configuration.
--   **/app/frontend/src/context/AuthContext.js**: Manages global authentication state.
--   **/app/frontend/src/pages/admin/AdminProjects.js**: The admin interface for managing projects.
--   **/app/frontend/src/pages/developer/DeveloperProjects.js**: The developer interface for viewing projects.
--   **/app/backend/.env**: Contains critical secrets like the .
+-   **/app/memory/PRD.md**: The main product requirements document.
+-   **/app/frontend/src/components/layout/Footer.js**: Contains the quick-login logic for testing.
+-   **/app/frontend/src/App.js**: The main router, contains all frontend routes.
+-   **/app/backend/server.py**: The main FastAPI application, contains all backend route includes.
+-   **New Module Files**: All files created for Phases 6-9 under , , and .
 
 **Areas that need refactoring**:
--   None currently. The recent refactoring established a very clean and scalable structure.
+-   The  component contains hardcoded credentials and logic for the auto-login quick access buttons. This was requested by the user for ease of testing but should be considered a development-only feature and removed or placed behind an environment flag before final production deployment.
 
 **key api endpoints**
--   : Create a new user account.
--   : Log in a user and receive a JWT.
--   : Set the user's role on first login.
--   : Get the current logged-in user's data.
--   : Initiate the password reset process.
--   : Get a list of all users (admin only).
--   : Update a user's role (admin only).
--   : Create a new project (admin only).
--   : Get a list of all projects (admin only).
--   : Get a list of open projects (for developers).
--   : Apply for a project (for developers).
+-   : User login.
+-   : Get dashboard statistics.
+-   : CRUD for announcements.
+-   : Read announcements for members.
+-   : CRUD for alerts.
+-   : Read active alerts for members.
+-   : CRUD for subscription plans.
+-   : GET/POST Stripe configuration.
+-   : GET/POST/DELETE user subscription (for developers).
+-   : CRUD for partners.
+-   : Read partners for members.
 
 **Critical Info for New Agent**
--   **Admin Access:** The admin area is at the secret URL . The credentials are in the chat history ( / ).
--   **User's Instructions:** The user has provided very clear, structured requirements and development principles (KISS, DRY, no hardcoding, etc.). Adhere to them strictly.
--   **Testing Protocol:** **DO NOT** run any tests without explicit permission from the user. Use  for backend checks and  for frontend verification.
--   **Phased Development:** The project is being built in phases defined by the user. The next task is to complete Phase 5 and then seek confirmation to start Phase 6.
+-   **User's Instructions:** The user provides very clear, phased instructions. Strictly adhere to them and the development principles (KISS, DRY, etc.).
+-   **Testing Protocol:** **DO NOT** run automated tests without explicit permission. Use  for backend and  for frontend verification.
+-   **Quick-Login Buttons:** The footer contains buttons for Admin, Espace Dev, and Espace Commercial that automatically log in the respective test users. This is the primary method for testing different roles.
+-   **Mocked Subscriptions:** The payment flow in the Subscriptions (Phase 8) module is intentionally mocked. Do not attempt to implement live Stripe payments until the user provides API keys and explicitly asks to proceed with that task.
+-   **Next Task:** The user's last instruction was to proceed with Phase 9, which is now complete. The next logical step from the roadmap is **Phase 10: Stats avancées + Restructuration menu**. Propose this to the user.
 
 **documents and test reports created in this job**
--   : A comprehensive document outlining product requirements, architecture, and completed work. This file was created and is updated regularly.
+-   : This file should be updated with the progress on Phases 6, 7, 8, and 9 upon finishing the job.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** go phase 5 - **Status:** Completed (Agent started Phase 5).
-2.  **User:** (Provided a detailed plan for new modules: Projects, Announcements, Alerts, Subscriptions, Partners, and a restructured Admin menu) - **Status:** Completed (Agent processed the plan).
-3.  **User:** ok maintenant dis moi comment je me connecte coter admin ? (how do I log in as admin?) - **Status:** Completed (Agent provided credentials and the secret URL).
-4.  **User:** ok parfait. maintenant voici un plan pour la suite... (perfect. here is the plan for what's next...) - **Status:** This is the same as message #2, it's a single large message.
-5.  **User:** ok maintenant il faut un bouton de connexion a coter droite du bouton devis... (ok now we need a login button to the right of the quote button...) - **Status:** Completed (Agent added the button).
-6.  **User:** ok go phase 4 - **Status:** Completed (Agent started and finished Phase 4).
-7.  **User:** go etape 3 - **Status:** Completed (Agent started and finished Phase 3).
-8.  **User:** go phase 2 - **Status:** Completed (Agent started and finished Phase 2).
-9.  **User:** ok go phase 1 - **Status:** Completed (Agent started and finished Phase 1).
-10. **User:** (Re-confirmed all development guidelines and asked the agent to proceed with the plan) - **Status:** Completed.
+1.  **User:**  - **Status:** Completed. Agent implemented the Partenaires module.
+2.  **User:**  - **Status:** Completed. Agent implemented the Abonnements module with a mocked Stripe flow as requested.
+3.  **User:**  - **Status:** Completed. Agent added image support to the Alertes module.
+4.  **User:**  - **Status:** Completed. Agent implemented the Alertes / Popups module.
+5.  **User:**  - **Status:** Completed. Agent identified and fixed the bug related to localStorage keys.
+6.  **User:**  - **Status:** Completed. Agent implemented the auto-login functionality for the footer buttons.
+7.  **User:**  - **Status:** Completed. Agent added the developer and commercial buttons to the footer.
+8.  **User:**  - **Status:** Completed. Agent added the admin button to the footer.
+9.  **User:**  - **Status:** Completed. Agent provided the admin credentials.
+10. **User:**  - **Status:** Completed. Agent implemented the Annonces / Actualités module.
 
 **Project Health Check:**
 -   **Broken:** None.
--   **Mocked:** The data in the member and admin dashboards is currently static placeholder content (e.g., stats, profile info). The next phases will involve making this data dynamic.
+-   **Mocked:** The subscription payment flow (Stripe integration) is mocked, as requested by the user.
 
 **3rd Party Integrations**
 -   **Hostinger SMTP:** For sending emails (password reset, notifications). Requires User API Key.
 -   **MongoDB:** Primary database.
+-   **Stripe (Planned):** Prepared for integration. Will require User API Key when ready.
 
 **Testing status**
--   **Testing agent used:** NO. Per user instruction.
--   **Troubleshoot agent used:** NO.
--   **Test files created:** None.
--   **Known regressions:** None.
+-   Testing agent used after significant changes: NO (per user instruction)
+-   Troubleshoot agent used after agent stuck in loop: NO
+-   Test files created: []
+-   Known regressions: None.
 
 **Credentials to test flow:**
 -   **Admin User:**  / 
--   **Developer User (for testing):**  / 
--   **Commercial User (for testing):**  / 
+-   **Developer User:**  / 
+-   **Commercial User:**  / 
+    *Note: These credentials are also hardcoded into the footer buttons for quick-login access.*
 
 **What agent forgot to execute**
--   The agent was in the middle of verifying the frontend for Phase 5. The last step of taking a screenshot of the developer's project list page () was not completed.</analysis>
+-   Nothing. The agent successfully completed all user requests in this session.</analysis>
