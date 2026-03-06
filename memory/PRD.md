@@ -83,6 +83,15 @@
 
 ## Changelog
 
+### 17/12/2025 - Phase 3 : Espaces Membres
+- **TERMINÉ** : Espaces Commercial et Développeur complets
+- Layout commun avec sidebar responsive
+- Dashboard avec statistiques et actions rapides
+- Pages Profil, Documents, Affaires/Opportunités
+- Protection des routes par rôle (RoleRoute)
+- Redirection automatique selon le rôle après connexion
+- 100% responsive mobile-first
+
 ### 17/12/2025 - Phase 2 : Frontend Authentification
 - **TERMINÉ** : Pages d'authentification complètes
 - Pages : Login, Register, ForgotPassword, ResetPassword, ChooseRole
