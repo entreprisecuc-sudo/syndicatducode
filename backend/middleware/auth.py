@@ -107,3 +107,26 @@ class RoleChecker:
             )
         
         return current_user
+
+
+async def require_admin(
+    current_user: dict = Depends(get_current_user)
+) -> dict:
+    """
+    Vérifie que l'utilisateur est un administrateur
+    
+    Raises:
+        HTTPException 403: Si l'utilisateur n'est pas admin
+    
+    Returns:
+        Données de l'utilisateur admin
+    """
+    user_role = current_user.get("role")
+    
+    if user_role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Accès réservé aux administrateurs"
+        )
+    
+    return current_user
