@@ -35,6 +35,7 @@ class AlertCreate(BaseModel):
     alert_type: AlertType = AlertType.BANNER
     style: AlertStyle = AlertStyle.INFO
     target: AlertTarget = AlertTarget.ALL
+    image_url: Optional[str] = None  # URL de l'image
     link_url: Optional[str] = None
     link_text: Optional[str] = None
     dismissible: bool = True  # L'utilisateur peut fermer l'alerte
@@ -52,6 +53,7 @@ class AlertUpdate(BaseModel):
     alert_type: Optional[AlertType] = None
     style: Optional[AlertStyle] = None
     target: Optional[AlertTarget] = None
+    image_url: Optional[str] = None
     link_url: Optional[str] = None
     link_text: Optional[str] = None
     dismissible: Optional[bool] = None
@@ -66,6 +68,7 @@ class AlertResponse(BaseModel):
     alert_type: str
     style: str
     target: str
+    image_url: Optional[str] = None
     link_url: Optional[str] = None
     link_text: Optional[str] = None
     dismissible: bool
