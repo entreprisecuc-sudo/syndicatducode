@@ -123,14 +123,25 @@ const Navigation = () => {
         </button>
         
         {NAV_LINKS.map((link) => (
-          <a 
-            key={link.href} 
-            href={link.href} 
-            className="mobile-nav-link"
-            onClick={() => setMobileOpen(false)}
-          >
-            {link.label}
-          </a>
+          link.isRoute ? (
+            <Link 
+              key={link.href} 
+              to={link.href} 
+              className="mobile-nav-link"
+              onClick={() => setMobileOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ) : (
+            <a 
+              key={link.href} 
+              href={link.href} 
+              className="mobile-nav-link"
+              onClick={() => setMobileOpen(false)}
+            >
+              {link.label}
+            </a>
+          )
         ))}
         
         <button 
