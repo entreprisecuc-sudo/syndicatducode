@@ -38,7 +38,7 @@ async def get_public_members(
     """
     
     # 1. Récupérer les user_ids avec abonnement actif
-    active_subscriptions = await db.user_subscriptions.find(
+    active_subscriptions = await db.subscriptions.find(
         {"status": "active"},
         {"user_id": 1, "_id": 0}
     ).to_list(500)
