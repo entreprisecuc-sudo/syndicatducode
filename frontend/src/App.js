@@ -217,6 +217,10 @@ function App() {
                 path="/syndicat-admin/abonnements" 
                 element={<RoleRoute allowedRoles={["admin"]}><AdminSubscriptions /></RoleRoute>} 
               />
+              <Route 
+                path="/syndicat-admin/partenaires" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminPartners /></RoleRoute>} 
+              />
 
               {/* ============================================ */}
               {/* REDIRECTION DASHBOARD GÉNÉRIQUE */}
