@@ -50,13 +50,15 @@ import {
   AdminLogs,
   AdminProjects,
   AdminProjectDetail,
-  AdminAnnouncements
+  AdminAnnouncements,
+  AdminAlerts
 } from "@/pages/admin";
 
 // Composants de layout
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
 import DevisModal from "@/components/modals/DevisModal";
+import GlobalAlerts from "@/components/GlobalAlerts";
 
 /**
  * Layout pour les pages légales et secondaires
