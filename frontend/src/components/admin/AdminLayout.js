@@ -105,30 +105,42 @@ const AdminLayout = ({ children }) => {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
-          {ADMIN_MENU.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`
-                  flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
-                  transition-colors
-                `}
-                style={{ 
-                  background: isActive ? "#1f4068" : "transparent",
-                  color: isActive ? "#fff" : "#9ca3af"
-                }}
-              >
-                <Icon size={18} />
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: "calc(100vh - 240px)" }}>
+          {ADMIN_MENU_SECTIONS.map((section, sectionIndex) => (
+            <div key={sectionIndex}>
+              {/* Titre de section */}
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3">
+                {section.title}
+              </p>
+              
+              {/* Items de la section */}
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`
+                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
+                        transition-colors
+                      `}
+                      style={{ 
+                        background: isActive ? "#1f4068" : "transparent",
+                        color: isActive ? "#fff" : "#9ca3af"
+                      }}
+                    >
+                      <Icon size={18} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Retour au site */}
