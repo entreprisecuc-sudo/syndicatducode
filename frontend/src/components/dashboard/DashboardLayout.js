@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, User, FileText, Briefcase, 
-  Code, Home, ChevronRight, Bell, CreditCard
+  Code, Home, ChevronRight, Bell, CreditCard, Handshake
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { CONFIG } from "@/config/constants";
@@ -18,6 +18,7 @@ const MENU_ITEMS = {
     { path: "/espace-commercial", label: "Tableau de bord", icon: Home },
     { path: "/espace-commercial/profil", label: "Mon profil", icon: User },
     { path: "/espace-commercial/affaires", label: "Mes affaires", icon: Briefcase },
+    { path: "/espace-commercial/partenaires", label: "Partenaires", icon: Handshake },
     { path: "/espace-commercial/documents", label: "Documents", icon: FileText }
   ],
   developer: [
@@ -25,6 +26,7 @@ const MENU_ITEMS = {
     { path: "/espace-developpeur/profil", label: "Mon profil", icon: User },
     { path: "/espace-developpeur/projets", label: "Projets du Syndicat", icon: Code },
     { path: "/espace-developpeur/abonnement", label: "Mon abonnement", icon: CreditCard },
+    { path: "/espace-developpeur/partenaires", label: "Partenaires", icon: Handshake },
     { path: "/espace-developpeur/documents", label: "Documents", icon: FileText }
   ]
 };
