@@ -188,6 +188,10 @@ function App() {
                 path="/syndicat-admin/annonces" 
                 element={<RoleRoute allowedRoles={["admin"]}><AdminAnnouncements /></RoleRoute>} 
               />
+              <Route 
+                path="/syndicat-admin/alertes" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminAlerts /></RoleRoute>} 
+              />
 
               {/* ============================================ */}
               {/* REDIRECTION DASHBOARD GÉNÉRIQUE */}
