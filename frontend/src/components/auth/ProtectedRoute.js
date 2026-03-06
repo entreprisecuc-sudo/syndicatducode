@@ -24,7 +24,7 @@ export const ProtectedRoute = ({ children }) => {
 
   // Redirige vers la connexion si non authentifié
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/connexion" state={{ from: location }} replace />;
   }
 
   return children;
@@ -47,7 +47,7 @@ export const RoleRequiredRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/connexion" state={{ from: location }} replace />;
   }
 
   // Redirige vers le choix du rôle si nécessaire
@@ -74,7 +74,7 @@ export const RoleRoute = ({ children, allowedRoles }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/connexion" state={{ from: location }} replace />;
   }
 
   if (needsRoleChoice()) {

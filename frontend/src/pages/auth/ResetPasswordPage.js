@@ -67,7 +67,7 @@ const ResetPasswordPage = () => {
     return (
       <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-primary)" }}>
         <header className="p-4 md:p-6">
-          <Link to="/login" className="inline-flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+          <Link to="/connexion" className="inline-flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
             <ArrowLeft size={16} />
             Retour à la connexion
           </Link>
@@ -100,7 +100,7 @@ const ResetPasswordPage = () => {
     return (
       <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-primary)" }}>
         <header className="p-4 md:p-6">
-          <Link to="/login" className="inline-flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+          <Link to="/connexion" className="inline-flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
             <ArrowLeft size={16} />
             Retour à la connexion
           </Link>
@@ -121,7 +121,7 @@ const ResetPasswordPage = () => {
               Votre mot de passe a été réinitialisé avec succès.<br />
               Vous pouvez maintenant vous connecter.
             </p>
-            <Link to="/login" className="btn-primary inline-block">
+            <Link to="/connexion" className="btn-primary inline-block">
               Se connecter
             </Link>
           </div>
@@ -134,7 +134,7 @@ const ResetPasswordPage = () => {
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-primary)" }}>
       {/* Header */}
       <header className="p-4 md:p-6">
-        <Link to="/login" className="inline-flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+        <Link to="/connexion" className="inline-flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
           <ArrowLeft size={16} />
           Retour à la connexion
         </Link>

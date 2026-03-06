@@ -86,7 +86,7 @@ const RegisterPage = () => {
               Un email de bienvenue vous a été envoyé.<br />
               Vous pouvez maintenant vous connecter.
             </p>
-            <Link to="/login" className="btn-primary inline-block">
+            <Link to="/connexion" className="btn-primary inline-block">
               Se connecter
             </Link>
           </div>
@@ -258,7 +258,7 @@ const RegisterPage = () => {
           <p className="text-center mt-6 text-sm" style={{ color: "var(--text-muted)" }}>
             Déjà membre ?{" "}
             <Link 
-              to="/login" 
+              to="/connexion" 
               className="font-medium hover:underline"
               style={{ color: "var(--sage)" }}
             >

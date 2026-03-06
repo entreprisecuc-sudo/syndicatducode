@@ -35,7 +35,7 @@ const ForgotPasswordPage = () => {
     return (
       <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-primary)" }}>
         <header className="p-4 md:p-6">
-          <Link to="/login" className="inline-flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+          <Link to="/connexion" className="inline-flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
             <ArrowLeft size={16} />
             Retour à la connexion
           </Link>
@@ -59,7 +59,7 @@ const ForgotPasswordPage = () => {
             <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
               Pensez à vérifier vos spams si vous ne recevez rien.
             </p>
-            <Link to="/login" className="btn-secondary inline-block">
+            <Link to="/connexion" className="btn-secondary inline-block">
               Retour à la connexion
             </Link>
           </div>
@@ -72,7 +72,7 @@ const ForgotPasswordPage = () => {
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-primary)" }}>
       {/* Header */}
       <header className="p-4 md:p-6">
-        <Link to="/login" className="inline-flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+        <Link to="/connexion" className="inline-flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
           <ArrowLeft size={16} />
           Retour à la connexion
         </Link>
@@ -146,7 +146,7 @@ const ForgotPasswordPage = () => {
           <p className="text-center mt-6 text-sm" style={{ color: "var(--text-muted)" }}>
             Vous vous souvenez ?{" "}
             <Link 
-              to="/login" 
+              to="/connexion" 
               className="font-medium hover:underline"
               style={{ color: "var(--sage)" }}
             >
