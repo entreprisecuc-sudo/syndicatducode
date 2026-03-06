@@ -15,6 +15,8 @@ import CGV from "@/pages/CGV";
 import CGU from "@/pages/CGU";
 import RGPD from "@/pages/RGPD";
 import Rejoindre from "@/pages/Rejoindre";
+import MembersPage from "@/pages/MembersPage";
+import MemberDetailPage from "@/pages/MemberDetailPage";
 
 // Pages d'authentification
 import {
