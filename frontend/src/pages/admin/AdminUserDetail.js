@@ -503,26 +503,29 @@ const SubscriptionTab = ({ subscription }) => {
   if (!activeSubscription) {
     return (
       <div 
-        className="p-8 rounded-xl text-center"
-        style={{ background: "#1a1a2e", border: "1px solid #1f4068" }}
+        className="p-8 rounded-xl text-center transition-colors duration-300"
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
-        <CreditCard size={48} className="mx-auto mb-4 text-gray-500" />
-        <p className="text-gray-400">Aucun abonnement actif</p>
+        <CreditCard size={48} className="mx-auto mb-4" style={{ color: "var(--admin-text-muted)" }} />
+        <p style={{ color: "var(--admin-text-secondary)" }}>Aucun abonnement actif</p>
       </div>
     );
   }
 
   return (
     <div 
-      className="p-6 rounded-xl"
-      style={{ background: "#1a1a2e", border: "1px solid #1f4068" }}
+      className="p-6 rounded-xl transition-colors duration-300"
+      style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
     >
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-white mb-1">
+          <h3 
+            className="text-lg font-semibold mb-1"
+            style={{ color: "var(--admin-text)" }}
+          >
             {plan?.name || "Abonnement"}
           </h3>
-          <p className="text-gray-400">{plan?.description}</p>
+          <p style={{ color: "var(--admin-text-secondary)" }}>{plan?.description}</p>
         </div>
         
         <span 
@@ -536,44 +539,63 @@ const SubscriptionTab = ({ subscription }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Prix */}
         {plan?.price && (
-          <div className="p-4 rounded-lg" style={{ background: "#16213e" }}>
-            <p className="text-sm text-gray-400 mb-1">Prix</p>
-            <p className="text-xl font-bold text-white">
-              {plan.price}€ <span className="text-sm font-normal text-gray-400">/ mois</span>
+          <div 
+            className="p-4 rounded-lg transition-colors duration-300" 
+            style={{ background: "var(--admin-bg-section)" }}
+          >
+            <p className="text-sm mb-1" style={{ color: "var(--admin-text-muted)" }}>Prix</p>
+            <p className="text-xl font-bold" style={{ color: "var(--admin-text)" }}>
+              {plan.price}€ <span className="text-sm font-normal" style={{ color: "var(--admin-text-secondary)" }}>/ mois</span>
             </p>
           </div>
         )}
 
         {/* Date de début */}
         {activeSubscription.start_date && (
-          <div className="p-4 rounded-lg" style={{ background: "#16213e" }}>
-            <p className="text-sm text-gray-400 mb-1">Date de début</p>
-            <p className="text-white">
+          <div 
+            className="p-4 rounded-lg transition-colors duration-300" 
+            style={{ background: "var(--admin-bg-section)" }}
+          >
+            <p className="text-sm mb-1" style={{ color: "var(--admin-text-muted)" }}>Date de début</p>
+            <p style={{ color: "var(--admin-text)" }}>
               {new Date(activeSubscription.start_date).toLocaleDateString("fr-FR")}
             </p>
           </div>
         )}
 
         {/* ID Plan */}
-        <div className="p-4 rounded-lg" style={{ background: "#16213e" }}>
-          <p className="text-sm text-gray-400 mb-1">ID Plan</p>
-          <p className="text-white font-mono text-sm">{activeSubscription.plan_id}</p>
+        <div 
+          className="p-4 rounded-lg transition-colors duration-300" 
+          style={{ background: "var(--admin-bg-section)" }}
+        >
+          <p className="text-sm mb-1" style={{ color: "var(--admin-text-muted)" }}>ID Plan</p>
+          <p className="font-mono text-sm" style={{ color: "var(--admin-text)" }}>{activeSubscription.plan_id}</p>
         </div>
 
         {/* Statut */}
-        <div className="p-4 rounded-lg" style={{ background: "#16213e" }}>
-          <p className="text-sm text-gray-400 mb-1">Statut</p>
+        <div 
+          className="p-4 rounded-lg transition-colors duration-300" 
+          style={{ background: "var(--admin-bg-section)" }}
+        >
+          <p className="text-sm mb-1" style={{ color: "var(--admin-text-muted)" }}>Statut</p>
           <p className="text-green-400 font-medium">{activeSubscription.status}</p>
         </div>
       </div>
 
       {/* Fonctionnalités du plan */}
       {plan?.features?.length > 0 && (
-        <div className="mt-6 pt-6 border-t border-gray-700">
-          <h4 className="text-sm font-medium text-gray-400 mb-3">Fonctionnalités incluses</h4>
+        <div 
+          className="mt-6 pt-6"
+          style={{ borderTop: "1px solid var(--admin-border)" }}
+        >
+          <h4 className="text-sm font-medium mb-3" style={{ color: "var(--admin-text-muted)" }}>Fonctionnalités incluses</h4>
           <ul className="space-y-2">
             {plan.features.map((feature, index) => (
-              <li key={index} className="flex items-center gap-2 text-gray-300">
+              <li 
+                key={index} 
+                className="flex items-center gap-2"
+                style={{ color: "var(--admin-text-secondary)" }}
+              >
                 <CheckCircle size={16} className="text-green-500 flex-shrink-0" />
                 {feature}
               </li>
