@@ -173,19 +173,19 @@ const AdminPartners = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+        <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <div className="text-2xl font-bold text-blue-400">{partners.length}</div>
           <div className="text-gray-400 text-sm">Total</div>
         </div>
-        <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+        <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <div className="text-2xl font-bold text-green-400">{partners.filter(p => p.status === "active").length}</div>
           <div className="text-gray-400 text-sm">Actifs</div>
         </div>
-        <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+        <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <div className="text-2xl font-bold text-yellow-400">{partners.filter(p => p.is_featured).length}</div>
           <div className="text-gray-400 text-sm">Mis en avant</div>
         </div>
-        <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+        <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <div className="text-2xl font-bold text-purple-400">{partners.filter(p => p.discount_code).length}</div>
           <div className="text-gray-400 text-sm">Avec code promo</div>
         </div>
@@ -197,7 +197,7 @@ const AdminPartners = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
         </div>
       ) : partners.length === 0 ? (
-        <div className="p-8 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+        <div className="p-8 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <Handshake size={48} className="mx-auto mb-4 text-gray-500" />
           <p className="text-gray-400 mb-4">Aucun partenaire enregistré</p>
           <button onClick={openCreateModal} className="px-4 py-2 rounded-lg bg-red-500 text-white">
@@ -212,7 +212,7 @@ const AdminPartners = () => {
               <div 
                 key={partner.id}
                 className={`p-5 rounded-xl ${partner.status === "inactive" ? "opacity-60" : ""}`}
-                style={{ background: "#16213e", border: partner.is_featured ? "2px solid #e94560" : "1px solid #1f4068" }}
+                style={{ background: "var(--admin-bg-card)", border: partner.is_featured ? "2px solid #e94560" : "1px solid #1f4068" }}
               >
                 {partner.is_featured && (
                   <div className="flex items-center gap-1 text-yellow-400 text-xs mb-2">
@@ -291,7 +291,7 @@ const AdminPartners = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6" style={{ background: "#16213e" }}>
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6" style={{ background: "var(--admin-bg-card)" }}>
             <h2 className="text-xl font-bold text-white mb-6">
               {editingPartner ? "Modifier le partenaire" : "Nouveau partenaire"}
             </h2>
