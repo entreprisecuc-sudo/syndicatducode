@@ -86,10 +86,18 @@
 - Visiteurs peuvent contacter les développeurs via modal
 - Messages accessibles uniquement si abonnement actif
 
-### ✅ Notifications de Rejet (Phase 15) - FINALISÉ 07/03/2026
+### ✅ Notifications de Rejet (Phase 15)
 - Popup automatique à la connexion du développeur
 - Affiche le projet rejeté et la raison
 - Bouton "J'ai compris" pour fermer
+
+### ✅ Contenu Adulte +18 (Phase 16) - FINALISÉ 07/03/2026
+- Checkbox dans le formulaire de création/édition de projet
+- Badge "+18" visible sur les cartes projet (côté développeur)
+- Sur la page publique des membres :
+  - Image **floutée** (blur 20px) avec overlay "Image masquée"
+  - Liens remplacés par **"Lien masqué (contenu +18)"** non cliquables
+- Champ `is_adult_content` ajouté au modèle portfolio
 
 ---
 
@@ -144,7 +152,7 @@
 |------------|-------------|
 | users | Utilisateurs (email, password_hash, role, status) |
 | profiles | Profils développeurs (bio, skills, photo) |
-| portfolio | Projets portfolio (status: pending/approved/rejected) |
+| portfolio | Projets portfolio (status, is_adult_content, rejection_reason) |
 | user_subscriptions | Abonnements actifs |
 | subscription_plans | Plans d'abonnement |
 | projects | Projets/missions du Syndicat |
@@ -177,7 +185,7 @@
 ### Profil & Portfolio
 - `GET/PUT /api/profile` - Profil développeur
 - `POST /api/profile/photo` - Upload photo
-- `GET/POST/PUT/DELETE /api/profile/portfolio` - CRUD portfolio
+- `GET/POST/PUT/DELETE /api/profile/portfolio` - CRUD portfolio (avec is_adult_content)
 
 ### Membres publics
 - `GET /api/members` - Liste membres actifs
