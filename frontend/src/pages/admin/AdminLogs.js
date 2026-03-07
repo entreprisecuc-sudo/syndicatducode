@@ -1,5 +1,6 @@
 /**
  * Historique des actions admin - Logs
+ * Support mode sombre/clair
  */
 
 import { useState, useEffect } from "react";
@@ -13,6 +14,7 @@ import axios from "axios";
 const ACTION_CONFIG = {
   VIEW_USERS: { label: "Consultation utilisateurs", icon: Eye, color: "#3b82f6" },
   VIEW_USER_DETAIL: { label: "Consultation profil", icon: User, color: "#6366f1" },
+  VIEW_USER_FULL_DETAIL: { label: "Consultation détail complet", icon: User, color: "#8b5cf6" },
   VIEW_STATS: { label: "Consultation stats", icon: Eye, color: "#8b5cf6" },
   UPDATE_USER_STATUS: { label: "Modification statut", icon: Edit, color: "#f59e0b" },
   UPDATE_USER_ROLE: { label: "Modification rôle", icon: Edit, color: "#ef4444" },
@@ -57,23 +59,40 @@ const AdminLogs = () => {
   return (
     <AdminLayout>
       {/* Titre mobile */}
-      <h1 className="text-xl font-bold mb-6 lg:hidden text-white">
+      <h1 
+        className="text-xl font-bold mb-6 lg:hidden"
+        style={{ color: "var(--admin-text)" }}
+      >
         Historique
       </h1>
 
       {/* Header */}
       <div 
-        className="p-4 rounded-xl mb-6 flex items-center justify-between"
-        style={{ background: "#16213e", border: "1px solid #1f4068" }}
+        className="p-4 rounded-xl mb-6 flex items-center justify-between transition-colors duration-300"
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
         <div>
-          <h2 className="text-white font-semibold">Journal des actions administratives</h2>
-          <p className="text-gray-400 text-sm">Traçabilité complète des actions admin</p>
+          <h2 
+            className="font-semibold"
+            style={{ color: "var(--admin-text)" }}
+          >
+            Journal des actions administratives
+          </h2>
+          <p 
+            className="text-sm"
+            style={{ color: "var(--admin-text-secondary)" }}
+          >
+            Traçabilité complète des actions admin
+          </p>
         </div>
         <button
           onClick={fetchLogs}
           disabled={loading}
-          className="p-2 rounded-lg bg-[#1a1a2e] text-gray-400 hover:text-white transition-colors"
+          className="p-2 rounded-lg transition-colors hover:opacity-80"
+          style={{ 
+            background: "var(--admin-bg-section)", 
+            color: "var(--admin-text-secondary)" 
+          }}
         >
           <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
         </button>
@@ -82,7 +101,10 @@ const AdminLogs = () => {
       {/* Liste des logs */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+          <div 
+            className="animate-spin rounded-full h-8 w-8 border-b-2"
+            style={{ borderColor: "var(--admin-accent)" }}
+          />
         </div>
       ) : error ? (
         <div className="p-4 rounded-lg bg-red-500/20 text-red-400 text-center">
@@ -90,33 +112,42 @@ const AdminLogs = () => {
         </div>
       ) : logs.length === 0 ? (
         <div 
-          className="p-8 rounded-xl text-center"
-          style={{ background: "#16213e", border: "1px solid #1f4068" }}
+          className="p-8 rounded-xl text-center transition-colors duration-300"
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
         >
-          <History size={48} className="mx-auto mb-4 text-gray-500" />
-          <p className="text-gray-400">Aucune action enregistrée</p>
+          <History size={48} className="mx-auto mb-4" style={{ color: "var(--admin-text-muted)" }} />
+          <p style={{ color: "var(--admin-text-secondary)" }}>Aucune action enregistrée</p>
         </div>
       ) : (
         <div 
-          className="rounded-xl overflow-hidden"
-          style={{ background: "#16213e", border: "1px solid #1f4068" }}
+          className="rounded-xl overflow-hidden transition-colors duration-300"
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
         >
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr style={{ background: "#1a1a2e" }}>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">
+                <tr style={{ background: "var(--admin-bg-section)" }}>
+                  <th 
+                    className="px-4 py-3 text-left text-xs font-medium uppercase"
+                    style={{ color: "var(--admin-text-muted)" }}
+                  >
                     Date
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">
+                  <th 
+                    className="px-4 py-3 text-left text-xs font-medium uppercase"
+                    style={{ color: "var(--admin-text-muted)" }}
+                  >
                     Action
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">
+                  <th 
+                    className="px-4 py-3 text-left text-xs font-medium uppercase"
+                    style={{ color: "var(--admin-text-muted)" }}
+                  >
                     Détails
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1f4068]">
+              <tbody>
                 {logs.map((log, index) => {
                   const actionConfig = ACTION_CONFIG[log.action] || {
                     label: log.action,
@@ -126,9 +157,16 @@ const AdminLogs = () => {
                   const ActionIcon = actionConfig.icon;
                   
                   return (
-                    <tr key={index} className="hover:bg-[#1a1a2e]/50">
+                    <tr 
+                      key={index} 
+                      className="transition-colors hover:opacity-80"
+                      style={{ borderTop: "1px solid var(--admin-border)" }}
+                    >
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-gray-400 text-sm">
+                        <span 
+                          className="text-sm"
+                          style={{ color: "var(--admin-text-secondary)" }}
+                        >
                           {formatDate(log.timestamp)}
                         </span>
                       </td>
@@ -142,7 +180,10 @@ const AdminLogs = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-gray-300 text-sm">
+                        <span 
+                          className="text-sm"
+                          style={{ color: "var(--admin-text-secondary)" }}
+                        >
                           {log.details}
                         </span>
                       </td>
@@ -156,7 +197,10 @@ const AdminLogs = () => {
       )}
 
       {/* Compteur */}
-      <p className="text-center text-gray-500 text-sm mt-4">
+      <p 
+        className="text-center text-sm mt-4"
+        style={{ color: "var(--admin-text-muted)" }}
+      >
         {logs.length} entrée(s) dans le journal
       </p>
     </AdminLayout>

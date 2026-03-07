@@ -1,9 +1,10 @@
 /**
  * Demandes de contact - Admin
+ * Support mode sombre/clair
  */
 
 import { useState, useEffect } from "react";
-import { FileText, Mail, Phone, Calendar, ExternalLink } from "lucide-react";
+import { FileText, Mail, Phone, Calendar } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
@@ -73,19 +74,27 @@ const AdminContacts = () => {
   return (
     <AdminLayout>
       {/* Titre mobile */}
-      <h1 className="text-xl font-bold mb-6 lg:hidden text-white">
+      <h1 
+        className="text-xl font-bold mb-6 lg:hidden"
+        style={{ color: "var(--admin-text)" }}
+      >
         Demandes de contact
       </h1>
 
       {/* Filtres */}
       <div 
-        className="p-4 rounded-xl mb-6 flex flex-col md:flex-row gap-4"
-        style={{ background: "#16213e", border: "1px solid #1f4068" }}
+        className="p-4 rounded-xl mb-6 flex flex-col md:flex-row gap-4 transition-colors duration-300"
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-[#1a1a2e] border-[#1f4068] text-white"
+          className="rounded-lg py-2 px-3 transition-colors duration-300"
+          style={{ 
+            background: "var(--admin-bg-section)", 
+            border: "1px solid var(--admin-border)",
+            color: "var(--admin-text)"
+          }}
         >
           <option value="">Tous les statuts</option>
           <option value="pending">En attente</option>
@@ -98,7 +107,10 @@ const AdminContacts = () => {
       {/* Liste des contacts */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+          <div 
+            className="animate-spin rounded-full h-8 w-8 border-b-2"
+            style={{ borderColor: "var(--admin-accent)" }}
+          />
         </div>
       ) : error ? (
         <div className="p-4 rounded-lg bg-red-500/20 text-red-400 text-center">
@@ -106,11 +118,11 @@ const AdminContacts = () => {
         </div>
       ) : contacts.length === 0 ? (
         <div 
-          className="p-8 rounded-xl text-center"
-          style={{ background: "#16213e", border: "1px solid #1f4068" }}
+          className="p-8 rounded-xl text-center transition-colors duration-300"
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
         >
-          <FileText size={48} className="mx-auto mb-4 text-gray-500" />
-          <p className="text-gray-400">Aucune demande de contact</p>
+          <FileText size={48} className="mx-auto mb-4" style={{ color: "var(--admin-text-muted)" }} />
+          <p style={{ color: "var(--admin-text-secondary)" }}>Aucune demande de contact</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -120,24 +132,40 @@ const AdminContacts = () => {
             return (
               <div 
                 key={contact.id}
-                className="p-5 rounded-xl"
-                style={{ background: "#16213e", border: "1px solid #1f4068" }}
+                className="p-5 rounded-xl transition-colors duration-300"
+                style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
               >
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                   <div>
-                    <h3 className="text-white font-semibold text-lg">{contact.name}</h3>
-                    <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-400">
+                    <h3 
+                      className="font-semibold text-lg"
+                      style={{ color: "var(--admin-text)" }}
+                    >
+                      {contact.name}
+                    </h3>
+                    <div 
+                      className="flex flex-wrap items-center gap-4 mt-2 text-sm"
+                      style={{ color: "var(--admin-text-secondary)" }}
+                    >
                       <span className="flex items-center gap-1">
                         <Mail size={14} />
-                        <a href={`mailto:${contact.email}`} className="hover:text-white">
+                        <a 
+                          href={`mailto:${contact.email}`} 
+                          className="hover:opacity-80"
+                          style={{ color: "var(--admin-text-secondary)" }}
+                        >
                           {contact.email}
                         </a>
                       </span>
                       {contact.phone && (
                         <span className="flex items-center gap-1">
                           <Phone size={14} />
-                          <a href={`tel:${contact.phone}`} className="hover:text-white">
+                          <a 
+                            href={`tel:${contact.phone}`} 
+                            className="hover:opacity-80"
+                            style={{ color: "var(--admin-text-secondary)" }}
+                          >
                             {contact.phone}
                           </a>
                         </span>
@@ -160,10 +188,13 @@ const AdminContacts = () => {
                 
                 {/* Message */}
                 <div 
-                  className="p-4 rounded-lg mb-4"
-                  style={{ background: "#1a1a2e" }}
+                  className="p-4 rounded-lg mb-4 transition-colors duration-300"
+                  style={{ background: "var(--admin-bg-section)" }}
                 >
-                  <p className="text-gray-300 text-sm whitespace-pre-wrap">
+                  <p 
+                    className="text-sm whitespace-pre-wrap"
+                    style={{ color: "var(--admin-text-secondary)" }}
+                  >
                     {contact.message}
                   </p>
                 </div>
@@ -171,7 +202,10 @@ const AdminContacts = () => {
                 {/* Fichiers */}
                 {contact.files && contact.files.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-gray-400 text-xs mb-2">
+                    <p 
+                      className="text-xs mb-2"
+                      style={{ color: "var(--admin-text-muted)" }}
+                    >
                       {contact.files.length} fichier(s) joint(s)
                     </p>
                   </div>
@@ -205,7 +239,10 @@ const AdminContacts = () => {
       )}
 
       {/* Compteur */}
-      <p className="text-center text-gray-500 text-sm mt-4">
+      <p 
+        className="text-center text-sm mt-4"
+        style={{ color: "var(--admin-text-muted)" }}
+      >
         {contacts.length} demande(s) trouvée(s)
       </p>
     </AdminLayout>
