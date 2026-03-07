@@ -3,140 +3,220 @@
 ## Informations générales
 - **Nom du projet** : Le Syndicat du Code
 - **Slogan** : Notre loi, unis par le code.
-- **Type** : Site vitrine professionnel pour une société de développement web
-- **Déployé sur** : VPS Hostinger (187.77.168.109) - https://syndicatducode.fr
+- **Type** : Site vitrine + Espace Membre complet pour développeurs et commerciaux
+- **Stack** : React + FastAPI + MongoDB
 
-## Fonctionnalités principales
+---
 
-### ✅ Implémentées
-1. **Landing Page** : Hero, Services (6), Pourquoi nous, Notre approche, Audiences cibles, Contact
-2. **Formulaire de contact** : Avec upload de fichiers, envoi email SMTP
-3. **Modal de devis** : Accessible depuis toute la navigation
-4. **Pages légales** : CGV, CGU, RGPD
-5. **Page recrutement** : "Rejoindre le Syndicat"
-6. **Responsive** : Mobile, Tablette, Desktop
+## Fonctionnalités implémentées
 
-### 📋 Backlog (P1)
-- **Espace Client** : Portail avec login, suivi de projets, messagerie, partage de fichiers
+### ✅ Site Vitrine (Phase 1)
+- Landing Page complète (Hero, Services, Pourquoi nous, Processus, Audiences, Contact)
+- Formulaire de contact avec upload de fichiers
+- Modal de devis accessible depuis toute la navigation
+- Pages légales (CGV, CGU, RGPD)
+- Page "Rejoindre le Syndicat"
+- 100% Responsive (Mobile, Tablette, Desktop)
 
-### 📋 Backlog (P2)
-- **CRM** : Gestion des contacts et leads basée sur les soumissions du formulaire
+### ✅ Authentification (Phase 2)
+- Inscription, Connexion (JWT)
+- Réinitialisation mot de passe (SMTP Hostinger)
+- Choix de rôle (commercial/developer) au premier login
+- Protection des routes par rôle (ProtectedRoute, RoleRoute)
+- Redirection automatique selon rôle
+
+### ✅ Espaces Membres (Phase 3)
+- **Dashboard Commercial** : Stats, Documents, Affaires
+- **Dashboard Développeur** : Stats, Documents, Opportunités
+- Layout commun avec sidebar responsive
+- Actions rapides contextuelles
+
+### ✅ Back-office Admin (Phase 4)
+- URL secrète : `/syndicat-admin`
+- Gestion des utilisateurs (liste, statut, rôle)
+- Gestion des demandes de contact
+- Historique des actions administratives
+- Thème sombre distinctif
+
+### ✅ Projets du Syndicat (Phase 5)
+- Admins créent des projets/missions
+- Développeurs consultent et postulent
+- Système de candidatures avec suivi
+
+### ✅ Annonces / Actualités (Phase 6)
+- Admins publient des annonces ciblées par rôle
+- Système d'épinglage et d'activation
+- Affichage dans les dashboards membres
+
+### ✅ Alertes / Popups (Phase 7)
+- Admins créent des alertes globales
+- Types : popup, banner
+- Ciblage par rôle (all, commercial, developer)
+- Activation/désactivation
+
+### ✅ Abonnements (Phase 8)
+- Gestion des plans d'abonnement par admin
+- Souscription développeur (paiement **MOCKED**)
+- Suivi des abonnements actifs
+
+### ✅ Partenaires (Phase 9)
+- Admins gèrent une liste de partenaires
+- Catégorisation (hébergement, design, marketing, etc.)
+- Affichage dans les dashboards
+
+### ✅ Stats avancées + Menu restructuré (Phase 10)
+- Dashboard admin enrichi avec statistiques détaillées
+- Navigation admin réorganisée
+
+### ✅ Profil Développeur (Phase 11)
+- Upload de photo de profil
+- Informations professionnelles (titre, bio, compétences)
+
+### ✅ Portfolio / Book Développeur (Phase 12)
+- CRUD complet pour projets de portfolio
+- Images, liens, technologies
+- **Validation admin obligatoire** avant publication
+
+### ✅ Page publique "Membres du Syndicat" (Phase 13)
+- Liste des développeurs avec abonnement actif
+- Fiche de présentation détaillée par membre
+- Portfolio visible (projets approuvés uniquement)
+
+### ✅ Système de Messagerie (Phase 14)
+- Visiteurs peuvent contacter les développeurs via modal
+- Messages accessibles uniquement si abonnement actif
+
+### ✅ Notifications de Rejet (Phase 15) - FINALISÉ 07/03/2026
+- Popup automatique à la connexion du développeur
+- Affiche le projet rejeté et la raison
+- Bouton "J'ai compris" pour fermer
 
 ---
 
 ## Architecture technique
 
-### Stack
-- **Frontend** : React 18, TailwindCSS, React Router DOM
-- **Backend** : FastAPI (Python), Motor (MongoDB async)
-- **BDD** : MongoDB
-- **Email** : SMTP (Hostinger)
-
-### Structure du code (après refactoring du 17/12/2025)
-
+### Frontend (`/app/frontend/src/`)
 ```
-/app/frontend/src/
-├── App.js                      # Routeur principal (62 lignes)
-├── config/
-│   └── constants.js            # Configuration centralisée
-├── context/
-│   └── ModalContext.js         # Contexte du modal
-├── hooks/
-│   └── useContactForm.js       # Hook formulaire réutilisable (DRY)
+├── App.js                          # Routeur principal
+├── config/constants.js             # Configuration centralisée
+├── context/                        # AuthContext, ModalContext
+├── services/authService.js         # API calls auth
 ├── components/
-│   ├── layout/
-│   │   ├── Navigation.js       # Barre de navigation
-│   │   └── Footer.js           # Pied de page
-│   ├── sections/
-│   │   ├── HeroSection.js
-│   │   ├── ServicesSection.js
-│   │   ├── WhyUsSection.js
-│   │   ├── ProcessSection.js
-│   │   ├── AudienceSection.js
-│   │   └── ContactSection.js
-│   └── modals/
-│       └── DevisModal.js
-└── pages/
-    ├── HomePage.js
-    ├── CGV.js, CGU.js, RGPD.js, Rejoindre.js
+│   ├── layout/                     # Navigation, Footer
+│   ├── sections/                   # Hero, Services, Contact, etc.
+│   ├── modals/                     # DevisModal
+│   ├── dashboard/DashboardLayout.js
+│   ├── admin/                      # Composants admin
+│   └── NotificationsPopup.js       # Popup notifications
+├── pages/
+│   ├── admin/                      # AdminDashboard, AdminPortfolioValidation
+│   ├── developer/                  # DeveloperDashboard, DeveloperBook, DeveloperMessages
+│   ├── commercial/                 # CommercialDashboard
+│   ├── MembersPage.js              # Liste membres publique
+│   └── MemberDetailPage.js         # Fiche membre publique
 ```
 
-### Backend
+### Backend (`/app/backend/`)
 ```
-/app/backend/
-├── server.py                   # API FastAPI (endpoint /api/contact)
-├── uploads/                    # Fichiers uploadés
-└── .env                        # Variables d'environnement
+├── server.py                       # FastAPI principal
+├── config/settings.py              # Constantes (UserRole, UserStatus)
+├── middleware/auth.py              # JWT, RoleChecker
+├── routes/
+│   ├── auth.py                     # Authentification
+│   ├── admin.py                    # Administration + Validation portfolio
+│   ├── projects.py                 # Projets du Syndicat
+│   ├── announcements.py            # Annonces
+│   ├── alerts.py                   # Alertes
+│   ├── subscriptions.py            # Abonnements
+│   ├── partners.py                 # Partenaires
+│   ├── profile.py                  # Profil + Portfolio développeur
+│   ├── members.py                  # Routes publiques membres
+│   ├── messages.py                 # Messagerie membres
+│   └── notifications.py            # Notifications personnelles
+└── uploads/                        # Fichiers uploadés
 ```
 
 ---
 
-## API Endpoints
+## Collections MongoDB (DB: test_database)
 
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| POST | /api/contact | Soumission formulaire avec fichiers |
-| GET | /api/contacts | Liste des contacts (admin) |
-| GET | /api/config | Configuration publique |
-
----
-
-## Changelog
-
-### 17/12/2025 - Phase 4 : Back-office Admin
-- **TERMINÉ** : Interface admin complète
-- URL secrète : `/syndicat-admin`
-- Dashboard avec statistiques (users, contacts)
-- Gestion utilisateurs (liste, suspension, modification rôle)
-- Gestion demandes de contact
-- Historique des actions (journalisation)
-- Thème sombre distinctif pour l'admin
-- Script create_admin.py pour initialiser l'admin
-
-### 17/12/2025 - Phase 3 : Espaces Membres
-- **TERMINÉ** : Espaces Commercial et Développeur complets
-- Layout commun avec sidebar responsive
-- Dashboard avec statistiques et actions rapides
-- Pages Profil, Documents, Affaires/Opportunités
-- Protection des routes par rôle (RoleRoute)
-- Redirection automatique selon le rôle après connexion
-- 100% responsive mobile-first
-
-### 17/12/2025 - Phase 2 : Frontend Authentification
-- **TERMINÉ** : Pages d'authentification complètes
-- Pages : Login, Register, ForgotPassword, ResetPassword, ChooseRole
-- AuthContext pour gestion état global
-- authService pour appels API
-- ProtectedRoute, PublicRoute, RoleRoute pour protection routes
-- Validation mot de passe en temps réel
-- 100% responsive (mobile-first)
-- Redirection automatique selon état utilisateur
-
-### 17/12/2025 - Phase 1 : Backend Authentification
-- **TERMINÉ** : Système d'authentification complet
-- Endpoints : register, login, choose-role, forgot-password, reset-password, /me
-- JWT avec expiration 24h
-- Hash bcrypt pour les mots de passe
-- Validation mot de passe (8 chars, majuscule, minuscule, chiffre)
-- Token de réinitialisation sécurisé (1h, usage unique)
-- Architecture modulaire (config, models, services, middleware, routes)
-
-### 17/12/2025 - Refactoring Frontend
-- **TERMINÉ** : Refactoring complet de App.js (859 → 62 lignes)
-- Création de 13 nouveaux fichiers modulaires
-- Hook `useContactForm` partagé (principe DRY)
-- Configuration centralisée dans `constants.js`
-- Tests visuels OK (Hero, Modal, Services, Pages légales)
+| Collection | Description |
+|------------|-------------|
+| users | Utilisateurs (email, password_hash, role, status) |
+| profiles | Profils développeurs (bio, skills, photo) |
+| portfolio | Projets portfolio (status: pending/approved/rejected) |
+| user_subscriptions | Abonnements actifs |
+| subscription_plans | Plans d'abonnement |
+| projects | Projets/missions du Syndicat |
+| announcements | Annonces |
+| alerts | Alertes/Popups |
+| partners | Partenaires |
+| messages | Messages visiteur → développeur |
+| notifications | Notifications personnelles |
+| contacts | Demandes de contact/devis |
+| admin_logs | Historique actions admin |
 
 ---
 
-## Notes de déploiement
+## Endpoints API principaux
 
-Le site est déployé sur le VPS de l'utilisateur. Pour mettre à jour :
-```bash
-ssh root@187.77.168.109
-cd /var/www/syndicatducode.fr
-git pull origin main
-cd frontend && yarn build
-sudo systemctl restart nginx
-```
+### Authentification
+- `POST /api/auth/register` - Inscription
+- `POST /api/auth/login` - Connexion
+- `POST /api/auth/choose-role` - Choix rôle
+- `POST /api/auth/forgot-password` - Demande reset
+- `POST /api/auth/reset-password` - Reset mot de passe
+
+### Admin
+- `GET /api/admin/stats` - Statistiques avancées
+- `GET /api/admin/users` - Liste utilisateurs
+- `GET /api/admin/portfolio/pending` - Portfolio en attente
+- `PUT /api/admin/portfolio/{id}/approve` - Approuver
+- `PUT /api/admin/portfolio/{id}/reject` - Rejeter (+ notification)
+
+### Profil & Portfolio
+- `GET/PUT /api/profile` - Profil développeur
+- `POST /api/profile/photo` - Upload photo
+- `GET/POST/PUT/DELETE /api/profile/portfolio` - CRUD portfolio
+
+### Membres publics
+- `GET /api/members` - Liste membres actifs
+- `GET /api/members/{id}` - Détail membre
+
+### Messagerie
+- `POST /api/messages/{recipient_id}` - Envoyer message
+- `GET /api/messages` - Messages reçus (dev)
+
+### Notifications
+- `GET /api/notifications/popup` - Notifications à afficher
+- `PUT /api/notifications/popup/{id}/dismiss` - Fermer popup
+
+---
+
+## Tâches à venir
+
+### P1 - Intégration Stripe
+- Activer les paiements réels pour les abonnements
+- En attente des clés API utilisateur
+
+### P2 - Améliorations Portail Client
+- Étendre les fonctionnalités du portail client original
+
+### P3 - CRM
+- Exploiter les soumissions du formulaire de contact
+
+---
+
+## Credentials de test
+- **Admin** : admin@syndicatducode.fr / AdminSyndicat2025!
+- **Développeur** : test@syndicatducode.fr / TestPassword123!
+
+---
+
+## Notes importantes
+- **Paiement Stripe** : Actuellement **MOCKED** (simulation)
+- **Footer** : Contient des boutons quick-login pour dev uniquement (à supprimer en prod)
+
+---
+
+*Dernière mise à jour : 07/03/2026*
