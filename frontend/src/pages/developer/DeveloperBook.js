@@ -55,6 +55,16 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
         {status.label}
       </div>
 
+      {/* Raison de rejet si rejeté */}
+      {project.status === "rejected" && project.rejection_reason && (
+        <div 
+          className="px-3 py-2 text-xs border-b"
+          style={{ background: "#ef444410", borderColor: "#ef444430", color: "#ef4444" }}
+        >
+          <strong>Raison du rejet :</strong> {project.rejection_reason}
+        </div>
+      )}
+
       {/* Image */}
       <div className="relative aspect-video bg-gray-800">
         {imageUrl ? (
