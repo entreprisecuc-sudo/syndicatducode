@@ -1,11 +1,11 @@
 /**
  * Gestion des projets - Admin
+ * Support mode sombre/clair
  */
 
 import { useState, useEffect } from "react";
 import { 
-  Rocket, Plus, Edit, Trash2, Eye, Users, 
-  Clock, CheckCircle, XCircle, ChevronRight
+  Rocket, Plus, Edit, Trash2, Users
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { getAuthHeaders } from "@/services/authService";
@@ -157,19 +157,33 @@ const AdminProjects = () => {
   return (
     <AdminLayout>
       {/* Titre mobile */}
-      <h1 className="text-xl font-bold mb-6 lg:hidden text-white">
+      <h1 
+        className="text-xl font-bold mb-6 lg:hidden"
+        style={{ color: "var(--admin-text)" }}
+      >
         Projets
       </h1>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-white font-semibold">Projets du Syndicat</h2>
-          <p className="text-gray-400 text-sm">Gérez les projets visibles par les développeurs</p>
+          <h2 
+            className="font-semibold"
+            style={{ color: "var(--admin-text)" }}
+          >
+            Projets du Syndicat
+          </h2>
+          <p 
+            className="text-sm"
+            style={{ color: "var(--admin-text-secondary)" }}
+          >
+            Gérez les projets visibles par les développeurs
+          </p>
         </div>
         <button 
           onClick={openCreateModal}
-          className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors inline-flex items-center gap-2"
+          className="px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-colors inline-flex items-center gap-2"
+          style={{ background: "var(--admin-accent)" }}
         >
           <Plus size={18} />
           Nouveau projet
@@ -178,13 +192,18 @@ const AdminProjects = () => {
 
       {/* Filtres */}
       <div 
-        className="p-4 rounded-xl mb-6"
-        style={{ background: "#16213e", border: "1px solid #1f4068" }}
+        className="p-4 rounded-xl mb-6 transition-colors duration-300"
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-[#1a1a2e] border-[#1f4068] text-white"
+          className="rounded-lg py-2 px-3 transition-colors duration-300"
+          style={{ 
+            background: "var(--admin-bg-section)", 
+            border: "1px solid var(--admin-border)",
+            color: "var(--admin-text)"
+          }}
         >
           <option value="">Tous les statuts</option>
           <option value="open">Ouvert</option>
@@ -196,7 +215,10 @@ const AdminProjects = () => {
       {/* Liste des projets */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+          <div 
+            className="animate-spin rounded-full h-8 w-8 border-b-2"
+            style={{ borderColor: "var(--admin-accent)" }}
+          />
         </div>
       ) : error ? (
         <div className="p-4 rounded-lg bg-red-500/20 text-red-400 text-center">
@@ -204,14 +226,15 @@ const AdminProjects = () => {
         </div>
       ) : projects.length === 0 ? (
         <div 
-          className="p-8 rounded-xl text-center"
-          style={{ background: "#16213e", border: "1px solid #1f4068" }}
+          className="p-8 rounded-xl text-center transition-colors duration-300"
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
         >
-          <Rocket size={48} className="mx-auto mb-4 text-gray-500" />
-          <p className="text-gray-400 mb-4">Aucun projet créé</p>
+          <Rocket size={48} className="mx-auto mb-4" style={{ color: "var(--admin-text-muted)" }} />
+          <p className="mb-4" style={{ color: "var(--admin-text-secondary)" }}>Aucun projet créé</p>
           <button 
             onClick={openCreateModal}
-            className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
+            className="px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-colors"
+            style={{ background: "var(--admin-accent)" }}
           >
             Créer le premier projet
           </button>
@@ -225,14 +248,19 @@ const AdminProjects = () => {
             return (
               <div 
                 key={project.id}
-                className="p-5 rounded-xl"
-                style={{ background: "#16213e", border: "1px solid #1f4068" }}
+                className="p-5 rounded-xl transition-colors duration-300"
+                style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
               >
                 {/* Header projet */}
                 <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-white font-semibold text-lg">{project.title}</h3>
+                      <h3 
+                        className="font-semibold text-lg"
+                        style={{ color: "var(--admin-text)" }}
+                      >
+                        {project.title}
+                      </h3>
                       <span 
                         className="px-2 py-0.5 rounded text-xs"
                         style={{ background: statusConfig.bg, color: statusConfig.color }}
@@ -240,7 +268,10 @@ const AdminProjects = () => {
                         {statusConfig.label}
                       </span>
                     </div>
-                    <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+                    <p 
+                      className="text-sm mb-3 line-clamp-2"
+                      style={{ color: "var(--admin-text-secondary)" }}
+                    >
                       {project.description}
                     </p>
                     
@@ -250,7 +281,11 @@ const AdminProjects = () => {
                         {project.technologies.map(tech => (
                           <span 
                             key={tech}
-                            className="px-2 py-1 rounded text-xs bg-[#1a1a2e] text-gray-300"
+                            className="px-2 py-1 rounded text-xs transition-colors duration-300"
+                            style={{ 
+                              background: "var(--admin-bg-section)", 
+                              color: "var(--admin-text-secondary)" 
+                            }}
                           >
                             {tech}
                           </span>
@@ -259,7 +294,10 @@ const AdminProjects = () => {
                     )}
                     
                     {/* Infos */}
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                    <div 
+                      className="flex flex-wrap items-center gap-4 text-sm"
+                      style={{ color: "var(--admin-text-muted)" }}
+                    >
                       <span style={{ color: collabConfig.color }}>
                         {collabConfig.label}
                       </span>
@@ -279,7 +317,12 @@ const AdminProjects = () => {
                     <select
                       value={project.status}
                       onChange={(e) => updateProjectStatus(project.id, e.target.value)}
-                      className="bg-[#1a1a2e] border-[#1f4068] text-white text-xs py-1.5"
+                      className="text-xs py-1.5 px-2 rounded transition-colors duration-300"
+                      style={{ 
+                        background: "var(--admin-bg-section)", 
+                        border: "1px solid var(--admin-border)",
+                        color: "var(--admin-text)"
+                      }}
                     >
                       <option value="open">Ouvert</option>
                       <option value="in_progress">En cours</option>
@@ -313,17 +356,23 @@ const AdminProjects = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
           <div 
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl p-6"
-            style={{ background: "#16213e" }}
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl p-6 transition-colors duration-300"
+            style={{ background: "var(--admin-bg-card)" }}
           >
-            <h2 className="text-xl font-bold text-white mb-6">
+            <h2 
+              className="text-xl font-bold mb-6"
+              style={{ color: "var(--admin-text)" }}
+            >
               {editingProject ? "Modifier le projet" : "Nouveau projet"}
             </h2>
             
             <form onSubmit={handleSubmit}>
               {/* Titre */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label 
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--admin-text-secondary)" }}
+                >
                   Titre du projet *
                 </label>
                 <input
@@ -332,13 +381,21 @@ const AdminProjects = () => {
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
                   placeholder="Ex: Développement ERP sur mesure"
-                  className="w-full bg-[#1a1a2e] border-[#1f4068] text-white"
+                  className="w-full rounded-lg py-2 px-3 transition-colors duration-300"
+                  style={{ 
+                    background: "var(--admin-bg-section)", 
+                    border: "1px solid var(--admin-border)",
+                    color: "var(--admin-text)"
+                  }}
                 />
               </div>
               
               {/* Description */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label 
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--admin-text-secondary)" }}
+                >
                   Description *
                 </label>
                 <textarea
@@ -347,20 +404,33 @@ const AdminProjects = () => {
                   required
                   rows={4}
                   placeholder="Décrivez le projet en détail..."
-                  className="w-full bg-[#1a1a2e] border-[#1f4068] text-white"
+                  className="w-full rounded-lg py-2 px-3 transition-colors duration-300"
+                  style={{ 
+                    background: "var(--admin-bg-section)", 
+                    border: "1px solid var(--admin-border)",
+                    color: "var(--admin-text)"
+                  }}
                 />
               </div>
               
               {/* Type de collaboration */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label 
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--admin-text-secondary)" }}
+                >
                   Type de collaboration *
                 </label>
                 <select
                   value={formData.collaboration_type}
                   onChange={(e) => setFormData({ ...formData, collaboration_type: e.target.value })}
                   required
-                  className="w-full bg-[#1a1a2e] border-[#1f4068] text-white"
+                  className="w-full rounded-lg py-2 px-3 transition-colors duration-300"
+                  style={{ 
+                    background: "var(--admin-bg-section)", 
+                    border: "1px solid var(--admin-border)",
+                    color: "var(--admin-text)"
+                  }}
                 >
                   <option value="freelance">Mission Freelance</option>
                   <option value="support">Soutien Technique</option>
@@ -370,7 +440,10 @@ const AdminProjects = () => {
               
               {/* Budget */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label 
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--admin-text-secondary)" }}
+                >
                   Budget indicatif
                 </label>
                 <input
@@ -378,13 +451,21 @@ const AdminProjects = () => {
                   value={formData.budget}
                   onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                   placeholder="Ex: 5 000 - 10 000 € ou À définir"
-                  className="w-full bg-[#1a1a2e] border-[#1f4068] text-white"
+                  className="w-full rounded-lg py-2 px-3 transition-colors duration-300"
+                  style={{ 
+                    background: "var(--admin-bg-section)", 
+                    border: "1px solid var(--admin-border)",
+                    color: "var(--admin-text)"
+                  }}
                 />
               </div>
               
               {/* Technologies */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label 
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--admin-text-secondary)" }}
+                >
                   Technologies requises
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -395,11 +476,11 @@ const AdminProjects = () => {
                         key={tech}
                         type="button"
                         onClick={() => toggleTechnology(tech)}
-                        className={`px-3 py-1.5 rounded text-sm transition-colors ${
-                          isSelected 
-                            ? "bg-red-500 text-white" 
-                            : "bg-[#1a1a2e] text-gray-400 hover:text-white"
-                        }`}
+                        className="px-3 py-1.5 rounded text-sm transition-colors"
+                        style={{
+                          background: isSelected ? "var(--admin-accent)" : "var(--admin-bg-section)",
+                          color: isSelected ? "#fff" : "var(--admin-text-secondary)"
+                        }}
                       >
                         {tech}
                       </button>
@@ -413,14 +494,19 @@ const AdminProjects = () => {
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
+                  className="px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-colors"
+                  style={{ background: "var(--admin-accent)" }}
                 >
                   {formLoading ? "Enregistrement..." : editingProject ? "Mettre à jour" : "Créer le projet"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-lg bg-gray-600 text-white font-medium hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 rounded-lg font-medium transition-colors"
+                  style={{ 
+                    background: "var(--admin-bg-section)", 
+                    color: "var(--admin-text-secondary)" 
+                  }}
                 >
                   Annuler
                 </button>
