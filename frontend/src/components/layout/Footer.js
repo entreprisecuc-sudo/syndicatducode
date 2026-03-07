@@ -13,7 +13,7 @@ import axios from "axios";
 
 const Footer = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { loginUser } = useAuth();
   const [loading, setLoading] = useState(null);
 
   // Connexion rapide pour les tests
@@ -30,7 +30,7 @@ const Footer = () => {
       
       // Stocker le token et mettre à jour le contexte
       localStorage.setItem("token", response.data.access_token);
-      login(response.data.access_token);
+      loginUser(response.data.user);
       
       // Redirection selon le rôle
       const redirectPaths = {
