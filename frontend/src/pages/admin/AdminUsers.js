@@ -3,7 +3,8 @@
  */
 
 import { useState, useEffect } from "react";
-import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, MoreVertical } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, MoreVertical, ChevronRight } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
