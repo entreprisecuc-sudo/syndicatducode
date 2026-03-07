@@ -1,66 +1,11 @@
 /**
  * Composant Footer
  * Pied de page avec navigation et mentions légales
- * Boutons de test pour connexion rapide aux différents espaces
  */
 
-import { useNavigate } from "react-router-dom";
-import { Shield, Code, Briefcase } from "lucide-react";
-import { CONFIG, API_URL } from "@/config/constants";
-import { useAuth } from "@/context/AuthContext";
-import { setAuthData } from "@/services/authService";
-import axios from "axios";
-
-// Identifiants de test pour chaque espace
-const TEST_ACCOUNTS = {
-  admin: {
-    email: "admin@syndicatducode.fr",
-    password: "AdminSyndicat2025!",
-    redirect: "/syndicat-admin"
-  },
-  developer: {
-    email: "test@syndicatducode.fr",
-    password: "TestPassword123!",
-    redirect: "/espace-developpeur"
-  },
-  commercial: {
-    email: "commercial1772755291@test.com",
-    password: "TestPassword123!",
-    redirect: "/espace-commercial"
-  }
-};
+import { CONFIG } from "@/config/constants";
 
 const Footer = () => {
-  const navigate = useNavigate();
-  const { loginUser } = useAuth();
-
-  // Connexion automatique et redirection
-  const handleQuickLogin = async (accountType) => {
-    const account = TEST_ACCOUNTS[accountType];
-    
-    try {
-      const response = await axios.post(`${API_URL}/auth/login`, {
-        email: account.email,
-        password: account.password
-      });
-      
-      const { access_token, user } = response.data;
-      
-      // Sauvegarder le token et l'utilisateur avec les bonnes clés
-      setAuthData(access_token, user);
-      
-      // Mettre à jour le contexte
-      loginUser(user);
-      
-      // Rediriger vers l'espace approprié
-      navigate(account.redirect);
-      
-    } catch (error) {
-      console.error("Erreur de connexion:", error);
-      alert("Erreur de connexion. Vérifiez les identifiants de test.");
-    }
-  };
-
   return (
     <footer className="footer" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -103,6 +48,9 @@ const Footer = () => {
               <li>
                 <a href="/rejoindre" className="footer-link">Rejoindre le Syndicat</a>
               </li>
+              <li>
+                <a href="/membres" className="footer-link">Membres du Syndicat</a>
+              </li>
             </ul>
           </div>
           
@@ -143,35 +91,9 @@ const Footer = () => {
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
               © {new Date().getFullYear()} {CONFIG.companyName}. Tous droits réservés.
             </p>
-            <div className="flex items-center gap-2 flex-wrap justify-center">
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }} className="mr-2">
-                {CONFIG.email}
-              </p>
-              <button 
-                onClick={() => handleQuickLogin('admin')}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hover:opacity-90 cursor-pointer"
-                style={{ background: '#dc2626', color: 'white' }}
-              >
-                <Shield size={14} />
-                Admin
-              </button>
-              <button 
-                onClick={() => handleQuickLogin('developer')}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hover:opacity-90 cursor-pointer"
-                style={{ background: '#8b5cf6', color: 'white' }}
-              >
-                <Code size={14} />
-                Espace Dev
-              </button>
-              <button 
-                onClick={() => handleQuickLogin('commercial')}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors hover:opacity-90 cursor-pointer"
-                style={{ background: '#f59e0b', color: 'white' }}
-              >
-                <Briefcase size={14} />
-                Espace Commercial
-              </button>
-            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+              {CONFIG.email}
+            </p>
           </div>
         </div>
       </div>
