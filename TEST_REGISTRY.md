@@ -180,6 +180,9 @@ Ce document recense tous les tests existants et à implémenter pour le projet.
 |------|--------|---------|
 | 2026-03-07 | Création | Registre initial créé |
 | 2026-03-07 | Refactoring | AdminModal centralisé, modales admin refactorées |
+| 2026-03-07 | Refactoring | Backend admin.py divisé en modules (users, portfolio, stats) |
+| 2026-03-07 | Refactoring | Emails hardcodés centralisés dans constants.js (CGU, RGPD, Rejoindre) |
+| 2026-03-07 | Refactoring | AdminUserDetail.js décomposé en 5 sous-composants (769L → 159L) |
 
 ---
 
