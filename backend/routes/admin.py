@@ -438,3 +438,128 @@ async def update_contact_status(
     )
     
     return {"message": f"Statut mis à jour: {new_status}"}
+
+
+# ============================================
+# VALIDATION DES PROJETS PORTFOLIO
+# ============================================
+
+@router.get("/portfolio/pending", dependencies=[Depends(admin_only)])
+async def get_pending_portfolio_projects(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Récupère tous les projets de portfolio en attente de validation
+    """
+    # Récupérer les projets en attente
+    projects = await db.portfolio.find(
+        {"status": "pending"},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    # Enrichir avec les infos utilisateur
+    for project in projects:
+        user = await db.users.find_one(
+            {"id": project["user_id"]},
+            {"_id": 0, "email": 1}
+        )
+        profile = await db.profiles.find_one(
+            {"user_id": project["user_id"]},
+            {"_id": 0, "first_name": 1, "last_name": 1}
+        )
+        project["user_email"] = user.get("email") if user else None
+        project["user_name"] = f"{profile.get('first_name', '')} {profile.get('last_name', '')}".strip() if profile else None
+    
+    return {"projects": projects, "total": len(projects)}
+
+
+@router.get("/portfolio/all", dependencies=[Depends(admin_only)])
+async def get_all_portfolio_projects(
+    status: str = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Récupère tous les projets de portfolio (avec filtre optionnel par statut)
+    """
+    query = {}
+    if status:
+        query["status"] = status
+    
+    projects = await db.portfolio.find(
+        query,
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(200)
+    
+    # Enrichir avec les infos utilisateur
+    for project in projects:
+        user = await db.users.find_one(
+            {"id": project["user_id"]},
+            {"_id": 0, "email": 1}
+        )
+        profile = await db.profiles.find_one(
+            {"user_id": project["user_id"]},
+            {"_id": 0, "first_name": 1, "last_name": 1}
+        )
+        project["user_email"] = user.get("email") if user else None
+        project["user_name"] = f"{profile.get('first_name', '')} {profile.get('last_name', '')}".strip() if profile else None
+    
+    return {"projects": projects, "total": len(projects)}
+
+
+@router.put("/portfolio/{project_id}/approve", dependencies=[Depends(admin_only)])
+async def approve_portfolio_project(
+    project_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Approuve un projet de portfolio
+    """
+    result = await db.portfolio.update_one(
+        {"id": project_id},
+        {"$set": {"status": "approved", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Projet non trouvé"
+        )
+    
+    # Log de l'action
+    await log_admin_action(
+        current_user["sub"],
+        "APPROVE_PORTFOLIO",
+        f"Projet portfolio {project_id} approuvé"
+    )
+    
+    return {"message": "Projet approuvé avec succès"}
+
+
+@router.put("/portfolio/{project_id}/reject", dependencies=[Depends(admin_only)])
+async def reject_portfolio_project(
+    project_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Rejette un projet de portfolio
+    """
+    result = await db.portfolio.update_one(
+        {"id": project_id},
+        {"$set": {"status": "rejected", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Projet non trouvé"
+        )
+    
+    # Log de l'action
+    await log_admin_action(
+        current_user["sub"],
+        "REJECT_PORTFOLIO",
+        f"Projet portfolio {project_id} rejeté"
+    )
+    
+    return {"message": "Projet rejeté"}
+
