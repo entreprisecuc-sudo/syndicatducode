@@ -613,6 +613,7 @@ const SubscriptionTab = ({ subscription }) => {
 const AdminUserDetail = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
+  const { currentTheme } = useAdminTheme();
   
   const [userData, setUserData] = useState(null);
   const [activity, setActivity] = useState([]);
@@ -663,7 +664,7 @@ const AdminUserDetail = () => {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin text-red-500" size={48} />
+          <Loader2 className="animate-spin" style={{ color: "var(--admin-accent)" }} size={48} />
         </div>
       </AdminLayout>
     );
@@ -677,7 +678,7 @@ const AdminUserDetail = () => {
           <button
             onClick={() => navigate("/syndicat-admin/utilisateurs")}
             className="px-4 py-2 rounded-lg text-white"
-            style={{ background: "#e94560" }}
+            style={{ background: "var(--admin-accent)" }}
           >
             Retour à la liste
           </button>
@@ -696,21 +697,25 @@ const AdminUserDetail = () => {
       {/* Bouton retour */}
       <button
         onClick={() => navigate("/syndicat-admin/utilisateurs")}
-        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
+        className="flex items-center gap-2 transition-colors mb-6 hover:opacity-80"
+        style={{ color: "var(--admin-text-secondary)" }}
       >
         <ArrowLeft size={18} />
         Retour à la liste des utilisateurs
       </button>
 
       {/* Titre */}
-      <h1 className="text-2xl font-bold text-white mb-6">
+      <h1 
+        className="text-2xl font-bold mb-6"
+        style={{ color: "var(--admin-text)" }}
+      >
         Détail utilisateur
       </h1>
 
       {/* Onglets */}
       <div 
-        className="flex flex-wrap gap-2 p-2 rounded-xl mb-6"
-        style={{ background: "#16213e", border: "1px solid #1f4068" }}
+        className="flex flex-wrap gap-2 p-2 rounded-xl mb-6 transition-colors duration-300"
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
         {TABS.map((tab) => {
           const Icon = tab.icon;
@@ -724,11 +729,10 @@ const AdminUserDetail = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive ? "text-white" : "text-gray-400 hover:text-white"
-              }`}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               style={{ 
-                background: isActive ? "#e94560" : "transparent"
+                background: isActive ? "var(--admin-accent)" : "transparent",
+                color: isActive ? "#fff" : "var(--admin-text-secondary)"
               }}
               data-testid={`tab-${tab.id}`}
             >
