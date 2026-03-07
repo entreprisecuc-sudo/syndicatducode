@@ -145,17 +145,19 @@
 ```
 ├── App.js                          # Routeur principal
 ├── config/constants.js             # Configuration centralisée
-├── context/                        # AuthContext, ModalContext
+├── context/                        # AuthContext, ModalContext, AdminThemeContext
 ├── services/authService.js         # API calls auth
 ├── components/
 │   ├── layout/                     # Navigation, Footer
 │   ├── sections/                   # Hero, Services, Contact, etc.
 │   ├── modals/                     # DevisModal
 │   ├── dashboard/DashboardLayout.js
-│   ├── admin/                      # Composants admin
+│   ├── admin/
+│   │   ├── AdminLayout.js          # Layout admin avec thème
+│   │   └── AdminModal.js           # Composant modal réutilisable (+ utilitaires)
 │   └── NotificationsPopup.js       # Popup notifications
 ├── pages/
-│   ├── admin/                      # AdminDashboard, AdminPortfolioValidation
+│   ├── admin/                      # AdminDashboard, AdminPortfolioValidation, etc.
 │   ├── developer/                  # DeveloperDashboard, DeveloperBook, DeveloperMessages
 │   ├── commercial/                 # CommercialDashboard
 │   ├── MembersPage.js              # Liste membres publique
@@ -169,7 +171,11 @@
 ├── middleware/auth.py              # JWT, RoleChecker
 ├── routes/
 │   ├── auth.py                     # Authentification
-│   ├── admin.py                    # Administration + Validation portfolio
+│   ├── admin/                      # Module admin (refactoré)
+│   │   ├── __init__.py             # Routeur principal
+│   │   ├── users.py                # Gestion utilisateurs
+│   │   ├── portfolio.py            # Validation portfolios
+│   │   └── stats.py                # Stats, logs, contacts
 │   ├── projects.py                 # Projets du Syndicat
 │   ├── announcements.py            # Annonces
 │   ├── alerts.py                   # Alertes
