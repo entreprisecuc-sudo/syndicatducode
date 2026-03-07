@@ -92,10 +92,11 @@ function App() {
   return (
     <AuthProvider>
       <ModalProvider>
-        <div className="App">
-          <BrowserRouter>
-            {/* Alertes globales (bannières et popups) */}
-            <GlobalAlerts />
+        <AdminThemeProvider>
+          <div className="App">
+            <BrowserRouter>
+              {/* Alertes globales (bannières et popups) */}
+              <GlobalAlerts />
             
             <Routes>
               {/* ============================================ */}
