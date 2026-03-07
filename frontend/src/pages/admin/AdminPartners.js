@@ -298,79 +298,111 @@ const AdminPartners = () => {
       )}
 
       {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6" style={{ background: "var(--admin-bg-card)" }}>
-            <h2 className="text-xl font-bold text-white mb-6">
-              {editingPartner ? "Modifier le partenaire" : "Nouveau partenaire"}
-            </h2>
-            
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Nom *</label>
-                  <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white" />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Description *</label>
-                  <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required rows={2} className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white" />
-                </div>
+      <AdminModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={editingPartner ? "Modifier le partenaire" : "Nouveau partenaire"}
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handleSubmit}>
+          <ModalFormGroup label="Nom" required>
+            <ModalInput 
+              type="text" 
+              value={formData.name} 
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+              required 
+            />
+          </ModalFormGroup>
+          
+          <ModalFormGroup label="Description" required>
+            <ModalTextarea 
+              value={formData.description} 
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
+              required 
+              rows={2} 
+            />
+          </ModalFormGroup>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Catégorie *</label>
-                  <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white">
-                    {Object.entries(CATEGORY_CONFIG).map(([key, val]) => (
-                      <option key={key} value={key}>{val.label}</option>
-                    ))}
-                  </select>
-                </div>
+          <ModalFormGroup label="Catégorie" required>
+            <ModalSelect 
+              value={formData.category} 
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            >
+              {Object.entries(CATEGORY_CONFIG).map(([key, val]) => (
+                <option key={key} value={key}>{val.label}</option>
+              ))}
+            </ModalSelect>
+          </ModalFormGroup>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">URL Logo</label>
-                    <input type="url" value={formData.logo_url} onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })} placeholder="https://..." className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Site web</label>
-                    <input type="url" value={formData.website_url} onChange={(e) => setFormData({ ...formData, website_url: e.target.value })} placeholder="https://..." className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white text-sm" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Avantages membres (un par ligne)</label>
-                  <textarea value={formData.advantages} onChange={(e) => setFormData({ ...formData, advantages: e.target.value })} rows={3} placeholder="-20% sur tous les plans&#10;Support prioritaire..." className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Code promo</label>
-                    <input type="text" value={formData.discount_code} onChange={(e) => setFormData({ ...formData, discount_code: e.target.value })} placeholder="SYNDICAT20" className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white font-mono" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Email contact</label>
-                    <input type="email" value={formData.contact_email} onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })} className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white" />
-                  </div>
-                </div>
-
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" checked={formData.is_featured} onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })} className="w-5 h-5 rounded" />
-                  <span className="text-gray-300">Mettre en avant (partenaire vedette)</span>
-                </label>
-              </div>
-              
-              <div className="flex gap-3 mt-6">
-                <button type="submit" disabled={formLoading} className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium">
-                  {formLoading ? "..." : editingPartner ? "Mettre à jour" : "Créer"}
-                </button>
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 rounded-lg bg-gray-600 text-white">
-                  Annuler
-                </button>
-              </div>
-            </form>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <ModalFormGroup label="URL Logo">
+              <ModalInput 
+                type="url" 
+                value={formData.logo_url} 
+                onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })} 
+                placeholder="https://..." 
+              />
+            </ModalFormGroup>
+            <ModalFormGroup label="Site web">
+              <ModalInput 
+                type="url" 
+                value={formData.website_url} 
+                onChange={(e) => setFormData({ ...formData, website_url: e.target.value })} 
+                placeholder="https://..." 
+              />
+            </ModalFormGroup>
           </div>
-        </div>
-      )}
+
+          <ModalFormGroup label="Avantages membres (un par ligne)">
+            <ModalTextarea 
+              value={formData.advantages} 
+              onChange={(e) => setFormData({ ...formData, advantages: e.target.value })} 
+              rows={3} 
+              placeholder={"-20% sur tous les plans\nSupport prioritaire..."} 
+            />
+          </ModalFormGroup>
+
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <ModalFormGroup label="Code promo">
+              <ModalInput 
+                type="text" 
+                value={formData.discount_code} 
+                onChange={(e) => setFormData({ ...formData, discount_code: e.target.value })} 
+                placeholder="SYNDICAT20" 
+              />
+            </ModalFormGroup>
+            <ModalFormGroup label="Email contact">
+              <ModalInput 
+                type="email" 
+                value={formData.contact_email} 
+                onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })} 
+              />
+            </ModalFormGroup>
+          </div>
+
+          <div className="mb-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={formData.is_featured} 
+                onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })} 
+                className="w-5 h-5 rounded" 
+                style={{ accentColor: "var(--admin-accent)" }}
+              />
+              <span style={{ color: "var(--admin-text-secondary)" }}>
+                Mettre en avant (partenaire vedette)
+              </span>
+            </label>
+          </div>
+          
+          <ModalActions>
+            <ModalSubmitButton loading={formLoading}>
+              {editingPartner ? "Mettre à jour" : "Créer"}
+            </ModalSubmitButton>
+            <ModalCancelButton onClick={() => setShowModal(false)} />
+          </ModalActions>
+        </form>
+      </AdminModal>
     </AdminLayout>
   );
 };
