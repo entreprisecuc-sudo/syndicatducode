@@ -271,7 +271,7 @@ const MembersPage = () => {
           </div>
           
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
-            Zone Membres
+            Membres du Syndicat
           </h1>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
             Découvrez les développeurs partenaires du Syndicat du Code. 
