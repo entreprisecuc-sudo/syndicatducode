@@ -191,7 +191,8 @@ const ProjectModal = ({ isOpen, onClose, project, onSave }) => {
     project_url: "",
     github_url: "",
     technologies: [],
-    year: ""
+    year: "",
+    is_adult_content: false
   });
 
   // Initialiser avec les données du projet si édition
@@ -205,7 +206,8 @@ const ProjectModal = ({ isOpen, onClose, project, onSave }) => {
         project_url: project.project_url || "",
         github_url: project.github_url || "",
         technologies: project.technologies || [],
-        year: project.year || ""
+        year: project.year || "",
+        is_adult_content: project.is_adult_content || false
       });
       
       // Preview de l'image existante
@@ -224,7 +226,8 @@ const ProjectModal = ({ isOpen, onClose, project, onSave }) => {
         project_url: "",
         github_url: "",
         technologies: [],
-        year: ""
+        year: "",
+        is_adult_content: false
       });
       setPreviewImage(null);
     }
