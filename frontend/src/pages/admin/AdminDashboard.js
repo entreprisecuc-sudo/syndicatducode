@@ -1,14 +1,14 @@
 /**
  * Dashboard Admin
  * Vue d'ensemble avec statistiques avancées
- * Support mode sombre/clair
+ * Blocs collapsibles pour une meilleure visibilité
  */
 
 import { useState, useEffect } from "react";
 import { 
   Users, UserCheck, UserX, Clock, FileText, TrendingUp,
   Rocket, Megaphone, Bell, CreditCard, Handshake, Euro,
-  Mail, CheckCircle, AlertCircle, FolderOpen
+  Mail, CheckCircle, AlertCircle, FolderOpen, ChevronDown, ChevronUp
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { getAuthHeaders } from "@/services/authService";
@@ -42,26 +42,74 @@ const StatCard = ({ icon: Icon, label, value, color = "#6366f1", subtext }) => (
 );
 
 /**
- * Section de statistiques avec titre
+ * Section collapsible avec titre cliquable
  */
-const StatsSection = ({ title, children, columns = 5 }) => (
-  <div className="mb-6">
-    <h3 
-      className="font-semibold mb-3 text-sm uppercase tracking-wide"
-      style={{ color: "var(--admin-text)" }}
+const CollapsibleSection = ({ 
+  title, 
+  icon, 
+  children, 
+  columns = 5, 
+  defaultOpen = true,
+  accentColor = "#6366f1"
+}) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div 
+      className="mb-4 rounded-xl overflow-hidden transition-all duration-300"
+      style={{ 
+        background: "var(--admin-bg-section)", 
+        border: "1px solid var(--admin-border)" 
+      }}
     >
-      {title}
-    </h3>
-    <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-${columns} gap-3`}>
-      {children}
+      {/* Header cliquable */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-3 flex items-center justify-between hover:opacity-90 transition-all"
+        style={{ background: `${accentColor}15` }}
+        data-testid={`collapse-${title.replace(/\s+/g, '-').toLowerCase()}`}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-lg">{icon}</span>
+          <h3 
+            className="font-semibold text-sm uppercase tracking-wide"
+            style={{ color: "var(--admin-text)" }}
+          >
+            {title}
+          </h3>
+        </div>
+        <div 
+          className="p-1.5 rounded-lg transition-transform duration-200"
+          style={{ 
+            background: "var(--admin-bg-card)",
+            transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)"
+          }}
+        >
+          <ChevronDown size={18} style={{ color: "var(--admin-text-secondary)" }} />
+        </div>
+      </button>
+
+      {/* Contenu collapsible */}
+      <div 
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className={`p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-${columns} gap-3`}>
+          {children}
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  
+  // État pour ouvrir/fermer tous les blocs
+  const [allOpen, setAllOpen] = useState(true);
 
   useEffect(() => {
     fetchStats();
@@ -106,12 +154,29 @@ const AdminDashboard = () => {
         className="p-5 rounded-xl mb-6"
         style={{ background: "linear-gradient(135deg, #e94560, #1f4068)" }}
       >
-        <h2 className="text-lg font-semibold text-white mb-1">
-          Administration Le Syndicat du Code
-        </h2>
-        <p className="text-white/80 text-sm">
-          Vue d'ensemble de la plateforme et statistiques en temps réel.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-white mb-1">
+              Administration Le Syndicat du Code
+            </h2>
+            <p className="text-white/80 text-sm">
+              Vue d'ensemble de la plateforme et statistiques en temps réel.
+            </p>
+          </div>
+          
+          {/* Bouton pour tout réduire/ouvrir - visible seulement quand les stats sont chargées */}
+          {!loading && !error && (
+            <button
+              onClick={() => setAllOpen(!allOpen)}
+              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+              style={{ background: "rgba(255,255,255,0.2)", color: "white" }}
+              data-testid="toggle-all-sections"
+            >
+              {allOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              {allOpen ? "Tout réduire" : "Tout ouvrir"}
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -128,7 +193,14 @@ const AdminDashboard = () => {
       ) : (
         <>
           {/* ===== UTILISATEURS ===== */}
-          <StatsSection title="👥 Utilisateurs" columns={6}>
+          <CollapsibleSection 
+            title="Utilisateurs" 
+            icon="👥" 
+            columns={6}
+            defaultOpen={allOpen}
+            accentColor="#6366f1"
+            key={`users-${allOpen}`}
+          >
             <StatCard 
               icon={Users}
               label="Total"
@@ -165,10 +237,17 @@ const AdminDashboard = () => {
               value={stats?.users?.suspended || 0}
               color="#ef4444"
             />
-          </StatsSection>
+          </CollapsibleSection>
 
           {/* ===== DEMANDES DE CONTACT ===== */}
-          <StatsSection title="📬 Demandes de contact" columns={4}>
+          <CollapsibleSection 
+            title="Demandes de contact" 
+            icon="📬" 
+            columns={4}
+            defaultOpen={allOpen}
+            accentColor="#f59e0b"
+            key={`contacts-${allOpen}`}
+          >
             <StatCard 
               icon={Mail}
               label="Total reçues"
@@ -193,10 +272,17 @@ const AdminDashboard = () => {
               value={stats?.contacts?.converted || 0}
               color="#10b981"
             />
-          </StatsSection>
+          </CollapsibleSection>
 
           {/* ===== PROJETS ===== */}
-          <StatsSection title="🚀 Projets du Syndicat" columns={5}>
+          <CollapsibleSection 
+            title="Projets du Syndicat" 
+            icon="🚀" 
+            columns={5}
+            defaultOpen={allOpen}
+            accentColor="#10b981"
+            key={`projects-${allOpen}`}
+          >
             <StatCard 
               icon={Rocket}
               label="Total projets"
@@ -227,10 +313,17 @@ const AdminDashboard = () => {
               value={stats?.projects?.candidatures || 0}
               color="#8b5cf6"
             />
-          </StatsSection>
+          </CollapsibleSection>
 
           {/* ===== CONTENUS ===== */}
-          <StatsSection title="📝 Contenus" columns={4}>
+          <CollapsibleSection 
+            title="Contenus" 
+            icon="📝" 
+            columns={4}
+            defaultOpen={allOpen}
+            accentColor="#3b82f6"
+            key={`contents-${allOpen}`}
+          >
             <StatCard 
               icon={Megaphone}
               label="Annonces"
@@ -257,10 +350,17 @@ const AdminDashboard = () => {
               value={stats?.alerts?.banner || 0}
               color="#10b981"
             />
-          </StatsSection>
+          </CollapsibleSection>
 
           {/* ===== ABONNEMENTS ===== */}
-          <StatsSection title="💰 Abonnements" columns={4}>
+          <CollapsibleSection 
+            title="Abonnements" 
+            icon="💰" 
+            columns={4}
+            defaultOpen={allOpen}
+            accentColor="#8b5cf6"
+            key={`subscriptions-${allOpen}`}
+          >
             <StatCard 
               icon={CreditCard}
               label="Forfaits créés"
@@ -291,10 +391,17 @@ const AdminDashboard = () => {
               subtext="Devs abonnés"
               color="#8b5cf6"
             />
-          </StatsSection>
+          </CollapsibleSection>
 
           {/* ===== PARTENAIRES ===== */}
-          <StatsSection title="🤝 Partenaires" columns={3}>
+          <CollapsibleSection 
+            title="Partenaires" 
+            icon="🤝" 
+            columns={3}
+            defaultOpen={allOpen}
+            accentColor="#ec4899"
+            key={`partners-${allOpen}`}
+          >
             <StatCard 
               icon={Handshake}
               label="Total partenaires"
@@ -321,7 +428,7 @@ const AdminDashboard = () => {
                 color="#3b82f6"
               />
             )}
-          </StatsSection>
+          </CollapsibleSection>
         </>
       )}
     </AdminLayout>
