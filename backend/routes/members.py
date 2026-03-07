@@ -178,9 +178,9 @@ async def get_public_member_detail(member_id: str):
         {"_id": 0}
     ) or {}
     
-    # Récupérer tous les projets du portfolio
+    # Récupérer tous les projets du portfolio (seulement approuvés)
     projects = await db.portfolio.find(
-        {"user_id": member_id},
+        {"user_id": member_id, "status": "approved"},
         {"_id": 0}
     ).sort("created_at", -1).to_list(20)
     
