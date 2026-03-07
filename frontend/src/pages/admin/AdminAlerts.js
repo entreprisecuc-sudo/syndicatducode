@@ -368,214 +368,169 @@ const AdminAlerts = () => {
       )}
 
       {/* Modal création/édition */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div 
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl p-6"
-            style={{ background: "var(--admin-bg-card)" }}
-          >
-            <h2 className="text-xl font-bold text-white mb-6">
-              {editingAlert ? "Modifier l'alerte" : "Nouvelle alerte"}
-            </h2>
-            
-            <form onSubmit={handleSubmit}>
-              {/* Titre */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Titre *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                  maxLength={100}
-                  placeholder="Ex: Maintenance prévue"
-                  className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
+      <AdminModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={editingAlert ? "Modifier l'alerte" : "Nouvelle alerte"}
+      >
+        <form onSubmit={handleSubmit}>
+          <ModalFormGroup label="Titre" required>
+            <ModalInput
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              required
+              maxLength={100}
+              placeholder="Ex: Maintenance prévue"
+            />
+          </ModalFormGroup>
+          
+          <ModalFormGroup label="Message" required>
+            <ModalTextarea
+              value={formData.message}
+              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+              required
+              rows={3}
+              maxLength={500}
+              placeholder="Rédigez le message de l'alerte..."
+            />
+          </ModalFormGroup>
+          
+          {/* Type d'alerte */}
+          <ModalFormGroup label="Type d'alerte" required>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(TYPE_CONFIG).map(([key, config]) => {
+                const Icon = config.icon;
+                const isSelected = formData.alert_type === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, alert_type: key })}
+                    className="p-3 rounded-lg border transition-colors flex items-center justify-center gap-2"
+                    style={{
+                      borderColor: isSelected ? "var(--admin-accent)" : "var(--admin-border)",
+                      background: isSelected ? "rgba(233, 69, 96, 0.2)" : "var(--admin-bg-section)"
+                    }}
+                  >
+                    <Icon size={18} style={{ color: isSelected ? "var(--admin-text)" : "var(--admin-text-secondary)" }} />
+                    <span style={{ color: isSelected ? "var(--admin-text)" : "var(--admin-text-secondary)" }}>
+                      {config.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </ModalFormGroup>
+          
+          {/* Style */}
+          <ModalFormGroup label="Style visuel" required>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {Object.entries(STYLE_CONFIG).map(([key, config]) => {
+                const Icon = config.icon;
+                const isSelected = formData.style === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, style: key })}
+                    className="p-3 rounded-lg border transition-colors flex flex-col items-center gap-2"
+                    style={{
+                      borderColor: isSelected ? "var(--admin-accent)" : "var(--admin-border)",
+                      background: isSelected ? "rgba(233, 69, 96, 0.2)" : "var(--admin-bg-section)"
+                    }}
+                  >
+                    <Icon size={20} style={{ color: config.color }} />
+                    <span 
+                      className="text-xs"
+                      style={{ color: isSelected ? "var(--admin-text)" : "var(--admin-text-secondary)" }}
+                    >
+                      {config.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </ModalFormGroup>
+          
+          <ModalFormGroup label="Destinataires" required>
+            <ModalSelect
+              value={formData.target}
+              onChange={(e) => setFormData({ ...formData, target: e.target.value })}
+              required
+            >
+              <option value="all">Tous les membres</option>
+              <option value="developer">Développeurs uniquement</option>
+              <option value="commercial">Commerciaux uniquement</option>
+            </ModalSelect>
+          </ModalFormGroup>
+          
+          <ModalFormGroup label="URL de l'image (optionnel)">
+            <ModalInput
+              type="url"
+              value={formData.image_url}
+              onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+              placeholder="https://exemple.com/image.jpg"
+            />
+            {formData.image_url && (
+              <div 
+                className="mt-2 p-2 rounded-lg"
+                style={{ background: "var(--admin-bg-section)", border: "1px solid var(--admin-border)" }}
+              >
+                <img 
+                  src={formData.image_url} 
+                  alt="Aperçu" 
+                  className="max-h-32 rounded mx-auto"
+                  onError={(e) => e.target.style.display = 'none'}
                 />
               </div>
-              
-              {/* Message */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Message *
-                </label>
-                <textarea
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  required
-                  rows={3}
-                  maxLength={500}
-                  placeholder="Rédigez le message de l'alerte..."
-                  className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
-                />
-              </div>
-              
-              {/* Type d'alerte */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Type d'alerte *
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(TYPE_CONFIG).map(([key, config]) => {
-                    const Icon = config.icon;
-                    const isSelected = formData.alert_type === key;
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, alert_type: key })}
-                        className={`p-3 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
-                          isSelected 
-                            ? 'border-red-500 bg-red-500/20' 
-                            : 'border-[#1f4068] bg-[#1a1a2e] hover:border-gray-500'
-                        }`}
-                      >
-                        <Icon size={18} className={isSelected ? 'text-white' : 'text-gray-400'} />
-                        <span className={isSelected ? 'text-white' : 'text-gray-400'}>
-                          {config.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              
-              {/* Style */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Style visuel *
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {Object.entries(STYLE_CONFIG).map(([key, config]) => {
-                    const Icon = config.icon;
-                    const isSelected = formData.style === key;
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, style: key })}
-                        className={`p-3 rounded-lg border transition-colors flex flex-col items-center gap-2 ${
-                          isSelected 
-                            ? 'border-red-500 bg-red-500/20' 
-                            : 'border-[#1f4068] bg-[#1a1a2e] hover:border-gray-500'
-                        }`}
-                      >
-                        <Icon size={20} style={{ color: config.color }} />
-                        <span className={`text-xs ${isSelected ? 'text-white' : 'text-gray-400'}`}>
-                          {config.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              
-              {/* Cible */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Destinataires *
-                </label>
-                <select
-                  value={formData.target}
-                  onChange={(e) => setFormData({ ...formData, target: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
-                >
-                  <option value="all">Tous les membres</option>
-                  <option value="developer">Développeurs uniquement</option>
-                  <option value="commercial">Commerciaux uniquement</option>
-                </select>
-              </div>
-              
-              {/* Image optionnelle */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  URL de l'image (optionnel)
-                </label>
-                <input
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="https://exemple.com/image.jpg"
-                  className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
-                />
-                {formData.image_url && (
-                  <div className="mt-2 p-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068]">
-                    <img 
-                      src={formData.image_url} 
-                      alt="Aperçu" 
-                      className="max-h-32 rounded mx-auto"
-                      onError={(e) => e.target.style.display = 'none'}
-                    />
-                  </div>
-                )}
-              </div>
-              
-              {/* Lien optionnel */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    URL du lien (optionnel)
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.link_url}
-                    onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Texte du lien (optionnel)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.link_text}
-                    onChange={(e) => setFormData({ ...formData, link_text: e.target.value })}
-                    placeholder="En savoir plus"
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
-                  />
-                </div>
-              </div>
-              
-              {/* Fermable */}
-              <div className="mb-6">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.dismissible}
-                    onChange={(e) => setFormData({ ...formData, dismissible: e.target.checked })}
-                    className="w-5 h-5 rounded bg-[#1a1a2e] border-[#1f4068] text-red-500 focus:ring-red-500"
-                  />
-                  <span className="text-gray-300">
-                    L'utilisateur peut fermer cette alerte
-                  </span>
-                </label>
-              </div>
-              
-              {/* Boutons */}
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  disabled={formLoading}
-                  className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
-                >
-                  {formLoading ? "Enregistrement..." : editingAlert ? "Mettre à jour" : "Créer l'alerte"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-lg bg-gray-600 text-white font-medium hover:bg-gray-700 transition-colors"
-                >
-                  Annuler
-                </button>
-              </div>
-            </form>
+            )}
+          </ModalFormGroup>
+          
+          {/* Lien optionnel */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <ModalFormGroup label="URL du lien (optionnel)">
+              <ModalInput
+                type="url"
+                value={formData.link_url}
+                onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}
+                placeholder="https://..."
+              />
+            </ModalFormGroup>
+            <ModalFormGroup label="Texte du lien (optionnel)">
+              <ModalInput
+                type="text"
+                value={formData.link_text}
+                onChange={(e) => setFormData({ ...formData, link_text: e.target.value })}
+                placeholder="En savoir plus"
+              />
+            </ModalFormGroup>
           </div>
-        </div>
-      )}
+          
+          {/* Fermable */}
+          <div className="mb-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.dismissible}
+                onChange={(e) => setFormData({ ...formData, dismissible: e.target.checked })}
+                className="w-5 h-5 rounded"
+                style={{ accentColor: "var(--admin-accent)" }}
+              />
+              <span style={{ color: "var(--admin-text-secondary)" }}>
+                L'utilisateur peut fermer cette alerte
+              </span>
+            </label>
+          </div>
+          
+          <ModalActions>
+            <ModalSubmitButton loading={formLoading}>
+              {editingAlert ? "Mettre à jour" : "Créer l'alerte"}
+            </ModalSubmitButton>
+            <ModalCancelButton onClick={() => setShowModal(false)} />
+          </ModalActions>
+        </form>
+      </AdminModal>
     </AdminLayout>
   );
 };
