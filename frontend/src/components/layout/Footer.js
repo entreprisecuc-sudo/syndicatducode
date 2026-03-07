@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { Shield, Code, Briefcase, Loader2 } from "lucide-react";
 import { CONFIG, DEV_MODE, TEST_ACCOUNTS, API_URL } from "@/config/constants";
 import { useAuth } from "@/context/AuthContext";
+import { setAuthData } from "@/services/authService";
 import axios from "axios";
 
 const Footer = () => {
@@ -28,8 +29,8 @@ const Footer = () => {
         password: account.password
       });
       
-      // Stocker le token et mettre à jour le contexte
-      localStorage.setItem("token", response.data.access_token);
+      // Stocker le token avec le service d'authentification
+      setAuthData(response.data.access_token, response.data.user);
       loginUser(response.data.user);
       
       // Redirection selon le rôle
