@@ -260,7 +260,7 @@ const AdminLayout = ({ children }) => {
 
         {/* Contenu */}
         <main 
-          className="flex-1 p-4 lg:p-6"
+          className="flex-1 p-4 lg:p-6 admin-theme-context"
           style={{
             "--admin-bg": currentTheme.bg,
             "--admin-bg-card": currentTheme.bgCard,
@@ -272,6 +272,27 @@ const AdminLayout = ({ children }) => {
             "--admin-accent": currentTheme.accent
           }}
         >
+          {/* Styles dynamiques pour le thème */}
+          <style>{`
+            .admin-theme-context .text-white { color: var(--admin-text) !important; }
+            .admin-theme-context .text-gray-400 { color: var(--admin-text-secondary) !important; }
+            .admin-theme-context .text-gray-500 { color: var(--admin-text-muted) !important; }
+            .admin-theme-context .text-gray-300 { color: var(--admin-text-secondary) !important; }
+            .admin-theme-context .bg-\\[\\#16213e\\] { background: var(--admin-bg-card) !important; }
+            .admin-theme-context .bg-\\[\\#1a1a2e\\] { background: var(--admin-bg-section) !important; }
+            .admin-theme-context .border-\\[\\#1f4068\\] { border-color: var(--admin-border) !important; }
+            .admin-theme-context input, 
+            .admin-theme-context select, 
+            .admin-theme-context textarea {
+              background: var(--admin-bg-section) !important;
+              border-color: var(--admin-border) !important;
+              color: var(--admin-text) !important;
+            }
+            .admin-theme-context input::placeholder,
+            .admin-theme-context textarea::placeholder {
+              color: var(--admin-text-muted) !important;
+            }
+          `}</style>
           {children}
         </main>
       </div>
