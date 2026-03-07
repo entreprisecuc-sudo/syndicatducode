@@ -460,6 +460,35 @@ const ProjectModal = ({ isOpen, onClose, project, onSave }) => {
             </div>
           </div>
 
+          {/* Contenu adulte */}
+          <div className="mb-4">
+            <label 
+              className="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors"
+              style={{ 
+                background: formData.is_adult_content ? "#ef444420" : "var(--bg-section)",
+                border: formData.is_adult_content ? "1px solid #ef4444" : "1px solid var(--border-color)"
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={formData.is_adult_content}
+                onChange={(e) => setFormData({ ...formData, is_adult_content: e.target.checked })}
+                className="w-5 h-5 rounded accent-red-500"
+              />
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={18} style={{ color: formData.is_adult_content ? "#ef4444" : "var(--text-muted)" }} />
+                <div>
+                  <p className="text-sm font-medium" style={{ color: formData.is_adult_content ? "#ef4444" : "var(--text-secondary)" }}>
+                    Contenu réservé aux +18 ans
+                  </p>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                    L'image sera floutée et le lien masqué sur la page publique
+                  </p>
+                </div>
+              </div>
+            </label>
+          </div>
+
           {/* Technologies */}
           <div className="mb-6">
             <button
