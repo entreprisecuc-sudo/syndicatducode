@@ -173,10 +173,12 @@ const AdminUsers = () => {
             return (
               <div 
                 key={user.id}
-                className="p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:border-red-500/50 transition-colors"
                 style={{ background: "#16213e", border: "1px solid #1f4068" }}
+                onClick={() => navigate(`/syndicat-admin/utilisateurs/${user.id}`)}
+                data-testid={`user-row-${user.id}`}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-1">
                   {/* Avatar */}
                   <div 
                     className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
@@ -186,8 +188,8 @@ const AdminUsers = () => {
                   </div>
                   
                   {/* Info */}
-                  <div>
-                    <p className="text-white font-medium">{user.email}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-medium truncate">{user.email}</p>
                     <div className="flex items-center gap-3 mt-1">
                       {/* Rôle */}
                       <span 
@@ -209,7 +211,7 @@ const AdminUsers = () => {
                 </div>
                 
                 {/* Actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   {/* Changer statut */}
                   {user.status === "active" ? (
                     <button
@@ -235,12 +237,16 @@ const AdminUsers = () => {
                     onChange={(e) => updateUserRole(user.id, e.target.value)}
                     disabled={actionLoading}
                     className="bg-[#1a1a2e] border-[#1f4068] text-white text-xs py-1.5"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <option value="" disabled>Changer rôle</option>
                     <option value="commercial">Commercial</option>
                     <option value="developer">Développeur</option>
                     <option value="admin">Admin</option>
                   </select>
+                  
+                  {/* Indicateur cliquable */}
+                  <ChevronRight size={18} className="text-gray-500 hidden md:block" />
                 </div>
               </div>
             );
