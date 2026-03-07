@@ -99,6 +99,22 @@
   - Liens remplacés par **"Lien masqué (contenu +18)"** non cliquables
 - Champ `is_adult_content` ajouté au modèle portfolio
 
+### ✅ Refactoring Phase 1 (Phase 19) - 07/03/2026
+**Objectif** : Réduction de la dette technique, respect des principes KISS/DRY
+- **Suppression des credentials hardcodées** : Boutons quick-login retirés du Footer.js
+- **Composant AdminModal centralisé** : Créé avec utilitaires (ModalFormGroup, ModalInput, etc.)
+- **Modales admin refactorées** :
+  - `AdminAlerts.js` - Modal migrée vers AdminModal
+  - `AdminAnnouncements.js` - Modal migrée vers AdminModal
+  - `AdminPartners.js` - Modal migrée vers AdminModal
+  - `AdminSubscriptions.js` - 2 modales migrées vers AdminModal
+- **Backend admin.py divisé** :
+  - `routes/admin/__init__.py` - Module principal
+  - `routes/admin/users.py` - Gestion des utilisateurs
+  - `routes/admin/portfolio.py` - Validation des portfolios
+  - `routes/admin/stats.py` - Statistiques, logs et contacts
+- **Registre des tests créé** : `/app/TEST_REGISTRY.md`
+
 ### ✅ Gestion Utilisateurs Avancée - Admin (Phase 17)
 - Lignes utilisateurs cliquables dans la liste
 - Page de détail utilisateur avec 5 onglets :
