@@ -2,6 +2,7 @@
  * Dashboard Admin
  * Vue d'ensemble avec statistiques avancées
  * Blocs collapsibles pour une meilleure visibilité
+ * Persistance des préférences dans localStorage
  */
 
 import { useState, useEffect } from "react";
@@ -14,6 +15,42 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
 import axios from "axios";
+
+// Clé localStorage pour les préférences
+const DASHBOARD_PREFS_KEY = "syndicat_admin_dashboard_prefs";
+
+// Sections par défaut (toutes ouvertes)
+const DEFAULT_SECTIONS = {
+  users: true,
+  contacts: true,
+  projects: true,
+  contents: true,
+  subscriptions: true,
+  partners: true
+};
+
+/**
+ * Récupère les préférences depuis localStorage
+ */
+const getStoredPrefs = () => {
+  try {
+    const stored = localStorage.getItem(DASHBOARD_PREFS_KEY);
+    return stored ? JSON.parse(stored) : DEFAULT_SECTIONS;
+  } catch {
+    return DEFAULT_SECTIONS;
+  }
+};
+
+/**
+ * Sauvegarde les préférences dans localStorage
+ */
+const savePrefs = (prefs) => {
+  try {
+    localStorage.setItem(DASHBOARD_PREFS_KEY, JSON.stringify(prefs));
+  } catch {
+    // Ignore les erreurs de localStorage
+  }
+};
 
 /**
  * Carte de statistique individuelle
@@ -49,11 +86,11 @@ const CollapsibleSection = ({
   icon, 
   children, 
   columns = 5, 
-  defaultOpen = true,
-  accentColor = "#6366f1"
+  isOpen,
+  onToggle,
+  accentColor = "#6366f1",
+  sectionId
 }) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
   return (
     <div 
       className="mb-4 rounded-xl overflow-hidden transition-all duration-300"
@@ -64,10 +101,10 @@ const CollapsibleSection = ({
     >
       {/* Header cliquable */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onToggle}
         className="w-full px-4 py-3 flex items-center justify-between hover:opacity-90 transition-all"
         style={{ background: `${accentColor}15` }}
-        data-testid={`collapse-${title.replace(/\s+/g, '-').toLowerCase()}`}
+        data-testid={`collapse-${sectionId}`}
       >
         <div className="flex items-center gap-3">
           <span className="text-lg">{icon}</span>
