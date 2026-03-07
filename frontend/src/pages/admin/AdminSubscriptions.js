@@ -197,25 +197,25 @@ const AdminSubscriptions = () => {
 
   return (
     <AdminLayout>
-      <h1 className="text-xl font-bold mb-6 lg:hidden text-white">Abonnements</h1>
+      <h1 className="text-xl font-bold mb-6 lg:hidden style={{ color: "var(--admin-text)" }}">Abonnements</h1>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-white font-semibold">Gestion des Abonnements</h2>
-          <p className="text-gray-400 text-sm">Configurez les plans et gérez les abonnés</p>
+          <h2 className="style={{ color: "var(--admin-text)" }} font-semibold">Gestion des Abonnements</h2>
+          <p className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Configurez les plans et gérez les abonnés</p>
         </div>
         <div className="flex gap-2">
           <button 
             onClick={() => setShowStripeModal(true)}
-            className="px-4 py-2 rounded-lg bg-purple-500 text-white font-medium hover:bg-purple-600 transition-colors inline-flex items-center gap-2"
+            className="px-4 py-2 rounded-lg bg-purple-500 style={{ color: "var(--admin-text)" }} font-medium hover:bg-purple-600 transition-colors inline-flex items-center gap-2"
           >
             <Settings size={18} />
             Config Stripe
           </button>
           <button 
             onClick={openCreatePlanModal}
-            className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors inline-flex items-center gap-2"
+            className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }} font-medium hover:bg-red-600 transition-colors inline-flex items-center gap-2"
           >
             <Plus size={18} />
             Nouveau plan
@@ -226,21 +226,21 @@ const AdminSubscriptions = () => {
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+          <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
             <div className="text-2xl font-bold text-blue-400">{stats.plans.active}</div>
-            <div className="text-gray-400 text-sm">Plans actifs</div>
+            <div className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Plans actifs</div>
           </div>
-          <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+          <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
             <div className="text-2xl font-bold text-green-400">{stats.subscriptions.active}</div>
-            <div className="text-gray-400 text-sm">Abonnés actifs</div>
+            <div className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Abonnés actifs</div>
           </div>
-          <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+          <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
             <div className="text-2xl font-bold text-yellow-400">{stats.subscriptions.total}</div>
-            <div className="text-gray-400 text-sm">Total abonnements</div>
+            <div className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Total abonnements</div>
           </div>
-          <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+          <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
             <div className="text-2xl font-bold text-purple-400">{stats.revenue.monthly_estimate}€</div>
-            <div className="text-gray-400 text-sm">Revenus mensuels</div>
+            <div className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Revenus mensuels</div>
           </div>
         </div>
       )}
@@ -248,15 +248,15 @@ const AdminSubscriptions = () => {
       {/* Stripe Status */}
       <div 
         className="p-4 rounded-xl mb-6 flex items-center justify-between"
-        style={{ background: "#16213e", border: "1px solid #1f4068" }}
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
         <div className="flex items-center gap-3">
-          <CreditCard size={24} className={stripeConfig?.is_configured ? "text-green-400" : "text-gray-500"} />
+          <CreditCard size={24} className={stripeConfig?.is_configured ? "text-green-400" : "style={{ color: "var(--admin-text-muted)" }}"} />
           <div>
-            <p className="text-white font-medium">
+            <p className="style={{ color: "var(--admin-text)" }} font-medium">
               Stripe {stripeConfig?.is_configured ? "configuré" : "non configuré"}
             </p>
-            <p className="text-gray-400 text-sm">
+            <p className="style={{ color: "var(--admin-text-secondary)" }} text-sm">
               {stripeConfig?.is_configured 
                 ? `Mode ${stripeConfig.is_live_mode ? "Production" : "Test"}`
                 : "Configurez vos clés Stripe pour activer les paiements"
@@ -282,8 +282,8 @@ const AdminSubscriptions = () => {
             onClick={() => setActiveTab(tab.key)}
             className={`px-4 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-2 ${
               activeTab === tab.key 
-                ? "bg-red-500 text-white" 
-                : "bg-[#16213e] text-gray-400 hover:text-white"
+                ? "bg-red-500 style={{ color: "var(--admin-text)" }}" 
+                : "bg-[var(--admin-bg-card)] style={{ color: "var(--admin-text-secondary)" }} hover:style={{ color: "var(--admin-text)" }}"
             }`}
           >
             <tab.icon size={18} />
@@ -300,10 +300,10 @@ const AdminSubscriptions = () => {
       ) : activeTab === "plans" ? (
         /* Plans List */
         plans.length === 0 ? (
-          <div className="p-8 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
-            <CreditCard size={48} className="mx-auto mb-4 text-gray-500" />
-            <p className="text-gray-400 mb-4">Aucun plan créé</p>
-            <button onClick={openCreatePlanModal} className="px-4 py-2 rounded-lg bg-red-500 text-white">
+          <div className="p-8 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
+            <CreditCard size={48} className="mx-auto mb-4 style={{ color: "var(--admin-text-muted)" }}" />
+            <p className="style={{ color: "var(--admin-text-secondary)" }} mb-4">Aucun plan créé</p>
+            <button onClick={openCreatePlanModal} className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }}">
               Créer le premier plan
             </button>
           </div>
@@ -314,24 +314,24 @@ const AdminSubscriptions = () => {
                 key={plan.id}
                 className={`p-5 rounded-xl relative ${plan.status === "inactive" ? "opacity-60" : ""}`}
                 style={{ 
-                  background: "#16213e", 
+                  background: "var(--admin-bg-card)", 
                   border: plan.is_recommended ? "2px solid #e94560" : "1px solid #1f4068"
                 }}
               >
                 {plan.is_recommended && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-red-500 text-white text-xs font-medium flex items-center gap-1">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-red-500 style={{ color: "var(--admin-text)" }} text-xs font-medium flex items-center gap-1">
                     <Star size={12} />
                     Recommandé
                   </div>
                 )}
                 
-                <h3 className="text-white font-semibold text-lg mb-2">{plan.name}</h3>
-                <p className="text-gray-400 text-sm mb-4">{plan.description}</p>
+                <h3 className="style={{ color: "var(--admin-text)" }} font-semibold text-lg mb-2">{plan.name}</h3>
+                <p className="style={{ color: "var(--admin-text-secondary)" }} text-sm mb-4">{plan.description}</p>
                 
                 <div className="mb-4">
-                  <span className="text-3xl font-bold text-white">{plan.price_monthly}€</span>
-                  <span className="text-gray-400">/mois</span>
-                  <p className="text-sm text-gray-500">ou {plan.price_yearly}€/an</p>
+                  <span className="text-3xl font-bold style={{ color: "var(--admin-text)" }}">{plan.price_monthly}€</span>
+                  <span className="style={{ color: "var(--admin-text-secondary)" }}">/mois</span>
+                  <p className="text-sm style={{ color: "var(--admin-text-muted)" }}">ou {plan.price_yearly}€/an</p>
                 </div>
                 
                 {plan.features.length > 0 && (
@@ -345,13 +345,13 @@ const AdminSubscriptions = () => {
                   </ul>
                 )}
                 
-                <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
+                <div className="flex items-center justify-between text-sm style={{ color: "var(--admin-text-secondary)" }} mb-4">
                   <span>{plan.subscriber_count} abonné(s)</span>
                   {plan.trial_days > 0 && <span>{plan.trial_days}j d'essai</span>}
                 </div>
                 
                 <div className="flex gap-2">
-                  <button onClick={() => togglePlanStatus(plan)} className={`p-2 rounded-lg ${plan.status === "active" ? "bg-green-500/20 text-green-400" : "bg-gray-600/20 text-gray-400"}`}>
+                  <button onClick={() => togglePlanStatus(plan)} className={`p-2 rounded-lg ${plan.status === "active" ? "bg-green-500/20 text-green-400" : "bg-gray-600/20 style={{ color: "var(--admin-text-secondary)" }}"}`}>
                     {plan.status === "active" ? <Eye size={16} /> : <EyeOff size={16} />}
                   </button>
                   <button onClick={() => openEditPlanModal(plan)} className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
@@ -367,39 +367,39 @@ const AdminSubscriptions = () => {
         )
       ) : (
         /* Subscribers List */
-        <div className="rounded-xl overflow-hidden" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+        <div className="rounded-xl overflow-hidden" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#1f4068]">
-                <th className="text-left p-4 text-gray-400 font-medium">Utilisateur</th>
-                <th className="text-left p-4 text-gray-400 font-medium">Plan</th>
-                <th className="text-left p-4 text-gray-400 font-medium">Prix</th>
-                <th className="text-left p-4 text-gray-400 font-medium">Statut</th>
-                <th className="text-left p-4 text-gray-400 font-medium">Échéance</th>
+              <tr className="border-b border-[var(--admin-border)]">
+                <th className="text-left p-4 style={{ color: "var(--admin-text-secondary)" }} font-medium">Utilisateur</th>
+                <th className="text-left p-4 style={{ color: "var(--admin-text-secondary)" }} font-medium">Plan</th>
+                <th className="text-left p-4 style={{ color: "var(--admin-text-secondary)" }} font-medium">Prix</th>
+                <th className="text-left p-4 style={{ color: "var(--admin-text-secondary)" }} font-medium">Statut</th>
+                <th className="text-left p-4 style={{ color: "var(--admin-text-secondary)" }} font-medium">Échéance</th>
               </tr>
             </thead>
             <tbody>
               {subscriptions.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center p-8 text-gray-400">
+                  <td colSpan={5} className="text-center p-8 style={{ color: "var(--admin-text-secondary)" }}">
                     Aucun abonnement
                   </td>
                 </tr>
               ) : subscriptions.map(sub => (
-                <tr key={sub.id} className="border-b border-[#1f4068]/50">
-                  <td className="p-4 text-white">{sub.user_email}</td>
+                <tr key={sub.id} className="border-b border-[var(--admin-border)]/50">
+                  <td className="p-4 style={{ color: "var(--admin-text)" }}">{sub.user_email}</td>
                   <td className="p-4 text-gray-300">{sub.plan_name}</td>
                   <td className="p-4 text-gray-300">{sub.price}€/{sub.duration === "monthly" ? "mois" : "an"}</td>
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded text-xs ${
                       sub.status === "active" ? "bg-green-500/20 text-green-400" :
                       sub.status === "expired" ? "bg-red-500/20 text-red-400" :
-                      "bg-gray-500/20 text-gray-400"
+                      "bg-gray-500/20 style={{ color: "var(--admin-text-secondary)" }}"
                     }`}>
                       {sub.status}
                     </span>
                   </td>
-                  <td className="p-4 text-gray-400 text-sm">
+                  <td className="p-4 style={{ color: "var(--admin-text-secondary)" }} text-sm">
                     {new Date(sub.end_date).toLocaleDateString('fr-FR')}
                   </td>
                 </tr>
@@ -412,8 +412,8 @@ const AdminSubscriptions = () => {
       {/* Modal Plan */}
       {showPlanModal && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6" style={{ background: "#16213e" }}>
-            <h2 className="text-xl font-bold text-white mb-6">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6" style={{ background: "var(--admin-bg-card)" }}>
+            <h2 className="text-xl font-bold style={{ color: "var(--admin-text)" }} mb-6">
               {editingPlan ? "Modifier le plan" : "Nouveau plan"}
             </h2>
             
@@ -427,7 +427,7 @@ const AdminSubscriptions = () => {
                     onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
                     required
                     placeholder="Ex: Starter, Pro, Premium"
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}"
                   />
                 </div>
                 
@@ -439,7 +439,7 @@ const AdminSubscriptions = () => {
                     required
                     rows={2}
                     placeholder="Description courte du plan"
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}"
                   />
                 </div>
                 
@@ -452,7 +452,7 @@ const AdminSubscriptions = () => {
                       value={planForm.price_monthly}
                       onChange={(e) => setPlanForm({ ...planForm, price_monthly: e.target.value })}
                       required
-                      className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
+                      className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}"
                     />
                   </div>
                   <div>
@@ -463,7 +463,7 @@ const AdminSubscriptions = () => {
                       value={planForm.price_yearly}
                       onChange={(e) => setPlanForm({ ...planForm, price_yearly: e.target.value })}
                       required
-                      className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
+                      className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}"
                     />
                   </div>
                 </div>
@@ -477,7 +477,7 @@ const AdminSubscriptions = () => {
                     onChange={(e) => setPlanForm({ ...planForm, features: e.target.value })}
                     rows={4}
                     placeholder="Accès aux projets&#10;Support prioritaire&#10;..."
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}"
                   />
                 </div>
                 
@@ -488,7 +488,7 @@ const AdminSubscriptions = () => {
                     min="0"
                     value={planForm.trial_days}
                     onChange={(e) => setPlanForm({ ...planForm, trial_days: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}"
                   />
                 </div>
                 
@@ -504,10 +504,10 @@ const AdminSubscriptions = () => {
               </div>
               
               <div className="flex gap-3 mt-6">
-                <button type="submit" disabled={formLoading} className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium">
+                <button type="submit" disabled={formLoading} className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }} font-medium">
                   {formLoading ? "..." : editingPlan ? "Mettre à jour" : "Créer le plan"}
                 </button>
-                <button type="button" onClick={() => setShowPlanModal(false)} className="px-4 py-2 rounded-lg bg-gray-600 text-white">
+                <button type="button" onClick={() => setShowPlanModal(false)} className="px-4 py-2 rounded-lg bg-gray-600 style={{ color: "var(--admin-text)" }}">
                   Annuler
                 </button>
               </div>
@@ -519,9 +519,9 @@ const AdminSubscriptions = () => {
       {/* Modal Stripe Config */}
       {showStripeModal && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-xl p-6" style={{ background: "#16213e" }}>
-            <h2 className="text-xl font-bold text-white mb-2">Configuration Stripe</h2>
-            <p className="text-gray-400 text-sm mb-6">
+          <div className="w-full max-w-lg rounded-xl p-6" style={{ background: "var(--admin-bg-card)" }}>
+            <h2 className="text-xl font-bold style={{ color: "var(--admin-text)" }} mb-2">Configuration Stripe</h2>
+            <p className="style={{ color: "var(--admin-text-secondary)" }} text-sm mb-6">
               Entrez vos clés Stripe pour activer les paiements. 
               <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-1">
                 Obtenir les clés →
@@ -537,7 +537,7 @@ const AdminSubscriptions = () => {
                     value={stripeForm.stripe_public_key}
                     onChange={(e) => setStripeForm({ ...stripeForm, stripe_public_key: e.target.value })}
                     placeholder="pk_test_..."
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white font-mono text-sm"
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} font-mono text-sm"
                   />
                 </div>
                 
@@ -548,7 +548,7 @@ const AdminSubscriptions = () => {
                     value={stripeForm.stripe_secret_key}
                     onChange={(e) => setStripeForm({ ...stripeForm, stripe_secret_key: e.target.value })}
                     placeholder="sk_test_..."
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white font-mono text-sm"
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} font-mono text-sm"
                   />
                 </div>
                 
@@ -559,7 +559,7 @@ const AdminSubscriptions = () => {
                     value={stripeForm.stripe_webhook_secret}
                     onChange={(e) => setStripeForm({ ...stripeForm, stripe_webhook_secret: e.target.value })}
                     placeholder="whsec_..."
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white font-mono text-sm"
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} font-mono text-sm"
                   />
                 </div>
                 
@@ -581,10 +581,10 @@ const AdminSubscriptions = () => {
               </div>
               
               <div className="flex gap-3 mt-6">
-                <button type="submit" disabled={formLoading} className="px-4 py-2 rounded-lg bg-purple-500 text-white font-medium">
+                <button type="submit" disabled={formLoading} className="px-4 py-2 rounded-lg bg-purple-500 style={{ color: "var(--admin-text)" }} font-medium">
                   {formLoading ? "..." : "Enregistrer"}
                 </button>
-                <button type="button" onClick={() => setShowStripeModal(false)} className="px-4 py-2 rounded-lg bg-gray-600 text-white">
+                <button type="button" onClick={() => setShowStripeModal(false)} className="px-4 py-2 rounded-lg bg-gray-600 style={{ color: "var(--admin-text)" }}">
                   Annuler
                 </button>
               </div>

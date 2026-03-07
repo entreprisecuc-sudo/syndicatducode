@@ -158,14 +158,14 @@ const AdminPartners = () => {
 
   return (
     <AdminLayout>
-      <h1 className="text-xl font-bold mb-6 lg:hidden text-white">Partenaires</h1>
+      <h1 className="text-xl font-bold mb-6 lg:hidden style={{ color: "var(--admin-text)" }}">Partenaires</h1>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-white font-semibold">Partenaires de Services</h2>
-          <p className="text-gray-400 text-sm">Gérez les partenaires et leurs avantages pour les membres</p>
+          <h2 className="style={{ color: "var(--admin-text)" }} font-semibold">Partenaires de Services</h2>
+          <p className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Gérez les partenaires et leurs avantages pour les membres</p>
         </div>
-        <button onClick={openCreateModal} className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors inline-flex items-center gap-2">
+        <button onClick={openCreateModal} className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }} font-medium hover:bg-red-600 transition-colors inline-flex items-center gap-2">
           <Plus size={18} />
           Nouveau partenaire
         </button>
@@ -173,21 +173,21 @@ const AdminPartners = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+        <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <div className="text-2xl font-bold text-blue-400">{partners.length}</div>
-          <div className="text-gray-400 text-sm">Total</div>
+          <div className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Total</div>
         </div>
-        <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+        <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <div className="text-2xl font-bold text-green-400">{partners.filter(p => p.status === "active").length}</div>
-          <div className="text-gray-400 text-sm">Actifs</div>
+          <div className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Actifs</div>
         </div>
-        <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+        <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <div className="text-2xl font-bold text-yellow-400">{partners.filter(p => p.is_featured).length}</div>
-          <div className="text-gray-400 text-sm">Mis en avant</div>
+          <div className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Mis en avant</div>
         </div>
-        <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+        <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <div className="text-2xl font-bold text-purple-400">{partners.filter(p => p.discount_code).length}</div>
-          <div className="text-gray-400 text-sm">Avec code promo</div>
+          <div className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Avec code promo</div>
         </div>
       </div>
 
@@ -197,10 +197,10 @@ const AdminPartners = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
         </div>
       ) : partners.length === 0 ? (
-        <div className="p-8 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
-          <Handshake size={48} className="mx-auto mb-4 text-gray-500" />
-          <p className="text-gray-400 mb-4">Aucun partenaire enregistré</p>
-          <button onClick={openCreateModal} className="px-4 py-2 rounded-lg bg-red-500 text-white">
+        <div className="p-8 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
+          <Handshake size={48} className="mx-auto mb-4 style={{ color: "var(--admin-text-muted)" }}" />
+          <p className="style={{ color: "var(--admin-text-secondary)" }} mb-4">Aucun partenaire enregistré</p>
+          <button onClick={openCreateModal} className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }}">
             Ajouter le premier
           </button>
         </div>
@@ -212,7 +212,7 @@ const AdminPartners = () => {
               <div 
                 key={partner.id}
                 className={`p-5 rounded-xl ${partner.status === "inactive" ? "opacity-60" : ""}`}
-                style={{ background: "#16213e", border: partner.is_featured ? "2px solid #e94560" : "1px solid #1f4068" }}
+                style={{ background: "var(--admin-bg-card)", border: partner.is_featured ? "2px solid #e94560" : "1px solid #1f4068" }}
               >
                 {partner.is_featured && (
                   <div className="flex items-center gap-1 text-yellow-400 text-xs mb-2">
@@ -226,22 +226,22 @@ const AdminPartners = () => {
                     <img src={partner.logo_url} alt={partner.name} className="w-12 h-12 rounded-lg object-contain bg-white p-1" />
                   ) : (
                     <div className="w-12 h-12 rounded-lg bg-gray-700 flex items-center justify-center">
-                      <Handshake size={24} className="text-gray-400" />
+                      <Handshake size={24} className="style={{ color: "var(--admin-text-secondary)" }}" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-semibold truncate">{partner.name}</h3>
+                    <h3 className="style={{ color: "var(--admin-text)" }} font-semibold truncate">{partner.name}</h3>
                     <span className="text-xs px-2 py-0.5 rounded" style={{ background: `${cat.color}20`, color: cat.color }}>
                       {cat.label}
                     </span>
                   </div>
                 </div>
 
-                <p className="text-gray-400 text-sm mb-3 line-clamp-2">{partner.description}</p>
+                <p className="style={{ color: "var(--admin-text-secondary)" }} text-sm mb-3 line-clamp-2">{partner.description}</p>
 
                 {partner.advantages.length > 0 && (
                   <div className="mb-3">
-                    <p className="text-xs text-gray-500 mb-1">Avantages :</p>
+                    <p className="text-xs style={{ color: "var(--admin-text-muted)" }} mb-1">Avantages :</p>
                     <ul className="space-y-1">
                       {partner.advantages.slice(0, 2).map((adv, i) => (
                         <li key={i} className="text-xs text-green-400 flex items-center gap-1">
@@ -254,20 +254,20 @@ const AdminPartners = () => {
                 )}
 
                 {partner.discount_code && (
-                  <div className="flex items-center gap-2 mb-3 p-2 rounded bg-[#1a1a2e]">
+                  <div className="flex items-center gap-2 mb-3 p-2 rounded bg-[var(--admin-bg-section)]">
                     <Tag size={14} className="text-yellow-400" />
                     <code className="text-yellow-400 text-sm font-mono">{partner.discount_code}</code>
-                    <button onClick={() => copyCode(partner.discount_code)} className="ml-auto text-gray-400 hover:text-white">
+                    <button onClick={() => copyCode(partner.discount_code)} className="ml-auto style={{ color: "var(--admin-text-secondary)" }} hover:style={{ color: "var(--admin-text)" }}">
                       {copiedCode === partner.discount_code ? <Check size={14} /> : <Copy size={14} />}
                     </button>
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 pt-3 border-t border-[#1f4068]">
-                  <button onClick={() => toggleFeatured(partner)} className={`p-2 rounded-lg ${partner.is_featured ? "bg-yellow-500/20 text-yellow-400" : "bg-gray-600/20 text-gray-400"}`}>
+                <div className="flex items-center gap-2 pt-3 border-t border-[var(--admin-border)]">
+                  <button onClick={() => toggleFeatured(partner)} className={`p-2 rounded-lg ${partner.is_featured ? "bg-yellow-500/20 text-yellow-400" : "bg-gray-600/20 style={{ color: "var(--admin-text-secondary)" }}"}`}>
                     <Star size={16} />
                   </button>
-                  <button onClick={() => toggleStatus(partner)} className={`p-2 rounded-lg ${partner.status === "active" ? "bg-green-500/20 text-green-400" : "bg-gray-600/20 text-gray-400"}`}>
+                  <button onClick={() => toggleStatus(partner)} className={`p-2 rounded-lg ${partner.status === "active" ? "bg-green-500/20 text-green-400" : "bg-gray-600/20 style={{ color: "var(--admin-text-secondary)" }}"}`}>
                     {partner.status === "active" ? <Eye size={16} /> : <EyeOff size={16} />}
                   </button>
                   <button onClick={() => openEditModal(partner)} className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
@@ -277,7 +277,7 @@ const AdminPartners = () => {
                     <Trash2 size={16} />
                   </button>
                   {partner.website_url && (
-                    <a href={partner.website_url} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-gray-600/20 text-gray-400 hover:text-white ml-auto">
+                    <a href={partner.website_url} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-gray-600/20 style={{ color: "var(--admin-text-secondary)" }} hover:style={{ color: "var(--admin-text)" }} ml-auto">
                       <ExternalLink size={16} />
                     </a>
                   )}
@@ -291,8 +291,8 @@ const AdminPartners = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6" style={{ background: "#16213e" }}>
-            <h2 className="text-xl font-bold text-white mb-6">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6" style={{ background: "var(--admin-bg-card)" }}>
+            <h2 className="text-xl font-bold style={{ color: "var(--admin-text)" }} mb-6">
               {editingPartner ? "Modifier le partenaire" : "Nouveau partenaire"}
             </h2>
             
@@ -300,17 +300,17 @@ const AdminPartners = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Nom *</label>
-                  <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white" />
+                  <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}" />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Description *</label>
-                  <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required rows={2} className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white" />
+                  <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required rows={2} className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}" />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Catégorie *</label>
-                  <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white">
+                  <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}">
                     {Object.entries(CATEGORY_CONFIG).map(([key, val]) => (
                       <option key={key} value={key}>{val.label}</option>
                     ))}
@@ -320,27 +320,27 @@ const AdminPartners = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">URL Logo</label>
-                    <input type="url" value={formData.logo_url} onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })} placeholder="https://..." className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white text-sm" />
+                    <input type="url" value={formData.logo_url} onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })} placeholder="https://..." className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} text-sm" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Site web</label>
-                    <input type="url" value={formData.website_url} onChange={(e) => setFormData({ ...formData, website_url: e.target.value })} placeholder="https://..." className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white text-sm" />
+                    <input type="url" value={formData.website_url} onChange={(e) => setFormData({ ...formData, website_url: e.target.value })} placeholder="https://..." className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} text-sm" />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">Avantages membres (un par ligne)</label>
-                  <textarea value={formData.advantages} onChange={(e) => setFormData({ ...formData, advantages: e.target.value })} rows={3} placeholder="-20% sur tous les plans&#10;Support prioritaire..." className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white" />
+                  <textarea value={formData.advantages} onChange={(e) => setFormData({ ...formData, advantages: e.target.value })} rows={3} placeholder="-20% sur tous les plans&#10;Support prioritaire..." className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Code promo</label>
-                    <input type="text" value={formData.discount_code} onChange={(e) => setFormData({ ...formData, discount_code: e.target.value })} placeholder="SYNDICAT20" className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white font-mono" />
+                    <input type="text" value={formData.discount_code} onChange={(e) => setFormData({ ...formData, discount_code: e.target.value })} placeholder="SYNDICAT20" className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} font-mono" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Email contact</label>
-                    <input type="email" value={formData.contact_email} onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })} className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white" />
+                    <input type="email" value={formData.contact_email} onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })} className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}" />
                   </div>
                 </div>
 
@@ -351,10 +351,10 @@ const AdminPartners = () => {
               </div>
               
               <div className="flex gap-3 mt-6">
-                <button type="submit" disabled={formLoading} className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium">
+                <button type="submit" disabled={formLoading} className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }} font-medium">
                   {formLoading ? "..." : editingPartner ? "Mettre à jour" : "Créer"}
                 </button>
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 rounded-lg bg-gray-600 text-white">
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 rounded-lg bg-gray-600 style={{ color: "var(--admin-text)" }}">
                   Annuler
                 </button>
               </div>

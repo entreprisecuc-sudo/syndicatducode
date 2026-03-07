@@ -156,19 +156,19 @@ const AdminAnnouncements = () => {
   return (
     <AdminLayout>
       {/* Titre mobile */}
-      <h1 className="text-xl font-bold mb-6 lg:hidden text-white">
+      <h1 className="text-xl font-bold mb-6 lg:hidden style={{ color: "var(--admin-text)" }}">
         Annonces
       </h1>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-white font-semibold">Annonces & Actualités</h2>
-          <p className="text-gray-400 text-sm">Publiez des annonces pour les membres</p>
+          <h2 className="style={{ color: "var(--admin-text)" }} font-semibold">Annonces & Actualités</h2>
+          <p className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Publiez des annonces pour les membres</p>
         </div>
         <button 
           onClick={openCreateModal}
-          className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors inline-flex items-center gap-2"
+          className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }} font-medium hover:bg-red-600 transition-colors inline-flex items-center gap-2"
           data-testid="create-announcement-btn"
         >
           <Plus size={18} />
@@ -187,10 +187,10 @@ const AdminAnnouncements = () => {
           <div 
             key={stat.label}
             className="p-4 rounded-xl text-center"
-            style={{ background: "#16213e", border: "1px solid #1f4068" }}
+            style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
           >
             <div className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
-            <div className="text-gray-400 text-sm">{stat.label}</div>
+            <div className="style={{ color: "var(--admin-text-secondary)" }} text-sm">{stat.label}</div>
           </div>
         ))}
       </div>
@@ -207,13 +207,13 @@ const AdminAnnouncements = () => {
       ) : announcements.length === 0 ? (
         <div 
           className="p-8 rounded-xl text-center"
-          style={{ background: "#16213e", border: "1px solid #1f4068" }}
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
         >
-          <Megaphone size={48} className="mx-auto mb-4 text-gray-500" />
-          <p className="text-gray-400 mb-4">Aucune annonce publiée</p>
+          <Megaphone size={48} className="mx-auto mb-4 style={{ color: "var(--admin-text-muted)" }}" />
+          <p className="style={{ color: "var(--admin-text-secondary)" }} mb-4">Aucune annonce publiée</p>
           <button 
             onClick={openCreateModal}
-            className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
+            className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }} font-medium hover:bg-red-600 transition-colors"
           >
             Créer la première annonce
           </button>
@@ -229,7 +229,7 @@ const AdminAnnouncements = () => {
               <div 
                 key={announcement.id}
                 className={`p-5 rounded-xl ${!announcement.is_published ? 'opacity-60' : ''}`}
-                style={{ background: "#16213e", border: "1px solid #1f4068" }}
+                style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
                 data-testid={`announcement-${announcement.id}`}
               >
                 {/* Header annonce */}
@@ -241,7 +241,7 @@ const AdminAnnouncements = () => {
                         <Pin size={16} className="text-yellow-500" />
                       )}
                       
-                      <h3 className="text-white font-semibold text-lg">{announcement.title}</h3>
+                      <h3 className="style={{ color: "var(--admin-text)" }} font-semibold text-lg">{announcement.title}</h3>
                       
                       {/* Badge type */}
                       <span 
@@ -268,12 +268,12 @@ const AdminAnnouncements = () => {
                       )}
                     </div>
                     
-                    <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+                    <p className="style={{ color: "var(--admin-text-secondary)" }} text-sm mb-3 line-clamp-2">
                       {announcement.content}
                     </p>
                     
                     {/* Infos */}
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                    <div className="flex flex-wrap items-center gap-4 text-sm style={{ color: "var(--admin-text-secondary)" }}">
                       <span className="flex items-center gap-1">
                         <Eye size={14} />
                         {announcement.view_count} vue(s)
@@ -292,7 +292,7 @@ const AdminAnnouncements = () => {
                       className={`p-2 rounded-lg transition-colors ${
                         announcement.is_pinned 
                           ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' 
-                          : 'bg-gray-600/20 text-gray-400 hover:bg-gray-600/30'
+                          : 'bg-gray-600/20 style={{ color: "var(--admin-text-secondary)" }} hover:bg-gray-600/30'
                       }`}
                       title={announcement.is_pinned ? "Désépingler" : "Épingler"}
                     >
@@ -305,7 +305,7 @@ const AdminAnnouncements = () => {
                       className={`p-2 rounded-lg transition-colors ${
                         announcement.is_published 
                           ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' 
-                          : 'bg-gray-600/20 text-gray-400 hover:bg-gray-600/30'
+                          : 'bg-gray-600/20 style={{ color: "var(--admin-text-secondary)" }} hover:bg-gray-600/30'
                       }`}
                       title={announcement.is_published ? "Dépublier" : "Publier"}
                     >
@@ -342,9 +342,9 @@ const AdminAnnouncements = () => {
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
           <div 
             className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl p-6"
-            style={{ background: "#16213e" }}
+            style={{ background: "var(--admin-bg-card)" }}
           >
-            <h2 className="text-xl font-bold text-white mb-6">
+            <h2 className="text-xl font-bold style={{ color: "var(--admin-text)" }} mb-6">
               {editingAnnouncement ? "Modifier l'annonce" : "Nouvelle annonce"}
             </h2>
             
@@ -360,7 +360,7 @@ const AdminAnnouncements = () => {
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
                   placeholder="Ex: Bienvenue sur le nouvel espace membre"
-                  className="w-full bg-[#1a1a2e] border-[#1f4068] text-white"
+                  className="w-full bg-[var(--admin-bg-section)] border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}"
                 />
               </div>
               
@@ -375,7 +375,7 @@ const AdminAnnouncements = () => {
                   required
                   rows={5}
                   placeholder="Rédigez le contenu de votre annonce..."
-                  className="w-full bg-[#1a1a2e] border-[#1f4068] text-white"
+                  className="w-full bg-[var(--admin-bg-section)] border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}"
                 />
               </div>
               
@@ -396,11 +396,11 @@ const AdminAnnouncements = () => {
                         className={`p-3 rounded-lg border transition-colors flex flex-col items-center gap-2 ${
                           isSelected 
                             ? 'border-red-500 bg-red-500/20' 
-                            : 'border-[#1f4068] bg-[#1a1a2e] hover:border-gray-500'
+                            : 'border-[var(--admin-border)] bg-[var(--admin-bg-section)] hover:border-gray-500'
                         }`}
                       >
                         <Icon size={20} style={{ color: config.color }} />
-                        <span className={`text-xs ${isSelected ? 'text-white' : 'text-gray-400'}`}>
+                        <span className={`text-xs ${isSelected ? 'style={{ color: "var(--admin-text)" }}' : 'style={{ color: "var(--admin-text-secondary)" }}'}`}>
                           {config.label}
                         </span>
                       </button>
@@ -418,7 +418,7 @@ const AdminAnnouncements = () => {
                   value={formData.target}
                   onChange={(e) => setFormData({ ...formData, target: e.target.value })}
                   required
-                  className="w-full bg-[#1a1a2e] border-[#1f4068] text-white"
+                  className="w-full bg-[var(--admin-bg-section)] border-[var(--admin-border)] style={{ color: "var(--admin-text)" }}"
                 >
                   <option value="all">Tous les membres</option>
                   <option value="developer">Développeurs uniquement</option>
@@ -433,7 +433,7 @@ const AdminAnnouncements = () => {
                     type="checkbox"
                     checked={formData.is_pinned}
                     onChange={(e) => setFormData({ ...formData, is_pinned: e.target.checked })}
-                    className="w-5 h-5 rounded bg-[#1a1a2e] border-[#1f4068] text-red-500 focus:ring-red-500"
+                    className="w-5 h-5 rounded bg-[var(--admin-bg-section)] border-[var(--admin-border)] text-red-500 focus:ring-red-500"
                   />
                   <span className="text-gray-300">
                     Épingler cette annonce (s'affiche en premier)
@@ -446,14 +446,14 @@ const AdminAnnouncements = () => {
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }} font-medium hover:bg-red-600 transition-colors"
                 >
                   {formLoading ? "Enregistrement..." : editingAnnouncement ? "Mettre à jour" : "Publier l'annonce"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-lg bg-gray-600 text-white font-medium hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-gray-600 style={{ color: "var(--admin-text)" }} font-medium hover:bg-gray-700 transition-colors"
                 >
                   Annuler
                 </button>

@@ -40,20 +40,20 @@ const RejectModal = ({ isOpen, onClose, onConfirm, projectTitle }) => {
       
       <div 
         className="relative w-full max-w-md rounded-xl p-6"
-        style={{ background: "#16213e" }}
+        style={{ background: "var(--admin-bg-card)" }}
       >
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 rounded-full bg-red-500/20">
             <AlertTriangle size={24} className="text-red-500" />
           </div>
           <div>
-            <h3 className="font-semibold text-white">Rejeter ce projet</h3>
-            <p className="text-sm text-gray-400">{projectTitle}</p>
+            <h3 className="font-semibold style={{ color: "var(--admin-text)" }}">Rejeter ce projet</h3>
+            <p className="text-sm style={{ color: "var(--admin-text-secondary)" }}">{projectTitle}</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <label className="block text-sm font-medium text-gray-400 mb-2">
+          <label className="block text-sm font-medium style={{ color: "var(--admin-text-secondary)" }} mb-2">
             Raison du rejet *
           </label>
           <textarea
@@ -63,7 +63,7 @@ const RejectModal = ({ isOpen, onClose, onConfirm, projectTitle }) => {
             rows={4}
             required
             className="w-full px-3 py-2 rounded-lg text-sm resize-none mb-4"
-            style={{ background: "#1a1a2e", border: "1px solid #1f4068", color: "white" }}
+            style={{ background: "var(--admin-bg-section)", border: "1px solid var(--admin-border)", color: "white" }}
           />
 
           <div className="flex gap-3">
@@ -78,7 +78,7 @@ const RejectModal = ({ isOpen, onClose, onConfirm, projectTitle }) => {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 py-2 rounded-lg text-sm font-medium bg-red-600 style={{ color: "var(--admin-text)" }} hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : <XCircle size={16} />}
               {loading ? "Rejet..." : "Confirmer le rejet"}
@@ -114,7 +114,7 @@ const ProjectPreviewModal = ({ project, onClose, onApprove, onReject }) => {
         
         <div 
           className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl"
-          style={{ background: "#16213e" }}
+          style={{ background: "var(--admin-bg-card)" }}
         >
           {/* Image */}
           <div className="aspect-video bg-gray-800">
@@ -130,17 +130,17 @@ const ProjectPreviewModal = ({ project, onClose, onApprove, onReject }) => {
           {/* Contenu */}
           <div className="p-6">
             {/* Développeur */}
-            <div className="flex items-center gap-2 mb-4 text-sm text-gray-400">
+            <div className="flex items-center gap-2 mb-4 text-sm style={{ color: "var(--admin-text-secondary)" }}">
               <User size={16} />
               <span>{project.user_name || project.user_email}</span>
             </div>
 
             {/* Titre */}
-            <h2 className="text-xl font-bold text-white mb-2">{project.title}</h2>
+            <h2 className="text-xl font-bold style={{ color: "var(--admin-text)" }} mb-2">{project.title}</h2>
             
             {/* Année */}
             {project.year && (
-              <p className="text-sm text-gray-500 mb-4">{project.year}</p>
+              <p className="text-sm style={{ color: "var(--admin-text-muted)" }} mb-4">{project.year}</p>
             )}
 
             {/* Description */}
@@ -196,14 +196,14 @@ const ProjectPreviewModal = ({ project, onClose, onApprove, onReject }) => {
               <div className="flex gap-3">
                 <button
                   onClick={() => onApprove(project.id)}
-                  className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-green-600 text-white hover:bg-green-700 transition-colors"
+                  className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-green-600 style={{ color: "var(--admin-text)" }} hover:bg-green-700 transition-colors"
                 >
                   <CheckCircle size={18} />
                   Approuver
                 </button>
                 <button
                   onClick={() => setShowRejectModal(true)}
-                  className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-600 text-white hover:bg-red-700 transition-colors"
+                  className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-600 style={{ color: "var(--admin-text)" }} hover:bg-red-700 transition-colors"
                 >
                   <XCircle size={18} />
                   Rejeter
@@ -278,7 +278,7 @@ const ProjectCard = ({ project, onPreview, onApprove, onReject }) => {
     <>
       <div 
         className="rounded-xl overflow-hidden"
-        style={{ background: "#16213e", border: "1px solid #1f4068" }}
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
         {/* Image */}
         <div className="aspect-video bg-gray-800 relative">
@@ -302,16 +302,16 @@ const ProjectCard = ({ project, onPreview, onApprove, onReject }) => {
         {/* Contenu */}
         <div className="p-4">
           {/* Développeur */}
-          <div className="flex items-center gap-2 mb-2 text-xs text-gray-500">
+          <div className="flex items-center gap-2 mb-2 text-xs style={{ color: "var(--admin-text-muted)" }}">
             <User size={12} />
             <span>{project.user_name || project.user_email}</span>
           </div>
 
           {/* Titre */}
-          <h3 className="font-semibold text-white mb-1 truncate">{project.title}</h3>
+          <h3 className="font-semibold style={{ color: "var(--admin-text)" }} mb-1 truncate">{project.title}</h3>
           
           {/* Date */}
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-xs style={{ color: "var(--admin-text-muted)" }} mb-3">
             Soumis le {formatDate(project.created_at)}
           </p>
 
@@ -328,7 +328,7 @@ const ProjectCard = ({ project, onPreview, onApprove, onReject }) => {
                 </span>
               ))}
               {project.technologies.length > 3 && (
-                <span className="text-xs text-gray-500">+{project.technologies.length - 3}</span>
+                <span className="text-xs style={{ color: "var(--admin-text-muted)" }}">+{project.technologies.length - 3}</span>
               )}
             </div>
           )}
@@ -354,14 +354,14 @@ const ProjectCard = ({ project, onPreview, onApprove, onReject }) => {
               <>
                 <button
                   onClick={() => onApprove(project.id)}
-                  className="p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+                  className="p-2 rounded-lg bg-green-600 style={{ color: "var(--admin-text)" }} hover:bg-green-700 transition-colors"
                   title="Approuver"
                 >
                   <CheckCircle size={16} />
                 </button>
                 <button
                   onClick={() => setShowRejectModal(true)}
-                  className="p-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                  className="p-2 rounded-lg bg-red-600 style={{ color: "var(--admin-text)" }} hover:bg-red-700 transition-colors"
                   title="Rejeter"
                 >
                   <XCircle size={16} />
@@ -457,20 +457,20 @@ const AdminPortfolioValidation = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold text-white lg:hidden">Validation Books</h1>
-          <p className="text-sm text-gray-400">
+          <h1 className="text-xl font-bold style={{ color: "var(--admin-text)" }} lg:hidden">Validation Books</h1>
+          <p className="text-sm style={{ color: "var(--admin-text-secondary)" }}">
             Validez les projets soumis par les développeurs avant publication
           </p>
         </div>
 
         {/* Filtres */}
         <div className="flex items-center gap-2">
-          <Filter size={16} className="text-gray-500" />
+          <Filter size={16} className="style={{ color: "var(--admin-text-muted)" }}" />
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="px-3 py-2 rounded-lg text-sm"
-            style={{ background: "#1f4068", border: "1px solid #1f4068", color: "white" }}
+            style={{ background: "#1f4068", border: "1px solid var(--admin-border)", color: "white" }}
           >
             <option value="pending">En attente ({pendingCount})</option>
             <option value="approved">Approuvés</option>
@@ -492,7 +492,7 @@ const AdminPortfolioValidation = () => {
           </span>
           <button
             onClick={() => setFilter("pending")}
-            className="ml-auto px-3 py-1 rounded text-sm bg-amber-500 text-white"
+            className="ml-auto px-3 py-1 rounded text-sm bg-amber-500 style={{ color: "var(--admin-text)" }}"
           >
             Voir
           </button>
@@ -507,13 +507,13 @@ const AdminPortfolioValidation = () => {
       ) : projects.length === 0 ? (
         <div 
           className="text-center py-12 rounded-xl"
-          style={{ background: "#16213e", border: "1px solid #1f4068" }}
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
         >
           <CheckCircle size={48} className="mx-auto mb-4 text-green-500" />
-          <h3 className="font-semibold text-white mb-2">
+          <h3 className="font-semibold style={{ color: "var(--admin-text)" }} mb-2">
             {filter === "pending" ? "Aucun projet en attente" : "Aucun projet"}
           </h3>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm style={{ color: "var(--admin-text-secondary)" }}">
             {filter === "pending" 
               ? "Tous les projets ont été traités."
               : "Aucun projet ne correspond à ce filtre."

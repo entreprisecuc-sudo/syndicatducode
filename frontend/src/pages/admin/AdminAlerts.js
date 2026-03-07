@@ -170,19 +170,19 @@ const AdminAlerts = () => {
   return (
     <AdminLayout>
       {/* Titre mobile */}
-      <h1 className="text-xl font-bold mb-6 lg:hidden text-white">
+      <h1 className="text-xl font-bold mb-6 lg:hidden style={{ color: "var(--admin-text)" }}">
         Alertes
       </h1>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-white font-semibold">Alertes & Popups</h2>
-          <p className="text-gray-400 text-sm">Créez des alertes et bannières pour les membres</p>
+          <h2 className="style={{ color: "var(--admin-text)" }} font-semibold">Alertes & Popups</h2>
+          <p className="style={{ color: "var(--admin-text-secondary)" }} text-sm">Créez des alertes et bannières pour les membres</p>
         </div>
         <button 
           onClick={openCreateModal}
-          className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors inline-flex items-center gap-2"
+          className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }} font-medium hover:bg-red-600 transition-colors inline-flex items-center gap-2"
           data-testid="create-alert-btn"
         >
           <Plus size={18} />
@@ -201,10 +201,10 @@ const AdminAlerts = () => {
           <div 
             key={stat.label}
             className="p-4 rounded-xl text-center"
-            style={{ background: "#16213e", border: "1px solid #1f4068" }}
+            style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
           >
             <div className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
-            <div className="text-gray-400 text-sm">{stat.label}</div>
+            <div className="style={{ color: "var(--admin-text-secondary)" }} text-sm">{stat.label}</div>
           </div>
         ))}
       </div>
@@ -221,13 +221,13 @@ const AdminAlerts = () => {
       ) : alerts.length === 0 ? (
         <div 
           className="p-8 rounded-xl text-center"
-          style={{ background: "#16213e", border: "1px solid #1f4068" }}
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
         >
-          <Bell size={48} className="mx-auto mb-4 text-gray-500" />
-          <p className="text-gray-400 mb-4">Aucune alerte créée</p>
+          <Bell size={48} className="mx-auto mb-4 style={{ color: "var(--admin-text-muted)" }}" />
+          <p className="style={{ color: "var(--admin-text-secondary)" }} mb-4">Aucune alerte créée</p>
           <button 
             onClick={openCreateModal}
-            className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
+            className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }} font-medium hover:bg-red-600 transition-colors"
           >
             Créer la première alerte
           </button>
@@ -246,8 +246,8 @@ const AdminAlerts = () => {
                 key={alertItem.id}
                 className={`p-5 rounded-xl ${!alertItem.is_active ? 'opacity-60' : ''}`}
                 style={{ 
-                  background: "#16213e", 
-                  border: "1px solid #1f4068",
+                  background: "var(--admin-bg-card)", 
+                  border: "1px solid var(--admin-border)",
                   borderLeft: `4px solid ${styleConfig.color}`
                 }}
                 data-testid={`alert-${alertItem.id}`}
@@ -256,7 +256,7 @@ const AdminAlerts = () => {
                 <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      <h3 className="text-white font-semibold text-lg">{alertItem.title}</h3>
+                      <h3 className="style={{ color: "var(--admin-text)" }} font-semibold text-lg">{alertItem.title}</h3>
                       
                       {/* Badge type */}
                       <span 
@@ -292,7 +292,7 @@ const AdminAlerts = () => {
                       )}
                     </div>
                     
-                    <p className="text-gray-400 text-sm mb-3">
+                    <p className="style={{ color: "var(--admin-text-secondary)" }} text-sm mb-3">
                       {alertItem.message}
                     </p>
                     
@@ -305,7 +305,7 @@ const AdminAlerts = () => {
                     )}
                     
                     {/* Infos */}
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                    <div className="flex flex-wrap items-center gap-4 text-sm style={{ color: "var(--admin-text-secondary)" }}">
                       <span>
                         {alertItem.dismissible ? "Peut être fermée" : "Non fermable"}
                       </span>
@@ -326,7 +326,7 @@ const AdminAlerts = () => {
                       className={`p-2 rounded-lg transition-colors ${
                         alertItem.is_active 
                           ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' 
-                          : 'bg-gray-600/20 text-gray-400 hover:bg-gray-600/30'
+                          : 'bg-gray-600/20 style={{ color: "var(--admin-text-secondary)" }} hover:bg-gray-600/30'
                       }`}
                       title={alertItem.is_active ? "Désactiver" : "Activer"}
                     >
@@ -363,9 +363,9 @@ const AdminAlerts = () => {
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
           <div 
             className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl p-6"
-            style={{ background: "#16213e" }}
+            style={{ background: "var(--admin-bg-card)" }}
           >
-            <h2 className="text-xl font-bold text-white mb-6">
+            <h2 className="text-xl font-bold style={{ color: "var(--admin-text)" }} mb-6">
               {editingAlert ? "Modifier l'alerte" : "Nouvelle alerte"}
             </h2>
             
@@ -382,7 +382,7 @@ const AdminAlerts = () => {
                   required
                   maxLength={100}
                   placeholder="Ex: Maintenance prévue"
-                  className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} focus:outline-none focus:border-red-500"
                 />
               </div>
               
@@ -398,7 +398,7 @@ const AdminAlerts = () => {
                   rows={3}
                   maxLength={500}
                   placeholder="Rédigez le message de l'alerte..."
-                  className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} focus:outline-none focus:border-red-500"
                 />
               </div>
               
@@ -419,11 +419,11 @@ const AdminAlerts = () => {
                         className={`p-3 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
                           isSelected 
                             ? 'border-red-500 bg-red-500/20' 
-                            : 'border-[#1f4068] bg-[#1a1a2e] hover:border-gray-500'
+                            : 'border-[var(--admin-border)] bg-[var(--admin-bg-section)] hover:border-gray-500'
                         }`}
                       >
-                        <Icon size={18} className={isSelected ? 'text-white' : 'text-gray-400'} />
-                        <span className={isSelected ? 'text-white' : 'text-gray-400'}>
+                        <Icon size={18} className={isSelected ? 'style={{ color: "var(--admin-text)" }}' : 'style={{ color: "var(--admin-text-secondary)" }}'} />
+                        <span className={isSelected ? 'style={{ color: "var(--admin-text)" }}' : 'style={{ color: "var(--admin-text-secondary)" }}'}>
                           {config.label}
                         </span>
                       </button>
@@ -449,11 +449,11 @@ const AdminAlerts = () => {
                         className={`p-3 rounded-lg border transition-colors flex flex-col items-center gap-2 ${
                           isSelected 
                             ? 'border-red-500 bg-red-500/20' 
-                            : 'border-[#1f4068] bg-[#1a1a2e] hover:border-gray-500'
+                            : 'border-[var(--admin-border)] bg-[var(--admin-bg-section)] hover:border-gray-500'
                         }`}
                       >
                         <Icon size={20} style={{ color: config.color }} />
-                        <span className={`text-xs ${isSelected ? 'text-white' : 'text-gray-400'}`}>
+                        <span className={`text-xs ${isSelected ? 'style={{ color: "var(--admin-text)" }}' : 'style={{ color: "var(--admin-text-secondary)" }}'}`}>
                           {config.label}
                         </span>
                       </button>
@@ -471,7 +471,7 @@ const AdminAlerts = () => {
                   value={formData.target}
                   onChange={(e) => setFormData({ ...formData, target: e.target.value })}
                   required
-                  className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} focus:outline-none focus:border-red-500"
                 >
                   <option value="all">Tous les membres</option>
                   <option value="developer">Développeurs uniquement</option>
@@ -489,10 +489,10 @@ const AdminAlerts = () => {
                   value={formData.image_url}
                   onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                   placeholder="https://exemple.com/image.jpg"
-                  className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
+                  className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} focus:outline-none focus:border-red-500"
                 />
                 {formData.image_url && (
-                  <div className="mt-2 p-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068]">
+                  <div className="mt-2 p-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)]">
                     <img 
                       src={formData.image_url} 
                       alt="Aperçu" 
@@ -514,7 +514,7 @@ const AdminAlerts = () => {
                     value={formData.link_url}
                     onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}
                     placeholder="https://..."
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} focus:outline-none focus:border-red-500"
                   />
                 </div>
                 <div>
@@ -526,7 +526,7 @@ const AdminAlerts = () => {
                     value={formData.link_text}
                     onChange={(e) => setFormData({ ...formData, link_text: e.target.value })}
                     placeholder="En savoir plus"
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white focus:outline-none focus:border-red-500"
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--admin-bg-section)] border border-[var(--admin-border)] style={{ color: "var(--admin-text)" }} focus:outline-none focus:border-red-500"
                   />
                 </div>
               </div>
@@ -538,7 +538,7 @@ const AdminAlerts = () => {
                     type="checkbox"
                     checked={formData.dismissible}
                     onChange={(e) => setFormData({ ...formData, dismissible: e.target.checked })}
-                    className="w-5 h-5 rounded bg-[#1a1a2e] border-[#1f4068] text-red-500 focus:ring-red-500"
+                    className="w-5 h-5 rounded bg-[var(--admin-bg-section)] border-[var(--admin-border)] text-red-500 focus:ring-red-500"
                   />
                   <span className="text-gray-300">
                     L'utilisateur peut fermer cette alerte
@@ -551,14 +551,14 @@ const AdminAlerts = () => {
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-red-500 style={{ color: "var(--admin-text)" }} font-medium hover:bg-red-600 transition-colors"
                 >
                   {formLoading ? "Enregistrement..." : editingAlert ? "Mettre à jour" : "Créer l'alerte"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-lg bg-gray-600 text-white font-medium hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-gray-600 style={{ color: "var(--admin-text)" }} font-medium hover:bg-gray-700 transition-colors"
                 >
                   Annuler
                 </button>
