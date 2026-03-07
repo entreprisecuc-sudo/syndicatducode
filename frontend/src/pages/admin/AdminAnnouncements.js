@@ -356,151 +356,98 @@ const AdminAnnouncements = () => {
       )}
 
       {/* Modal création/édition */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div 
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl p-6 transition-colors duration-300"
-            style={{ background: "var(--admin-bg-card)" }}
-          >
-            <h2 style={{ color: "var(--admin-text)" }} className="text-xl font-bold mb-6">
-              {editingAnnouncement ? "Modifier l'annonce" : "Nouvelle annonce"}
-            </h2>
-            
-            <form onSubmit={handleSubmit}>
-              {/* Titre */}
-              <div className="mb-4">
-                <label style={{ color: "var(--admin-text-secondary)" }} className="block text-sm font-medium mb-2">
-                  Titre de l'annonce *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                  placeholder="Ex: Bienvenue sur le nouvel espace membre"
-                  className="w-full rounded-lg py-2 px-3 transition-colors duration-300"
-                  style={{ 
-                    background: "var(--admin-bg-section)", 
-                    border: "1px solid var(--admin-border)",
-                    color: "var(--admin-text)"
-                  }}
-                />
-              </div>
-              
-              {/* Contenu */}
-              <div className="mb-4">
-                <label style={{ color: "var(--admin-text-secondary)" }} className="block text-sm font-medium mb-2">
-                  Contenu *
-                </label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  required
-                  rows={5}
-                  placeholder="Rédigez le contenu de votre annonce..."
-                  className="w-full rounded-lg py-2 px-3 transition-colors duration-300"
-                  style={{ 
-                    background: "var(--admin-bg-section)", 
-                    border: "1px solid var(--admin-border)",
-                    color: "var(--admin-text)"
-                  }}
-                />
-              </div>
-              
-              {/* Type d'annonce */}
-              <div className="mb-4">
-                <label style={{ color: "var(--admin-text-secondary)" }} className="block text-sm font-medium mb-2">
-                  Type d'annonce *
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {Object.entries(TYPE_CONFIG).map(([key, config]) => {
-                    const Icon = config.icon;
-                    const isSelected = formData.announcement_type === key;
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, announcement_type: key })}
-                        className="p-3 rounded-lg border transition-colors flex flex-col items-center gap-2"
-                        style={{
-                          borderColor: isSelected ? "var(--admin-accent)" : "var(--admin-border)",
-                          background: isSelected ? "rgba(233, 69, 96, 0.2)" : "var(--admin-bg-section)"
-                        }}
-                      >
-                        <Icon size={20} style={{ color: config.color }} />
-                        <span 
-                          className="text-xs"
-                          style={{ color: isSelected ? "var(--admin-text)" : "var(--admin-text-secondary)" }}
-                        >
-                          {config.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              
-              {/* Cible */}
-              <div className="mb-4">
-                <label style={{ color: "var(--admin-text-secondary)" }} className="block text-sm font-medium mb-2">
-                  Destinataires *
-                </label>
-                <select
-                  value={formData.target}
-                  onChange={(e) => setFormData({ ...formData, target: e.target.value })}
-                  required
-                  className="w-full rounded-lg py-2 px-3 transition-colors duration-300"
-                  style={{ 
-                    background: "var(--admin-bg-section)", 
-                    border: "1px solid var(--admin-border)",
-                    color: "var(--admin-text)"
-                  }}
-                >
-                  <option value="all">Tous les membres</option>
-                  <option value="developer">Développeurs uniquement</option>
-                  <option value="commercial">Commerciaux uniquement</option>
-                </select>
-              </div>
-              
-              {/* Épinglé */}
-              <div className="mb-6">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_pinned}
-                    onChange={(e) => setFormData({ ...formData, is_pinned: e.target.checked })}
-                    className="w-5 h-5 rounded"
-                    style={{ accentColor: "var(--admin-accent)" }}
-                  />
-                  <span style={{ color: "var(--admin-text-secondary)" }}>
-                    Épingler cette annonce (s'affiche en premier)
-                  </span>
-                </label>
-              </div>
-              
-              {/* Boutons */}
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  disabled={formLoading}
-                  className="px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-colors"
-                  style={{ background: "var(--admin-accent)" }}
-                >
-                  {formLoading ? "Enregistrement..." : editingAnnouncement ? "Mettre à jour" : "Publier l'annonce"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-lg font-medium transition-colors"
-                  style={{ background: "var(--admin-bg-section)", color: "var(--admin-text-secondary)" }}
-                >
-                  Annuler
-                </button>
-              </div>
-            </form>
+      <AdminModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={editingAnnouncement ? "Modifier l'annonce" : "Nouvelle annonce"}
+      >
+        <form onSubmit={handleSubmit}>
+          <ModalFormGroup label="Titre de l'annonce" required>
+            <ModalInput
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              required
+              placeholder="Ex: Bienvenue sur le nouvel espace membre"
+            />
+          </ModalFormGroup>
+          
+          <ModalFormGroup label="Contenu" required>
+            <ModalTextarea
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              required
+              rows={5}
+              placeholder="Rédigez le contenu de votre annonce..."
+            />
+          </ModalFormGroup>
+          
+          {/* Type d'annonce */}
+          <ModalFormGroup label="Type d'annonce" required>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {Object.entries(TYPE_CONFIG).map(([key, config]) => {
+                const Icon = config.icon;
+                const isSelected = formData.announcement_type === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, announcement_type: key })}
+                    className="p-3 rounded-lg border transition-colors flex flex-col items-center gap-2"
+                    style={{
+                      borderColor: isSelected ? "var(--admin-accent)" : "var(--admin-border)",
+                      background: isSelected ? "rgba(233, 69, 96, 0.2)" : "var(--admin-bg-section)"
+                    }}
+                  >
+                    <Icon size={20} style={{ color: config.color }} />
+                    <span 
+                      className="text-xs"
+                      style={{ color: isSelected ? "var(--admin-text)" : "var(--admin-text-secondary)" }}
+                    >
+                      {config.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </ModalFormGroup>
+          
+          <ModalFormGroup label="Destinataires" required>
+            <ModalSelect
+              value={formData.target}
+              onChange={(e) => setFormData({ ...formData, target: e.target.value })}
+              required
+            >
+              <option value="all">Tous les membres</option>
+              <option value="developer">Développeurs uniquement</option>
+              <option value="commercial">Commerciaux uniquement</option>
+            </ModalSelect>
+          </ModalFormGroup>
+          
+          {/* Épinglé */}
+          <div className="mb-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.is_pinned}
+                onChange={(e) => setFormData({ ...formData, is_pinned: e.target.checked })}
+                className="w-5 h-5 rounded"
+                style={{ accentColor: "var(--admin-accent)" }}
+              />
+              <span style={{ color: "var(--admin-text-secondary)" }}>
+                Épingler cette annonce (s'affiche en premier)
+              </span>
+            </label>
           </div>
-        </div>
-      )}
+          
+          <ModalActions>
+            <ModalSubmitButton loading={formLoading}>
+              {editingAnnouncement ? "Mettre à jour" : "Publier l'annonce"}
+            </ModalSubmitButton>
+            <ModalCancelButton onClick={() => setShowModal(false)} />
+          </ModalActions>
+        </form>
+      </AdminModal>
     </AdminLayout>
   );
 };
