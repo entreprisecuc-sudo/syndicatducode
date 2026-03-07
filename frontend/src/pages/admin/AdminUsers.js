@@ -1,10 +1,11 @@
 /**
  * Gestion des utilisateurs - Admin
+ * Support mode sombre/clair
  */
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, MoreVertical, ChevronRight } from "lucide-react";
+import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, ChevronRight } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
@@ -33,7 +34,6 @@ const AdminUsers = () => {
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-  const [selectedUser, setSelectedUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -67,7 +67,6 @@ const AdminUsers = () => {
         { headers: getAuthHeaders() }
       );
       fetchUsers();
-      setSelectedUser(null);
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
     } finally {
@@ -84,7 +83,6 @@ const AdminUsers = () => {
         { headers: getAuthHeaders() }
       );
       fetchUsers();
-      setSelectedUser(null);
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
     } finally {
@@ -100,24 +98,36 @@ const AdminUsers = () => {
   return (
     <AdminLayout>
       {/* Titre mobile */}
-      <h1 className="text-xl font-bold mb-6 lg:hidden text-white">
+      <h1 
+        className="text-xl font-bold mb-6 lg:hidden"
+        style={{ color: "var(--admin-text)" }}
+      >
         Utilisateurs
       </h1>
 
       {/* Filtres */}
       <div 
-        className="p-4 rounded-xl mb-6 flex flex-col md:flex-row gap-4"
-        style={{ background: "#16213e", border: "1px solid #1f4068" }}
+        className="p-4 rounded-xl mb-6 flex flex-col md:flex-row gap-4 transition-colors duration-300"
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
         {/* Recherche */}
         <div className="flex-1 relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search 
+            size={18} 
+            className="absolute left-3 top-1/2 -translate-y-1/2" 
+            style={{ color: "var(--admin-text-muted)" }}
+          />
           <input
             type="text"
             placeholder="Rechercher par email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 bg-[#1a1a2e] border-[#1f4068] text-white placeholder-gray-500"
+            className="w-full pl-10 rounded-lg py-2 px-3 transition-colors duration-300"
+            style={{ 
+              background: "var(--admin-bg-section)", 
+              border: "1px solid var(--admin-border)",
+              color: "var(--admin-text)"
+            }}
           />
         </div>
         
@@ -125,7 +135,12 @@ const AdminUsers = () => {
         <select
           value={filterRole}
           onChange={(e) => setFilterRole(e.target.value)}
-          className="bg-[#1a1a2e] border-[#1f4068] text-white"
+          className="rounded-lg py-2 px-3 transition-colors duration-300"
+          style={{ 
+            background: "var(--admin-bg-section)", 
+            border: "1px solid var(--admin-border)",
+            color: "var(--admin-text)"
+          }}
         >
           <option value="">Tous les rôles</option>
           <option value="commercial">Commercial</option>
@@ -137,7 +152,12 @@ const AdminUsers = () => {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-[#1a1a2e] border-[#1f4068] text-white"
+          className="rounded-lg py-2 px-3 transition-colors duration-300"
+          style={{ 
+            background: "var(--admin-bg-section)", 
+            border: "1px solid var(--admin-border)",
+            color: "var(--admin-text)"
+          }}
         >
           <option value="">Tous les statuts</option>
           <option value="active">Actif</option>
@@ -149,7 +169,10 @@ const AdminUsers = () => {
       {/* Liste des utilisateurs */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+          <div 
+            className="animate-spin rounded-full h-8 w-8 border-b-2"
+            style={{ borderColor: "var(--admin-accent)" }}
+          />
         </div>
       ) : error ? (
         <div className="p-4 rounded-lg bg-red-500/20 text-red-400 text-center">
@@ -157,11 +180,11 @@ const AdminUsers = () => {
         </div>
       ) : filteredUsers.length === 0 ? (
         <div 
-          className="p-8 rounded-xl text-center"
-          style={{ background: "#16213e", border: "1px solid #1f4068" }}
+          className="p-8 rounded-xl text-center transition-colors duration-300"
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
         >
-          <Users size={48} className="mx-auto mb-4 text-gray-500" />
-          <p className="text-gray-400">Aucun utilisateur trouvé</p>
+          <Users size={48} className="mx-auto mb-4" style={{ color: "var(--admin-text-muted)" }} />
+          <p style={{ color: "var(--admin-text-secondary)" }}>Aucun utilisateur trouvé</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -173,8 +196,11 @@ const AdminUsers = () => {
             return (
               <div 
                 key={user.id}
-                className="p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:border-red-500/50 transition-colors"
-                style={{ background: "#16213e", border: "1px solid #1f4068" }}
+                className="p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer transition-all duration-300 hover:opacity-90"
+                style={{ 
+                  background: "var(--admin-bg-card)", 
+                  border: "1px solid var(--admin-border)"
+                }}
                 onClick={() => navigate(`/syndicat-admin/utilisateurs/${user.id}`)}
                 data-testid={`user-row-${user.id}`}
               >
@@ -189,7 +215,12 @@ const AdminUsers = () => {
                   
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium truncate">{user.email}</p>
+                    <p 
+                      className="font-medium truncate"
+                      style={{ color: "var(--admin-text)" }}
+                    >
+                      {user.email}
+                    </p>
                     <div className="flex items-center gap-3 mt-1">
                       {/* Rôle */}
                       <span 
@@ -236,7 +267,12 @@ const AdminUsers = () => {
                     value={user.role || ""}
                     onChange={(e) => updateUserRole(user.id, e.target.value)}
                     disabled={actionLoading}
-                    className="bg-[#1a1a2e] border-[#1f4068] text-white text-xs py-1.5"
+                    className="text-xs py-1.5 px-2 rounded transition-colors duration-300"
+                    style={{ 
+                      background: "var(--admin-bg-section)", 
+                      border: "1px solid var(--admin-border)",
+                      color: "var(--admin-text)"
+                    }}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <option value="" disabled>Changer rôle</option>
@@ -246,7 +282,11 @@ const AdminUsers = () => {
                   </select>
                   
                   {/* Indicateur cliquable */}
-                  <ChevronRight size={18} className="text-gray-500 hidden md:block" />
+                  <ChevronRight 
+                    size={18} 
+                    className="hidden md:block" 
+                    style={{ color: "var(--admin-text-muted)" }}
+                  />
                 </div>
               </div>
             );
@@ -255,7 +295,10 @@ const AdminUsers = () => {
       )}
 
       {/* Compteur */}
-      <p className="text-center text-gray-500 text-sm mt-4">
+      <p 
+        className="text-center text-sm mt-4"
+        style={{ color: "var(--admin-text-muted)" }}
+      >
         {filteredUsers.length} utilisateur(s) trouvé(s)
       </p>
     </AdminLayout>
