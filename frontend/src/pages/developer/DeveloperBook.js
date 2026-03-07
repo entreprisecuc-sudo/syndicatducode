@@ -31,12 +31,30 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
     ? project.image_url 
     : project.image_url ? `${API_URL}${project.image_url}` : null;
 
+  // Statuts avec couleurs
+  const statusConfig = {
+    pending: { bg: "#f59e0b20", border: "#f59e0b", text: "#f59e0b", label: "En attente de validation" },
+    approved: { bg: "#10b98120", border: "#10b981", text: "#10b981", label: "Approuvé - Visible publiquement" },
+    rejected: { bg: "#ef444420", border: "#ef4444", text: "#ef4444", label: "Rejeté" }
+  };
+
+  const status = statusConfig[project.status] || statusConfig.pending;
+
   return (
     <div 
       className="rounded-xl overflow-hidden"
-      style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
+      style={{ background: "var(--bg-card)", border: `1px solid ${status.border}` }}
       data-testid={`project-card-${project.id}`}
     >
+      {/* Badge statut */}
+      <div 
+        className="px-3 py-1.5 text-xs font-medium flex items-center gap-2"
+        style={{ background: status.bg, color: status.text }}
+      >
+        <span className="w-2 h-2 rounded-full" style={{ background: status.text }} />
+        {status.label}
+      </div>
+
       {/* Image */}
       <div className="relative aspect-video bg-gray-800">
         {imageUrl ? (
