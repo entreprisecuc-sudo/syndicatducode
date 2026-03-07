@@ -230,13 +230,13 @@ const AdminDashboard = () => {
           {/* Bouton pour tout réduire/ouvrir - visible seulement quand les stats sont chargées */}
           {!loading && !error && (
             <button
-              onClick={() => setAllOpen(!allOpen)}
+              onClick={toggleAll}
               className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
               style={{ background: "rgba(255,255,255,0.2)", color: "white" }}
               data-testid="toggle-all-sections"
             >
-              {allOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              {allOpen ? "Tout réduire" : "Tout ouvrir"}
+              {allSectionsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              {allSectionsOpen ? "Tout réduire" : "Tout ouvrir"}
             </button>
           )}
         </div>
