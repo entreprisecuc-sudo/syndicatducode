@@ -115,15 +115,11 @@
 - Variables CSS pour une intégration facile dans toutes les pages admin
 - Contexte React `AdminThemeContext` pour accès global
 - Transitions fluides entre les modes (300ms)
-- **Pages migrées** (100% compatibles mode clair) :
-  - AdminDashboard
-  - AdminUsers
-  - AdminUserDetail
-  - AdminContacts
-  - AdminLogs
-  - AdminProjects
-- **Pages partiellement compatibles** (sidebar/header en mode clair, contenu en mode sombre) :
-  - AdminAnnouncements, AdminAlerts, AdminSubscriptions, AdminPartners, AdminPortfolioValidation, AdminProjectDetail
+- **TOUTES les pages admin migrées** :
+  - AdminDashboard, AdminUsers, AdminUserDetail
+  - AdminContacts, AdminLogs, AdminProjects
+  - AdminAnnouncements, AdminAlerts, AdminSubscriptions
+  - AdminPartners, AdminPortfolioValidation, AdminProjectDetail
 
 ---
 
