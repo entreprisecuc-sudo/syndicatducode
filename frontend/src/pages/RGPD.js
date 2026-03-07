@@ -103,7 +103,7 @@ const RGPD = () => {
               <li>droit de retirer son consentement à tout moment.</li>
             </ul>
             <p>Pour exercer ses droits, l'Utilisateur peut adresser sa demande à :<br />
-            📧 <a href="mailto:atelier@syndicatducode.fr" style={{color: 'var(--sage)'}}>atelier@syndicatducode.fr</a></p>
+            📧 <a href={`mailto:${CONFIG.email}`} style={{color: 'var(--sage)'}}>{CONFIG.email}</a></p>
             <p>Une réponse sera apportée dans un délai maximal d'un (1) mois.</p>
           </section>
 

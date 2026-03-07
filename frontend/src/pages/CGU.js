@@ -99,7 +99,7 @@ const CGU = () => {
             <h2>Article 9 – Données personnelles</h2>
             <p>Les données personnelles collectées via le site sont traitées conformément à la réglementation en vigueur, notamment le Règlement Général sur la Protection des Données (RGPD).</p>
             <p>Pour toute question relative aux données personnelles, l'Utilisateur peut contacter le Syndicat du Code à l'adresse suivante :<br />
-            📧 <a href="mailto:atelier@syndicatducode.fr" style={{color: 'var(--sage)'}}>atelier@syndicatducode.fr</a></p>
+            📧 <a href={`mailto:${CONFIG.email}`} style={{color: 'var(--sage)'}}>{CONFIG.email}</a></p>
             <p>Les modalités complètes de traitement sont détaillées dans la <a href="/rgpd" style={{color: 'var(--sage)'}}>Politique de Confidentialité</a> du site.</p>
           </section>
 

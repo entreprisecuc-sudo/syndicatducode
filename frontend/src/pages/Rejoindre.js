@@ -116,9 +116,9 @@ const Rejoindre = () => {
 
             <div className="recruit-cta">
               <p className="font-semibold mb-2">Intéressé ?</p>
-              <a href="mailto:atelier@syndicatducode.fr" className="inline-flex items-center gap-2" style={{color: 'var(--sage)'}}>
+              <a href={`mailto:${CONFIG.email}`} className="inline-flex items-center gap-2" style={{color: 'var(--sage)'}}>
                 <Mail size={18} />
-                atelier@syndicatducode.fr
+                {CONFIG.email}
               </a>
             </div>
           </div>
