@@ -419,188 +419,172 @@ const AdminSubscriptions = () => {
       )}
 
       {/* Modal Plan */}
-      {showPlanModal && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6" style={{ background: "var(--admin-bg-card)" }}>
-            <h2 className="text-xl font-bold text-white mb-6">
-              {editingPlan ? "Modifier le plan" : "Nouveau plan"}
-            </h2>
-            
-            <form onSubmit={handlePlanSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Nom du plan *</label>
-                  <input
-                    type="text"
-                    value={planForm.name}
-                    onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
-                    required
-                    placeholder="Ex: Starter, Pro, Premium"
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Description *</label>
-                  <textarea
-                    value={planForm.description}
-                    onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
-                    required
-                    rows={2}
-                    placeholder="Description courte du plan"
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Prix mensuel (€) *</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={planForm.price_monthly}
-                      onChange={(e) => setPlanForm({ ...planForm, price_monthly: e.target.value })}
-                      required
-                      className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Prix annuel (€) *</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={planForm.price_yearly}
-                      onChange={(e) => setPlanForm({ ...planForm, price_yearly: e.target.value })}
-                      required
-                      className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Fonctionnalités (une par ligne)
-                  </label>
-                  <textarea
-                    value={planForm.features}
-                    onChange={(e) => setPlanForm({ ...planForm, features: e.target.value })}
-                    rows={4}
-                    placeholder="Accès aux projets&#10;Support prioritaire&#10;..."
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Jours d'essai gratuit</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={planForm.trial_days}
-                    onChange={(e) => setPlanForm({ ...planForm, trial_days: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white"
-                  />
-                </div>
-                
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={planForm.is_recommended}
-                    onChange={(e) => setPlanForm({ ...planForm, is_recommended: e.target.checked })}
-                    className="w-5 h-5 rounded"
-                  />
-                  <span className="text-gray-300">Mettre en avant ce plan (recommandé)</span>
-                </label>
-              </div>
-              
-              <div className="flex gap-3 mt-6">
-                <button type="submit" disabled={formLoading} className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium">
-                  {formLoading ? "..." : editingPlan ? "Mettre à jour" : "Créer le plan"}
-                </button>
-                <button type="button" onClick={() => setShowPlanModal(false)} className="px-4 py-2 rounded-lg bg-gray-600 text-white">
-                  Annuler
-                </button>
-              </div>
-            </form>
+      <AdminModal
+        isOpen={showPlanModal}
+        onClose={() => setShowPlanModal(false)}
+        title={editingPlan ? "Modifier le plan" : "Nouveau plan"}
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handlePlanSubmit}>
+          <ModalFormGroup label="Nom du plan" required>
+            <ModalInput
+              type="text"
+              value={planForm.name}
+              onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
+              required
+              placeholder="Ex: Starter, Pro, Premium"
+            />
+          </ModalFormGroup>
+          
+          <ModalFormGroup label="Description" required>
+            <ModalTextarea
+              value={planForm.description}
+              onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
+              required
+              rows={2}
+              placeholder="Description courte du plan"
+            />
+          </ModalFormGroup>
+          
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <ModalFormGroup label="Prix mensuel (€)" required>
+              <ModalInput
+                type="number"
+                step="0.01"
+                value={planForm.price_monthly}
+                onChange={(e) => setPlanForm({ ...planForm, price_monthly: e.target.value })}
+                required
+              />
+            </ModalFormGroup>
+            <ModalFormGroup label="Prix annuel (€)" required>
+              <ModalInput
+                type="number"
+                step="0.01"
+                value={planForm.price_yearly}
+                onChange={(e) => setPlanForm({ ...planForm, price_yearly: e.target.value })}
+                required
+              />
+            </ModalFormGroup>
           </div>
-        </div>
-      )}
+          
+          <ModalFormGroup label="Fonctionnalités (une par ligne)">
+            <ModalTextarea
+              value={planForm.features}
+              onChange={(e) => setPlanForm({ ...planForm, features: e.target.value })}
+              rows={4}
+              placeholder={"Accès aux projets\nSupport prioritaire\n..."}
+            />
+          </ModalFormGroup>
+          
+          <ModalFormGroup label="Jours d'essai gratuit">
+            <ModalInput
+              type="number"
+              min="0"
+              value={planForm.trial_days}
+              onChange={(e) => setPlanForm({ ...planForm, trial_days: e.target.value })}
+            />
+          </ModalFormGroup>
+          
+          <div className="mb-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={planForm.is_recommended}
+                onChange={(e) => setPlanForm({ ...planForm, is_recommended: e.target.checked })}
+                className="w-5 h-5 rounded"
+                style={{ accentColor: "var(--admin-accent)" }}
+              />
+              <span style={{ color: "var(--admin-text-secondary)" }}>
+                Mettre en avant ce plan (recommandé)
+              </span>
+            </label>
+          </div>
+          
+          <ModalActions>
+            <ModalSubmitButton loading={formLoading}>
+              {editingPlan ? "Mettre à jour" : "Créer le plan"}
+            </ModalSubmitButton>
+            <ModalCancelButton onClick={() => setShowPlanModal(false)} />
+          </ModalActions>
+        </form>
+      </AdminModal>
 
       {/* Modal Stripe Config */}
-      {showStripeModal && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-xl p-6" style={{ background: "var(--admin-bg-card)" }}>
-            <h2 className="text-xl font-bold text-white mb-2">Configuration Stripe</h2>
-            <p className="text-gray-400 text-sm mb-6">
-              Entrez vos clés Stripe pour activer les paiements. 
-              <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-1">
-                Obtenir les clés →
-              </a>
-            </p>
-            
-            <form onSubmit={handleStripeSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Clé publique (pk_...)</label>
-                  <input
-                    type="text"
-                    value={stripeForm.stripe_public_key}
-                    onChange={(e) => setStripeForm({ ...stripeForm, stripe_public_key: e.target.value })}
-                    placeholder="pk_test_..."
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white font-mono text-sm"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Clé secrète (sk_...)</label>
-                  <input
-                    type="password"
-                    value={stripeForm.stripe_secret_key}
-                    onChange={(e) => setStripeForm({ ...stripeForm, stripe_secret_key: e.target.value })}
-                    placeholder="sk_test_..."
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white font-mono text-sm"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Webhook secret (whsec_...)</label>
-                  <input
-                    type="password"
-                    value={stripeForm.stripe_webhook_secret}
-                    onChange={(e) => setStripeForm({ ...stripeForm, stripe_webhook_secret: e.target.value })}
-                    placeholder="whsec_..."
-                    className="w-full px-4 py-2 rounded-lg bg-[#1a1a2e] border border-[#1f4068] text-white font-mono text-sm"
-                  />
-                </div>
-                
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={stripeForm.is_live_mode}
-                    onChange={(e) => setStripeForm({ ...stripeForm, is_live_mode: e.target.checked })}
-                    className="w-5 h-5 rounded"
-                  />
-                  <span className="text-gray-300">Mode Production (clés live)</span>
-                </label>
-                
-                <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-                  <p className="text-yellow-400 text-sm">
-                    ⚠️ En mode test, aucun paiement réel ne sera effectué.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3 mt-6">
-                <button type="submit" disabled={formLoading} className="px-4 py-2 rounded-lg bg-purple-500 text-white font-medium">
-                  {formLoading ? "..." : "Enregistrer"}
-                </button>
-                <button type="button" onClick={() => setShowStripeModal(false)} className="px-4 py-2 rounded-lg bg-gray-600 text-white">
-                  Annuler
-                </button>
-              </div>
-            </form>
+      <AdminModal
+        isOpen={showStripeModal}
+        onClose={() => setShowStripeModal(false)}
+        title="Configuration Stripe"
+        maxWidth="max-w-lg"
+      >
+        <p style={{ color: "var(--admin-text-secondary)" }} className="text-sm mb-6">
+          Entrez vos clés Stripe pour activer les paiements. 
+          <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-1">
+            Obtenir les clés →
+          </a>
+        </p>
+        
+        <form onSubmit={handleStripeSubmit}>
+          <ModalFormGroup label="Clé publique (pk_...)">
+            <ModalInput
+              type="text"
+              value={stripeForm.stripe_public_key}
+              onChange={(e) => setStripeForm({ ...stripeForm, stripe_public_key: e.target.value })}
+              placeholder="pk_test_..."
+            />
+          </ModalFormGroup>
+          
+          <ModalFormGroup label="Clé secrète (sk_...)">
+            <ModalInput
+              type="password"
+              value={stripeForm.stripe_secret_key}
+              onChange={(e) => setStripeForm({ ...stripeForm, stripe_secret_key: e.target.value })}
+              placeholder="sk_test_..."
+            />
+          </ModalFormGroup>
+          
+          <ModalFormGroup label="Webhook secret (whsec_...)">
+            <ModalInput
+              type="password"
+              value={stripeForm.stripe_webhook_secret}
+              onChange={(e) => setStripeForm({ ...stripeForm, stripe_webhook_secret: e.target.value })}
+              placeholder="whsec_..."
+            />
+          </ModalFormGroup>
+          
+          <div className="mb-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={stripeForm.is_live_mode}
+                onChange={(e) => setStripeForm({ ...stripeForm, is_live_mode: e.target.checked })}
+                className="w-5 h-5 rounded"
+                style={{ accentColor: "var(--admin-accent)" }}
+              />
+              <span style={{ color: "var(--admin-text-secondary)" }}>Mode Production (clés live)</span>
+            </label>
           </div>
-        </div>
-      )}
+          
+          <div 
+            className="p-3 rounded-lg mb-4"
+            style={{ background: "rgba(245, 158, 11, 0.1)", border: "1px solid rgba(245, 158, 11, 0.3)" }}
+          >
+            <p className="text-yellow-400 text-sm">
+              ⚠️ En mode test, aucun paiement réel ne sera effectué.
+            </p>
+          </div>
+          
+          <ModalActions>
+            <button 
+              type="submit" 
+              disabled={formLoading} 
+              className="px-4 py-2 rounded-lg bg-purple-500 text-white font-medium hover:opacity-90 transition-colors disabled:opacity-50"
+            >
+              {formLoading ? "Enregistrement..." : "Enregistrer"}
+            </button>
+            <ModalCancelButton onClick={() => setShowStripeModal(false)} />
+          </ModalActions>
+        </form>
+      </AdminModal>
     </AdminLayout>
   );
 };
