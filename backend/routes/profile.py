@@ -368,6 +368,7 @@ async def add_portfolio_project(
         "github_url": project.github_url,
         "technologies": project.technologies or [],
         "year": project.year,
+        "is_adult_content": project.is_adult_content or False,
         "status": "pending",  # En attente de validation admin
         "created_at": now,
         "updated_at": now
