@@ -260,7 +260,7 @@ const HistoryTab = ({ activity, loading }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="animate-spin text-red-500" size={32} />
+        <Loader2 className="animate-spin" style={{ color: "var(--admin-accent)" }} size={32} />
       </div>
     );
   }
@@ -268,11 +268,11 @@ const HistoryTab = ({ activity, loading }) => {
   if (!activity || activity.length === 0) {
     return (
       <div 
-        className="p-8 rounded-xl text-center"
-        style={{ background: "#1a1a2e", border: "1px solid #1f4068" }}
+        className="p-8 rounded-xl text-center transition-colors duration-300"
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
-        <History size={48} className="mx-auto mb-4 text-gray-500" />
-        <p className="text-gray-400">Aucune activité enregistrée</p>
+        <History size={48} className="mx-auto mb-4" style={{ color: "var(--admin-text-muted)" }} />
+        <p style={{ color: "var(--admin-text-secondary)" }}>Aucune activité enregistrée</p>
       </div>
     );
   }
@@ -310,8 +310,8 @@ const HistoryTab = ({ activity, loading }) => {
         return (
           <div 
             key={index}
-            className="p-4 rounded-xl flex items-start gap-4"
-            style={{ background: "#1a1a2e", border: "1px solid #1f4068" }}
+            className="p-4 rounded-xl flex items-start gap-4 transition-colors duration-300"
+            style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
           >
             <div 
               className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
