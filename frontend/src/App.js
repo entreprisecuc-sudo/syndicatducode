@@ -236,6 +236,10 @@ function App() {
                 path="/syndicat-admin/partenaires" 
                 element={<RoleRoute allowedRoles={["admin"]}><AdminPartners /></RoleRoute>} 
               />
+              <Route 
+                path="/syndicat-admin/validation-books" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminPortfolioValidation /></RoleRoute>} 
+              />
 
               {/* ============================================ */}
               {/* REDIRECTION DASHBOARD GÉNÉRIQUE */}
