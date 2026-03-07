@@ -99,7 +99,7 @@
   - Liens remplacés par **"Lien masqué (contenu +18)"** non cliquables
 - Champ `is_adult_content` ajouté au modèle portfolio
 
-### ✅ Gestion Utilisateurs Avancée - Admin (Phase 17) - FINALISÉ 07/03/2026
+### ✅ Gestion Utilisateurs Avancée - Admin (Phase 17)
 - Lignes utilisateurs cliquables dans la liste
 - Page de détail utilisateur avec 5 onglets :
   - **Profil** : Infos complètes (avatar, email, rôle, statut, bio, compétences, liens)
@@ -108,6 +108,13 @@
   - **Book** : Portfolio complet avec statuts (visible si développeur)
   - **Abonnement** : Détails de l'abonnement actif (visible si développeur)
 - Routes backend : `/api/admin/users/{id}/full` et `/api/admin/users/{id}/activity`
+
+### ✅ Mode Sombre/Clair Admin (Phase 18) - FINALISÉ 07/03/2026
+- Toggle dark/light mode dans le header admin (icône soleil/lune)
+- Thème persisté en localStorage (`syndicat_admin_theme`)
+- Variables CSS pour une intégration facile dans toutes les pages admin
+- Contexte React `AdminThemeContext` pour accès global
+- Transitions fluides entre les modes (300ms)
 
 ---
 
