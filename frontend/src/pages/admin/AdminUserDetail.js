@@ -44,7 +44,7 @@ const TABS = [
 /**
  * Onglet Profil
  */
-const ProfileTab = ({ user, profile }) => {
+const ProfileTab = ({ user, profile, theme }) => {
   if (!user) return null;
 
   const roleConfig = ROLE_CONFIG[user.role] || ROLE_CONFIG.null;
@@ -60,8 +60,8 @@ const ProfileTab = ({ user, profile }) => {
     <div className="space-y-6">
       {/* En-tête utilisateur */}
       <div 
-        className="p-6 rounded-xl flex flex-col md:flex-row items-start gap-6"
-        style={{ background: "#1a1a2e", border: "1px solid #1f4068" }}
+        className="p-6 rounded-xl flex flex-col md:flex-row items-start gap-6 transition-colors duration-300"
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
         {/* Avatar */}
         <div 
@@ -77,13 +77,16 @@ const ProfileTab = ({ user, profile }) => {
 
         {/* Infos principales */}
         <div className="flex-1">
-          <h2 className="text-xl font-semibold text-white mb-2">
+          <h2 
+            className="text-xl font-semibold mb-2"
+            style={{ color: "var(--admin-text)" }}
+          >
             {profile?.first_name && profile?.last_name 
               ? `${profile.first_name} ${profile.last_name}`
               : user.email}
           </h2>
           
-          <p className="text-gray-400 mb-3">{user.email}</p>
+          <p className="mb-3" style={{ color: "var(--admin-text-secondary)" }}>{user.email}</p>
           
           <div className="flex flex-wrap items-center gap-3">
             {/* Rôle */}
@@ -105,7 +108,10 @@ const ProfileTab = ({ user, profile }) => {
             
             {/* Date inscription */}
             {user.created_at && (
-              <span className="flex items-center gap-1 text-sm text-gray-500">
+              <span 
+                className="flex items-center gap-1 text-sm"
+                style={{ color: "var(--admin-text-muted)" }}
+              >
                 <Calendar size={14} />
                 Inscrit le {new Date(user.created_at).toLocaleDateString("fr-FR")}
               </span>
@@ -117,36 +123,41 @@ const ProfileTab = ({ user, profile }) => {
       {/* Détails du profil */}
       {profile && (
         <div 
-          className="p-6 rounded-xl"
-          style={{ background: "#1a1a2e", border: "1px solid #1f4068" }}
+          className="p-6 rounded-xl transition-colors duration-300"
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
         >
-          <h3 className="text-lg font-semibold text-white mb-4">Informations du profil</h3>
+          <h3 
+            className="text-lg font-semibold mb-4"
+            style={{ color: "var(--admin-text)" }}
+          >
+            Informations du profil
+          </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {profile.phone && (
-              <div className="flex items-center gap-3 text-gray-300">
-                <Phone size={18} className="text-gray-500" />
+              <div className="flex items-center gap-3" style={{ color: "var(--admin-text-secondary)" }}>
+                <Phone size={18} style={{ color: "var(--admin-text-muted)" }} />
                 <span>{profile.phone}</span>
               </div>
             )}
             
             {profile.city && (
-              <div className="flex items-center gap-3 text-gray-300">
-                <MapPin size={18} className="text-gray-500" />
+              <div className="flex items-center gap-3" style={{ color: "var(--admin-text-secondary)" }}>
+                <MapPin size={18} style={{ color: "var(--admin-text-muted)" }} />
                 <span>{profile.city}</span>
               </div>
             )}
             
             {profile.experience && (
-              <div className="flex items-center gap-3 text-gray-300">
-                <Briefcase size={18} className="text-gray-500" />
+              <div className="flex items-center gap-3" style={{ color: "var(--admin-text-secondary)" }}>
+                <Briefcase size={18} style={{ color: "var(--admin-text-muted)" }} />
                 <span>{profile.experience} d'expérience</span>
               </div>
             )}
             
             {profile.availability && (
-              <div className="flex items-center gap-3 text-gray-300">
-                <Clock size={18} className="text-gray-500" />
+              <div className="flex items-center gap-3" style={{ color: "var(--admin-text-secondary)" }}>
+                <Clock size={18} style={{ color: "var(--admin-text-muted)" }} />
                 <span>
                   {profile.availability === "full" && "Temps plein"}
                   {profile.availability === "partial" && "Temps partiel"}
@@ -159,22 +170,28 @@ const ProfileTab = ({ user, profile }) => {
 
           {/* Bio */}
           {profile.bio && (
-            <div className="mt-4 pt-4 border-t border-gray-700">
-              <h4 className="text-sm font-medium text-gray-400 mb-2">Bio</h4>
-              <p className="text-gray-300">{profile.bio}</p>
+            <div 
+              className="mt-4 pt-4"
+              style={{ borderTop: "1px solid var(--admin-border)" }}
+            >
+              <h4 className="text-sm font-medium mb-2" style={{ color: "var(--admin-text-muted)" }}>Bio</h4>
+              <p style={{ color: "var(--admin-text-secondary)" }}>{profile.bio}</p>
             </div>
           )}
 
           {/* Compétences */}
           {profile.skills?.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-700">
-              <h4 className="text-sm font-medium text-gray-400 mb-2">Compétences</h4>
+            <div 
+              className="mt-4 pt-4"
+              style={{ borderTop: "1px solid var(--admin-border)" }}
+            >
+              <h4 className="text-sm font-medium mb-2" style={{ color: "var(--admin-text-muted)" }}>Compétences</h4>
               <div className="flex flex-wrap gap-2">
                 {profile.skills.map((skill) => (
                   <span 
                     key={skill}
                     className="px-3 py-1 rounded-lg text-sm"
-                    style={{ background: "#e9456020", color: "#e94560" }}
+                    style={{ background: "var(--admin-accent)20", color: "var(--admin-accent)" }}
                   >
                     {skill}
                   </span>
@@ -185,16 +202,19 @@ const ProfileTab = ({ user, profile }) => {
 
           {/* Liens */}
           {(profile.github || profile.linkedin || profile.portfolio) && (
-            <div className="mt-4 pt-4 border-t border-gray-700">
-              <h4 className="text-sm font-medium text-gray-400 mb-2">Liens</h4>
+            <div 
+              className="mt-4 pt-4"
+              style={{ borderTop: "1px solid var(--admin-border)" }}
+            >
+              <h4 className="text-sm font-medium mb-2" style={{ color: "var(--admin-text-muted)" }}>Liens</h4>
               <div className="flex flex-wrap gap-3">
                 {profile.github && (
                   <a 
                     href={profile.github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white transition-colors"
-                    style={{ background: "#1f4068" }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors hover:opacity-80"
+                    style={{ background: "var(--admin-bg-section)", color: "var(--admin-text-secondary)" }}
                   >
                     <Github size={16} />
                     GitHub
@@ -205,8 +225,8 @@ const ProfileTab = ({ user, profile }) => {
                     href={profile.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white transition-colors"
-                    style={{ background: "#1f4068" }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors hover:opacity-80"
+                    style={{ background: "var(--admin-bg-section)", color: "var(--admin-text-secondary)" }}
                   >
                     <Linkedin size={16} />
                     LinkedIn
@@ -217,8 +237,8 @@ const ProfileTab = ({ user, profile }) => {
                     href={profile.portfolio}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white transition-colors"
-                    style={{ background: "#1f4068" }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors hover:opacity-80"
+                    style={{ background: "var(--admin-bg-section)", color: "var(--admin-text-secondary)" }}
                   >
                     <Globe size={16} />
                     Portfolio
