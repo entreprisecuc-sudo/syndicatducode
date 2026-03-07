@@ -309,6 +309,7 @@ class PortfolioProject(BaseModel):
     github_url: Optional[str] = None  # Lien GitHub
     technologies: Optional[List[str]] = None
     year: Optional[str] = None
+    is_adult_content: Optional[bool] = False  # Contenu réservé aux +18 ans
 
 
 class PortfolioProjectUpdate(BaseModel):
@@ -321,6 +322,7 @@ class PortfolioProjectUpdate(BaseModel):
     github_url: Optional[str] = None
     technologies: Optional[List[str]] = None
     year: Optional[str] = None
+    is_adult_content: Optional[bool] = None  # Contenu réservé aux +18 ans
 
 
 @router.get("/portfolio")
