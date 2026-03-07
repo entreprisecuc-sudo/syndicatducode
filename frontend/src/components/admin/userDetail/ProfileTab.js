@@ -1,0 +1,236 @@
+/**
+ * Onglet Profil - Détail utilisateur admin
+ * Affiche les informations de base et le profil développeur
+ */
+
+import { 
+  User, Phone, MapPin, Briefcase, Clock, Calendar,
+  Github, Linkedin, Globe, Shield, Code, Users
+} from "lucide-react";
+import { API_URL } from "@/config/constants";
+
+// Configuration des rôles
+const ROLE_CONFIG = {
+  commercial: { label: "Commercial", icon: Briefcase, color: "#10b981" },
+  developer: { label: "Développeur", icon: Code, color: "#3b82f6" },
+  admin: { label: "Admin", icon: Shield, color: "#ef4444" },
+  null: { label: "Non défini", icon: Users, color: "#6b7280" }
+};
+
+// Configuration des statuts
+const STATUS_CONFIG = {
+  active: { label: "Actif", color: "#10b981", bg: "#10b98120" },
+  suspended: { label: "Suspendu", color: "#ef4444", bg: "#ef444420" },
+  pending: { label: "En attente", color: "#f59e0b", bg: "#f59e0b20" }
+};
+
+export const ProfileTab = ({ user, profile }) => {
+  if (!user) return null;
+
+  const roleConfig = ROLE_CONFIG[user.role] || ROLE_CONFIG.null;
+  const statusConfig = STATUS_CONFIG[user.status] || STATUS_CONFIG.pending;
+  const RoleIcon = roleConfig.icon;
+
+  // Photo de profil
+  const photoUrl = profile?.photo_url?.startsWith("http") 
+    ? profile.photo_url 
+    : profile?.photo_url ? `${API_URL}${profile.photo_url}` : null;
+
+  return (
+    <div className="space-y-6">
+      {/* En-tête utilisateur */}
+      <div 
+        className="p-6 rounded-xl flex flex-col md:flex-row items-start gap-6 transition-colors duration-300"
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
+      >
+        {/* Avatar */}
+        <div 
+          className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold text-white overflow-hidden flex-shrink-0"
+          style={{ background: photoUrl ? "transparent" : roleConfig.color }}
+        >
+          {photoUrl ? (
+            <img src={photoUrl} alt={user.email} className="w-full h-full object-cover" />
+          ) : (
+            user.email.charAt(0).toUpperCase()
+          )}
+        </div>
+
+        {/* Infos principales */}
+        <div className="flex-1">
+          <h2 
+            className="text-xl font-semibold mb-2"
+            style={{ color: "var(--admin-text)" }}
+          >
+            {profile?.first_name && profile?.last_name 
+              ? `${profile.first_name} ${profile.last_name}`
+              : user.email}
+          </h2>
+          
+          <p className="mb-3" style={{ color: "var(--admin-text-secondary)" }}>{user.email}</p>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Rôle */}
+            <span 
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
+              style={{ background: `${roleConfig.color}20`, color: roleConfig.color }}
+            >
+              <RoleIcon size={16} />
+              {roleConfig.label}
+            </span>
+            
+            {/* Statut */}
+            <span 
+              className="px-3 py-1.5 rounded-lg text-sm"
+              style={{ background: statusConfig.bg, color: statusConfig.color }}
+            >
+              {statusConfig.label}
+            </span>
+            
+            {/* Date inscription */}
+            {user.created_at && (
+              <span 
+                className="flex items-center gap-1 text-sm"
+                style={{ color: "var(--admin-text-muted)" }}
+              >
+                <Calendar size={14} />
+                Inscrit le {new Date(user.created_at).toLocaleDateString("fr-FR")}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Détails du profil */}
+      {profile && (
+        <div 
+          className="p-6 rounded-xl transition-colors duration-300"
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
+        >
+          <h3 
+            className="text-lg font-semibold mb-4"
+            style={{ color: "var(--admin-text)" }}
+          >
+            Informations du profil
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {profile.phone && (
+              <div className="flex items-center gap-3" style={{ color: "var(--admin-text-secondary)" }}>
+                <Phone size={18} style={{ color: "var(--admin-text-muted)" }} />
+                <span>{profile.phone}</span>
+              </div>
+            )}
+            
+            {profile.city && (
+              <div className="flex items-center gap-3" style={{ color: "var(--admin-text-secondary)" }}>
+                <MapPin size={18} style={{ color: "var(--admin-text-muted)" }} />
+                <span>{profile.city}</span>
+              </div>
+            )}
+            
+            {profile.experience && (
+              <div className="flex items-center gap-3" style={{ color: "var(--admin-text-secondary)" }}>
+                <Briefcase size={18} style={{ color: "var(--admin-text-muted)" }} />
+                <span>{profile.experience} d'expérience</span>
+              </div>
+            )}
+            
+            {profile.availability && (
+              <div className="flex items-center gap-3" style={{ color: "var(--admin-text-secondary)" }}>
+                <Clock size={18} style={{ color: "var(--admin-text-muted)" }} />
+                <span>
+                  {profile.availability === "full" && "Temps plein"}
+                  {profile.availability === "partial" && "Temps partiel"}
+                  {profile.availability === "weekends" && "Week-ends"}
+                  {profile.availability === "unavailable" && "Indisponible"}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Bio */}
+          {profile.bio && (
+            <div 
+              className="mt-4 pt-4"
+              style={{ borderTop: "1px solid var(--admin-border)" }}
+            >
+              <h4 className="text-sm font-medium mb-2" style={{ color: "var(--admin-text-muted)" }}>Bio</h4>
+              <p style={{ color: "var(--admin-text-secondary)" }}>{profile.bio}</p>
+            </div>
+          )}
+
+          {/* Compétences */}
+          {profile.skills?.length > 0 && (
+            <div 
+              className="mt-4 pt-4"
+              style={{ borderTop: "1px solid var(--admin-border)" }}
+            >
+              <h4 className="text-sm font-medium mb-2" style={{ color: "var(--admin-text-muted)" }}>Compétences</h4>
+              <div className="flex flex-wrap gap-2">
+                {profile.skills.map((skill) => (
+                  <span 
+                    key={skill}
+                    className="px-3 py-1 rounded-lg text-sm"
+                    style={{ background: "var(--admin-accent)20", color: "var(--admin-accent)" }}
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Liens */}
+          {(profile.github || profile.linkedin || profile.portfolio) && (
+            <div 
+              className="mt-4 pt-4"
+              style={{ borderTop: "1px solid var(--admin-border)" }}
+            >
+              <h4 className="text-sm font-medium mb-2" style={{ color: "var(--admin-text-muted)" }}>Liens</h4>
+              <div className="flex flex-wrap gap-3">
+                {profile.github && (
+                  <a 
+                    href={profile.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors hover:opacity-80"
+                    style={{ background: "var(--admin-bg-section)", color: "var(--admin-text-secondary)" }}
+                  >
+                    <Github size={16} />
+                    GitHub
+                  </a>
+                )}
+                {profile.linkedin && (
+                  <a 
+                    href={profile.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors hover:opacity-80"
+                    style={{ background: "var(--admin-bg-section)", color: "var(--admin-text-secondary)" }}
+                  >
+                    <Linkedin size={16} />
+                    LinkedIn
+                  </a>
+                )}
+                {profile.portfolio && (
+                  <a 
+                    href={profile.portfolio}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors hover:opacity-80"
+                    style={{ background: "var(--admin-bg-section)", color: "var(--admin-text-secondary)" }}
+                  >
+                    <Globe size={16} />
+                    Portfolio
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProfileTab;
