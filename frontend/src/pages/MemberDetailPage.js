@@ -8,7 +8,8 @@ import { useParams, Link } from "react-router-dom";
 import { 
   ArrowLeft, MapPin, Briefcase, Github, Linkedin, Globe, 
   ExternalLink, Calendar, Loader2, Code, Image as ImageIcon,
-  Send, CheckCircle, User, Mail, Phone, FileText, X, MessageCircle
+  Send, CheckCircle, User, Mail, Phone, FileText, X, MessageCircle,
+  AlertTriangle, EyeOff
 } from "lucide-react";
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
