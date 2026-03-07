@@ -7,14 +7,23 @@
 export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API_URL = `${BACKEND_URL}/api`;
 
-// Informations de l'entreprise
+// Email unique du Syndicat
 export const CONFIG = {
   companyName: "Le Syndicat du Code",
-  slogan: "Notre loi, unis par le code.",
-  phone: "0660420665",
-  city: "Troyes",
   email: "atelier@syndicatducode.fr",
-  logo: "https://customer-assets.emergentagent.com/job_simple-start-7/artifacts/xc73oib2_Logo%20le%20syndicat%20du%20code%20.png"
+  logo: "/logo.png",
+  slogan: "Notre loi. Unis par le code.",
+};
+
+// Mode développement - Active les boutons de connexion rapide dans le footer
+// ⚠️ À DÉSACTIVER EN PRODUCTION
+export const DEV_MODE = true;
+
+// Comptes de test pour le mode développement
+export const TEST_ACCOUNTS = {
+  admin: { email: "admin@syndicatducode.fr", password: "AdminSyndicat2025!" },
+  developer: { email: "test@syndicatducode.fr", password: "TestPassword123!" },
+  commercial: { email: "commercial1772755291@test.com", password: "TestPassword123!" }
 };
 
 // Liens de navigation
