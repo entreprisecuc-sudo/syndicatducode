@@ -1,14 +1,114 @@
 /**
  * Composant Footer
  * Pied de page avec navigation et mentions légales
+ * Inclut des boutons de connexion rapide en mode développement
  */
 
-import { CONFIG } from "@/config/constants";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Shield, Code, Briefcase, Loader2 } from "lucide-react";
+import { CONFIG, DEV_MODE, TEST_ACCOUNTS, API_URL } from "@/config/constants";
+import { useAuth } from "@/context/AuthContext";
+import axios from "axios";
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [loading, setLoading] = useState(null);
+
+  // Connexion rapide pour les tests
+  const quickLogin = async (accountType) => {
+    if (!DEV_MODE || !TEST_ACCOUNTS[accountType]) return;
+    
+    setLoading(accountType);
+    try {
+      const account = TEST_ACCOUNTS[accountType];
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        email: account.email,
+        password: account.password
+      });
+      
+      // Stocker le token et mettre à jour le contexte
+      localStorage.setItem("token", response.data.access_token);
+      login(response.data.access_token);
+      
+      // Redirection selon le rôle
+      const redirectPaths = {
+        admin: "/syndicat-admin",
+        developer: "/espace-developpeur",
+        commercial: "/espace-commercial"
+      };
+      navigate(redirectPaths[accountType] || "/");
+    } catch (err) {
+      console.error("Erreur connexion rapide:", err);
+      alert("Erreur de connexion: " + (err.response?.data?.detail || err.message));
+    } finally {
+      setLoading(null);
+    }
+  };
+
   return (
     <footer className="footer" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
+        
+        {/* Boutons de test - Uniquement en mode DEV */}
+        {DEV_MODE && (
+          <div 
+            className="mb-8 p-4 rounded-xl"
+            style={{ background: "rgba(233, 69, 96, 0.1)", border: "1px dashed #e94560" }}
+          >
+            <p className="text-xs text-center mb-3" style={{ color: "#e94560" }}>
+              ⚠️ MODE DÉVELOPPEMENT - Connexion rapide pour les tests
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                onClick={() => quickLogin("admin")}
+                disabled={loading !== null}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 disabled:opacity-50"
+                style={{ background: "#ef4444", color: "white" }}
+                data-testid="quick-login-admin"
+              >
+                {loading === "admin" ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Shield size={16} />
+                )}
+                Admin
+              </button>
+              
+              <button
+                onClick={() => quickLogin("developer")}
+                disabled={loading !== null}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 disabled:opacity-50"
+                style={{ background: "#3b82f6", color: "white" }}
+                data-testid="quick-login-dev"
+              >
+                {loading === "developer" ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Code size={16} />
+                )}
+                Espace Dev
+              </button>
+              
+              <button
+                onClick={() => quickLogin("commercial")}
+                disabled={loading !== null}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 disabled:opacity-50"
+                style={{ background: "#10b981", color: "white" }}
+                data-testid="quick-login-commercial"
+              >
+                {loading === "commercial" ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Briefcase size={16} />
+                )}
+                Espace Co
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           
           {/* Logo & Slogan */}
