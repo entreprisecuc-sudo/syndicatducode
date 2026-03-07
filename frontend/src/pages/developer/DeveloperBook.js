@@ -54,6 +54,14 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
       >
         <span className="w-2 h-2 rounded-full" style={{ background: status.text }} />
         {status.label}
+        {project.is_adult_content && (
+          <span 
+            className="ml-auto px-2 py-0.5 rounded text-xs font-bold"
+            style={{ background: "#ef4444", color: "white" }}
+          >
+            +18
+          </span>
+        )}
       </div>
 
       {/* Raison de rejet si rejeté */}
