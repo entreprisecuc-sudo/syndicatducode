@@ -416,19 +416,19 @@ const BookTab = ({ portfolio }) => {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <Briefcase size={32} className="text-gray-600" />
+                  <Briefcase size={32} style={{ color: "var(--admin-text-muted)" }} />
                 </div>
               )}
             </div>
 
             {/* Contenu */}
             <div className="p-4">
-              <h4 className="font-semibold text-white mb-1">{project.title}</h4>
+              <h4 className="font-semibold mb-1" style={{ color: "var(--admin-text)" }}>{project.title}</h4>
               {project.year && (
-                <p className="text-xs text-gray-500 mb-2">{project.year}</p>
+                <p className="text-xs mb-2" style={{ color: "var(--admin-text-muted)" }}>{project.year}</p>
               )}
               {project.description && (
-                <p className="text-sm text-gray-400 line-clamp-2 mb-3">
+                <p className="text-sm line-clamp-2 mb-3" style={{ color: "var(--admin-text-secondary)" }}>
                   {project.description}
                 </p>
               )}
@@ -440,7 +440,7 @@ const BookTab = ({ portfolio }) => {
                     <span 
                       key={tech}
                       className="px-2 py-0.5 rounded text-xs"
-                      style={{ background: "#1f4068", color: "#e94560" }}
+                      style={{ background: "var(--admin-bg-section)", color: "var(--admin-accent)" }}
                     >
                       {tech}
                     </span>
@@ -466,7 +466,7 @@ const BookTab = ({ portfolio }) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 text-xs px-2 py-1 rounded"
-                    style={{ background: "#1f4068", color: "#9ca3af" }}
+                    style={{ background: "var(--admin-bg-section)", color: "var(--admin-text-secondary)" }}
                   >
                     <ExternalLink size={12} />
                     Voir
@@ -478,7 +478,7 @@ const BookTab = ({ portfolio }) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 text-xs px-2 py-1 rounded"
-                    style={{ background: "#1f4068", color: "#9ca3af" }}
+                    style={{ background: "var(--admin-bg-section)", color: "var(--admin-text-secondary)" }}
                   >
                     <Github size={12} />
                     GitHub
