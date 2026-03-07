@@ -1,4 +1,5 @@
 import { ArrowLeft } from "lucide-react";
+import { CONFIG } from "@/config/constants";
 
 const RGPD = () => {
   return (
@@ -26,7 +27,7 @@ const RGPD = () => {
               immatriculée au Registre du Commerce et des Sociétés de Troyes sous le numéro 892 906 728,<br />
               représentée par Monsieur Arnaud Becam, Président,
             </p>
-            <p>📧 Contact : <a href="mailto:atelier@syndicatducode.fr" style={{color: 'var(--sage)'}}>atelier@syndicatducode.fr</a></p>
+            <p>📧 Contact : <a href={`mailto:${CONFIG.email}`} style={{color: 'var(--sage)'}}>{CONFIG.email}</a></p>
             <p>Ci-après désigné « Le Syndicat du Code ».</p>
           </section>
 

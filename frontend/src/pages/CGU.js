@@ -1,4 +1,5 @@
 import { ArrowLeft } from "lucide-react";
+import { CONFIG } from "@/config/constants";
 
 const CGU = () => {
   return (
@@ -26,7 +27,7 @@ const CGU = () => {
               immatriculée au Registre du Commerce et des Sociétés de Troyes sous le numéro 892 906 728,<br />
               représentée par Monsieur Arnaud Becam, en qualité de Président,
             </p>
-            <p>📧 Adresse de contact : <a href="mailto:atelier@syndicatducode.fr" style={{color: 'var(--sage)'}}>atelier@syndicatducode.fr</a></p>
+            <p>📧 Adresse de contact : <a href={`mailto:${CONFIG.email}`} style={{color: 'var(--sage)'}}>{CONFIG.email}</a></p>
             <p>Ci-après désignée « Le Syndicat du Code » ou « l'Éditeur ».</p>
           </section>
 
