@@ -206,6 +206,10 @@ function App() {
                 element={<RoleRoute allowedRoles={["admin"]}><AdminUsers /></RoleRoute>} 
               />
               <Route 
+                path="/syndicat-admin/utilisateurs/:userId" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminUserDetail /></RoleRoute>} 
+              />
+              <Route 
                 path="/syndicat-admin/contacts" 
                 element={<RoleRoute allowedRoles={["admin"]}><AdminContacts /></RoleRoute>} 
               />
