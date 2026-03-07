@@ -260,9 +260,10 @@ const AdminDashboard = () => {
             title="Utilisateurs" 
             icon="👥" 
             columns={6}
-            defaultOpen={allOpen}
+            isOpen={sections.users}
+            onToggle={() => toggleSection('users')}
             accentColor="#6366f1"
-            key={`users-${allOpen}`}
+            sectionId="users"
           >
             <StatCard 
               icon={Users}
@@ -307,9 +308,10 @@ const AdminDashboard = () => {
             title="Demandes de contact" 
             icon="📬" 
             columns={4}
-            defaultOpen={allOpen}
+            isOpen={sections.contacts}
+            onToggle={() => toggleSection('contacts')}
             accentColor="#f59e0b"
-            key={`contacts-${allOpen}`}
+            sectionId="contacts"
           >
             <StatCard 
               icon={Mail}
@@ -342,9 +344,10 @@ const AdminDashboard = () => {
             title="Projets du Syndicat" 
             icon="🚀" 
             columns={5}
-            defaultOpen={allOpen}
+            isOpen={sections.projects}
+            onToggle={() => toggleSection('projects')}
             accentColor="#10b981"
-            key={`projects-${allOpen}`}
+            sectionId="projects"
           >
             <StatCard 
               icon={Rocket}
@@ -383,9 +386,10 @@ const AdminDashboard = () => {
             title="Contenus" 
             icon="📝" 
             columns={4}
-            defaultOpen={allOpen}
+            isOpen={sections.contents}
+            onToggle={() => toggleSection('contents')}
             accentColor="#3b82f6"
-            key={`contents-${allOpen}`}
+            sectionId="contents"
           >
             <StatCard 
               icon={Megaphone}
@@ -420,9 +424,10 @@ const AdminDashboard = () => {
             title="Abonnements" 
             icon="💰" 
             columns={4}
-            defaultOpen={allOpen}
+            isOpen={sections.subscriptions}
+            onToggle={() => toggleSection('subscriptions')}
             accentColor="#8b5cf6"
-            key={`subscriptions-${allOpen}`}
+            sectionId="subscriptions"
           >
             <StatCard 
               icon={CreditCard}
@@ -461,9 +466,10 @@ const AdminDashboard = () => {
             title="Partenaires" 
             icon="🤝" 
             columns={3}
-            defaultOpen={allOpen}
+            isOpen={sections.partners}
+            onToggle={() => toggleSection('partners')}
             accentColor="#ec4899"
-            key={`partners-${allOpen}`}
+            sectionId="partners"
           >
             <StatCard 
               icon={Handshake}
