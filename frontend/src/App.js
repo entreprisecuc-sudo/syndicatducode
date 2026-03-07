@@ -7,6 +7,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ModalProvider } from "@/context/ModalContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { AdminThemeProvider } from "@/context/AdminThemeContext";
 import { PublicRoute, RoleRoute } from "@/components/auth/ProtectedRoute";
 
 // Pages publiques
