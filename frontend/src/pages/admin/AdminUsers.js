@@ -26,6 +26,7 @@ const STATUS_CONFIG = {
 };
 
 const AdminUsers = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
