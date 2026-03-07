@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { CONFIG } from "@/config/constants";
+import NotificationsPopup from "@/components/NotificationsPopup";
 
 // Configuration des menus par rôle
 const MENU_ITEMS = {
