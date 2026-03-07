@@ -91,13 +91,23 @@
 - Affiche le projet rejeté et la raison
 - Bouton "J'ai compris" pour fermer
 
-### ✅ Contenu Adulte +18 (Phase 16) - FINALISÉ 07/03/2026
+### ✅ Contenu Adulte +18 (Phase 16)
 - Checkbox dans le formulaire de création/édition de projet
 - Badge "+18" visible sur les cartes projet (côté développeur)
 - Sur la page publique des membres :
   - Image **floutée** (blur 20px) avec overlay "Image masquée"
   - Liens remplacés par **"Lien masqué (contenu +18)"** non cliquables
 - Champ `is_adult_content` ajouté au modèle portfolio
+
+### ✅ Gestion Utilisateurs Avancée - Admin (Phase 17) - FINALISÉ 07/03/2026
+- Lignes utilisateurs cliquables dans la liste
+- Page de détail utilisateur avec 5 onglets :
+  - **Profil** : Infos complètes (avatar, email, rôle, statut, bio, compétences, liens)
+  - **Historique** : Timeline d'activité (projets, abonnements, messages, candidatures)
+  - **Documents** : Placeholder pour fonctionnalité future
+  - **Book** : Portfolio complet avec statuts (visible si développeur)
+  - **Abonnement** : Détails de l'abonnement actif (visible si développeur)
+- Routes backend : `/api/admin/users/{id}/full` et `/api/admin/users/{id}/activity`
 
 ---
 
