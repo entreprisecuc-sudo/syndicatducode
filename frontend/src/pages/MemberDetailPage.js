@@ -512,20 +512,42 @@ const MemberDetailPage = () => {
                   ? project.image_url
                   : project.image_url ? `${API_URL}${project.image_url}` : null;
                 
+                const isAdult = project.is_adult_content;
+                
                 return (
                   <div 
                     key={project.id}
                     className="rounded-xl overflow-hidden"
                     style={{ background: "#16213e", border: "1px solid #1f4068" }}
                   >
-                    {/* Image */}
-                    <div className="aspect-video bg-gray-800">
+                    {/* Badge +18 si contenu adulte */}
+                    {isAdult && (
+                      <div 
+                        className="px-3 py-1.5 flex items-center gap-2 text-xs font-medium"
+                        style={{ background: "#ef444420", color: "#ef4444" }}
+                      >
+                        <AlertTriangle size={14} />
+                        Contenu réservé aux +18 ans
+                      </div>
+                    )}
+                    
+                    {/* Image - floutée si +18 */}
+                    <div className="aspect-video bg-gray-800 relative">
                       {projectImg ? (
-                        <img 
-                          src={projectImg} 
-                          alt={project.title}
-                          className="w-full h-full object-cover"
-                        />
+                        <>
+                          <img 
+                            src={projectImg} 
+                            alt={project.title}
+                            className="w-full h-full object-cover"
+                            style={{ filter: isAdult ? "blur(20px)" : "none" }}
+                          />
+                          {isAdult && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30">
+                              <EyeOff size={32} className="text-white/70 mb-2" />
+                              <span className="text-white/70 text-sm font-medium">Image masquée</span>
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <ImageIcon size={48} className="text-gray-600" />
@@ -567,31 +589,43 @@ const MemberDetailPage = () => {
                         </div>
                       )}
                       
-                      {/* Liens */}
+                      {/* Liens - masqués si +18 */}
                       <div className="flex gap-2">
-                        {project.project_url && (
-                          <a
-                            href={project.project_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        {isAdult ? (
+                          <span 
                             className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded"
-                            style={{ background: "#1f4068", color: "#9ca3af" }}
+                            style={{ background: "#ef444420", color: "#ef4444" }}
                           >
-                            <ExternalLink size={12} />
-                            Voir
-                          </a>
-                        )}
-                        {project.github_url && (
-                          <a
-                            href={project.github_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded"
-                            style={{ background: "#1f4068", color: "#9ca3af" }}
-                          >
-                            <Github size={12} />
-                            Code
-                          </a>
+                            <EyeOff size={12} />
+                            Lien masqué (contenu +18)
+                          </span>
+                        ) : (
+                          <>
+                            {project.project_url && (
+                              <a
+                                href={project.project_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded"
+                                style={{ background: "#1f4068", color: "#9ca3af" }}
+                              >
+                                <ExternalLink size={12} />
+                                Voir
+                              </a>
+                            )}
+                            {project.github_url && (
+                              <a
+                                href={project.github_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded"
+                                style={{ background: "#1f4068", color: "#9ca3af" }}
+                              >
+                                <Github size={12} />
+                                Code
+                              </a>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
