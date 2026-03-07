@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, Users, BarChart3, 
-  FileText, History, Shield, Home, Rocket, Megaphone, Bell, CreditCard, Handshake, Settings
+  FileText, History, Shield, Home, Rocket, Megaphone, Bell, CreditCard, Handshake, Settings, BookCheck
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -32,7 +32,8 @@ const ADMIN_MENU_SECTIONS = [
       { path: "/syndicat-admin/projets", label: "Projets", icon: Rocket },
       { path: "/syndicat-admin/annonces", label: "Annonces", icon: Megaphone },
       { path: "/syndicat-admin/alertes", label: "Alertes", icon: Bell },
-      { path: "/syndicat-admin/partenaires", label: "Partenaires", icon: Handshake }
+      { path: "/syndicat-admin/partenaires", label: "Partenaires", icon: Handshake },
+      { path: "/syndicat-admin/validation-books", label: "Validation Books", icon: BookCheck }
     ]
   },
   {
