@@ -40,7 +40,7 @@ const RejectModal = ({ isOpen, onClose, onConfirm, projectTitle }) => {
       
       <div 
         className="relative w-full max-w-md rounded-xl p-6"
-        style={{ background: "var(--admin-bg-card)" }}
+        style={{ background: "#16213e" }}
       >
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 rounded-full bg-red-500/20">
@@ -63,7 +63,7 @@ const RejectModal = ({ isOpen, onClose, onConfirm, projectTitle }) => {
             rows={4}
             required
             className="w-full px-3 py-2 rounded-lg text-sm resize-none mb-4"
-            style={{ background: "var(--admin-bg-section)", border: "1px solid var(--admin-border)", color: "white" }}
+            style={{ background: "#1a1a2e", border: "1px solid #1f4068", color: "white" }}
           />
 
           <div className="flex gap-3">
@@ -114,7 +114,7 @@ const ProjectPreviewModal = ({ project, onClose, onApprove, onReject }) => {
         
         <div 
           className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl"
-          style={{ background: "var(--admin-bg-card)" }}
+          style={{ background: "#16213e" }}
         >
           {/* Image */}
           <div className="aspect-video bg-gray-800">
@@ -278,7 +278,7 @@ const ProjectCard = ({ project, onPreview, onApprove, onReject }) => {
     <>
       <div 
         className="rounded-xl overflow-hidden"
-        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
+        style={{ background: "#16213e", border: "1px solid #1f4068" }}
       >
         {/* Image */}
         <div className="aspect-video bg-gray-800 relative">
@@ -470,7 +470,7 @@ const AdminPortfolioValidation = () => {
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="px-3 py-2 rounded-lg text-sm"
-            style={{ background: "#1f4068", border: "1px solid var(--admin-border)", color: "white" }}
+            style={{ background: "#1f4068", border: "1px solid #1f4068", color: "white" }}
           >
             <option value="pending">En attente ({pendingCount})</option>
             <option value="approved">Approuvés</option>
@@ -507,7 +507,7 @@ const AdminPortfolioValidation = () => {
       ) : projects.length === 0 ? (
         <div 
           className="text-center py-12 rounded-xl"
-          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
+          style={{ background: "#16213e", border: "1px solid #1f4068" }}
         >
           <CheckCircle size={48} className="mx-auto mb-4 text-green-500" />
           <h3 className="font-semibold text-white mb-2">

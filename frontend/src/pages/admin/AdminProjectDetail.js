@@ -74,7 +74,7 @@ const AdminProjectDetail = () => {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: "var(--admin-accent)" }}"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
         </div>
       </AdminLayout>
     );
@@ -111,7 +111,7 @@ const AdminProjectDetail = () => {
       {/* Candidatures */}
       <div 
         className="rounded-xl p-5"
-        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
+        style={{ background: "#16213e", border: "1px solid #1f4068" }}
       >
         <h2 className="text-lg font-semibold text-white mb-4">
           Candidatures ({project.applications?.length || 0})
@@ -131,7 +131,7 @@ const AdminProjectDetail = () => {
                 <div 
                   key={app.id}
                   className="p-4 rounded-lg"
-                  style={{ background: "var(--admin-bg-section)" }}
+                  style={{ background: "#1a1a2e" }}
                 >
                   {/* Header candidature */}
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-3">
@@ -162,7 +162,7 @@ const AdminProjectDetail = () => {
                   {/* Message */}
                   <div 
                     className="p-3 rounded-lg mb-4"
-                    style={{ background: "var(--admin-bg-card)" }}
+                    style={{ background: "#16213e" }}
                   >
                     <p className="text-gray-300 text-sm whitespace-pre-wrap">
                       {app.message}
