@@ -593,3 +593,207 @@ async def reject_portfolio_project(
     
     return {"message": "Projet rejeté"}
 
+
+
+# ============================================
+# DÉTAIL UTILISATEUR COMPLET
+# ============================================
+
+@router.get("/users/{user_id}/full", dependencies=[Depends(admin_only)])
+async def get_user_full_details(
+    user_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Récupère toutes les informations d'un utilisateur :
+    - Infos de base
+    - Profil
+    - Portfolio/Book
+    - Abonnement
+    - Messages
+    - Historique d'activité
+    """
+    # Utilisateur de base
+    user = await db.users.find_one(
+        {"id": user_id},
+        {"_id": 0, "password_hash": 0}
+    )
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
+        )
+    
+    # Profil
+    profile = await db.profiles.find_one(
+        {"user_id": user_id},
+        {"_id": 0}
+    )
+    
+    # Portfolio/Book
+    portfolio = await db.portfolio.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    # Abonnement actif
+    subscription = await db.user_subscriptions.find_one(
+        {"user_id": user_id, "status": "active"},
+        {"_id": 0}
+    )
+    
+    # Si abonnement, récupérer les détails du plan
+    plan_details = None
+    if subscription:
+        plan_details = await db.subscription_plans.find_one(
+            {"id": subscription.get("plan_id")},
+            {"_id": 0}
+        )
+    
+    # Messages reçus (si développeur)
+    messages_received = []
+    if user.get("role") == "developer":
+        messages_received = await db.messages.find(
+            {"developer_id": user_id},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(50)
+    
+    # Candidatures aux projets
+    candidatures = []
+    projects_with_applications = await db.projects.find(
+        {"applications.user_id": user_id},
+        {"_id": 0, "id": 1, "title": 1, "applications": 1}
+    ).to_list(50)
+    for project in projects_with_applications:
+        for app in project.get("applications", []):
+            if app.get("user_id") == user_id:
+                candidatures.append({
+                    "project_id": project["id"],
+                    "project_title": project["title"],
+                    "application": app
+                })
+    
+    # Notifications
+    notifications = await db.notifications.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    # Log de l'action
+    await log_admin_action(
+        current_user["sub"],
+        "VIEW_USER_FULL_DETAIL",
+        f"Consultation détail complet utilisateur: {user['email']}"
+    )
+    
+    return {
+        "user": user,
+        "profile": profile,
+        "portfolio": portfolio,
+        "subscription": {
+            "active": subscription,
+            "plan": plan_details
+        },
+        "messages": messages_received,
+        "candidatures": candidatures,
+        "notifications": notifications
+    }
+
+
+@router.get("/users/{user_id}/activity", dependencies=[Depends(admin_only)])
+async def get_user_activity(
+    user_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Récupère l'historique d'activité d'un utilisateur
+    """
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "email": 1})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
+        )
+    
+    # Construire l'historique d'activité
+    activity = []
+    
+    # Date de création du compte
+    user_full = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if user_full.get("created_at"):
+        activity.append({
+            "type": "account_created",
+            "label": "Création du compte",
+            "date": user_full["created_at"],
+            "details": f"Email: {user_full['email']}"
+        })
+    
+    # Changement de rôle
+    if user_full.get("role"):
+        activity.append({
+            "type": "role_assigned",
+            "label": "Rôle assigné",
+            "date": user_full.get("updated_at", user_full.get("created_at")),
+            "details": f"Rôle: {user_full['role']}"
+        })
+    
+    # Projets portfolio créés
+    portfolio_projects = await db.portfolio.find(
+        {"user_id": user_id},
+        {"_id": 0, "title": 1, "status": 1, "created_at": 1}
+    ).to_list(100)
+    for project in portfolio_projects:
+        activity.append({
+            "type": "portfolio_created",
+            "label": f"Projet portfolio ajouté: {project['title']}",
+            "date": project.get("created_at"),
+            "details": f"Statut: {project.get('status', 'pending')}"
+        })
+    
+    # Candidatures
+    projects_with_applications = await db.projects.find(
+        {"applications.user_id": user_id},
+        {"_id": 0, "title": 1, "applications": 1}
+    ).to_list(50)
+    for project in projects_with_applications:
+        for app in project.get("applications", []):
+            if app.get("user_id") == user_id:
+                activity.append({
+                    "type": "application_submitted",
+                    "label": f"Candidature soumise: {project['title']}",
+                    "date": app.get("applied_at"),
+                    "details": f"Statut: {app.get('status', 'pending')}"
+                })
+    
+    # Abonnements
+    subscriptions = await db.user_subscriptions.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).to_list(50)
+    for sub in subscriptions:
+        activity.append({
+            "type": "subscription",
+            "label": f"Abonnement: {sub.get('plan_id')}",
+            "date": sub.get("created_at"),
+            "details": f"Statut: {sub.get('status', 'active')}"
+        })
+    
+    # Messages reçus
+    messages = await db.messages.find(
+        {"developer_id": user_id},
+        {"_id": 0, "sender_name": 1, "subject": 1, "created_at": 1}
+    ).to_list(50)
+    for msg in messages:
+        activity.append({
+            "type": "message_received",
+            "label": f"Message reçu de {msg.get('sender_name')}",
+            "date": msg.get("created_at"),
+            "details": msg.get("subject", "Sans sujet")
+        })
+    
+    # Trier par date (plus récent d'abord)
+    activity.sort(key=lambda x: x.get("date") or "", reverse=True)
+    
+    return {"activity": activity}
+
