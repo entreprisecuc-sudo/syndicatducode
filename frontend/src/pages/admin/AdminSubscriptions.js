@@ -226,19 +226,19 @@ const AdminSubscriptions = () => {
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+          <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
             <div className="text-2xl font-bold text-blue-400">{stats.plans.active}</div>
             <div className="text-gray-400 text-sm">Plans actifs</div>
           </div>
-          <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+          <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
             <div className="text-2xl font-bold text-green-400">{stats.subscriptions.active}</div>
             <div className="text-gray-400 text-sm">Abonnés actifs</div>
           </div>
-          <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+          <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
             <div className="text-2xl font-bold text-yellow-400">{stats.subscriptions.total}</div>
             <div className="text-gray-400 text-sm">Total abonnements</div>
           </div>
-          <div className="p-4 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+          <div className="p-4 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
             <div className="text-2xl font-bold text-purple-400">{stats.revenue.monthly_estimate}€</div>
             <div className="text-gray-400 text-sm">Revenus mensuels</div>
           </div>
@@ -248,7 +248,7 @@ const AdminSubscriptions = () => {
       {/* Stripe Status */}
       <div 
         className="p-4 rounded-xl mb-6 flex items-center justify-between"
-        style={{ background: "#16213e", border: "1px solid #1f4068" }}
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
         <div className="flex items-center gap-3">
           <CreditCard size={24} className={stripeConfig?.is_configured ? "text-green-400" : "text-gray-500"} />
@@ -295,12 +295,12 @@ const AdminSubscriptions = () => {
       {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: "var(--admin-accent)" }}"></div>
         </div>
       ) : activeTab === "plans" ? (
         /* Plans List */
         plans.length === 0 ? (
-          <div className="p-8 rounded-xl text-center" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+          <div className="p-8 rounded-xl text-center" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
             <CreditCard size={48} className="mx-auto mb-4 text-gray-500" />
             <p className="text-gray-400 mb-4">Aucun plan créé</p>
             <button onClick={openCreatePlanModal} className="px-4 py-2 rounded-lg bg-red-500 text-white">
@@ -314,7 +314,7 @@ const AdminSubscriptions = () => {
                 key={plan.id}
                 className={`p-5 rounded-xl relative ${plan.status === "inactive" ? "opacity-60" : ""}`}
                 style={{ 
-                  background: "#16213e", 
+                  background: "var(--admin-bg-card)", 
                   border: plan.is_recommended ? "2px solid #e94560" : "1px solid #1f4068"
                 }}
               >
@@ -367,7 +367,7 @@ const AdminSubscriptions = () => {
         )
       ) : (
         /* Subscribers List */
-        <div className="rounded-xl overflow-hidden" style={{ background: "#16213e", border: "1px solid #1f4068" }}>
+        <div className="rounded-xl overflow-hidden" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#1f4068]">
@@ -412,7 +412,7 @@ const AdminSubscriptions = () => {
       {/* Modal Plan */}
       {showPlanModal && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6" style={{ background: "#16213e" }}>
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6" style={{ background: "var(--admin-bg-card)" }}>
             <h2 className="text-xl font-bold text-white mb-6">
               {editingPlan ? "Modifier le plan" : "Nouveau plan"}
             </h2>
@@ -519,7 +519,7 @@ const AdminSubscriptions = () => {
       {/* Modal Stripe Config */}
       {showStripeModal && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-xl p-6" style={{ background: "#16213e" }}>
+          <div className="w-full max-w-lg rounded-xl p-6" style={{ background: "var(--admin-bg-card)" }}>
             <h2 className="text-xl font-bold text-white mb-2">Configuration Stripe</h2>
             <p className="text-gray-400 text-sm mb-6">
               Entrez vos clés Stripe pour activer les paiements. 

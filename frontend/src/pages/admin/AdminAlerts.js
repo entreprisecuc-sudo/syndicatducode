@@ -201,7 +201,7 @@ const AdminAlerts = () => {
           <div 
             key={stat.label}
             className="p-4 rounded-xl text-center"
-            style={{ background: "#16213e", border: "1px solid #1f4068" }}
+            style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
           >
             <div className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
             <div className="text-gray-400 text-sm">{stat.label}</div>
@@ -212,7 +212,7 @@ const AdminAlerts = () => {
       {/* Liste des alertes */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: "var(--admin-accent)" }}"></div>
         </div>
       ) : error ? (
         <div className="p-4 rounded-lg bg-red-500/20 text-red-400 text-center">
@@ -221,7 +221,7 @@ const AdminAlerts = () => {
       ) : alerts.length === 0 ? (
         <div 
           className="p-8 rounded-xl text-center"
-          style={{ background: "#16213e", border: "1px solid #1f4068" }}
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
         >
           <Bell size={48} className="mx-auto mb-4 text-gray-500" />
           <p className="text-gray-400 mb-4">Aucune alerte créée</p>
@@ -246,8 +246,8 @@ const AdminAlerts = () => {
                 key={alertItem.id}
                 className={`p-5 rounded-xl ${!alertItem.is_active ? 'opacity-60' : ''}`}
                 style={{ 
-                  background: "#16213e", 
-                  border: "1px solid #1f4068",
+                  background: "var(--admin-bg-card)", 
+                  border: "1px solid var(--admin-border)",
                   borderLeft: `4px solid ${styleConfig.color}`
                 }}
                 data-testid={`alert-${alertItem.id}`}
@@ -363,7 +363,7 @@ const AdminAlerts = () => {
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
           <div 
             className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl p-6"
-            style={{ background: "#16213e" }}
+            style={{ background: "var(--admin-bg-card)" }}
           >
             <h2 className="text-xl font-bold text-white mb-6">
               {editingAlert ? "Modifier l'alerte" : "Nouvelle alerte"}
