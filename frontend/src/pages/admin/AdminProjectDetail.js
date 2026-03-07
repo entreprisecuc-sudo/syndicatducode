@@ -85,7 +85,7 @@ const AdminProjectDetail = () => {
       <AdminLayout>
         <div className="text-center py-12">
           <p className="text-red-400 mb-4">{error}</p>
-          <Link to="/syndicat-admin/projets" className="style={{ color: "var(--admin-text-secondary)" }} hover:style={{ color: "var(--admin-text)" }}">
+          <Link to="/syndicat-admin/projets" className="text-gray-400 hover:text-white">
             ← Retour aux projets
           </Link>
         </div>
@@ -99,26 +99,26 @@ const AdminProjectDetail = () => {
       <div className="mb-6">
         <Link 
           to="/syndicat-admin/projets" 
-          className="inline-flex items-center gap-2 style={{ color: "var(--admin-text-secondary)" }} hover:style={{ color: "var(--admin-text)" }} mb-4"
+          className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-4"
         >
           <ArrowLeft size={18} />
           Retour aux projets
         </Link>
-        <h1 className="text-2xl font-bold style={{ color: "var(--admin-text)" }}">{project.title}</h1>
-        <p className="style={{ color: "var(--admin-text-secondary)" }} mt-2">{project.description}</p>
+        <h1 className="text-2xl font-bold text-white">{project.title}</h1>
+        <p className="text-gray-400 mt-2">{project.description}</p>
       </div>
 
       {/* Candidatures */}
       <div 
         className="rounded-xl p-5"
-        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
+        style={{ background: "#16213e", border: "1px solid #1f4068" }}
       >
-        <h2 className="text-lg font-semibold style={{ color: "var(--admin-text)" }} mb-4">
+        <h2 className="text-lg font-semibold text-white mb-4">
           Candidatures ({project.applications?.length || 0})
         </h2>
 
         {project.applications?.length === 0 ? (
-          <p className="style={{ color: "var(--admin-text-secondary)" }} text-center py-8">
+          <p className="text-gray-400 text-center py-8">
             Aucune candidature reçue pour ce projet
           </p>
         ) : (
@@ -131,19 +131,19 @@ const AdminProjectDetail = () => {
                 <div 
                   key={app.id}
                   className="p-4 rounded-lg"
-                  style={{ background: "var(--admin-bg-section)" }}
+                  style={{ background: "#1a1a2e" }}
                 >
                   {/* Header candidature */}
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-3">
                     <div className="flex items-start gap-3">
                       <div 
-                        className="w-10 h-10 rounded-full flex items-center justify-center style={{ color: "var(--admin-text)" }} font-medium bg-blue-500"
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium bg-blue-500"
                       >
                         {app.user?.email?.charAt(0).toUpperCase() || "?"}
                       </div>
                       <div>
-                        <p className="style={{ color: "var(--admin-text)" }} font-medium">{app.user?.email}</p>
-                        <p className="style={{ color: "var(--admin-text-secondary)" }} text-sm flex items-center gap-1">
+                        <p className="text-white font-medium">{app.user?.email}</p>
+                        <p className="text-gray-400 text-sm flex items-center gap-1">
                           <Calendar size={12} />
                           {formatDate(app.created_at)}
                         </p>
@@ -162,7 +162,7 @@ const AdminProjectDetail = () => {
                   {/* Message */}
                   <div 
                     className="p-3 rounded-lg mb-4"
-                    style={{ background: "var(--admin-bg-card)" }}
+                    style={{ background: "#16213e" }}
                   >
                     <p className="text-gray-300 text-sm whitespace-pre-wrap">
                       {app.message}
