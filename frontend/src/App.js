@@ -260,6 +260,7 @@ function App() {
             </Routes>
           </BrowserRouter>
         </div>
+        </AdminThemeProvider>
       </ModalProvider>
     </AuthProvider>
   );
