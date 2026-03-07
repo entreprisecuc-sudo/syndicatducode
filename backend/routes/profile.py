@@ -345,6 +345,7 @@ async def add_portfolio_project(
 ):
     """
     Ajoute un nouveau projet au portfolio
+    Le projet est en attente de validation par l'admin
     """
     user_id = current_user.get("sub")
     now = datetime.now(timezone.utc).isoformat()
@@ -365,13 +366,14 @@ async def add_portfolio_project(
         "github_url": project.github_url,
         "technologies": project.technologies or [],
         "year": project.year,
+        "status": "pending",  # En attente de validation admin
         "created_at": now,
         "updated_at": now
     }
     
     await db.portfolio.insert_one(project_doc)
     
-    logger.info(f"Projet portfolio ajouté pour user_id: {user_id}")
+    logger.info(f"Projet portfolio ajouté (en attente) pour user_id: {user_id}")
     
     # Retourner sans _id
     if "_id" in project_doc:
