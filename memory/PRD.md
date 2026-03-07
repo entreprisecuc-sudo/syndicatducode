@@ -113,6 +113,13 @@
   - `routes/admin/users.py` - Gestion des utilisateurs
   - `routes/admin/portfolio.py` - Validation des portfolios
   - `routes/admin/stats.py` - Statistiques, logs et contacts
+- **Emails centralisés** : CGU.js, RGPD.js, Rejoindre.js utilisent maintenant CONFIG.email
+- **AdminUserDetail.js décomposé** (769L → 159L, réduction 80%) :
+  - `components/admin/userDetail/ProfileTab.js`
+  - `components/admin/userDetail/HistoryTab.js`
+  - `components/admin/userDetail/BookTab.js`
+  - `components/admin/userDetail/SubscriptionTab.js`
+  - `components/admin/userDetail/DocumentsTab.js`
 - **Registre des tests créé** : `/app/TEST_REGISTRY.md`
 
 ### ✅ Gestion Utilisateurs Avancée - Admin (Phase 17)
