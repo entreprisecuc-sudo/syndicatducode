@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { 
   CheckCircle, XCircle, Clock, Eye, ExternalLink, 
-  Github, Loader2, Filter, Image as ImageIcon, User
+  Github, Loader2, Filter, Image as ImageIcon, User, AlertTriangle, X
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { getAuthHeaders } from "@/services/authService";
@@ -14,125 +14,232 @@ import { API_URL } from "@/config/constants";
 import axios from "axios";
 
 /**
+ * Modal de rejet avec raison
+ */
+const RejectModal = ({ isOpen, onClose, onConfirm, projectTitle }) => {
+  const [reason, setReason] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!reason.trim()) {
+      alert("Veuillez indiquer une raison de rejet");
+      return;
+    }
+    setLoading(true);
+    await onConfirm(reason);
+    setLoading(false);
+    setReason("");
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+      
+      <div 
+        className="relative w-full max-w-md rounded-xl p-6"
+        style={{ background: "#16213e" }}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-full bg-red-500/20">
+            <AlertTriangle size={24} className="text-red-500" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-white">Rejeter ce projet</h3>
+            <p className="text-sm text-gray-400">{projectTitle}</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <label className="block text-sm font-medium text-gray-400 mb-2">
+            Raison du rejet *
+          </label>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Expliquez pourquoi ce projet est rejeté..."
+            rows={4}
+            required
+            className="w-full px-3 py-2 rounded-lg text-sm resize-none mb-4"
+            style={{ background: "#1a1a2e", border: "1px solid #1f4068", color: "white" }}
+          />
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2 rounded-lg text-sm font-medium"
+              style={{ background: "#1f4068", color: "#9ca3af" }}
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <XCircle size={16} />}
+              {loading ? "Rejet..." : "Confirmer le rejet"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/**
  * Modal de prévisualisation du projet
  */
 const ProjectPreviewModal = ({ project, onClose, onApprove, onReject }) => {
+  const [showRejectModal, setShowRejectModal] = useState(false);
+
   if (!project) return null;
 
   const imageUrl = project.image_url?.startsWith("http") 
     ? project.image_url 
     : project.image_url ? `${API_URL}${project.image_url}` : null;
 
+  const handleReject = async (reason) => {
+    await onReject(project.id, reason);
+    setShowRejectModal(false);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      
-      <div 
-        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl"
-        style={{ background: "#16213e" }}
-      >
-        {/* Image */}
-        <div className="aspect-video bg-gray-800">
-          {imageUrl ? (
-            <img src={imageUrl} alt={project.title} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <ImageIcon size={64} className="text-gray-600" />
-            </div>
-          )}
-        </div>
-
-        {/* Contenu */}
-        <div className="p-6">
-          {/* Développeur */}
-          <div className="flex items-center gap-2 mb-4 text-sm text-gray-400">
-            <User size={16} />
-            <span>{project.user_name || project.user_email}</span>
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+        
+        <div 
+          className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl"
+          style={{ background: "#16213e" }}
+        >
+          {/* Image */}
+          <div className="aspect-video bg-gray-800">
+            {imageUrl ? (
+              <img src={imageUrl} alt={project.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <ImageIcon size={64} className="text-gray-600" />
+              </div>
+            )}
           </div>
 
-          {/* Titre */}
-          <h2 className="text-xl font-bold text-white mb-2">{project.title}</h2>
-          
-          {/* Année */}
-          {project.year && (
-            <p className="text-sm text-gray-500 mb-4">{project.year}</p>
-          )}
+          {/* Contenu */}
+          <div className="p-6">
+            {/* Développeur */}
+            <div className="flex items-center gap-2 mb-4 text-sm text-gray-400">
+              <User size={16} />
+              <span>{project.user_name || project.user_email}</span>
+            </div>
 
-          {/* Description */}
-          {project.description && (
-            <p className="text-gray-300 mb-4">{project.description}</p>
-          )}
+            {/* Titre */}
+            <h2 className="text-xl font-bold text-white mb-2">{project.title}</h2>
+            
+            {/* Année */}
+            {project.year && (
+              <p className="text-sm text-gray-500 mb-4">{project.year}</p>
+            )}
 
-          {/* Technologies */}
-          {project.technologies?.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {project.technologies.map((tech) => (
-                <span 
-                  key={tech}
-                  className="px-2 py-1 rounded text-xs"
-                  style={{ background: "#e94560", color: "white" }}
+            {/* Description */}
+            {project.description && (
+              <p className="text-gray-300 mb-4">{project.description}</p>
+            )}
+
+            {/* Technologies */}
+            {project.technologies?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {project.technologies.map((tech) => (
+                  <span 
+                    key={tech}
+                    className="px-2 py-1 rounded text-xs"
+                    style={{ background: "#e94560", color: "white" }}
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Liens */}
+            <div className="flex gap-3 mb-6">
+              {project.project_url && (
+                <a
+                  href={project.project_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm"
+                  style={{ background: "#1f4068", color: "#9ca3af" }}
                 >
-                  {tech}
-                </span>
-              ))}
+                  <ExternalLink size={16} />
+                  Voir le projet
+                </a>
+              )}
+              {project.github_url && (
+                <a
+                  href={project.github_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm"
+                  style={{ background: "#1f4068", color: "#9ca3af" }}
+                >
+                  <Github size={16} />
+                  GitHub
+                </a>
+              )}
             </div>
-          )}
 
-          {/* Liens */}
-          <div className="flex gap-3 mb-6">
-            {project.project_url && (
-              <a
-                href={project.project_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm"
+            {/* Actions */}
+            {project.status === "pending" && (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => onApprove(project.id)}
+                  className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-green-600 text-white hover:bg-green-700 transition-colors"
+                >
+                  <CheckCircle size={18} />
+                  Approuver
+                </button>
+                <button
+                  onClick={() => setShowRejectModal(true)}
+                  className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-600 text-white hover:bg-red-700 transition-colors"
+                >
+                  <XCircle size={18} />
+                  Rejeter
+                </button>
+              </div>
+            )}
+            
+            {project.status !== "pending" && (
+              <button
+                onClick={onClose}
+                className="w-full py-3 rounded-lg font-medium"
                 style={{ background: "#1f4068", color: "#9ca3af" }}
               >
-                <ExternalLink size={16} />
-                Voir le projet
-              </a>
+                Fermer
+              </button>
             )}
-            {project.github_url && (
-              <a
-                href={project.github_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm"
-                style={{ background: "#1f4068", color: "#9ca3af" }}
-              >
-                <Github size={16} />
-                GitHub
-              </a>
-            )}
-          </div>
 
-          {/* Actions */}
-          <div className="flex gap-3">
-            <button
-              onClick={() => onApprove(project.id)}
-              className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-green-600 text-white hover:bg-green-700 transition-colors"
-            >
-              <CheckCircle size={18} />
-              Approuver
-            </button>
-            <button
-              onClick={() => onReject(project.id)}
-              className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-600 text-white hover:bg-red-700 transition-colors"
-            >
-              <XCircle size={18} />
-              Rejeter
-            </button>
-            <button
-              onClick={onClose}
-              className="px-6 py-3 rounded-lg font-medium"
-              style={{ background: "#1f4068", color: "#9ca3af" }}
-            >
-              Fermer
-            </button>
+            {/* Afficher raison de rejet si rejeté */}
+            {project.status === "rejected" && project.rejection_reason && (
+              <div className="mt-4 p-4 rounded-lg bg-red-500/20 border border-red-500">
+                <p className="text-sm font-medium text-red-400 mb-1">Raison du rejet :</p>
+                <p className="text-sm text-red-300">{project.rejection_reason}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal de rejet */}
+      <RejectModal
+        isOpen={showRejectModal}
+        onClose={() => setShowRejectModal(false)}
+        onConfirm={handleReject}
+        projectTitle={project.title}
+      />
+    </>
   );
 };
 
@@ -140,6 +247,8 @@ const ProjectPreviewModal = ({ project, onClose, onApprove, onReject }) => {
  * Carte de projet en attente
  */
 const ProjectCard = ({ project, onPreview, onApprove, onReject }) => {
+  const [showRejectModal, setShowRejectModal] = useState(false);
+
   const imageUrl = project.image_url?.startsWith("http") 
     ? project.image_url 
     : project.image_url ? `${API_URL}${project.image_url}` : null;
@@ -160,95 +269,117 @@ const ProjectCard = ({ project, onPreview, onApprove, onReject }) => {
     });
   };
 
+  const handleReject = async (reason) => {
+    await onReject(project.id, reason);
+    setShowRejectModal(false);
+  };
+
   return (
-    <div 
-      className="rounded-xl overflow-hidden"
-      style={{ background: "#16213e", border: "1px solid #1f4068" }}
-    >
-      {/* Image */}
-      <div className="aspect-video bg-gray-800 relative">
-        {imageUrl ? (
-          <img src={imageUrl} alt={project.title} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <ImageIcon size={48} className="text-gray-600" />
+    <>
+      <div 
+        className="rounded-xl overflow-hidden"
+        style={{ background: "#16213e", border: "1px solid #1f4068" }}
+      >
+        {/* Image */}
+        <div className="aspect-video bg-gray-800 relative">
+          {imageUrl ? (
+            <img src={imageUrl} alt={project.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <ImageIcon size={48} className="text-gray-600" />
+            </div>
+          )}
+          
+          {/* Badge statut */}
+          <div 
+            className="absolute top-2 right-2 px-2 py-1 rounded text-xs font-medium"
+            style={{ background: status.bg, color: status.text }}
+          >
+            {status.label}
           </div>
-        )}
-        
-        {/* Badge statut */}
-        <div 
-          className="absolute top-2 right-2 px-2 py-1 rounded text-xs font-medium"
-          style={{ background: status.bg, color: status.text }}
-        >
-          {status.label}
-        </div>
-      </div>
-
-      {/* Contenu */}
-      <div className="p-4">
-        {/* Développeur */}
-        <div className="flex items-center gap-2 mb-2 text-xs text-gray-500">
-          <User size={12} />
-          <span>{project.user_name || project.user_email}</span>
         </div>
 
-        {/* Titre */}
-        <h3 className="font-semibold text-white mb-1 truncate">{project.title}</h3>
-        
-        {/* Date */}
-        <p className="text-xs text-gray-500 mb-3">
-          Soumis le {formatDate(project.created_at)}
-        </p>
+        {/* Contenu */}
+        <div className="p-4">
+          {/* Développeur */}
+          <div className="flex items-center gap-2 mb-2 text-xs text-gray-500">
+            <User size={12} />
+            <span>{project.user_name || project.user_email}</span>
+          </div>
 
-        {/* Technologies (aperçu) */}
-        {project.technologies?.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {project.technologies.slice(0, 3).map((tech) => (
-              <span 
-                key={tech}
-                className="px-2 py-0.5 rounded text-xs"
-                style={{ background: "#1f4068", color: "#e94560" }}
-              >
-                {tech}
-              </span>
-            ))}
-            {project.technologies.length > 3 && (
-              <span className="text-xs text-gray-500">+{project.technologies.length - 3}</span>
+          {/* Titre */}
+          <h3 className="font-semibold text-white mb-1 truncate">{project.title}</h3>
+          
+          {/* Date */}
+          <p className="text-xs text-gray-500 mb-3">
+            Soumis le {formatDate(project.created_at)}
+          </p>
+
+          {/* Technologies (aperçu) */}
+          {project.technologies?.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {project.technologies.slice(0, 3).map((tech) => (
+                <span 
+                  key={tech}
+                  className="px-2 py-0.5 rounded text-xs"
+                  style={{ background: "#1f4068", color: "#e94560" }}
+                >
+                  {tech}
+                </span>
+              ))}
+              {project.technologies.length > 3 && (
+                <span className="text-xs text-gray-500">+{project.technologies.length - 3}</span>
+              )}
+            </div>
+          )}
+
+          {/* Raison de rejet si rejeté */}
+          {project.status === "rejected" && project.rejection_reason && (
+            <div className="mb-3 p-2 rounded bg-red-500/10 border border-red-500/30">
+              <p className="text-xs text-red-400 line-clamp-2">{project.rejection_reason}</p>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => onPreview(project)}
+              className="flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1"
+              style={{ background: "#1f4068", color: "#9ca3af" }}
+            >
+              <Eye size={14} />
+              Voir
+            </button>
+            {project.status === "pending" && (
+              <>
+                <button
+                  onClick={() => onApprove(project.id)}
+                  className="p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+                  title="Approuver"
+                >
+                  <CheckCircle size={16} />
+                </button>
+                <button
+                  onClick={() => setShowRejectModal(true)}
+                  className="p-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                  title="Rejeter"
+                >
+                  <XCircle size={16} />
+                </button>
+              </>
             )}
           </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => onPreview(project)}
-            className="flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1"
-            style={{ background: "#1f4068", color: "#9ca3af" }}
-          >
-            <Eye size={14} />
-            Voir
-          </button>
-          {project.status === "pending" && (
-            <>
-              <button
-                onClick={() => onApprove(project.id)}
-                className="p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
-                title="Approuver"
-              >
-                <CheckCircle size={16} />
-              </button>
-              <button
-                onClick={() => onReject(project.id)}
-                className="p-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
-                title="Rejeter"
-              >
-                <XCircle size={16} />
-              </button>
-            </>
-          )}
         </div>
       </div>
-    </div>
+
+      {/* Modal de rejet */}
+      <RejectModal
+        isOpen={showRejectModal}
+        onClose={() => setShowRejectModal(false)}
+        onConfirm={handleReject}
+        projectTitle={project.title}
+      />
+    </>
   );
 };
 
@@ -301,19 +432,17 @@ const AdminPortfolioValidation = () => {
     }
   };
 
-  const handleReject = async (projectId) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir rejeter ce projet ?")) return;
-    
+  const handleReject = async (projectId, reason) => {
     try {
       await axios.put(
         `${API_URL}/admin/portfolio/${projectId}/reject`,
-        {},
+        { reason },
         { headers: getAuthHeaders() }
       );
       
       // Mettre à jour la liste
       setProjects(prev => prev.map(p => 
-        p.id === projectId ? { ...p, status: "rejected" } : p
+        p.id === projectId ? { ...p, status: "rejected", rejection_reason: reason } : p
       ));
       setPreviewProject(null);
     } catch (err) {
