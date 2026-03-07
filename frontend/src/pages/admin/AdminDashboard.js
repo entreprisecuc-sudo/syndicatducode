@@ -145,12 +145,17 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
-  // État pour ouvrir/fermer tous les blocs
-  const [allOpen, setAllOpen] = useState(true);
+  // État des sections avec persistance localStorage
+  const [sections, setSections] = useState(getStoredPrefs);
 
   useEffect(() => {
     fetchStats();
   }, []);
+
+  // Sauvegarder les préférences quand elles changent
+  useEffect(() => {
+    savePrefs(sections);
+  }, [sections]);
 
   const fetchStats = async () => {
     try {
@@ -164,6 +169,27 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   };
+
+  // Toggle une section spécifique
+  const toggleSection = (sectionId) => {
+    setSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  };
+
+  // Ouvrir/Fermer toutes les sections
+  const toggleAll = () => {
+    const allOpen = Object.values(sections).every(v => v);
+    const newState = {};
+    Object.keys(sections).forEach(key => {
+      newState[key] = !allOpen;
+    });
+    setSections(newState);
+  };
+
+  // Vérifier si toutes les sections sont ouvertes
+  const allSectionsOpen = Object.values(sections).every(v => v);
 
   /**
    * Formatage du montant en euros
