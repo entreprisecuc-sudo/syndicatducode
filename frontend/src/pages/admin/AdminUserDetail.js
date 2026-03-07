@@ -321,10 +321,10 @@ const HistoryTab = ({ activity, loading }) => {
             </div>
             
             <div className="flex-1 min-w-0">
-              <p className="text-white font-medium">{item.label}</p>
-              <p className="text-sm text-gray-400 mt-1">{item.details}</p>
+              <p className="font-medium" style={{ color: "var(--admin-text)" }}>{item.label}</p>
+              <p className="text-sm mt-1" style={{ color: "var(--admin-text-secondary)" }}>{item.details}</p>
               {item.date && (
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs mt-2" style={{ color: "var(--admin-text-muted)" }}>
                   {new Date(item.date).toLocaleString("fr-FR")}
                 </p>
               )}
@@ -344,12 +344,12 @@ const DocumentsTab = ({ userId }) => {
   // TODO: Implémenter la gestion des documents utilisateur
   return (
     <div 
-      className="p-8 rounded-xl text-center"
-      style={{ background: "#1a1a2e", border: "1px solid #1f4068" }}
+      className="p-8 rounded-xl text-center transition-colors duration-300"
+      style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
     >
-      <FileText size={48} className="mx-auto mb-4 text-gray-500" />
-      <p className="text-gray-400">Aucun document disponible</p>
-      <p className="text-sm text-gray-500 mt-2">
+      <FileText size={48} className="mx-auto mb-4" style={{ color: "var(--admin-text-muted)" }} />
+      <p style={{ color: "var(--admin-text-secondary)" }}>Aucun document disponible</p>
+      <p className="text-sm mt-2" style={{ color: "var(--admin-text-muted)" }}>
         Cette fonctionnalité sera disponible prochainement
       </p>
     </div>
@@ -363,11 +363,11 @@ const BookTab = ({ portfolio }) => {
   if (!portfolio || portfolio.length === 0) {
     return (
       <div 
-        className="p-8 rounded-xl text-center"
-        style={{ background: "#1a1a2e", border: "1px solid #1f4068" }}
+        className="p-8 rounded-xl text-center transition-colors duration-300"
+        style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
       >
-        <Briefcase size={48} className="mx-auto mb-4 text-gray-500" />
-        <p className="text-gray-400">Aucun projet dans le book</p>
+        <Briefcase size={48} className="mx-auto mb-4" style={{ color: "var(--admin-text-muted)" }} />
+        <p style={{ color: "var(--admin-text-secondary)" }}>Aucun projet dans le book</p>
       </div>
     );
   }
@@ -389,8 +389,8 @@ const BookTab = ({ portfolio }) => {
         return (
           <div 
             key={project.id}
-            className="rounded-xl overflow-hidden"
-            style={{ background: "#1a1a2e", border: "1px solid #1f4068" }}
+            className="rounded-xl overflow-hidden transition-colors duration-300"
+            style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
           >
             {/* Statut */}
             <div 
