@@ -1,6 +1,7 @@
 /**
  * Dashboard Admin
  * Vue d'ensemble avec statistiques avancées
+ * Support mode sombre/clair
  */
 
 import { useState, useEffect } from "react";
@@ -19,15 +20,15 @@ import axios from "axios";
  */
 const StatCard = ({ icon: Icon, label, value, color = "#6366f1", subtext }) => (
   <div 
-    className="p-4 rounded-xl"
-    style={{ background: "#16213e", border: "1px solid #1f4068" }}
+    className="p-4 rounded-xl transition-colors duration-300"
+    style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
   >
     <div className="flex items-start justify-between">
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-400 mb-1 truncate">{label}</p>
-        <p className="text-xl font-bold text-white">{value}</p>
+        <p className="text-xs mb-1 truncate" style={{ color: "var(--admin-text-muted)" }}>{label}</p>
+        <p className="text-xl font-bold" style={{ color: "var(--admin-text)" }}>{value}</p>
         {subtext && (
-          <p className="text-xs text-gray-500 mt-1">{subtext}</p>
+          <p className="text-xs mt-1" style={{ color: "var(--admin-text-muted)" }}>{subtext}</p>
         )}
       </div>
       <div 
@@ -45,7 +46,10 @@ const StatCard = ({ icon: Icon, label, value, color = "#6366f1", subtext }) => (
  */
 const StatsSection = ({ title, children, columns = 5 }) => (
   <div className="mb-6">
-    <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">
+    <h3 
+      className="font-semibold mb-3 text-sm uppercase tracking-wide"
+      style={{ color: "var(--admin-text)" }}
+    >
       {title}
     </h3>
     <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-${columns} gap-3`}>
@@ -90,7 +94,10 @@ const AdminDashboard = () => {
   return (
     <AdminLayout>
       {/* Titre mobile */}
-      <h1 className="text-xl font-bold mb-6 lg:hidden text-white">
+      <h1 
+        className="text-xl font-bold mb-6 lg:hidden"
+        style={{ color: "var(--admin-text)" }}
+      >
         Tableau de bord
       </h1>
 
@@ -109,7 +116,10 @@ const AdminDashboard = () => {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+          <div 
+            className="animate-spin rounded-full h-8 w-8 border-b-2"
+            style={{ borderColor: "var(--admin-accent)" }}
+          />
         </div>
       ) : error ? (
         <div className="p-4 rounded-lg bg-red-500/20 text-red-400 text-center">
