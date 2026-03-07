@@ -538,14 +538,27 @@ async def approve_portfolio_project(
 @router.put("/portfolio/{project_id}/reject", dependencies=[Depends(admin_only)])
 async def reject_portfolio_project(
     project_id: str,
+    rejection_data: dict = None,
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Rejette un projet de portfolio
+    Rejette un projet de portfolio avec une raison
     """
+    from fastapi import Body
+    
+    # Récupérer la raison si fournie
+    rejection_reason = ""
+    if rejection_data and "reason" in rejection_data:
+        rejection_reason = rejection_data["reason"]
+    
     result = await db.portfolio.update_one(
         {"id": project_id},
-        {"$set": {"status": "rejected", "updated_at": datetime.now(timezone.utc).isoformat()}}
+        {"$set": {
+            "status": "rejected", 
+            "rejection_reason": rejection_reason,
+            "rejected_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
     )
     
     if result.modified_count == 0:
