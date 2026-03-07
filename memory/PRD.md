@@ -120,6 +120,12 @@
   - `components/admin/userDetail/BookTab.js`
   - `components/admin/userDetail/SubscriptionTab.js`
   - `components/admin/userDetail/DocumentsTab.js`
+- **DeveloperBook.js décomposé** (715L → 137L, réduction 81%) :
+  - `components/developer/book/ProjectCard.js`
+  - `components/developer/book/ProjectModal.js`
+- **MemberDetailPage.js décomposé** (654L → 244L, réduction 63%) :
+  - `components/members/ContactModal.js`
+  - `components/members/MemberProjectCard.js`
 - **Registre des tests créé** : `/app/TEST_REGISTRY.md`
 
 ### ✅ Gestion Utilisateurs Avancée - Admin (Phase 17)
