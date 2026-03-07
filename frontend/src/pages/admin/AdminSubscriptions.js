@@ -9,6 +9,15 @@ import {
   Users, TrendingUp, Settings, Check, X
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import AdminModal, { 
+  ModalFormGroup, 
+  ModalInput, 
+  ModalTextarea, 
+  ModalSelect,
+  ModalActions,
+  ModalSubmitButton,
+  ModalCancelButton 
+} from "@/components/admin/AdminModal";
 import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
 import axios from "axios";
