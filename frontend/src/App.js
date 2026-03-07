@@ -58,7 +58,8 @@ import {
   AdminAnnouncements,
   AdminAlerts,
   AdminSubscriptions,
-  AdminPartners
+  AdminPartners,
+  AdminPortfolioValidation
 } from "@/pages/admin";
 
 // Page partagée (tous les membres)
