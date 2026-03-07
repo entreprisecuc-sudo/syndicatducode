@@ -81,9 +81,9 @@ async def get_public_members(
         {"_id": 0}
     ).to_list(500)
     
-    # 4. Récupérer les portfolios
+    # 4. Récupérer les portfolios (seulement les projets approuvés)
     portfolios = await db.portfolio.find(
-        {"user_id": {"$in": user_ids}},
+        {"user_id": {"$in": user_ids}, "status": "approved"},
         {"_id": 0}
     ).to_list(1000)
     
