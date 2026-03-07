@@ -259,7 +259,19 @@ const AdminLayout = ({ children }) => {
         </header>
 
         {/* Contenu */}
-        <main className="flex-1 p-4 lg:p-6">
+        <main 
+          className="flex-1 p-4 lg:p-6"
+          style={{
+            "--admin-bg": currentTheme.bg,
+            "--admin-bg-card": currentTheme.bgCard,
+            "--admin-bg-section": currentTheme.bgSection,
+            "--admin-border": currentTheme.border,
+            "--admin-text": currentTheme.text,
+            "--admin-text-secondary": currentTheme.textSecondary,
+            "--admin-text-muted": currentTheme.textMuted,
+            "--admin-accent": currentTheme.accent
+          }}
+        >
           {children}
         </main>
       </div>
