@@ -543,15 +543,25 @@ async def reject_portfolio_project(
 ):
     """
     Rejette un projet de portfolio avec une raison
+    Crée automatiquement une notification pour le développeur
     """
-    from fastapi import Body
+    from routes.notifications import create_notification
+    
+    # Récupérer le projet pour avoir les infos
+    project = await db.portfolio.find_one({"id": project_id})
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Projet non trouvé"
+        )
     
     # Récupérer la raison si fournie
     rejection_reason = ""
     if rejection_data and "reason" in rejection_data:
         rejection_reason = rejection_data["reason"]
     
-    result = await db.portfolio.update_one(
+    # Mettre à jour le projet
+    await db.portfolio.update_one(
         {"id": project_id},
         {"$set": {
             "status": "rejected", 
@@ -561,11 +571,18 @@ async def reject_portfolio_project(
         }}
     )
     
-    if result.modified_count == 0:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Projet non trouvé"
-        )
+    # Créer une notification pour le développeur
+    await create_notification(
+        user_id=project["user_id"],
+        notification_type="book_rejected",
+        title="Projet refusé",
+        message=f"Votre projet \"{project['title']}\" a été refusé.\n\nRaison : {rejection_reason}",
+        data={
+            "project_id": project_id,
+            "project_title": project["title"],
+            "rejection_reason": rejection_reason
+        }
+    )
     
     # Log de l'action
     await log_admin_action(
