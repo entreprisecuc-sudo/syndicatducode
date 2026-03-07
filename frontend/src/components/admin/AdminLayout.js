@@ -1,15 +1,18 @@
 /**
  * Layout Admin
  * Interface d'administration avec sidebar organisée en sections
+ * Support mode sombre/clair
  */
 
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, Users, BarChart3, 
-  FileText, History, Shield, Home, Rocket, Megaphone, Bell, CreditCard, Handshake, Settings, BookCheck
+  FileText, History, Shield, Home, Rocket, Megaphone, Bell, 
+  CreditCard, Handshake, BookCheck, Sun, Moon
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useAdminTheme } from "@/context/AdminThemeContext";
 
 // Menu admin organisé en sections
 const ADMIN_MENU_SECTIONS = [
@@ -56,6 +59,7 @@ const ALL_MENU_ITEMS = ADMIN_MENU_SECTIONS.flatMap(section => section.items);
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { theme, currentTheme, toggleTheme } = useAdminTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -64,8 +68,13 @@ const AdminLayout = ({ children }) => {
     navigate("/");
   };
 
+  const isDark = theme === "dark";
+
   return (
-    <div className="min-h-screen flex" style={{ background: "#1a1a2e" }}>
+    <div 
+      className="min-h-screen flex transition-colors duration-300" 
+      style={{ background: currentTheme.bg }}
+    >
       {/* Overlay mobile */}
       {sidebarOpen && (
         <div 
@@ -78,39 +87,60 @@ const AdminLayout = ({ children }) => {
       <aside 
         className={`
           fixed lg:static inset-y-0 left-0 z-50
-          w-64 transform transition-transform duration-300 ease-in-out
+          w-64 transform transition-all duration-300 ease-in-out
           lg:transform-none
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
-        style={{ background: "#16213e", borderRight: "1px solid #1f4068" }}
+        style={{ 
+          background: currentTheme.bgSidebar, 
+          borderRight: `1px solid ${currentTheme.border}` 
+        }}
       >
         {/* Logo */}
-        <div className="p-4 border-b" style={{ borderColor: "#1f4068" }}>
+        <div 
+          className="p-4 border-b transition-colors duration-300" 
+          style={{ borderColor: currentTheme.border }}
+        >
           <div className="flex items-center gap-3">
-            <Shield size={28} className="text-red-500" />
+            <Shield size={28} style={{ color: currentTheme.accent }} />
             <div>
-              <p className="text-white font-bold text-sm">ADMIN</p>
-              <p className="text-gray-400 text-xs">Le Syndicat du Code</p>
+              <p style={{ color: currentTheme.text }} className="font-bold text-sm">ADMIN</p>
+              <p style={{ color: currentTheme.textSecondary }} className="text-xs">Le Syndicat du Code</p>
             </div>
           </div>
         </div>
 
         {/* Info admin */}
-        <div className="p-4 border-b" style={{ borderColor: "#1f4068" }}>
-          <p className="text-white text-sm font-medium truncate">
+        <div 
+          className="p-4 border-b transition-colors duration-300" 
+          style={{ borderColor: currentTheme.border }}
+        >
+          <p 
+            className="text-sm font-medium truncate"
+            style={{ color: currentTheme.text }}
+          >
             {user?.email}
           </p>
-          <p className="text-red-400 text-xs mt-1">
+          <p 
+            className="text-xs mt-1"
+            style={{ color: currentTheme.accent }}
+          >
             Administrateur
           </p>
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: "calc(100vh - 240px)" }}>
+        <nav 
+          className="p-4 space-y-4 overflow-y-auto" 
+          style={{ maxHeight: "calc(100vh - 280px)" }}
+        >
           {ADMIN_MENU_SECTIONS.map((section, sectionIndex) => (
             <div key={sectionIndex}>
               {/* Titre de section */}
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3">
+              <p 
+                className="text-xs font-semibold uppercase tracking-wider mb-2 px-3"
+                style={{ color: currentTheme.textMuted }}
+              >
                 {section.title}
               </p>
               
@@ -125,13 +155,10 @@ const AdminLayout = ({ children }) => {
                       key={item.path}
                       to={item.path}
                       onClick={() => setSidebarOpen(false)}
-                      className={`
-                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
-                        transition-colors
-                      `}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
                       style={{ 
-                        background: isActive ? "#1f4068" : "transparent",
-                        color: isActive ? "#fff" : "#9ca3af"
+                        background: isActive ? currentTheme.bgSection : "transparent",
+                        color: isActive ? currentTheme.text : currentTheme.textSecondary
                       }}
                     >
                       <Icon size={18} />
@@ -148,7 +175,8 @@ const AdminLayout = ({ children }) => {
         <div className="absolute bottom-16 left-0 right-0 px-4">
           <Link
             to="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors hover:opacity-80"
+            style={{ color: currentTheme.textSecondary }}
           >
             <Home size={18} />
             Retour au site
@@ -156,10 +184,14 @@ const AdminLayout = ({ children }) => {
         </div>
 
         {/* Déconnexion */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t" style={{ borderColor: "#1f4068" }}>
+        <div 
+          className="absolute bottom-0 left-0 right-0 p-4 border-t transition-colors duration-300" 
+          style={{ borderColor: currentTheme.border }}
+        >
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full text-red-400 hover:bg-red-500/10 transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors"
+            style={{ color: currentTheme.accent }}
           >
             <LogOut size={18} />
             Déconnexion
@@ -171,28 +203,58 @@ const AdminLayout = ({ children }) => {
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Header */}
         <header 
-          className="sticky top-0 z-30 px-4 lg:px-6 py-3 flex items-center justify-between"
-          style={{ background: "#16213e", borderBottom: "1px solid #1f4068" }}
+          className="sticky top-0 z-30 px-4 lg:px-6 py-3 flex items-center justify-between transition-colors duration-300"
+          style={{ 
+            background: currentTheme.bgSidebar, 
+            borderBottom: `1px solid ${currentTheme.border}` 
+          }}
         >
           {/* Bouton menu mobile */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden p-2 rounded-lg text-white"
+            className="lg:hidden p-2 rounded-lg"
+            style={{ color: currentTheme.text }}
           >
             {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
 
           {/* Titre */}
           <div className="hidden lg:block">
-            <h1 className="text-lg font-semibold text-white">
+            <h1 
+              className="text-lg font-semibold"
+              style={{ color: currentTheme.text }}
+            >
               {ALL_MENU_ITEMS.find(item => item.path === location.pathname)?.label || "Administration"}
             </h1>
           </div>
 
-          {/* Badge admin */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 text-xs font-medium">
-            <Shield size={14} />
-            Admin
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            {/* Toggle thème */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg transition-colors"
+              style={{ 
+                background: currentTheme.bgSection,
+                color: currentTheme.text
+              }}
+              title={isDark ? "Passer en mode clair" : "Passer en mode sombre"}
+              data-testid="theme-toggle"
+            >
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+
+            {/* Badge admin */}
+            <div 
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium"
+              style={{ 
+                background: `${currentTheme.accent}20`, 
+                color: currentTheme.accent 
+              }}
+            >
+              <Shield size={14} />
+              Admin
+            </div>
           </div>
         </header>
 
