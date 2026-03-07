@@ -175,6 +175,9 @@ const DashboardLayout = ({ children }) => {
           {children}
         </main>
       </div>
+
+      {/* Notifications Popup */}
+      <NotificationsPopup />
     </div>
   );
 };
