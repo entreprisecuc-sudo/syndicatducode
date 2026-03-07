@@ -6,7 +6,8 @@
 import { useState, useEffect, useRef } from "react";
 import { 
   Plus, X, Edit2, Trash2, ExternalLink, Github, 
-  Image as ImageIcon, Loader2, Save, ChevronDown, ChevronUp
+  Image as ImageIcon, Loader2, Save, ChevronDown, ChevronUp,
+  AlertTriangle
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { getAuthHeaders } from "@/services/authService";
