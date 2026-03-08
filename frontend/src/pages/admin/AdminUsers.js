@@ -289,7 +289,7 @@ const AdminUsers = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={createLoading}
+                  disabled={createLoading || !passwordsMatch}
                   className="flex-1 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50"
                   style={{ background: "#ef4444" }}
                   data-testid="admin-submit-btn"
