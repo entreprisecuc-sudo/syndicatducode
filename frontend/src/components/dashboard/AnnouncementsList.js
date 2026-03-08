@@ -180,7 +180,7 @@ const AnnouncementsList = ({ maxItems = 5 }) => {
           className="font-semibold"
           style={{ color: "var(--text-primary)" }}
         >
-          Annonces
+          Annonces & Actualités
         </h2>
         <span 
           className="text-xs px-2 py-0.5 rounded-full"
