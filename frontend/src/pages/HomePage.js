@@ -12,9 +12,11 @@ import ProcessSection from "@/components/sections/ProcessSection";
 import AudienceSection from "@/components/sections/AudienceSection";
 import ContactSection from "@/components/sections/ContactSection";
 import DevisModal from "@/components/modals/DevisModal";
+import PublicAlerts from "@/components/PublicAlerts";
 
 const HomePage = () => (
   <>
+    <PublicAlerts />
     <Navigation />
     <HeroSection />
     <ServicesSection />
