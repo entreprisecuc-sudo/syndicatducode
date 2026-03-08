@@ -268,6 +268,108 @@ async def create_admin(
     }
 
 
+@router.put("/users/{user_id}/suspend", dependencies=[Depends(admin_only)])
+async def suspend_user(
+    user_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Suspendre un membre (développeur ou commercial)
+    Le membre ne pourra plus accéder à son espace
+    """
+    user = await db.users.find_one({"id": user_id})
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
+        )
+    
+    # Ne pas permettre de suspendre un admin
+    if user.get("role") == UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Impossible de suspendre un administrateur"
+        )
+    
+    # Vérifier si déjà suspendu
+    if user.get("status") == UserStatus.SUSPENDED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cet utilisateur est déjà suspendu"
+        )
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "status": UserStatus.SUSPENDED,
+            "suspended_at": datetime.now(timezone.utc).isoformat(),
+            "suspended_by": current_user["sub"],
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    await log_admin_action(
+        current_user["sub"],
+        "SUSPEND_USER",
+        f"Utilisateur {user['email']} suspendu"
+    )
+    
+    logger.info(f"Admin {current_user['email']} a suspendu l'utilisateur {user['email']}")
+    
+    return {"message": f"Utilisateur {user['email']} suspendu avec succès"}
+
+
+@router.put("/users/{user_id}/reactivate", dependencies=[Depends(admin_only)])
+async def reactivate_user(
+    user_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Réactiver un membre suspendu
+    """
+    user = await db.users.find_one({"id": user_id})
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
+        )
+    
+    # Vérifier si pas suspendu
+    if user.get("status") != UserStatus.SUSPENDED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cet utilisateur n'est pas suspendu"
+        )
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {
+            "$set": {
+                "status": UserStatus.ACTIVE,
+                "reactivated_at": datetime.now(timezone.utc).isoformat(),
+                "reactivated_by": current_user["sub"],
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            },
+            "$unset": {
+                "suspended_at": "",
+                "suspended_by": ""
+            }
+        }
+    )
+    
+    await log_admin_action(
+        current_user["sub"],
+        "REACTIVATE_USER",
+        f"Utilisateur {user['email']} réactivé"
+    )
+    
+    logger.info(f"Admin {current_user['email']} a réactivé l'utilisateur {user['email']}")
+    
+    return {"message": f"Utilisateur {user['email']} réactivé avec succès"}
+
+
 @router.get("/users/{user_id}/full", dependencies=[Depends(admin_only)])
 async def get_user_full_details(
     user_id: str,
