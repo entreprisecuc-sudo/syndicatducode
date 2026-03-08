@@ -95,6 +95,7 @@ const Navigation = () => {
                   href={link.href} 
                   className="nav-link" 
                   data-testid={`nav-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
+                  onClick={(e) => handleAnchorClick(e, link.href)}
                 >
                   {link.label}
                 </a>
