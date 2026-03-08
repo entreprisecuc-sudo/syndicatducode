@@ -118,6 +118,9 @@ async def get_public_members(
             "profile": {
                 "first_name": profile.get("first_name"),
                 "last_name": profile.get("last_name"),
+                "pseudo": profile.get("pseudo"),
+                "company_name": profile.get("company_name"),
+                "display_name_choice": profile.get("display_name_choice", "name"),
                 "photo_url": profile.get("photo_url"),
                 "city": profile.get("city"),
                 "bio": profile.get("bio"),
