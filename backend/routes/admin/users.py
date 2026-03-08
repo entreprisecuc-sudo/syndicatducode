@@ -268,15 +268,24 @@ async def create_admin(
     }
 
 
+class SuspendUserRequest(BaseModel):
+    """Modèle pour suspendre un utilisateur avec un motif"""
+    reason: str
+
+
 @router.put("/users/{user_id}/suspend", dependencies=[Depends(admin_only)])
 async def suspend_user(
     user_id: str,
+    data: SuspendUserRequest,
     current_user: dict = Depends(get_current_user)
 ):
     """
     Suspendre un membre (développeur ou commercial)
     Le membre ne pourra plus accéder à son espace
+    Un email avec le motif lui sera envoyé
     """
+    from services.email_service import send_suspension_email
+    
     user = await db.users.find_one({"id": user_id})
     
     if not user:
@@ -303,21 +312,25 @@ async def suspend_user(
         {"id": user_id},
         {"$set": {
             "status": UserStatus.SUSPENDED,
+            "suspension_reason": data.reason,
             "suspended_at": datetime.now(timezone.utc).isoformat(),
             "suspended_by": current_user["sub"],
             "updated_at": datetime.now(timezone.utc).isoformat()
         }}
     )
     
+    # Envoyer l'email de notification
+    send_suspension_email(user["email"], data.reason)
+    
     await log_admin_action(
         current_user["sub"],
         "SUSPEND_USER",
-        f"Utilisateur {user['email']} suspendu"
+        f"Utilisateur {user['email']} suspendu. Motif: {data.reason}"
     )
     
     logger.info(f"Admin {current_user['email']} a suspendu l'utilisateur {user['email']}")
     
-    return {"message": f"Utilisateur {user['email']} suspendu avec succès"}
+    return {"message": f"Utilisateur {user['email']} suspendu avec succès. Un email lui a été envoyé."}
 
 
 @router.put("/users/{user_id}/reactivate", dependencies=[Depends(admin_only)])
