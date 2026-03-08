@@ -107,6 +107,107 @@ const DeveloperProjects = () => {
         Projets du Syndicat
       </h1>
 
+      {/* Onglets */}
+      <div 
+        className="flex gap-2 mb-6 p-1 rounded-lg"
+        style={{ background: "var(--bg-section)" }}
+      >
+        <button
+          onClick={() => setActiveTab("projects")}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === "projects" ? "bg-white shadow-sm" : ""
+          }`}
+          style={{ color: activeTab === "projects" ? "var(--sage-dark)" : "var(--text-muted)" }}
+        >
+          <Rocket size={18} />
+          Projets disponibles ({projects.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("rooms")}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === "rooms" ? "bg-white shadow-sm" : ""
+          }`}
+          style={{ color: activeTab === "rooms" ? "var(--sage-dark)" : "var(--text-muted)" }}
+        >
+          <MessageSquare size={18} />
+          Mes espaces projets ({projectRooms.length})
+        </button>
+      </div>
+
+      {/* ONGLET MES ESPACES PROJETS */}
+      {activeTab === "rooms" && (
+        <div>
+          {projectRooms.length === 0 ? (
+            <div 
+              className="p-8 rounded-xl text-center"
+              style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
+            >
+              <MessageSquare size={48} className="mx-auto mb-4" style={{ color: "var(--text-muted)" }} />
+              <h3 className="font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                Aucun espace projet
+              </h3>
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                Quand votre candidature est acceptée, un espace de collaboration<br />
+                est automatiquement créé pour échanger avec l'équipe.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {projectRooms.map((room) => (
+                <Link
+                  key={room.id}
+                  to={`/espace-developpeur/projet/${room.id}`}
+                  className="block p-5 rounded-xl transition-all hover:shadow-md"
+                  style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
+                        {room.name}
+                      </h3>
+                      {room.project?.technologies && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {room.project.technologies.slice(0, 4).map((tech) => (
+                            <span 
+                              key={tech}
+                              className="text-xs px-2 py-0.5 rounded"
+                              style={{ background: "var(--bg-section)", color: "var(--sage)" }}
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <div className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+                          <Users size={14} />
+                          <span className="text-sm">{room.members_count}</span>
+                        </div>
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>membres</p>
+                      </div>
+                      {room.recent_messages > 0 && (
+                        <div 
+                          className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                          style={{ background: "var(--sage)" }}
+                        >
+                          {room.recent_messages} nouveau{room.recent_messages > 1 ? "x" : ""}
+                        </div>
+                      )}
+                      <ChevronRight size={20} style={{ color: "var(--text-muted)" }} />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ONGLET PROJETS DISPONIBLES */}
+      {activeTab === "projects" && (
+      <>
       {/* Introduction */}
       <div 
         className="p-5 rounded-xl mb-6"
