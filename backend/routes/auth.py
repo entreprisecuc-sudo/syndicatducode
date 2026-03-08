@@ -120,9 +120,15 @@ async def login(credentials: UserLogin):
     
     # Vérifier le statut du compte
     if user.get("status") == UserStatus.SUSPENDED:
+        suspension_reason = user.get("suspension_reason", "")
+        detail_message = "Votre compte a été suspendu."
+        if suspension_reason:
+            detail_message += f"\n\nMotif : {suspension_reason}"
+        detail_message += "\n\nUn email vous a été envoyé avec plus de détails. Si vous pensez qu'il s'agit d'une erreur, contactez-nous à contact@syndicatducode.fr"
+        
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Votre compte a été suspendu. Contactez l'administrateur."
+            detail=detail_message
         )
     
     # Créer le token JWT
