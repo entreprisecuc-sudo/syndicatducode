@@ -253,18 +253,27 @@ async def admin_delete_project(
     return {"message": "Projet supprimé avec succès"}
 
 
+class ApplicationStatusUpdate(BaseModel):
+    """Modèle pour mettre à jour le statut d'une candidature avec note"""
+    status: str
+    note: Optional[str] = None
+
+
 @router.put("/admin/applications/{application_id}/status", dependencies=[Depends(admin_only)])
 async def admin_update_application_status(
     application_id: str,
-    new_status: str,
+    data: ApplicationStatusUpdate,
     current_user: dict = Depends(get_current_user)
 ):
     """
     Mettre à jour le statut d'une candidature (admin)
     Si acceptée, crée automatiquement un espace projet
+    Envoie un email au candidat avec la décision
     """
+    from services.email_service import send_application_decision_email
+    
     valid_statuses = ["pending", "reviewed", "accepted", "rejected"]
-    if new_status not in valid_statuses:
+    if data.status not in valid_statuses:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Statut invalide. Choix: {', '.join(valid_statuses)}"
@@ -278,29 +287,96 @@ async def admin_update_application_status(
             detail="Candidature non trouvée"
         )
     
-    result = await db.project_applications.update_one(
+    # Récupérer le projet pour l'email
+    project = await db.projects.find_one({"id": application["project_id"]})
+    project_title = project.get("title", "Projet") if project else "Projet"
+    
+    # Mettre à jour la candidature
+    update_data = {
+        "status": data.status,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    if data.note:
+        update_data["admin_note"] = data.note
+    
+    await db.project_applications.update_one(
         {"id": application_id},
-        {"$set": {
-            "status": new_status,
-            "updated_at": datetime.now(timezone.utc).isoformat()
-        }}
+        {"$set": update_data}
     )
+    
+    # Envoyer l'email au candidat
+    candidate_email = application.get("user_email")
+    if candidate_email and data.status in ["accepted", "rejected"]:
+        send_application_decision_email(
+            to_email=candidate_email,
+            project_title=project_title,
+            is_accepted=data.status == "accepted",
+            note=data.note
+        )
     
     # Si la candidature est acceptée, créer ou ajouter au salon de projet
     room_id = None
-    if new_status == "accepted":
+    if data.status == "accepted":
         from routes.project_rooms import create_project_room_for_application
         room_id = await create_project_room_for_application(
             application["project_id"],
-            application["developer_id"]
+            application["user_id"]  # Utiliser user_id (pas developer_id)
         )
     
-    response = {"message": f"Statut mis à jour: {new_status}"}
+    response = {"message": f"Statut mis à jour: {data.status}"}
     if room_id:
         response["room_id"] = room_id
-        response["message"] = f"Candidature acceptée. Espace projet créé/mis à jour."
+        response["message"] = f"Candidature acceptée. Espace projet créé et email envoyé."
+    elif data.status == "rejected":
+        response["message"] = "Candidature refusée. Email envoyé au candidat."
     
     return response
+
+
+@router.get("/admin/applications", dependencies=[Depends(admin_only)])
+async def admin_get_all_applications(
+    project_id: Optional[str] = None,
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Liste toutes les candidatures (admin)
+    """
+    query = {}
+    if project_id:
+        query["project_id"] = project_id
+    if status:
+        query["status"] = status
+    
+    applications = await db.project_applications.find(
+        query,
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    # Enrichir avec les infos du projet et du candidat
+    for app in applications:
+        # Infos projet
+        project = await db.projects.find_one(
+            {"id": app.get("project_id")},
+            {"_id": 0, "id": 1, "title": 1}
+        )
+        app["project"] = project
+        
+        # Infos candidat
+        user = await db.users.find_one(
+            {"id": app.get("user_id")},
+            {"_id": 0, "id": 1, "email": 1, "role": 1}
+        )
+        profile = await db.profiles.find_one(
+            {"user_id": app.get("user_id")},
+            {"_id": 0, "first_name": 1, "last_name": 1, "photo_url": 1}
+        )
+        app["candidate"] = {
+            **(user or {}),
+            **(profile or {})
+        }
+    
+    return {"applications": applications}
 
 
 # ============================================
