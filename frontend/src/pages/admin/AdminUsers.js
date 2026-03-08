@@ -41,6 +41,11 @@ const AdminUsers = () => {
   const [adminForm, setAdminForm] = useState({ email: "", password: "", confirmPassword: "" });
   const [createError, setCreateError] = useState("");
   const [createLoading, setCreateLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Vérification de correspondance des mots de passe
+  const passwordsMatch = adminForm.confirmPassword === "" || adminForm.password === adminForm.confirmPassword;
 
   useEffect(() => {
     fetchUsers();
