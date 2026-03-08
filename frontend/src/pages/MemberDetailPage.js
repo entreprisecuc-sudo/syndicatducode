@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
+import DevisModal from "@/components/modals/DevisModal";
 import { API_URL } from "@/config/constants";
 import axios from "axios";
 
