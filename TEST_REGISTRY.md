@@ -186,6 +186,7 @@ Ce document recense tous les tests existants et à implémenter pour le projet.
 | 2026-03-07 | Refactoring | AdminUserDetail.js décomposé en 5 sous-composants (769L → 159L) |
 | 2026-03-07 | Refactoring | DeveloperBook.js décomposé en 2 sous-composants (715L → 137L) |
 | 2026-03-07 | Refactoring | MemberDetailPage.js décomposé en 2 sous-composants (654L → 244L) |
+| 2026-03-08 | Bugfix | Navigation ancre corrigée - handleAnchorClick appliqué au menu mobile |
 
 ---
 
