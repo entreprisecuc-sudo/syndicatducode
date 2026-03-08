@@ -188,6 +188,7 @@ Ce document recense tous les tests existants et à implémenter pour le projet.
 | 2026-03-07 | Refactoring | MemberDetailPage.js décomposé en 2 sous-composants (654L → 244L) |
 | 2026-03-08 | Bugfix | Navigation ancre corrigée - handleAnchorClick appliqué au menu mobile |
 | 2026-03-08 | Bugfix | Modal Devis ajoutée à MembersPage et MemberDetailPage |
+| 2026-03-08 | Feature | Création d'administrateur via modal dans AdminUsers |
 
 ---
 
