@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, ChevronRight } from "lucide-react";
+import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, ChevronRight, UserPlus, X } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
