@@ -35,6 +35,12 @@ const AdminUsers = () => {
   const [filterRole, setFilterRole] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  
+  // Modal création admin
+  const [showCreateAdmin, setShowCreateAdmin] = useState(false);
+  const [adminForm, setAdminForm] = useState({ email: "", password: "", confirmPassword: "" });
+  const [createError, setCreateError] = useState("");
+  const [createLoading, setCreateLoading] = useState(false);
 
   useEffect(() => {
     fetchUsers();
