@@ -340,7 +340,10 @@ async def reactivate_user(
 ):
     """
     Réactiver un membre suspendu
+    Un email de notification lui sera envoyé
     """
+    from services.email_service import send_reactivation_email
+    
     user = await db.users.find_one({"id": user_id})
     
     if not user:
@@ -367,10 +370,14 @@ async def reactivate_user(
             },
             "$unset": {
                 "suspended_at": "",
-                "suspended_by": ""
+                "suspended_by": "",
+                "suspension_reason": ""
             }
         }
     )
+    
+    # Envoyer l'email de notification
+    send_reactivation_email(user["email"])
     
     await log_admin_action(
         current_user["sub"],
@@ -380,7 +387,7 @@ async def reactivate_user(
     
     logger.info(f"Admin {current_user['email']} a réactivé l'utilisateur {user['email']}")
     
-    return {"message": f"Utilisateur {user['email']} réactivé avec succès"}
+    return {"message": f"Utilisateur {user['email']} réactivé avec succès. Un email lui a été envoyé."}
 
 
 @router.get("/users/{user_id}/full", dependencies=[Depends(admin_only)])
