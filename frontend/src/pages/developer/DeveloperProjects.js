@@ -337,6 +337,8 @@ const DeveloperProjects = () => {
           })}
         </div>
       )}
+      </>
+      )}
 
       {/* Modal candidature */}
       {selectedProject && (
