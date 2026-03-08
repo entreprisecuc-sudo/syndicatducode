@@ -210,20 +210,30 @@ const AdminUsers = () => {
                 >
                   Mot de passe
                 </label>
-                <input
-                  type="password"
-                  value={adminForm.password}
-                  onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 rounded-lg transition-colors duration-300"
-                  style={{ 
-                    background: "var(--admin-bg-section)", 
-                    border: "1px solid var(--admin-border)",
-                    color: "var(--admin-text)"
-                  }}
-                  placeholder="Min. 8 caractères, majuscule, minuscule, chiffre"
-                  data-testid="admin-password-input"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={adminForm.password}
+                    onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 pr-10 rounded-lg transition-colors duration-300"
+                    style={{ 
+                      background: "var(--admin-bg-section)", 
+                      border: "1px solid var(--admin-border)",
+                      color: "var(--admin-text)"
+                    }}
+                    placeholder="Min. 8 caractères, majuscule, minuscule, chiffre"
+                    data-testid="admin-password-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                    style={{ color: "var(--admin-text-muted)" }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
               
               <div>
@@ -233,20 +243,35 @@ const AdminUsers = () => {
                 >
                   Confirmer le mot de passe
                 </label>
-                <input
-                  type="password"
-                  value={adminForm.confirmPassword}
-                  onChange={(e) => setAdminForm({ ...adminForm, confirmPassword: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 rounded-lg transition-colors duration-300"
-                  style={{ 
-                    background: "var(--admin-bg-section)", 
-                    border: "1px solid var(--admin-border)",
-                    color: "var(--admin-text)"
-                  }}
-                  placeholder="Répétez le mot de passe"
-                  data-testid="admin-confirm-password-input"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={adminForm.confirmPassword}
+                    onChange={(e) => setAdminForm({ ...adminForm, confirmPassword: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 pr-10 rounded-lg transition-colors duration-300"
+                    style={{ 
+                      background: "var(--admin-bg-section)", 
+                      border: adminForm.confirmPassword && !passwordsMatch ? "1px solid #ef4444" : "1px solid var(--admin-border)",
+                      color: "var(--admin-text)"
+                    }}
+                    placeholder="Répétez le mot de passe"
+                    data-testid="admin-confirm-password-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                    style={{ color: "var(--admin-text-muted)" }}
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {adminForm.confirmPassword && !passwordsMatch && (
+                  <p className="text-red-400 text-xs mt-1">
+                    Les mots de passe ne correspondent pas
+                  </p>
+                )}
               </div>
               
               <div className="flex gap-3 pt-2">
