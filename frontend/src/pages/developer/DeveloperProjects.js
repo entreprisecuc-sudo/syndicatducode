@@ -1,12 +1,13 @@
 /**
  * Projets du Syndicat - Espace Développeur
- * Liste des projets ouverts + candidatures
+ * Liste des projets ouverts + candidatures + espaces projets
  */
 
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { 
   Rocket, MapPin, Clock, Euro, Code, Send, 
-  CheckCircle, AlertCircle, ChevronRight, X
+  CheckCircle, AlertCircle, ChevronRight, X, MessageSquare, Users
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { getAuthHeaders } from "@/services/authService";
@@ -22,8 +23,10 @@ const COLLAB_CONFIG = {
 
 const DeveloperProjects = () => {
   const [projects, setProjects] = useState([]);
+  const [projectRooms, setProjectRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("projects"); // projects, rooms
   
   // Modal candidature
   const [selectedProject, setSelectedProject] = useState(null);
@@ -33,6 +36,7 @@ const DeveloperProjects = () => {
 
   useEffect(() => {
     fetchProjects();
+    fetchProjectRooms();
   }, []);
 
   const fetchProjects = async () => {
@@ -46,6 +50,17 @@ const DeveloperProjects = () => {
       setError("Erreur lors du chargement des projets");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProjectRooms = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/project-rooms/my-rooms`, {
+        headers: getAuthHeaders()
+      });
+      setProjectRooms(response.data.rooms);
+    } catch (err) {
+      console.error("Erreur chargement espaces projets:", err);
     }
   };
 
