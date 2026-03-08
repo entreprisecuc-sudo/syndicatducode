@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { X, LogIn } from "lucide-react";
 import { useModal } from "@/context/ModalContext";
 import { useAuth } from "@/context/AuthContext";
@@ -15,6 +15,8 @@ const Navigation = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openModal } = useModal();
   const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Détecte le scroll pour changer le style de la navbar
   useEffect(() => {
@@ -24,6 +26,37 @@ const Navigation = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Gère le scroll vers une ancre après navigation
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    }
+  }, [location]);
+
+  // Gère la navigation vers une ancre
+  const handleAnchorClick = (e, href) => {
+    e.preventDefault();
+    
+    // Si on est déjà sur la page d'accueil
+    if (location.pathname === "/") {
+      const anchor = href.replace("/", "");
+      const element = document.querySelector(anchor);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      // Sinon, naviguer vers la page d'accueil avec l'ancre
+      navigate(href);
+    }
+    
+    setMobileOpen(false);
+  };
 
   // Gère l'ouverture du modal depuis le menu mobile
   const handleMobileModalOpen = () => {
