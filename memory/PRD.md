@@ -150,6 +150,11 @@
   - AdminAnnouncements, AdminAlerts, AdminSubscriptions
   - AdminPartners, AdminPortfolioValidation, AdminProjectDetail
 
+### ✅ Bugfix Navigation par Ancre (Phase 20) - 08/03/2026
+- **Problème** : Les liens d'ancre (#services, #contact, etc.) ne fonctionnaient que depuis la page d'accueil
+- **Solution** : Application de `handleAnchorClick` au menu mobile dans `Navigation.js`
+- **Comportement** : Depuis n'importe quelle page, un clic sur un lien d'ancre redirige vers la page d'accueil puis défile vers la section correspondante
+
 ---
 
 ## Architecture technique
