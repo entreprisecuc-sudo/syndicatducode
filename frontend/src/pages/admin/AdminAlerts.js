@@ -463,6 +463,7 @@ const AdminAlerts = () => {
               <option value="all">Tous les membres</option>
               <option value="developer">Développeurs uniquement</option>
               <option value="commercial">Commerciaux uniquement</option>
+              <option value="public">Site public (visiteurs)</option>
             </ModalSelect>
           </ModalFormGroup>
           
