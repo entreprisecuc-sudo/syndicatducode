@@ -28,10 +28,10 @@ export const TEST_ACCOUNTS = {
 
 // Liens de navigation
 export const NAV_LINKS = [
-  { href: "#services", label: "Services" },
-  { href: "#pourquoi", label: "Pourquoi nous" },
+  { href: "/#services", label: "Services" },
+  { href: "/#pourquoi", label: "Pourquoi nous" },
   { href: "/membres", label: "Nos talents", isRoute: true },
-  { href: "#contact", label: "Contact" }
+  { href: "/#contact", label: "Contact" }
 ];
 
 // Services proposés
