@@ -47,6 +47,7 @@ import {
   DeveloperBook,
   DeveloperMessages
 } from "@/pages/developer";
+import ProjectRoom from "@/pages/developer/ProjectRoom";
 
 // Pages Admin
 import {
