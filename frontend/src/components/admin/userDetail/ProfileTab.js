@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { 
   User, Phone, MapPin, Briefcase, Clock, Calendar,
-  Github, Linkedin, Globe, Shield, Code, Users, UserX, UserCheck, Loader2
+  Github, Linkedin, Globe, Shield, Code, Users, UserX, UserCheck, Loader2, X
 } from "lucide-react";
 import { API_URL } from "@/config/constants";
 import { getAuthHeaders } from "@/services/authService";
@@ -30,6 +30,8 @@ const STATUS_CONFIG = {
 export const ProfileTab = ({ user, profile, onUserUpdate }) => {
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [suspensionReason, setSuspensionReason] = useState("");
 
   if (!user) return null;
 
@@ -43,16 +45,21 @@ export const ProfileTab = ({ user, profile, onUserUpdate }) => {
     : profile?.photo_url ? `${API_URL}${profile.photo_url}` : null;
 
   const handleSuspend = async () => {
-    if (!window.confirm(`Êtes-vous sûr de vouloir suspendre ${user.email} ?`)) return;
+    if (!suspensionReason.trim()) {
+      setActionError("Veuillez saisir un motif de suspension");
+      return;
+    }
     
     try {
       setActionLoading(true);
       setActionError("");
       await axios.put(
         `${API_URL}/admin/users/${user.id}/suspend`,
-        {},
+        { reason: suspensionReason },
         { headers: getAuthHeaders() }
       );
+      setShowSuspendModal(false);
+      setSuspensionReason("");
       if (onUserUpdate) onUserUpdate();
       window.location.reload();
     } catch (err) {
@@ -87,6 +94,85 @@ export const ProfileTab = ({ user, profile, onUserUpdate }) => {
 
   return (
     <div className="space-y-6">
+      {/* Modal de suspension */}
+      {showSuspendModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div 
+            className="w-full max-w-md rounded-xl p-6 transition-colors duration-300"
+            style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold" style={{ color: "var(--admin-text)" }}>
+                Suspendre le compte
+              </h3>
+              <button 
+                onClick={() => setShowSuspendModal(false)}
+                style={{ color: "var(--admin-text-muted)" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <p className="text-sm mb-4" style={{ color: "var(--admin-text-secondary)" }}>
+              Vous allez suspendre le compte de <strong>{user.email}</strong>. 
+              Un email avec le motif lui sera envoyé.
+            </p>
+            
+            {actionError && (
+              <div className="p-3 rounded-lg bg-red-500/20 text-red-400 text-sm mb-4">
+                {actionError}
+              </div>
+            )}
+            
+            <div className="mb-4">
+              <label 
+                className="block text-sm font-medium mb-2"
+                style={{ color: "var(--admin-text-secondary)" }}
+              >
+                Motif de la suspension *
+              </label>
+              <textarea
+                value={suspensionReason}
+                onChange={(e) => setSuspensionReason(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 rounded-lg transition-colors duration-300 resize-none"
+                style={{ 
+                  background: "var(--admin-bg-section)", 
+                  border: "1px solid var(--admin-border)",
+                  color: "var(--admin-text)"
+                }}
+                placeholder="Expliquez la raison de cette suspension..."
+                data-testid="suspension-reason-input"
+              />
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowSuspendModal(false)}
+                className="flex-1 px-4 py-2 rounded-lg text-sm transition-colors"
+                style={{ 
+                  background: "var(--admin-bg-section)", 
+                  color: "var(--admin-text)",
+                  border: "1px solid var(--admin-border)"
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSuspend}
+                disabled={actionLoading || !suspensionReason.trim()}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50"
+                style={{ background: "#ef4444" }}
+                data-testid="confirm-suspend-btn"
+              >
+                {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <UserX size={16} />}
+                Suspendre
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* En-tête utilisateur */}
       <div 
         className="p-6 rounded-xl flex flex-col md:flex-row items-start gap-6 transition-colors duration-300"
@@ -147,22 +233,40 @@ export const ProfileTab = ({ user, profile, onUserUpdate }) => {
             )}
           </div>
 
+          {/* Motif de suspension si suspendu */}
+          {user.status === "suspended" && user.suspension_reason && (
+            <div 
+              className="mt-4 p-3 rounded-lg"
+              style={{ background: "#ef444420", border: "1px solid #ef444440" }}
+            >
+              <p className="text-sm font-medium text-red-400 mb-1">Motif de la suspension :</p>
+              <p className="text-sm" style={{ color: "var(--admin-text-secondary)" }}>
+                {user.suspension_reason}
+              </p>
+              {user.suspended_at && (
+                <p className="text-xs mt-2" style={{ color: "var(--admin-text-muted)" }}>
+                  Suspendu le {new Date(user.suspended_at).toLocaleDateString("fr-FR")}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Actions de modération */}
           {(canBeSuspended || canBeReactivated) && (
             <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--admin-border)" }}>
-              {actionError && (
+              {actionError && !showSuspendModal && (
                 <p className="text-red-400 text-sm mb-3">{actionError}</p>
               )}
               <div className="flex flex-wrap gap-3">
                 {canBeSuspended && (
                   <button
-                    onClick={handleSuspend}
+                    onClick={() => setShowSuspendModal(true)}
                     disabled={actionLoading}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50"
                     style={{ background: "#ef4444" }}
                     data-testid="suspend-user-btn"
                   >
-                    {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <UserX size={16} />}
+                    <UserX size={16} />
                     Suspendre le compte
                   </button>
                 )}
