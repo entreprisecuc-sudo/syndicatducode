@@ -3,16 +3,37 @@ Routes d'administration - Gestion des utilisateurs
 """
 
 from fastapi import APIRouter, HTTPException, status, Depends
+from pydantic import BaseModel, EmailStr, validator
 from datetime import datetime, timezone
 from typing import Optional
 import logging
+import re
 
 from middleware.auth import get_current_user, RoleChecker
 from config.settings import UserStatus, UserRole
+from services.auth_service import hash_password, generate_user_id
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Admin - Users"])
+
+
+class CreateAdminRequest(BaseModel):
+    """Modèle pour créer un administrateur"""
+    email: EmailStr
+    password: str
+    
+    @validator("password")
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError("Le mot de passe doit contenir au moins 8 caractères")
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Le mot de passe doit contenir au moins une majuscule")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Le mot de passe doit contenir au moins une minuscule")
+        if not re.search(r"\d", v):
+            raise ValueError("Le mot de passe doit contenir au moins un chiffre")
+        return v
 
 # Middleware pour vérifier le rôle admin
 admin_only = RoleChecker(["admin"])
