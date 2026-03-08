@@ -111,6 +111,7 @@ Ce document recense tous les tests existants et à implémenter pour le projet.
 | Page Membres | Liste des développeurs abonnés | Fonctionnel | ⏳ À faire |
 | Détail Membre | Fiche avec book (contenu +18 flouté) | Fonctionnel | ⏳ À faire |
 | Modal Devis | Ouverture et soumission formulaire | Fonctionnel | ⏳ À faire |
+| Navigation ancre | Clic depuis page secondaire redirige vers section | Fonctionnel | ✅ Validé |
 
 ### 2.2 Authentification
 
