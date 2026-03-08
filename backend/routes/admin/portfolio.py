@@ -163,3 +163,31 @@ async def reject_portfolio_project(
     )
     
     return {"message": "Projet rejeté"}
+
+
+@router.delete("/portfolio/{project_id}", dependencies=[Depends(admin_only)])
+async def delete_portfolio_project(
+    project_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Supprime définitivement un projet de portfolio
+    """
+    project = await db.portfolio.find_one({"id": project_id})
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Projet non trouvé"
+        )
+    
+    await db.portfolio.delete_one({"id": project_id})
+    
+    await log_admin_action(
+        current_user["sub"],
+        "DELETE_PORTFOLIO",
+        f"Projet portfolio '{project.get('title', project_id)}' supprimé"
+    )
+    
+    logger.info(f"Admin {current_user['email']} a supprimé le projet portfolio {project_id}")
+    
+    return {"message": "Projet supprimé définitivement"}
