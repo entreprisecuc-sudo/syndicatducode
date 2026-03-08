@@ -41,7 +41,8 @@ const STYLE_CONFIG = {
 const TARGET_CONFIG = {
   all: { label: "Tous les membres", color: "#6b7280" },
   developer: { label: "Développeurs", color: "#8b5cf6" },
-  commercial: { label: "Commerciaux", color: "#f59e0b" }
+  commercial: { label: "Commerciaux", color: "#f59e0b" },
+  public: { label: "Site public", color: "#10b981" }
 };
 
 const AdminAlerts = () => {
