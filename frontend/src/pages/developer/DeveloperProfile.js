@@ -74,17 +74,30 @@ const DeveloperProfile = () => {
       // Mettre à jour le formulaire avec les données existantes
       setFormData(prev => ({
         ...prev,
+        // Informations personnelles
         first_name: profile.first_name || "",
         last_name: profile.last_name || "",
+        pseudo: profile.pseudo || "",
         phone: profile.phone || "",
         city: profile.city || "",
         bio: profile.bio || "",
+        // Liens professionnels
         github: profile.github || "",
         linkedin: profile.linkedin || "",
         portfolio: profile.portfolio || "",
+        // Informations professionnelles
         experience: profile.experience || "",
         availability: profile.availability || "full",
-        skills: profile.skills || []
+        skills: profile.skills || [],
+        // Informations entreprise
+        company_name: profile.company_name || "",
+        siret: profile.siret || "",
+        tva_number: profile.tva_number || "",
+        // Informations bancaires
+        iban: profile.iban || "",
+        bic: profile.bic || "",
+        // Choix d'affichage
+        display_name_choice: profile.display_name_choice || "name"
       }));
       
       // Photo de profil
