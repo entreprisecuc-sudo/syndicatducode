@@ -63,20 +63,20 @@ const DashboardLayout = ({ children }) => {
         className={`
           fixed lg:static inset-y-0 left-0 z-50
           w-64 transform transition-transform duration-300 ease-in-out
-          lg:transform-none
+          lg:transform-none flex flex-col
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
         style={{ background: "var(--bg-card)", borderRight: "1px solid var(--border-color)" }}
       >
         {/* Logo */}
-        <div className="p-4 border-b" style={{ borderColor: "var(--border-color)" }}>
+        <div className="p-4 border-b flex-shrink-0" style={{ borderColor: "var(--border-color)" }}>
           <Link to="/" className="flex items-center gap-3">
             <img src={CONFIG.logo} alt={CONFIG.companyName} className="h-12" />
           </Link>
         </div>
 
         {/* Info utilisateur */}
-        <div className="p-4 border-b" style={{ borderColor: "var(--border-color)" }}>
+        <div className="p-4 border-b flex-shrink-0" style={{ borderColor: "var(--border-color)" }}>
           <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>
             {user?.email}
           </p>
@@ -85,8 +85,8 @@ const DashboardLayout = ({ children }) => {
           </p>
         </div>
 
-        {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        {/* Navigation - prend l'espace restant */}
+        <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -117,8 +117,8 @@ const DashboardLayout = ({ children }) => {
           })}
         </nav>
 
-        {/* Déconnexion */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t" style={{ borderColor: "var(--border-color)" }}>
+        {/* Déconnexion - toujours en bas */}
+        <div className="p-4 border-t flex-shrink-0" style={{ borderColor: "var(--border-color)", background: "var(--bg-card)" }}>
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full hover:bg-red-50 transition-colors"
