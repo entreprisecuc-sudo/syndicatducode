@@ -195,6 +195,10 @@ function App() {
                 path="/espace-developpeur/partenaires" 
                 element={<RoleRoute allowedRoles={["developer"]}><MemberPartners /></RoleRoute>} 
               />
+              <Route 
+                path="/espace-developpeur/projet/:roomId" 
+                element={<RoleRoute allowedRoles={["developer"]}><ProjectRoom /></RoleRoute>} 
+              />
 
               {/* ============================================ */}
               {/* BACK-OFFICE ADMIN (URL secrète) */}
