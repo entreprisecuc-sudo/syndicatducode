@@ -240,6 +240,7 @@ api_router.include_router(profile_router)
 api_router.include_router(members_router)
 api_router.include_router(messages_router)
 api_router.include_router(notifications_router)
+api_router.include_router(project_rooms_router)
 
 
 # ============================================
