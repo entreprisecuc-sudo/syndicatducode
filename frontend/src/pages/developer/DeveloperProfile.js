@@ -32,17 +32,30 @@ const DeveloperProfile = () => {
   
   const [photoUrl, setPhotoUrl] = useState(null);
   const [formData, setFormData] = useState({
+    // Informations personnelles
     first_name: "",
     last_name: "",
+    pseudo: "",
     phone: "",
     city: "",
     bio: "",
+    // Liens professionnels
     github: "",
     linkedin: "",
     portfolio: "",
+    // Informations professionnelles
     experience: "",
     availability: "full",
-    skills: []
+    skills: [],
+    // Informations entreprise
+    company_name: "",
+    siret: "",
+    tva_number: "",
+    // Informations bancaires
+    iban: "",
+    bic: "",
+    // Choix d'affichage
+    display_name_choice: "name"
   });
 
   // Charger le profil existant au montage
