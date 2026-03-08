@@ -261,12 +261,21 @@ async def admin_update_application_status(
 ):
     """
     Mettre à jour le statut d'une candidature (admin)
+    Si acceptée, crée automatiquement un espace projet
     """
     valid_statuses = ["pending", "reviewed", "accepted", "rejected"]
     if new_status not in valid_statuses:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Statut invalide. Choix: {', '.join(valid_statuses)}"
+        )
+    
+    # Récupérer la candidature
+    application = await db.project_applications.find_one({"id": application_id})
+    if not application:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Candidature non trouvée"
         )
     
     result = await db.project_applications.update_one(
@@ -277,13 +286,21 @@ async def admin_update_application_status(
         }}
     )
     
-    if result.modified_count == 0:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Candidature non trouvée"
+    # Si la candidature est acceptée, créer ou ajouter au salon de projet
+    room_id = None
+    if new_status == "accepted":
+        from routes.project_rooms import create_project_room_for_application
+        room_id = await create_project_room_for_application(
+            application["project_id"],
+            application["developer_id"]
         )
     
-    return {"message": f"Statut mis à jour: {new_status}"}
+    response = {"message": f"Statut mis à jour: {new_status}"}
+    if room_id:
+        response["room_id"] = room_id
+        response["message"] = f"Candidature acceptée. Espace projet créé/mis à jour."
+    
+    return response
 
 
 # ============================================
