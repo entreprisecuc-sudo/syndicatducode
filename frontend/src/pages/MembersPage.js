@@ -27,10 +27,24 @@ const MemberCard = ({ member }) => {
     ? profile.photo_url 
     : profile.photo_url ? `${API_URL}${profile.photo_url}` : null;
   
-  // Nom à afficher
-  const displayName = profile.first_name && profile.last_name
-    ? `${profile.first_name} ${profile.last_name}`
-    : member.email?.split("@")[0];
+  // Nom à afficher selon le choix du développeur
+  const getDisplayName = () => {
+    const choice = profile.display_name_choice || "name";
+    
+    switch (choice) {
+      case "pseudo":
+        return profile.pseudo || profile.first_name || member.email?.split("@")[0];
+      case "company":
+        return profile.company_name || profile.first_name || member.email?.split("@")[0];
+      case "name":
+      default:
+        return profile.first_name && profile.last_name
+          ? `${profile.first_name} ${profile.last_name}`
+          : member.email?.split("@")[0];
+    }
+  };
+  
+  const displayName = getDisplayName();
   
   // Initiale pour le placeholder
   const initial = displayName?.charAt(0).toUpperCase() || "?";
