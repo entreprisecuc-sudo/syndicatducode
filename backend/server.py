@@ -289,6 +289,12 @@ async def startup_event():
     await db.subscriptions.create_index([("user_id", 1), ("status", 1)])
     # Index pour les profils
     await db.profiles.create_index("user_id", unique=True)
+    # Index pour les espaces projet
+    await db.project_rooms.create_index("id", unique=True)
+    await db.project_rooms.create_index("project_id")
+    await db.project_rooms.create_index("members.user_id")
+    await db.project_notes.create_index("room_id")
+    await db.project_messages.create_index([("room_id", 1), ("created_at", -1)])
     logger.info("Indexes créés pour toutes les collections")
 
 
