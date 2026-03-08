@@ -212,6 +212,7 @@ from routes.profile import router as profile_router, set_database as set_profile
 from routes.members import router as members_router, set_database as set_members_db
 from routes.messages import router as messages_router, set_database as set_messages_db
 from routes.notifications import router as notifications_router, set_database as set_notifications_db
+from routes.project_rooms import router as project_rooms_router, set_database as set_project_rooms_db
 
 # Injecter la base de données dans les modules
 set_auth_db(db)
@@ -225,6 +226,7 @@ set_profile_db(db)
 set_members_db(db)
 set_messages_db(db)
 set_notifications_db(db)
+set_project_rooms_db(db)
 
 # Inclure les routes
 api_router.include_router(auth_router)
