@@ -39,17 +39,36 @@ def set_database(database):
 
 class DeveloperProfileUpdate(BaseModel):
     """Modèle pour la mise à jour du profil développeur"""
+    # Informations personnelles
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    pseudo: Optional[str] = None  # Pseudonyme
     phone: Optional[str] = None
     city: Optional[str] = None
     bio: Optional[str] = None
+    
+    # Liens professionnels
     github: Optional[str] = None
     linkedin: Optional[str] = None
     portfolio: Optional[str] = None
+    
+    # Informations professionnelles
     experience: Optional[str] = None
     availability: Optional[str] = None
     skills: Optional[List[str]] = None
+    
+    # Informations entreprise
+    company_name: Optional[str] = None  # Nom de l'entreprise
+    siret: Optional[str] = None  # Numéro SIRET
+    tva_number: Optional[str] = None  # Numéro de TVA intracommunautaire
+    
+    # Informations bancaires (pour les paiements)
+    iban: Optional[str] = None  # IBAN
+    bic: Optional[str] = None  # BIC/SWIFT
+    
+    # Choix d'affichage sur la page "Nos talents"
+    # Valeurs possibles: "name" (prénom nom), "pseudo", "company"
+    display_name_choice: Optional[str] = None
 
 
 class ProfilePhotoUpload(BaseModel):
