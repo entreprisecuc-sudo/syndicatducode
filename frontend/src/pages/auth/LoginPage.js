@@ -150,10 +150,17 @@ const LoginPage = () => {
             {/* Message d'erreur */}
             {error && (
               <div 
-                className="p-3 rounded-lg text-sm bg-red-100 text-red-700"
+                className="p-4 rounded-lg text-sm"
+                style={{ 
+                  background: error.includes("suspendu") ? "#ef444420" : "#fef2f2",
+                  border: error.includes("suspendu") ? "1px solid #ef4444" : "none",
+                  color: error.includes("suspendu") ? "#fca5a5" : "#b91c1c"
+                }}
                 data-testid="login-error"
               >
-                {error}
+                {error.split('\n').map((line, i) => (
+                  <p key={i} className={i > 0 ? "mt-2" : ""}>{line}</p>
+                ))}
               </div>
             )}
 
