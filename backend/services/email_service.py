@@ -115,3 +115,103 @@ Le Syndicat du Code
     except Exception as e:
         logger.error(f"Erreur envoi email de bienvenue: {e}")
         return False
+
+
+def send_suspension_email(to_email: str, reason: str) -> bool:
+    """
+    Envoie un email de notification de suspension de compte
+    
+    Args:
+        to_email: Email du destinataire
+        reason: Motif de la suspension
+    
+    Returns:
+        True si l'envoi a réussi
+    """
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = to_email
+        msg['Subject'] = "⚠️ Suspension de votre compte - Le Syndicat du Code"
+        
+        body = f"""
+Bonjour,
+
+Nous vous informons que votre compte sur Le Syndicat du Code a été suspendu.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 MOTIF DE LA SUSPENSION :
+
+{reason}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Durant cette suspension, vous ne pourrez plus accéder à votre espace membre.
+
+Si vous pensez qu'il s'agit d'une erreur ou si vous souhaitez contester cette décision, 
+veuillez nous contacter par email à : contact@syndicatducode.fr
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Notre loi. Unis par le code.
+Le Syndicat du Code
+        """
+        
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+        
+        logger.info(f"Email de suspension envoyé à {to_email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Erreur envoi email de suspension: {e}")
+        return False
+
+
+def send_reactivation_email(to_email: str) -> bool:
+    """
+    Envoie un email de notification de réactivation de compte
+    
+    Args:
+        to_email: Email du destinataire
+    
+    Returns:
+        True si l'envoi a réussi
+    """
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = to_email
+        msg['Subject'] = "✅ Votre compte a été réactivé - Le Syndicat du Code"
+        
+        body = f"""
+Bonjour,
+
+Bonne nouvelle ! Votre compte sur Le Syndicat du Code a été réactivé.
+
+Vous pouvez dès à présent vous reconnecter et accéder à votre espace membre :
+
+👉 {FRONTEND_URL}/connexion
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Notre loi. Unis par le code.
+Le Syndicat du Code
+        """
+        
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+        
+        logger.info(f"Email de réactivation envoyé à {to_email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Erreur envoi email de réactivation: {e}")
+        return False
