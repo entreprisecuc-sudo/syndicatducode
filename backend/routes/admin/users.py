@@ -215,6 +215,59 @@ async def update_user_role(
     return {"message": f"Rôle mis à jour: {new_role}"}
 
 
+@router.post("/users/create-admin", dependencies=[Depends(admin_only)])
+async def create_admin(
+    data: CreateAdminRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Créer un nouvel administrateur
+    Seuls les admins existants peuvent créer de nouveaux admins
+    """
+    # Vérifier si l'email existe déjà
+    existing_user = await db.users.find_one({"email": data.email.lower()})
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Un compte existe déjà avec cet email"
+        )
+    
+    # Créer l'utilisateur admin
+    now = datetime.now(timezone.utc).isoformat()
+    user_id = generate_user_id()
+    
+    user_doc = {
+        "id": user_id,
+        "email": data.email.lower(),
+        "password_hash": hash_password(data.password),
+        "role": UserRole.ADMIN,
+        "status": UserStatus.ACTIVE,
+        "created_at": now,
+        "updated_at": now,
+        "first_login": False
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    await log_admin_action(
+        current_user["sub"],
+        "CREATE_ADMIN",
+        f"Nouvel administrateur créé: {data.email}"
+    )
+    
+    logger.info(f"Admin {current_user['email']} a créé un nouvel admin: {data.email}")
+    
+    return {
+        "message": "Administrateur créé avec succès",
+        "user": {
+            "id": user_id,
+            "email": data.email.lower(),
+            "role": UserRole.ADMIN,
+            "status": UserStatus.ACTIVE
+        }
+    }
+
+
 @router.get("/users/{user_id}/full", dependencies=[Depends(admin_only)])
 async def get_user_full_details(
     user_id: str,
