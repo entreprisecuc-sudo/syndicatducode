@@ -275,3 +275,30 @@ async def dismiss_alert(
         )
     
     return {"message": "Alerte fermée"}
+
+
+# ============================================
+# ROUTES PUBLIQUES (Site web)
+# ============================================
+
+@router.get("/public", response_model=AlertListResponse)
+async def get_public_alerts():
+    """
+    Récupérer les alertes pour le site public (visiteurs non connectés)
+    """
+    filter_query = {
+        "is_active": True,
+        "target": AlertTarget.PUBLIC.value
+    }
+    
+    total = await db.alerts.count_documents(filter_query)
+    
+    alerts = await db.alerts.find(
+        filter_query,
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(10)
+    
+    return AlertListResponse(
+        alerts=[AlertResponse(**a) for a in alerts],
+        total=total
+    )
