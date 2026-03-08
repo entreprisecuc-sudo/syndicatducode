@@ -96,6 +96,33 @@ const AdminUsers = () => {
     }
   };
 
+  // Créer un administrateur
+  const handleCreateAdmin = async (e) => {
+    e.preventDefault();
+    setCreateError("");
+    
+    if (adminForm.password !== adminForm.confirmPassword) {
+      setCreateError("Les mots de passe ne correspondent pas");
+      return;
+    }
+    
+    try {
+      setCreateLoading(true);
+      await axios.post(
+        `${API_URL}/admin/users/create-admin`,
+        { email: adminForm.email, password: adminForm.password },
+        { headers: getAuthHeaders() }
+      );
+      setShowCreateAdmin(false);
+      setAdminForm({ email: "", password: "", confirmPassword: "" });
+      fetchUsers();
+    } catch (err) {
+      setCreateError(err.response?.data?.detail || "Erreur lors de la création");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   // Filtrage local par recherche
   const filteredUsers = users.filter(user => 
     user.email.toLowerCase().includes(search.toLowerCase())
