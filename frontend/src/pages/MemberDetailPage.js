@@ -275,6 +275,9 @@ const MemberDetailPage = () => {
         memberId={memberId}
         memberName={displayName}
       />
+      
+      {/* Modal de devis */}
+      <DevisModal />
     </div>
   );
 };
