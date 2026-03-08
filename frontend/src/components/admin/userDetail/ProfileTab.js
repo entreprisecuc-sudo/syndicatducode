@@ -3,11 +3,14 @@
  * Affiche les informations de base et le profil développeur
  */
 
+import { useState } from "react";
 import { 
   User, Phone, MapPin, Briefcase, Clock, Calendar,
-  Github, Linkedin, Globe, Shield, Code, Users
+  Github, Linkedin, Globe, Shield, Code, Users, UserX, UserCheck, Loader2
 } from "lucide-react";
 import { API_URL } from "@/config/constants";
+import { getAuthHeaders } from "@/services/authService";
+import axios from "axios";
 
 // Configuration des rôles
 const ROLE_CONFIG = {
@@ -24,7 +27,10 @@ const STATUS_CONFIG = {
   pending: { label: "En attente", color: "#f59e0b", bg: "#f59e0b20" }
 };
 
-export const ProfileTab = ({ user, profile }) => {
+export const ProfileTab = ({ user, profile, onUserUpdate }) => {
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState("");
+
   if (!user) return null;
 
   const roleConfig = ROLE_CONFIG[user.role] || ROLE_CONFIG.null;
@@ -35,6 +41,49 @@ export const ProfileTab = ({ user, profile }) => {
   const photoUrl = profile?.photo_url?.startsWith("http") 
     ? profile.photo_url 
     : profile?.photo_url ? `${API_URL}${profile.photo_url}` : null;
+
+  const handleSuspend = async () => {
+    if (!window.confirm(`Êtes-vous sûr de vouloir suspendre ${user.email} ?`)) return;
+    
+    try {
+      setActionLoading(true);
+      setActionError("");
+      await axios.put(
+        `${API_URL}/admin/users/${user.id}/suspend`,
+        {},
+        { headers: getAuthHeaders() }
+      );
+      if (onUserUpdate) onUserUpdate();
+      window.location.reload();
+    } catch (err) {
+      setActionError(err.response?.data?.detail || "Erreur lors de la suspension");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReactivate = async () => {
+    if (!window.confirm(`Êtes-vous sûr de vouloir réactiver ${user.email} ?`)) return;
+    
+    try {
+      setActionLoading(true);
+      setActionError("");
+      await axios.put(
+        `${API_URL}/admin/users/${user.id}/reactivate`,
+        {},
+        { headers: getAuthHeaders() }
+      );
+      if (onUserUpdate) onUserUpdate();
+      window.location.reload();
+    } catch (err) {
+      setActionError(err.response?.data?.detail || "Erreur lors de la réactivation");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const canBeSuspended = user.role !== "admin" && user.status === "active";
+  const canBeReactivated = user.status === "suspended";
 
   return (
     <div className="space-y-6">
@@ -97,6 +146,41 @@ export const ProfileTab = ({ user, profile }) => {
               </span>
             )}
           </div>
+
+          {/* Actions de modération */}
+          {(canBeSuspended || canBeReactivated) && (
+            <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--admin-border)" }}>
+              {actionError && (
+                <p className="text-red-400 text-sm mb-3">{actionError}</p>
+              )}
+              <div className="flex flex-wrap gap-3">
+                {canBeSuspended && (
+                  <button
+                    onClick={handleSuspend}
+                    disabled={actionLoading}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50"
+                    style={{ background: "#ef4444" }}
+                    data-testid="suspend-user-btn"
+                  >
+                    {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <UserX size={16} />}
+                    Suspendre le compte
+                  </button>
+                )}
+                {canBeReactivated && (
+                  <button
+                    onClick={handleReactivate}
+                    disabled={actionLoading}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50"
+                    style={{ background: "#10b981" }}
+                    data-testid="reactivate-user-btn"
+                  >
+                    {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={16} />}
+                    Réactiver le compte
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
