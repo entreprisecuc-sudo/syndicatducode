@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { Camera, X, Github, Linkedin, Globe, Save, Loader2 } from "lucide-react";
+import { Camera, X, Github, Linkedin, Globe, Save, Loader2, Building2, CreditCard, User } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import { getAuthHeaders } from "@/services/authService";
