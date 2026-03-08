@@ -171,7 +171,7 @@ const Navigation = () => {
               key={link.href} 
               href={link.href} 
               className="mobile-nav-link"
-              onClick={() => setMobileOpen(false)}
+              onClick={(e) => handleAnchorClick(e, link.href)}
             >
               {link.label}
             </a>
