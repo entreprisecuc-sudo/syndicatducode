@@ -434,6 +434,7 @@ const MembersPage = () => {
       </section>
 
       <Footer />
+      <DevisModal />
     </div>
   );
 };
