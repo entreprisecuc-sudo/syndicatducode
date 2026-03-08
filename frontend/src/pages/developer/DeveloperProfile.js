@@ -538,6 +538,119 @@ const DeveloperProfile = () => {
             </div>
           </div>
 
+          {/* Informations Entreprise */}
+          <div 
+            className="p-6 rounded-xl mb-6"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Building2 size={20} style={{ color: "var(--sage)" }} />
+              <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                Informations Entreprise
+              </h3>
+            </div>
+            <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
+              Ces informations sont nécessaires pour la facturation et les paiements
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                  Nom de l'entreprise
+                </label>
+                <input
+                  type="text"
+                  name="company_name"
+                  value={formData.company_name}
+                  onChange={handleChange}
+                  placeholder="Raison sociale ou auto-entrepreneur"
+                  className="w-full"
+                  data-testid="profile-company-name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                  Numéro SIRET
+                </label>
+                <input
+                  type="text"
+                  name="siret"
+                  value={formData.siret}
+                  onChange={handleChange}
+                  placeholder="123 456 789 00012"
+                  className="w-full"
+                  maxLength={17}
+                  data-testid="profile-siret"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                Numéro de TVA intracommunautaire
+              </label>
+              <input
+                type="text"
+                name="tva_number"
+                value={formData.tva_number}
+                onChange={handleChange}
+                placeholder="FR12345678901 (optionnel)"
+                className="w-full"
+                data-testid="profile-tva"
+              />
+            </div>
+          </div>
+
+          {/* Informations Bancaires */}
+          <div 
+            className="p-6 rounded-xl mb-6"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <CreditCard size={20} style={{ color: "var(--sage)" }} />
+              <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                Informations Bancaires
+              </h3>
+            </div>
+            <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
+              Pour recevoir les paiements de vos missions
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                  IBAN
+                </label>
+                <input
+                  type="text"
+                  name="iban"
+                  value={formData.iban}
+                  onChange={handleChange}
+                  placeholder="FR76 1234 5678 9012 3456 7890 123"
+                  className="w-full"
+                  data-testid="profile-iban"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                  BIC / SWIFT
+                </label>
+                <input
+                  type="text"
+                  name="bic"
+                  value={formData.bic}
+                  onChange={handleChange}
+                  placeholder="BNPAFRPP"
+                  className="w-full"
+                  data-testid="profile-bic"
+                />
+              </div>
+            </div>
+            <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>
+              🔒 Ces informations sont stockées de manière sécurisée et utilisées uniquement pour les virements.
+            </p>
+          </div>
+
           {/* Compétences */}
           <div 
             className="p-6 rounded-xl mb-6"
