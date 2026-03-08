@@ -358,6 +358,39 @@ const DeveloperProfile = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                  Pseudo / Nom d'artiste
+                </label>
+                <input
+                  type="text"
+                  name="pseudo"
+                  value={formData.pseudo}
+                  onChange={handleChange}
+                  placeholder="Votre pseudo (optionnel)"
+                  className="w-full"
+                  data-testid="profile-pseudo"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                  Afficher sur "Nos talents"
+                </label>
+                <select
+                  name="display_name_choice"
+                  value={formData.display_name_choice}
+                  onChange={handleChange}
+                  className="w-full"
+                  data-testid="profile-display-choice"
+                >
+                  <option value="name">Mon prénom et nom</option>
+                  <option value="pseudo">Mon pseudo</option>
+                  <option value="company">Mon entreprise</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
                   Téléphone
                 </label>
                 <input
