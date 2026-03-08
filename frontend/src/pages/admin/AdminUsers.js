@@ -130,13 +130,147 @@ const AdminUsers = () => {
 
   return (
     <AdminLayout>
-      {/* Titre mobile */}
-      <h1 
-        className="text-xl font-bold mb-6 lg:hidden"
-        style={{ color: "var(--admin-text)" }}
-      >
-        Utilisateurs
-      </h1>
+      {/* Titre mobile + Bouton créer admin */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 
+          className="text-xl font-bold lg:hidden"
+          style={{ color: "var(--admin-text)" }}
+        >
+          Utilisateurs
+        </h1>
+        <button
+          onClick={() => setShowCreateAdmin(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors"
+          style={{ background: "#ef4444" }}
+          data-testid="create-admin-btn"
+        >
+          <UserPlus size={18} />
+          <span className="hidden sm:inline">Créer un admin</span>
+        </button>
+      </div>
+
+      {/* Modal création admin */}
+      {showCreateAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div 
+            className="w-full max-w-md rounded-xl p-6 transition-colors duration-300"
+            style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold" style={{ color: "var(--admin-text)" }}>
+                Créer un administrateur
+              </h2>
+              <button 
+                onClick={() => setShowCreateAdmin(false)}
+                style={{ color: "var(--admin-text-muted)" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateAdmin} className="space-y-4">
+              {createError && (
+                <div className="p-3 rounded-lg bg-red-500/20 text-red-400 text-sm">
+                  {createError}
+                </div>
+              )}
+              
+              <div>
+                <label 
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--admin-text-secondary)" }}
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={adminForm.email}
+                  onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
+                  required
+                  className="w-full px-3 py-2 rounded-lg transition-colors duration-300"
+                  style={{ 
+                    background: "var(--admin-bg-section)", 
+                    border: "1px solid var(--admin-border)",
+                    color: "var(--admin-text)"
+                  }}
+                  placeholder="admin@exemple.fr"
+                  data-testid="admin-email-input"
+                />
+              </div>
+              
+              <div>
+                <label 
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--admin-text-secondary)" }}
+                >
+                  Mot de passe
+                </label>
+                <input
+                  type="password"
+                  value={adminForm.password}
+                  onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
+                  required
+                  className="w-full px-3 py-2 rounded-lg transition-colors duration-300"
+                  style={{ 
+                    background: "var(--admin-bg-section)", 
+                    border: "1px solid var(--admin-border)",
+                    color: "var(--admin-text)"
+                  }}
+                  placeholder="Min. 8 caractères, majuscule, minuscule, chiffre"
+                  data-testid="admin-password-input"
+                />
+              </div>
+              
+              <div>
+                <label 
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--admin-text-secondary)" }}
+                >
+                  Confirmer le mot de passe
+                </label>
+                <input
+                  type="password"
+                  value={adminForm.confirmPassword}
+                  onChange={(e) => setAdminForm({ ...adminForm, confirmPassword: e.target.value })}
+                  required
+                  className="w-full px-3 py-2 rounded-lg transition-colors duration-300"
+                  style={{ 
+                    background: "var(--admin-bg-section)", 
+                    border: "1px solid var(--admin-border)",
+                    color: "var(--admin-text)"
+                  }}
+                  placeholder="Répétez le mot de passe"
+                  data-testid="admin-confirm-password-input"
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateAdmin(false)}
+                  className="flex-1 px-4 py-2 rounded-lg text-sm transition-colors"
+                  style={{ 
+                    background: "var(--admin-bg-section)", 
+                    color: "var(--admin-text)",
+                    border: "1px solid var(--admin-border)"
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={createLoading}
+                  className="flex-1 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors disabled:opacity-50"
+                  style={{ background: "#ef4444" }}
+                  data-testid="admin-submit-btn"
+                >
+                  {createLoading ? "Création..." : "Créer l'admin"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Filtres */}
       <div 
