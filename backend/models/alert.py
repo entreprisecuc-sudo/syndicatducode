@@ -23,9 +23,10 @@ class AlertStyle(str, Enum):
 
 class AlertTarget(str, Enum):
     """Cibles des alertes"""
-    ALL = "all"
-    COMMERCIAL = "commercial"
-    DEVELOPER = "developer"
+    ALL = "all"                # Tous les membres connectés
+    COMMERCIAL = "commercial"  # Commerciaux uniquement
+    DEVELOPER = "developer"    # Développeurs uniquement
+    PUBLIC = "public"          # Site web public (visiteurs non connectés)
 
 
 class AlertCreate(BaseModel):
