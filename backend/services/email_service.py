@@ -215,3 +215,87 @@ Le Syndicat du Code
     except Exception as e:
         logger.error(f"Erreur envoi email de réactivation: {e}")
         return False
+
+
+def send_application_decision_email(to_email: str, project_title: str, is_accepted: bool, note: str = None) -> bool:
+    """
+    Envoie un email de décision sur une candidature (acceptée ou refusée)
+    
+    Args:
+        to_email: Email du candidat
+        project_title: Titre du projet
+        is_accepted: True si acceptée, False si refusée
+        note: Note optionnelle de l'admin
+    
+    Returns:
+        True si l'envoi a réussi
+    """
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = to_email
+        
+        if is_accepted:
+            msg['Subject'] = f"🎉 Candidature acceptée - {project_title}"
+            status_text = "ACCEPTÉE"
+            status_emoji = "✅"
+            intro_text = "Nous avons le plaisir de vous informer que votre candidature a été retenue !"
+            action_text = f"""
+Un espace projet a été créé pour vous permettre de collaborer avec l'équipe.
+
+👉 Connectez-vous à votre espace membre : {FRONTEND_URL}/connexion
+
+Rendez-vous dans la section "Mes espaces projets" pour commencer à échanger avec l'équipe."""
+        else:
+            msg['Subject'] = f"Candidature non retenue - {project_title}"
+            status_text = "NON RETENUE"
+            status_emoji = "❌"
+            intro_text = "Nous vous remercions de l'intérêt que vous portez à ce projet."
+            action_text = """
+Nous vous encourageons à consulter régulièrement les nouveaux projets disponibles
+sur votre espace membre et à postuler aux opportunités qui correspondent à vos compétences."""
+        
+        note_section = ""
+        if note:
+            note_section = f"""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 MESSAGE DE L'ÉQUIPE :
+
+{note}
+"""
+        
+        body = f"""
+Bonjour,
+
+{intro_text}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{status_emoji} PROJET : {project_title}
+📋 STATUT : {status_text}
+{note_section}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{action_text}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Notre loi. Unis par le code.
+Le Syndicat du Code
+
+Pour toute question, contactez-nous à : contact@syndicatducode.fr
+        """
+        
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+        
+        logger.info(f"Email de décision candidature envoyé à {to_email} (acceptée: {is_accepted})")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Erreur envoi email décision candidature: {e}")
+        return False
