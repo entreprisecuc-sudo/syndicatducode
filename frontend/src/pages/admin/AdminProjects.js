@@ -256,12 +256,14 @@ const AdminProjects = () => {
                 <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 
-                        className="font-semibold text-lg"
+                      <Link 
+                        to={`/syndicat-admin/projets/${project.id}`}
+                        className="font-semibold text-lg hover:underline transition-colors"
                         style={{ color: "var(--admin-text)" }}
+                        data-testid={`project-link-${project.id}`}
                       >
                         {project.title}
-                      </h3>
+                      </Link>
                       <span 
                         className="px-2 py-0.5 rounded text-xs"
                         style={{ background: statusConfig.bg, color: statusConfig.color }}
