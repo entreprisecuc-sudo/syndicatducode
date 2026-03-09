@@ -316,6 +316,20 @@ const AdminProjects = () => {
                   
                   {/* Actions */}
                   <div className="flex items-center gap-2">
+                    {/* Lien vers candidatures */}
+                    <Link
+                      to={`/syndicat-admin/projets/${project.id}`}
+                      className="p-2 rounded-lg bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors flex items-center gap-1"
+                      title="Voir les candidatures"
+                      data-testid={`view-applications-${project.id}`}
+                    >
+                      <Users size={16} />
+                      <span className="text-xs hidden sm:inline">
+                        {project.applications_count || 0}
+                      </span>
+                      <ChevronRight size={14} />
+                    </Link>
+                    
                     {/* Changer statut */}
                     <select
                       value={project.status}
