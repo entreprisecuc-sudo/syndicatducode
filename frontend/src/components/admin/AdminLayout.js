@@ -226,6 +226,7 @@ const AdminLayout = ({ children }) => {
         <div className="absolute bottom-16 left-0 right-0 px-4">
           <Link
             to="/"
+            title="Retourner sur le site public Le Syndicat du Code"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors hover:opacity-80"
             style={{ color: currentTheme.textSecondary }}
           >
@@ -241,6 +242,7 @@ const AdminLayout = ({ children }) => {
         >
           <button
             onClick={handleLogout}
+            title="Se déconnecter de l'espace administration"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors"
             style={{ color: currentTheme.accent }}
           >
