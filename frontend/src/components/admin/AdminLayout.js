@@ -14,41 +14,91 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useAdminTheme } from "@/context/AdminThemeContext";
 
-// Menu admin organisé en sections
+// Menu admin organisé en sections avec descriptions pour les tooltips
 const ADMIN_MENU_SECTIONS = [
   {
     title: "Tableau de bord",
     items: [
-      { path: "/syndicat-admin", label: "Vue d'ensemble", icon: BarChart3 }
+      { 
+        path: "/syndicat-admin", 
+        label: "Vue d'ensemble", 
+        icon: BarChart3,
+        description: "Statistiques globales et indicateurs clés de la plateforme"
+      }
     ]
   },
   {
     title: "Utilisateurs",
     items: [
-      { path: "/syndicat-admin/utilisateurs", label: "Gestion utilisateurs", icon: Users },
-      { path: "/syndicat-admin/contacts", label: "Demandes contact", icon: FileText }
+      { 
+        path: "/syndicat-admin/utilisateurs", 
+        label: "Gestion utilisateurs", 
+        icon: Users,
+        description: "Gérer les comptes membres : développeurs, commerciaux et admins"
+      },
+      { 
+        path: "/syndicat-admin/contacts", 
+        label: "Demandes contact", 
+        icon: FileText,
+        description: "Consulter et traiter les demandes de contact du formulaire"
+      }
     ]
   },
   {
     title: "Contenus",
     items: [
-      { path: "/syndicat-admin/projets", label: "Projets", icon: Rocket },
-      { path: "/syndicat-admin/annonces", label: "Annonces", icon: Megaphone },
-      { path: "/syndicat-admin/alertes", label: "Alertes", icon: Bell },
-      { path: "/syndicat-admin/partenaires", label: "Partenaires", icon: Handshake },
-      { path: "/syndicat-admin/validation-books", label: "Validation Books", icon: BookCheck }
+      { 
+        path: "/syndicat-admin/projets", 
+        label: "Projets", 
+        icon: Rocket,
+        description: "Créer et gérer les projets, traiter les candidatures"
+      },
+      { 
+        path: "/syndicat-admin/annonces", 
+        label: "Annonces", 
+        icon: Megaphone,
+        description: "Publier des annonces et actualités pour les membres"
+      },
+      { 
+        path: "/syndicat-admin/alertes", 
+        label: "Alertes", 
+        icon: Bell,
+        description: "Créer des alertes et popups pour les membres ou visiteurs"
+      },
+      { 
+        path: "/syndicat-admin/partenaires", 
+        label: "Partenaires", 
+        icon: Handshake,
+        description: "Gérer les partenaires et leurs logos affichés sur le site"
+      },
+      { 
+        path: "/syndicat-admin/validation-books", 
+        label: "Validation Books", 
+        icon: BookCheck,
+        description: "Valider ou refuser les portfolios soumis par les développeurs"
+      }
     ]
   },
   {
     title: "Abonnements",
     items: [
-      { path: "/syndicat-admin/abonnements", label: "Gestion forfaits", icon: CreditCard }
+      { 
+        path: "/syndicat-admin/abonnements", 
+        label: "Gestion forfaits", 
+        icon: CreditCard,
+        description: "Configurer les forfaits d'abonnement et suivre les paiements"
+      }
     ]
   },
   {
     title: "Système",
     items: [
-      { path: "/syndicat-admin/logs", label: "Historique actions", icon: History }
+      { 
+        path: "/syndicat-admin/logs", 
+        label: "Historique actions", 
+        icon: History,
+        description: "Consulter l'historique des actions administratives"
+      }
     ]
   }
 ];
