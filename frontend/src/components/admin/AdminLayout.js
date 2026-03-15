@@ -205,6 +205,7 @@ const AdminLayout = ({ children }) => {
                       key={item.path}
                       to={item.path}
                       onClick={() => setSidebarOpen(false)}
+                      title={item.description}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
                       style={{ 
                         background: isActive ? currentTheme.bgSection : "transparent",
