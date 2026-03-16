@@ -7,7 +7,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
-  ArrowLeft, User, History, FileText, Briefcase, CreditCard, Loader2
+  ArrowLeft, User, History, FileText, Briefcase, CreditCard, Loader2, Receipt
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useAdminTheme } from "@/context/AdminThemeContext";
@@ -23,10 +23,12 @@ import {
   SubscriptionTab, 
   DocumentsTab 
 } from "@/components/admin/userDetail";
+import BillingTab from "@/components/admin/userDetail/BillingTab";
 
 // Onglets disponibles
 const TABS = [
   { id: "profile", label: "Profil", icon: User },
+  { id: "billing", label: "Factures", icon: Receipt },
   { id: "history", label: "Historique", icon: History },
   { id: "documents", label: "Documents", icon: FileText },
   { id: "book", label: "Book", icon: Briefcase },
