@@ -157,6 +157,10 @@ function App() {
                 path="/espace-commercial/partenaires" 
                 element={<RoleRoute allowedRoles={["commercial"]}><MemberPartners /></RoleRoute>} 
               />
+              <Route 
+                path="/espace-commercial/facturation" 
+                element={<RoleRoute allowedRoles={["commercial"]}><MemberBilling /></RoleRoute>} 
+              />
 
               {/* ============================================ */}
               {/* ESPACE DÉVELOPPEUR */}
