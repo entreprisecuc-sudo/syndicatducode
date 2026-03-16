@@ -67,8 +67,9 @@ import {
 import AdminProjectRooms from "@/pages/admin/AdminProjectRooms";
 import AdminProjectRoomDetail from "@/pages/admin/AdminProjectRoomDetail";
 
-// Page partagée (tous les membres)
+// Pages partagées (tous les membres)
 import MemberPartners from "@/pages/shared/MemberPartners";
+import MemberBilling from "@/pages/shared/MemberBilling";
 
 // Composants de layout
 import Navigation from "@/components/layout/Navigation";
