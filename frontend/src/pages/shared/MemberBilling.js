@@ -533,7 +533,7 @@ const MemberBilling = () => {
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
-          onClick={() => setViewModal({ open: false, invoice: null })}
+          onClick={closeViewModal}
         >
           <div 
             className="relative w-full max-w-4xl h-[85vh] rounded-xl overflow-hidden"
@@ -563,7 +563,7 @@ const MemberBilling = () => {
                   Télécharger
                 </button>
                 <button
-                  onClick={() => setViewModal({ open: false, invoice: null })}
+                  onClick={closeViewModal}
                   className="p-2 rounded-lg transition-colors hover:bg-gray-200"
                   style={{ color: "var(--text-muted)" }}
                 >
@@ -572,14 +572,26 @@ const MemberBilling = () => {
               </div>
             </div>
             
-            {/* Contenu - iframe pour PDF */}
+            {/* Contenu */}
             <div className="h-[calc(85vh-80px)]">
-              {viewModal.invoice.file_name?.toLowerCase().endsWith('.pdf') ? (
-                <iframe
-                  src={`${API_URL}/invoices/file/${viewModal.invoice.id}?token=${getToken()}`}
-                  className="w-full h-full"
-                  title="Visualisation facture"
-                />
+              {viewModal.loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 size={48} className="animate-spin" style={{ color: "var(--sage)" }} />
+                </div>
+              ) : viewModal.invoice.file_name?.toLowerCase().endsWith('.pdf') ? (
+                viewModal.pdfUrl ? (
+                  <iframe
+                    src={viewModal.pdfUrl}
+                    className="w-full h-full"
+                    title="Visualisation facture"
+                    style={{ border: "none" }}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                    <AlertCircle size={64} style={{ color: "#ef4444" }} className="mb-4" />
+                    <p style={{ color: "var(--text-primary)" }}>Erreur lors du chargement du PDF</p>
+                  </div>
+                )
               ) : (
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                   <FileText size={64} style={{ color: "var(--sage)" }} className="mb-4" />
