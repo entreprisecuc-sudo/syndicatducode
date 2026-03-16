@@ -64,6 +64,8 @@ import {
   AdminPortfolioValidation,
   AdminUserDetail
 } from "@/pages/admin";
+import AdminProjectRooms from "@/pages/admin/AdminProjectRooms";
+import AdminProjectRoomDetail from "@/pages/admin/AdminProjectRoomDetail";
 
 // Page partagée (tous les membres)
 import MemberPartners from "@/pages/shared/MemberPartners";
