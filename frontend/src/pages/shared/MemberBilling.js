@@ -24,12 +24,11 @@ const STATUS_CONFIG = {
 // Fonction pour télécharger un fichier avec authentification
 const downloadInvoiceFile = async (invoiceId, fileName) => {
   const token = getToken();
-  const url = `${API_URL}/invoices/file/${invoiceId}?token=${token}`;
+  // download=true pour forcer le téléchargement
+  const url = `${API_URL}/invoices/file/${invoiceId}?token=${token}&download=true`;
   
   try {
-    const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await fetch(url);
     const blob = await response.blob();
     const downloadUrl = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
