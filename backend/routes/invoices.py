@@ -12,7 +12,8 @@ import uuid
 import os
 import logging
 
-from middleware.auth import get_current_user, RoleChecker, verify_token
+from middleware.auth import get_current_user, RoleChecker
+from services.auth_service import decode_access_token
 from models.invoice import (
     BillingAmountUpdate, 
     InvoiceCreate, 
