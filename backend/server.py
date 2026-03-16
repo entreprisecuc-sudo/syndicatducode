@@ -297,6 +297,11 @@ async def startup_event():
     await db.project_rooms.create_index("members.user_id")
     await db.project_notes.create_index("room_id")
     await db.project_messages.create_index([("room_id", 1), ("created_at", -1)])
+    # Index pour les factures
+    await db.invoices.create_index("id", unique=True)
+    await db.invoices.create_index("user_id")
+    await db.invoices.create_index([("user_id", 1), ("status", 1)])
+    await db.user_billing.create_index("user_id", unique=True)
     logger.info("Indexes créés pour toutes les collections")
 
 
