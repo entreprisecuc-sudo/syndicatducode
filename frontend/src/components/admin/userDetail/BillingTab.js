@@ -48,14 +48,6 @@ const openInvoiceFile = async (invoiceId, download = false) => {
   }
 };
 
-// Configuration des statuts
-const STATUS_CONFIG = {
-  pending: { label: "En attente", color: "#f59e0b", bg: "#f59e0b20", icon: Clock },
-  validated: { label: "Validée", color: "#3b82f6", bg: "#3b82f620", icon: Eye },
-  paid: { label: "Payée", color: "#10b981", bg: "#10b98120", icon: CheckCircle },
-  rejected: { label: "Rejetée", color: "#ef4444", bg: "#ef444420", icon: XCircle }
-};
-
 const BillingTab = ({ userId, userEmail }) => {
   const [loading, setLoading] = useState(true);
   const [billingInfo, setBillingInfo] = useState(null);
