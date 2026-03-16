@@ -235,6 +235,14 @@ function App() {
                 element={<RoleRoute allowedRoles={["admin"]}><AdminProjectDetail /></RoleRoute>} 
               />
               <Route 
+                path="/syndicat-admin/espaces-projets" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminProjectRooms /></RoleRoute>} 
+              />
+              <Route 
+                path="/syndicat-admin/espace-projet/:roomId" 
+                element={<RoleRoute allowedRoles={["admin"]}><AdminProjectRoomDetail /></RoleRoute>} 
+              />
+              <Route 
                 path="/syndicat-admin/annonces" 
                 element={<RoleRoute allowedRoles={["admin"]}><AdminAnnouncements /></RoleRoute>} 
               />
