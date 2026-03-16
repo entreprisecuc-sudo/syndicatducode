@@ -72,16 +72,15 @@ async def get_invoice_file(
         )
     
     # Vérifier le token
-    try:
-        current_user = verify_token(auth_token)
-    except Exception:
+    payload = decode_access_token(auth_token)
+    if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token invalide"
+            detail="Token invalide ou expiré"
         )
     
-    user_id = current_user["sub"]
-    user_role = current_user.get("role")
+    user_id = payload.get("sub")
+    user_role = payload.get("role")
     
     # Récupérer la facture
     invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
