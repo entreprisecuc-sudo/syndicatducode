@@ -169,8 +169,26 @@ const AdminProjectDetail = () => {
           <ArrowLeft size={18} />
           Retour aux projets
         </Link>
-        <h1 className="text-2xl font-bold text-white">{project.title}</h1>
-        <p className="text-gray-400 mt-2">{project.description}</p>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white">{project.title}</h1>
+            <p className="text-gray-400 mt-2">{project.description}</p>
+          </div>
+          
+          {/* Bouton accès espace projet */}
+          {projectRoom && (
+            <Link
+              to={`/syndicat-admin/espace-projet/${projectRoom.id}`}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-white font-medium transition-colors hover:opacity-90"
+              style={{ background: "var(--admin-accent)" }}
+              data-testid="access-project-room-btn"
+            >
+              <MessageSquare size={18} />
+              Accéder à l'espace projet
+              <ExternalLink size={16} />
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Modal de décision */}
