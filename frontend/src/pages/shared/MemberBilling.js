@@ -420,7 +420,7 @@ const MemberBilling = () => {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4">
                     <p className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
                       {formatCurrency(invoice.amount)}
                     </p>
@@ -433,7 +433,7 @@ const MemberBilling = () => {
                     </span>
                     {/* Visualiser */}
                     <a
-                      href={`${API_URL}${invoice.file_url}`}
+                      href={`${API_URL}/invoices/file/${invoice.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-lg transition-colors hover:bg-gray-100 flex items-center gap-1"
@@ -444,7 +444,7 @@ const MemberBilling = () => {
                     </a>
                     {/* Télécharger */}
                     <a
-                      href={`${API_URL}${invoice.file_url}`}
+                      href={`${API_URL}/invoices/file/${invoice.id}`}
                       download={invoice.file_name}
                       className="p-2 rounded-lg transition-colors hover:bg-gray-100"
                       style={{ color: "var(--sage)" }}
