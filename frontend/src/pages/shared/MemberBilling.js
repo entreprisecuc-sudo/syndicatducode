@@ -487,7 +487,7 @@ const MemberBilling = () => {
                     </span>
                     {/* Visualiser */}
                     <button
-                      onClick={() => setViewModal({ open: true, invoice })}
+                      onClick={() => openViewModal(invoice)}
                       className="p-2 rounded-lg transition-colors hover:bg-gray-100 flex items-center gap-1"
                       style={{ color: "var(--sage)" }}
                       title="Visualiser"
