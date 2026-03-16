@@ -21,33 +21,27 @@ const STATUS_CONFIG = {
   rejected: { label: "Rejetée", color: "#ef4444", bg: "#ef444420", icon: XCircle }
 };
 
-// Fonction pour ouvrir/télécharger un fichier avec authentification
-const openInvoiceFile = async (invoiceId, download = false) => {
+// Fonction pour télécharger un fichier avec authentification
+const downloadInvoiceFile = async (invoiceId, fileName) => {
   const token = getToken();
   const url = `${API_URL}/invoices/file/${invoiceId}?token=${token}`;
   
-  if (download) {
-    // Télécharger via fetch avec token
-    try {
-      const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = `facture_${invoiceId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(downloadUrl);
-      a.remove();
-    } catch (err) {
-      console.error("Erreur téléchargement:", err);
-      alert("Erreur lors du téléchargement");
-    }
-  } else {
-    // Ouvrir dans un nouvel onglet
-    window.open(url, '_blank');
+  try {
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = fileName || `facture_${invoiceId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(downloadUrl);
+    a.remove();
+  } catch (err) {
+    console.error("Erreur téléchargement:", err);
+    alert("Erreur lors du téléchargement");
   }
 };
 
@@ -64,6 +58,9 @@ const MemberBilling = () => {
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
+  
+  // Modal de visualisation
+  const [viewModal, setViewModal] = useState({ open: false, invoice: null });
 
   useEffect(() => {
     fetchBillingInfo();
