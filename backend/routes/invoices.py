@@ -5,6 +5,7 @@ Routes de gestion des factures
 """
 
 from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from datetime import datetime, timezone
 from typing import Optional
 import uuid
@@ -38,6 +39,67 @@ def set_database(database):
     db = database
     # Créer le dossier uploads si nécessaire
     os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+# ============================================
+# ROUTE - TÉLÉCHARGER/VISUALISER UNE FACTURE
+# ============================================
+
+@router.get("/file/{invoice_id}")
+async def get_invoice_file(
+    invoice_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Télécharger/Visualiser un fichier de facture
+    - L'utilisateur peut voir ses propres factures
+    - L'admin peut voir toutes les factures
+    """
+    user_id = current_user["sub"]
+    user_role = current_user.get("role")
+    
+    # Récupérer la facture
+    invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    
+    if not invoice:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Facture non trouvée"
+        )
+    
+    # Vérifier les droits d'accès
+    if user_role != "admin" and invoice.get("user_id") != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Accès non autorisé"
+        )
+    
+    # Construire le chemin du fichier
+    file_url = invoice.get("file_url", "")
+    file_name = file_url.split("/")[-1] if file_url else ""
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Fichier non trouvé"
+        )
+    
+    # Déterminer le type de contenu
+    ext = os.path.splitext(file_name)[1].lower()
+    media_types = {
+        ".pdf": "application/pdf",
+        ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ".xls": "application/vnd.ms-excel"
+    }
+    media_type = media_types.get(ext, "application/octet-stream")
+    
+    # Retourner le fichier
+    return FileResponse(
+        path=file_path,
+        media_type=media_type,
+        filename=invoice.get("file_name", file_name)
+    )
 
 
 # ============================================
