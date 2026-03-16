@@ -340,16 +340,29 @@ const BillingTab = ({ userId, userEmail }) => {
                       );
                     })}
 
-                    {/* Télécharger */}
+                    {/* Visualiser */}
                     <a
                       href={`${API_URL}${invoice.file_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="ml-auto p-2 rounded-lg transition-colors hover:opacity-80"
+                      className="p-2 rounded-lg transition-colors hover:opacity-80 flex items-center gap-1"
+                      style={{ background: "var(--admin-bg-section)", color: "var(--admin-text)" }}
+                      title="Visualiser la facture"
+                    >
+                      <Eye size={16} />
+                      <span className="text-xs hidden sm:inline">Voir</span>
+                    </a>
+
+                    {/* Télécharger */}
+                    <a
+                      href={`${API_URL}${invoice.file_url}`}
+                      download={invoice.file_name}
+                      className="p-2 rounded-lg transition-colors hover:opacity-80 flex items-center gap-1"
                       style={{ background: "var(--admin-bg-section)", color: "var(--admin-accent)" }}
-                      title="Télécharger"
+                      title="Télécharger la facture"
                     >
                       <Download size={16} />
+                      <span className="text-xs hidden sm:inline">Télécharger</span>
                     </a>
 
                     {/* Supprimer */}
