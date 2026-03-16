@@ -8,9 +8,45 @@ import {
   Euro, FileText, CheckCircle, XCircle, Clock, Eye, 
   Loader2, Download, Trash2, Edit2, Save, X
 } from "lucide-react";
-import { getAuthHeaders } from "@/services/authService";
+import { getAuthHeaders, getToken } from "@/services/authService";
 import { API_URL } from "@/config/constants";
 import axios from "axios";
+
+// Configuration des statuts
+const STATUS_CONFIG = {
+  pending: { label: "En attente", color: "#f59e0b", bg: "#f59e0b20", icon: Clock },
+  validated: { label: "Validée", color: "#3b82f6", bg: "#3b82f620", icon: Eye },
+  paid: { label: "Payée", color: "#10b981", bg: "#10b98120", icon: CheckCircle },
+  rejected: { label: "Rejetée", color: "#ef4444", bg: "#ef444420", icon: XCircle }
+};
+
+// Fonction pour ouvrir/télécharger un fichier avec authentification
+const openInvoiceFile = async (invoiceId, download = false) => {
+  const token = getToken();
+  const url = `${API_URL}/invoices/file/${invoiceId}?token=${token}`;
+  
+  if (download) {
+    try {
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `facture_${invoiceId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+      a.remove();
+    } catch (err) {
+      console.error("Erreur téléchargement:", err);
+      alert("Erreur lors du téléchargement");
+    }
+  } else {
+    window.open(url, '_blank');
+  }
+};
 
 // Configuration des statuts
 const STATUS_CONFIG = {
