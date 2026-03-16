@@ -41,21 +41,47 @@ def set_database(database):
     os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
-// ============================================
-// ROUTE - TÉLÉCHARGER/VISUALISER UNE FACTURE
-// ============================================
+# ============================================
+# ROUTE - TÉLÉCHARGER/VISUALISER UNE FACTURE
+# ============================================
+
+from fastapi import Query, Request
+from middleware.auth import verify_token
 
 @router.get("/file/{invoice_id}")
 async def get_invoice_file(
     invoice_id: str,
-    token: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    request: Request,
+    token: Optional[str] = Query(None, description="Token d'authentification")
 ):
     """
     Télécharger/Visualiser un fichier de facture
     - L'utilisateur peut voir ses propres factures
     - L'admin peut voir toutes les factures
+    - Accepte le token via query param ou header Authorization
     """
+    # Récupérer le token depuis query param ou header
+    auth_token = token
+    if not auth_token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            auth_token = auth_header[7:]
+    
+    if not auth_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token d'authentification requis"
+        )
+    
+    # Vérifier le token
+    try:
+        current_user = verify_token(auth_token)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token invalide"
+        )
+    
     user_id = current_user["sub"]
     user_role = current_user.get("role")
     
