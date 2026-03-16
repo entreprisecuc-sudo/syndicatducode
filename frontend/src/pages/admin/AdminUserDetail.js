@@ -166,6 +166,10 @@ const AdminUserDetail = () => {
           <ProfileTab user={user} profile={profile} />
         )}
         
+        {activeTab === "billing" && (
+          <BillingTab userId={userId} userEmail={user?.email} />
+        )}
+        
         {activeTab === "history" && (
           <HistoryTab activity={activity} loading={activityLoading} />
         )}
