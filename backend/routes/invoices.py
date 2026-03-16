@@ -50,13 +50,15 @@ def set_database(database):
 async def get_invoice_file(
     invoice_id: str,
     request: Request,
-    token: Optional[str] = Query(None, description="Token d'authentification")
+    token: Optional[str] = Query(None, description="Token d'authentification"),
+    download: bool = Query(False, description="Forcer le téléchargement")
 ):
     """
     Télécharger/Visualiser un fichier de facture
     - L'utilisateur peut voir ses propres factures
     - L'admin peut voir toutes les factures
     - Accepte le token via query param ou header Authorization
+    - download=true pour télécharger, download=false pour visualiser
     """
     # Récupérer le token depuis query param ou header
     auth_token = token
@@ -118,11 +120,27 @@ async def get_invoice_file(
     }
     media_type = media_types.get(ext, "application/octet-stream")
     
-    # Retourner le fichier
-    return FileResponse(
-        path=file_path,
+    # Lire le fichier
+    with open(file_path, "rb") as f:
+        file_content = f.read()
+    
+    # Définir les en-têtes
+    original_filename = invoice.get("file_name", file_name)
+    
+    if download:
+        # Téléchargement : Content-Disposition: attachment
+        content_disposition = f'attachment; filename="{original_filename}"'
+    else:
+        # Visualisation : Content-Disposition: inline
+        content_disposition = f'inline; filename="{original_filename}"'
+    
+    return Response(
+        content=file_content,
         media_type=media_type,
-        filename=invoice.get("file_name", file_name)
+        headers={
+            "Content-Disposition": content_disposition,
+            "Content-Length": str(len(file_content))
+        }
     )
 
 
