@@ -460,7 +460,7 @@ const MemberBilling = () => {
                     </span>
                     {/* Visualiser */}
                     <button
-                      onClick={() => openInvoiceFile(invoice.id, false)}
+                      onClick={() => setViewModal({ open: true, invoice })}
                       className="p-2 rounded-lg transition-colors hover:bg-gray-100 flex items-center gap-1"
                       style={{ color: "var(--sage)" }}
                       title="Visualiser"
@@ -469,7 +469,7 @@ const MemberBilling = () => {
                     </button>
                     {/* Télécharger */}
                     <button
-                      onClick={() => openInvoiceFile(invoice.id, true)}
+                      onClick={() => downloadInvoiceFile(invoice.id, invoice.file_name)}
                       className="p-2 rounded-lg transition-colors hover:bg-gray-100"
                       style={{ color: "var(--sage)" }}
                       title="Télécharger"
