@@ -396,7 +396,7 @@ const BillingTab = ({ userId, userEmail }) => {
 
                     {/* Visualiser */}
                     <button
-                      onClick={() => setViewModal({ open: true, invoice })}
+                      onClick={() => openViewModal(invoice)}
                       className="ml-auto p-2 rounded-lg transition-colors hover:opacity-80 flex items-center gap-1"
                       style={{ background: "var(--admin-bg-section)", color: "var(--admin-text)" }}
                       title="Visualiser la facture"
