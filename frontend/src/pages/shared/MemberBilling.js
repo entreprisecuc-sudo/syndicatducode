@@ -500,6 +500,82 @@ const MemberBilling = () => {
           </ol>
         </div>
       </div>
+
+      {/* Modal de visualisation de facture */}
+      {viewModal.open && viewModal.invoice && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
+          onClick={() => setViewModal({ open: false, invoice: null })}
+        >
+          <div 
+            className="relative w-full max-w-4xl h-[85vh] rounded-xl overflow-hidden"
+            style={{ background: "var(--bg-card)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header de la modale */}
+            <div 
+              className="flex items-center justify-between p-4 border-b"
+              style={{ borderColor: "var(--border-color)", background: "var(--bg-section)" }}
+            >
+              <div>
+                <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                  {viewModal.invoice.invoice_number || "Facture"}
+                </h3>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                  {viewModal.invoice.file_name}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => downloadInvoiceFile(viewModal.invoice.id, viewModal.invoice.file_name)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-white"
+                  style={{ background: "var(--sage)" }}
+                >
+                  <Download size={18} />
+                  Télécharger
+                </button>
+                <button
+                  onClick={() => setViewModal({ open: false, invoice: null })}
+                  className="p-2 rounded-lg transition-colors hover:bg-gray-200"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+            
+            {/* Contenu - iframe pour PDF */}
+            <div className="h-[calc(85vh-80px)]">
+              {viewModal.invoice.file_name?.toLowerCase().endsWith('.pdf') ? (
+                <iframe
+                  src={`${API_URL}/invoices/file/${viewModal.invoice.id}?token=${getToken()}`}
+                  className="w-full h-full"
+                  title="Visualisation facture"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                  <FileText size={64} style={{ color: "var(--sage)" }} className="mb-4" />
+                  <h4 className="text-lg font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                    Fichier Excel
+                  </h4>
+                  <p className="mb-4" style={{ color: "var(--text-muted)" }}>
+                    Les fichiers Excel ne peuvent pas être prévisualisés directement.
+                  </p>
+                  <button
+                    onClick={() => downloadInvoiceFile(viewModal.invoice.id, viewModal.invoice.file_name)}
+                    className="flex items-center gap-2 px-6 py-3 rounded-lg text-white"
+                    style={{ background: "var(--sage)" }}
+                  >
+                    <Download size={20} />
+                    Télécharger le fichier
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };
