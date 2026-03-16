@@ -41,13 +41,14 @@ def set_database(database):
     os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
-# ============================================
-# ROUTE - TÉLÉCHARGER/VISUALISER UNE FACTURE
-# ============================================
+// ============================================
+// ROUTE - TÉLÉCHARGER/VISUALISER UNE FACTURE
+// ============================================
 
 @router.get("/file/{invoice_id}")
 async def get_invoice_file(
     invoice_id: str,
+    token: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """
