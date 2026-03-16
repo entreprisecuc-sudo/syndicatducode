@@ -45,9 +45,6 @@ def set_database(database):
 # ROUTE - TÉLÉCHARGER/VISUALISER UNE FACTURE
 # ============================================
 
-from fastapi import Query, Request
-from middleware.auth import verify_token
-
 @router.get("/file/{invoice_id}")
 async def get_invoice_file(
     invoice_id: str,
