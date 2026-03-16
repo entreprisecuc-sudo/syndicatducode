@@ -209,7 +209,7 @@ async def submit_invoice(
     if file_ext not in allowed_extensions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Format non autorisé. Formats acceptés: PDF, Excel (.xlsx, .xls)"
+            detail="Format non autorisé. Formats acceptés: PDF, Excel (.xlsx, .xls)"
         )
     
     # Vérifier la taille (max 10 Mo)
