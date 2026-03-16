@@ -6,7 +6,7 @@
 import { useState, useEffect, useRef } from "react";
 import { 
   FileText, Upload, Euro, Clock, CheckCircle, 
-  XCircle, Eye, Loader2, AlertCircle, Download
+  XCircle, Eye, Loader2, AlertCircle, Download, X
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { getAuthHeaders, getToken } from "@/services/authService";
