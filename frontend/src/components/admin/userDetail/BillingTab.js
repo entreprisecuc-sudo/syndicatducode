@@ -369,7 +369,7 @@ const BillingTab = ({ userId, userEmail }) => {
 
                     {/* Visualiser */}
                     <button
-                      onClick={() => openInvoiceFile(invoice.id, false)}
+                      onClick={() => setViewModal({ open: true, invoice })}
                       className="ml-auto p-2 rounded-lg transition-colors hover:opacity-80 flex items-center gap-1"
                       style={{ background: "var(--admin-bg-section)", color: "var(--admin-text)" }}
                       title="Visualiser la facture"
@@ -380,7 +380,7 @@ const BillingTab = ({ userId, userEmail }) => {
 
                     {/* Télécharger */}
                     <button
-                      onClick={() => openInvoiceFile(invoice.id, true)}
+                      onClick={() => downloadInvoiceFile(invoice.id, invoice.file_name)}
                       className="p-2 rounded-lg transition-colors hover:opacity-80 flex items-center gap-1"
                       style={{ background: "var(--admin-bg-section)", color: "var(--admin-accent)" }}
                       title="Télécharger la facture"
