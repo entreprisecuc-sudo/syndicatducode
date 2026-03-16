@@ -462,26 +462,23 @@ const MemberBilling = () => {
                       {statusConfig.label}
                     </span>
                     {/* Visualiser */}
-                    <a
-                      href={`${API_URL}/invoices/file/${invoice.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => openInvoiceFile(invoice.id, false)}
                       className="p-2 rounded-lg transition-colors hover:bg-gray-100 flex items-center gap-1"
                       style={{ color: "var(--sage)" }}
                       title="Visualiser"
                     >
                       <Eye size={18} />
-                    </a>
+                    </button>
                     {/* Télécharger */}
-                    <a
-                      href={`${API_URL}/invoices/file/${invoice.id}`}
-                      download={invoice.file_name}
+                    <button
+                      onClick={() => openInvoiceFile(invoice.id, true)}
                       className="p-2 rounded-lg transition-colors hover:bg-gray-100"
                       style={{ color: "var(--sage)" }}
                       title="Télécharger"
                     >
                       <Download size={18} />
-                    </a>
+                    </button>
                   </div>
                 </div>
               );
