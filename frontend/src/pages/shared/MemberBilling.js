@@ -580,12 +580,28 @@ const MemberBilling = () => {
                 </div>
               ) : viewModal.invoice.file_name?.toLowerCase().endsWith('.pdf') ? (
                 viewModal.pdfUrl ? (
-                  <iframe
-                    src={viewModal.pdfUrl}
+                  <object
+                    data={viewModal.pdfUrl}
+                    type="application/pdf"
                     className="w-full h-full"
-                    title="Visualisation facture"
                     style={{ border: "none" }}
-                  />
+                  >
+                    <embed 
+                      src={viewModal.pdfUrl} 
+                      type="application/pdf"
+                      className="w-full h-full"
+                    />
+                    <p className="p-4 text-center" style={{ color: "var(--text-muted)" }}>
+                      Votre navigateur ne supporte pas l'affichage des PDF.
+                      <button
+                        onClick={() => downloadInvoiceFile(viewModal.invoice.id, viewModal.invoice.file_name)}
+                        className="ml-2 underline"
+                        style={{ color: "var(--sage)" }}
+                      >
+                        Télécharger le fichier
+                      </button>
+                    </p>
+                  </object>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                     <AlertCircle size={64} style={{ color: "#ef4444" }} className="mb-4" />
