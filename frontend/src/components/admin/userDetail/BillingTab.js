@@ -345,7 +345,7 @@ const BillingTab = ({ userId, userEmail }) => {
                       href={`${API_URL}${invoice.file_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-lg transition-colors hover:opacity-80 flex items-center gap-1"
+                      className="ml-auto p-2 rounded-lg transition-colors hover:opacity-80 flex items-center gap-1"
                       style={{ background: "var(--admin-bg-section)", color: "var(--admin-text)" }}
                       title="Visualiser la facture"
                     >
