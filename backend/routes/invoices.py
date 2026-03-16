@@ -5,7 +5,7 @@ Routes de gestion des factures
 """
 
 from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File, Form, Query, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from datetime import datetime, timezone
 from typing import Optional
 import uuid
