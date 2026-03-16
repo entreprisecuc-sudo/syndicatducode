@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { 
   ArrowLeft, User, Mail, Calendar, MessageSquare,
-  CheckCircle, XCircle, Clock, Eye, X, Loader2, Send
+  CheckCircle, XCircle, Clock, Eye, X, Loader2, Send, ExternalLink
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { getAuthHeaders } from "@/services/authService";
@@ -26,6 +26,7 @@ const AdminProjectDetail = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
+  const [projectRoom, setProjectRoom] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
@@ -38,6 +39,7 @@ const AdminProjectDetail = () => {
 
   useEffect(() => {
     fetchProject();
+    fetchProjectRoom();
   }, [projectId]);
 
   const fetchProject = async () => {
@@ -51,6 +53,18 @@ const AdminProjectDetail = () => {
       setError("Projet non trouvé");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProjectRoom = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/project-rooms/by-project/${projectId}`, {
+        headers: getAuthHeaders()
+      });
+      setProjectRoom(response.data);
+    } catch (err) {
+      // Pas d'espace projet, c'est normal si aucune candidature n'a été acceptée
+      setProjectRoom(null);
     }
   };
 
