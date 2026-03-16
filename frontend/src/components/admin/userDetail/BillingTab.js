@@ -342,7 +342,7 @@ const BillingTab = ({ userId, userEmail }) => {
 
                     {/* Visualiser */}
                     <a
-                      href={`${API_URL}${invoice.file_url}`}
+                      href={`${API_URL}/invoices/file/${invoice.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="ml-auto p-2 rounded-lg transition-colors hover:opacity-80 flex items-center gap-1"
@@ -355,7 +355,7 @@ const BillingTab = ({ userId, userEmail }) => {
 
                     {/* Télécharger */}
                     <a
-                      href={`${API_URL}${invoice.file_url}`}
+                      href={`${API_URL}/invoices/file/${invoice.id}`}
                       download={invoice.file_name}
                       className="p-2 rounded-lg transition-colors hover:opacity-80 flex items-center gap-1"
                       style={{ background: "var(--admin-bg-section)", color: "var(--admin-accent)" }}
