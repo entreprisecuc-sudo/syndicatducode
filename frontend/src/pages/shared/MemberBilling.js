@@ -59,7 +59,35 @@ const MemberBilling = () => {
   const fileInputRef = useRef(null);
   
   // Modal de visualisation
-  const [viewModal, setViewModal] = useState({ open: false, invoice: null });
+  const [viewModal, setViewModal] = useState({ open: false, invoice: null, pdfUrl: null, loading: false });
+
+  // Fonction pour ouvrir la modale et charger le PDF
+  const openViewModal = async (invoice) => {
+    setViewModal({ open: true, invoice, pdfUrl: null, loading: true });
+    
+    if (invoice.file_name?.toLowerCase().endsWith('.pdf')) {
+      try {
+        const token = getToken();
+        const response = await fetch(`${API_URL}/invoices/file/${invoice.id}?token=${token}`);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        setViewModal(prev => ({ ...prev, pdfUrl: url, loading: false }));
+      } catch (err) {
+        console.error("Erreur chargement PDF:", err);
+        setViewModal(prev => ({ ...prev, loading: false }));
+      }
+    } else {
+      setViewModal(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  // Fermer la modale et libérer l'URL
+  const closeViewModal = () => {
+    if (viewModal.pdfUrl) {
+      window.URL.revokeObjectURL(viewModal.pdfUrl);
+    }
+    setViewModal({ open: false, invoice: null, pdfUrl: null, loading: false });
+  };
 
   useEffect(() => {
     fetchBillingInfo();
