@@ -4,6 +4,8 @@ API FastAPI avec authentification et gestion des contacts
 """
 
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -26,6 +28,9 @@ load_dotenv(ROOT_DIR / '.env')
 # Uploads directory
 UPLOADS_DIR = ROOT_DIR / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
+# Sous-dossier pour les factures
+INVOICES_DIR = UPLOADS_DIR / "invoices"
+INVOICES_DIR.mkdir(exist_ok=True)
 
 # SMTP Configuration
 SMTP_HOST = os.environ.get('SMTP_HOST', '')
