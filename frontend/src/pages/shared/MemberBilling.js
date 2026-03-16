@@ -431,10 +431,21 @@ const MemberBilling = () => {
                       <StatusIcon size={14} />
                       {statusConfig.label}
                     </span>
+                    {/* Visualiser */}
                     <a
                       href={`${API_URL}${invoice.file_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      className="p-2 rounded-lg transition-colors hover:bg-gray-100 flex items-center gap-1"
+                      style={{ color: "var(--sage)" }}
+                      title="Visualiser"
+                    >
+                      <Eye size={18} />
+                    </a>
+                    {/* Télécharger */}
+                    <a
+                      href={`${API_URL}${invoice.file_url}`}
+                      download={invoice.file_name}
                       className="p-2 rounded-lg transition-colors hover:bg-gray-100"
                       style={{ color: "var(--sage)" }}
                       title="Télécharger"
