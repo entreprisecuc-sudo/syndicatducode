@@ -241,6 +241,38 @@ async def admin_get_all_rooms(current_user: dict = Depends(get_current_user)):
 # ROUTES - DÉTAIL D'UN ESPACE
 # ============================================
 
+@router.get("/by-project/{project_id}")
+async def get_project_room_by_project(
+    project_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Récupère l'espace projet associé à un projet (par project_id)
+    Utile pour l'admin qui veut accéder à l'espace depuis la page projet
+    """
+    user_role = current_user.get("role")
+    
+    # Seuls les admins peuvent utiliser cette route
+    if user_role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Accès réservé aux administrateurs"
+        )
+    
+    room = await db.project_rooms.find_one(
+        {"project_id": project_id},
+        {"_id": 0}
+    )
+    
+    if not room:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aucun espace projet pour ce projet"
+        )
+    
+    return room
+
+
 @router.get("/{room_id}")
 async def get_project_room(
     room_id: str,
