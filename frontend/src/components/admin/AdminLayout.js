@@ -54,6 +54,12 @@ const ADMIN_MENU_SECTIONS = [
         description: "Créer et gérer les projets, traiter les candidatures"
       },
       { 
+        path: "/syndicat-admin/espaces-projets", 
+        label: "Espaces Projets", 
+        icon: MessageSquare,
+        description: "Participer aux discussions et gérer les espaces collaboratifs"
+      },
+      { 
         path: "/syndicat-admin/annonces", 
         label: "Annonces", 
         icon: Megaphone,
