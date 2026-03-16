@@ -58,6 +58,9 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# Monter les fichiers statiques (uploads)
+app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
+
 # Router principal
 api_router = APIRouter(prefix="/api")
 
