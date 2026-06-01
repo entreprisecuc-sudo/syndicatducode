@@ -218,53 +218,6 @@ const AdminBackup = () => {
           </p>
         </div>
 
-        {/* Détail par collection */}
-        <div className="rounded-xl overflow-hidden" style={cardStyle}>
-          <div className="px-5 py-4 border-b" style={{ borderColor: currentTheme.border }}>
-            <h3 className="font-semibold" style={{ color: currentTheme.text }}>
-              Détail par collection ({stats?.total_collections ?? "—"})
-            </h3>
-          </div>
-          {loadingStats ? (
-            <div className="p-8 text-center" style={{ color: currentTheme.textMuted }}>
-              Chargement des statistiques...
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ background: currentTheme.bgSection }}>
-                    <th className="text-left px-5 py-3 font-medium" style={{ color: currentTheme.textSecondary }}>
-                      Collection
-                    </th>
-                    <th className="text-right px-5 py-3 font-medium" style={{ color: currentTheme.textSecondary }}>
-                      Documents
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats?.collections.map((item, index) => (
-                    <tr
-                      key={item.collection}
-                      style={{
-                        borderTop: `1px solid ${currentTheme.border}`,
-                        background: index % 2 === 0 ? "transparent" : `${currentTheme.bgSection}50`,
-                      }}
-                    >
-                      <td className="px-5 py-3 font-mono text-sm" style={{ color: currentTheme.text }}>
-                        {item.collection}
-                      </td>
-                      <td className="px-5 py-3 text-right" style={{ color: currentTheme.textSecondary }}>
-                        {item.count.toLocaleString("fr-FR")}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
         {/* Configuration sauvegarde automatique */}
         <div className="rounded-xl p-5" style={cardStyle}>
           <h3 className="font-semibold mb-1 flex items-center gap-2" style={{ color: currentTheme.text }}>
