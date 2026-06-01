@@ -47,5 +47,11 @@ class UserStatus:
     SUSPENDED = "suspended"
     PENDING = "pending"  # En attente de choix de rôle
 
+# Dossiers d'uploads
+UPLOADS_DIR = os.environ.get('UPLOADS_DIR')
+INVOICES_UPLOAD_DIR = f"{UPLOADS_DIR}/invoices"
+PROFILES_UPLOAD_DIR = f"{UPLOADS_DIR}/profiles"
+PORTFOLIO_UPLOAD_DIR = f"{UPLOADS_DIR}/portfolio"
+
 # Règles mot de passe
 PASSWORD_MIN_LENGTH = 8

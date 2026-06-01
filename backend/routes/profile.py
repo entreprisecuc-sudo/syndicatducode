@@ -13,6 +13,7 @@ import os
 import base64
 
 from middleware.auth import get_current_user
+from config.settings import PROFILES_UPLOAD_DIR, PORTFOLIO_UPLOAD_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +22,8 @@ router = APIRouter(prefix="/profile", tags=["Profil"])
 # Variable globale pour la base de données
 db = None
 
-# Dossier pour stocker les photos de profil
-UPLOAD_DIR = "/app/backend/uploads/profiles"
+# Dossiers d'uploads (centralisés via settings.py)
+UPLOAD_DIR = PROFILES_UPLOAD_DIR
 
 def set_database(database):
     """Injecte la connexion à la base de données"""
@@ -313,8 +314,8 @@ async def get_profile_photo(filename: str):
 # PORTFOLIO / BOOK
 # ============================================
 
-# Dossier pour les images du portfolio
-PORTFOLIO_DIR = "/app/backend/uploads/portfolio"
+# Dossier pour les images du portfolio (centralisé via settings.py)
+PORTFOLIO_DIR = PORTFOLIO_UPLOAD_DIR
 os.makedirs(PORTFOLIO_DIR, exist_ok=True)
 
 

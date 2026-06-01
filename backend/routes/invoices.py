@@ -14,6 +14,7 @@ import logging
 
 from middleware.auth import get_current_user, RoleChecker
 from services.auth_service import decode_access_token
+from config.settings import INVOICES_UPLOAD_DIR
 from models.invoice import (
     BillingAmountUpdate, 
     InvoiceCreate, 
@@ -31,8 +32,8 @@ admin_only = RoleChecker(["admin"])
 # Variable globale pour la base de données
 db = None
 
-# Dossier pour stocker les factures
-UPLOAD_DIR = "/app/backend/uploads/invoices"
+# Dossier pour stocker les factures (centralisé via settings.py)
+UPLOAD_DIR = INVOICES_UPLOAD_DIR
 
 def set_database(database):
     """Injecte la connexion à la base de données"""
@@ -490,7 +491,8 @@ async def delete_invoice(
         )
     
     # Supprimer le fichier
-    file_path = f"/app/backend{invoice.get('file_url', '')}"
+    file_name = invoice.get('file_url', '').split("/")[-1]
+    file_path = os.path.join(UPLOAD_DIR, file_name)
     if os.path.exists(file_path):
         os.remove(file_path)
     
