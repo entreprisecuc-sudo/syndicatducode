@@ -9,15 +9,8 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import { API_URL } from "@/config/constants";
 import api from "@/services/api";
+import SkillsSection from "@/components/developer/profile/SkillsSection";
 
-// Technologies disponibles
-const TECHNOLOGIES = [
-  "JavaScript", "TypeScript", "React", "Vue.js", "Angular", "Node.js",
-  "Python", "Django", "FastAPI", "PHP", "Laravel", "Ruby", "Rails",
-  "Java", "Spring", "C#", ".NET", "Go", "Rust",
-  "MongoDB", "PostgreSQL", "MySQL", "Redis",
-  "AWS", "Google Cloud", "Azure", "Docker", "Kubernetes"
-];
 
 const DeveloperProfile = () => {
   const { user } = useAuth();
@@ -641,40 +634,10 @@ const DeveloperProfile = () => {
           </div>
 
           {/* Compétences */}
-          <div 
-            className="p-6 rounded-xl mb-6"
-            style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
-          >
-            <h3 className="font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
-              Compétences techniques
-            </h3>
-            <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
-              Sélectionnez les technologies que vous maîtrisez
-            </p>
-
-            <div className="flex flex-wrap gap-2" data-testid="skills-container">
-              {TECHNOLOGIES.map((tech) => {
-                const isSelected = formData.skills.includes(tech);
-                return (
-                  <button
-                    key={tech}
-                    type="button"
-                    onClick={() => toggleSkill(tech)}
-                    className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-                      isSelected ? "text-white" : ""
-                    }`}
-                    style={{ 
-                      background: isSelected ? "var(--sage)" : "var(--bg-section)",
-                      color: isSelected ? "white" : "var(--text-secondary)"
-                    }}
-                    data-testid={`skill-${tech.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
-                  >
-                    {tech}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <SkillsSection
+            selectedSkills={formData.skills}
+            onToggle={toggleSkill}
+          />
 
           {/* Messages */}
           {error && (

@@ -9,9 +9,11 @@ import { useState, useEffect } from "react";
 import { 
   Users, UserCheck, UserX, Clock, FileText, TrendingUp,
   Rocket, Megaphone, Bell, CreditCard, Handshake, Euro,
-  Mail, CheckCircle, AlertCircle, FolderOpen, ChevronDown, ChevronUp
+  Mail, CheckCircle, AlertCircle, FolderOpen
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import StatCard from "@/components/admin/dashboard/StatCard";
+import CollapsibleSection from "@/components/admin/dashboard/CollapsibleSection";
 import api from "@/services/api";
 
 // Clé localStorage pour les préférences
@@ -48,94 +50,6 @@ const savePrefs = (prefs) => {
   } catch {
     // Ignore les erreurs de localStorage
   }
-};
-
-/**
- * Carte de statistique individuelle
- */
-const StatCard = ({ icon: Icon, label, value, color = "#6366f1", subtext }) => (
-  <div 
-    className="p-4 rounded-xl transition-colors duration-300"
-    style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
-  >
-    <div className="flex items-start justify-between">
-      <div className="flex-1 min-w-0">
-        <p className="text-xs mb-1 truncate" style={{ color: "var(--admin-text-muted)" }}>{label}</p>
-        <p className="text-xl font-bold" style={{ color: "var(--admin-text)" }}>{value}</p>
-        {subtext && (
-          <p className="text-xs mt-1" style={{ color: "var(--admin-text-muted)" }}>{subtext}</p>
-        )}
-      </div>
-      <div 
-        className="p-2 rounded-lg flex-shrink-0 ml-2"
-        style={{ background: `${color}20` }}
-      >
-        <Icon size={18} style={{ color }} />
-      </div>
-    </div>
-  </div>
-);
-
-/**
- * Section collapsible avec titre cliquable
- */
-const CollapsibleSection = ({ 
-  title, 
-  icon, 
-  children, 
-  columns = 5, 
-  isOpen,
-  onToggle,
-  accentColor = "#6366f1",
-  sectionId
-}) => {
-  return (
-    <div 
-      className="mb-4 rounded-xl overflow-hidden transition-all duration-300"
-      style={{ 
-        background: "var(--admin-bg-section)", 
-        border: "1px solid var(--admin-border)" 
-      }}
-    >
-      {/* Header cliquable */}
-      <button
-        onClick={onToggle}
-        className="w-full px-4 py-3 flex items-center justify-between hover:opacity-90 transition-all"
-        style={{ background: `${accentColor}15` }}
-        data-testid={`collapse-${sectionId}`}
-      >
-        <div className="flex items-center gap-3">
-          <span className="text-lg">{icon}</span>
-          <h3 
-            className="font-semibold text-sm uppercase tracking-wide"
-            style={{ color: "var(--admin-text)" }}
-          >
-            {title}
-          </h3>
-        </div>
-        <div 
-          className="p-1.5 rounded-lg transition-transform duration-200"
-          style={{ 
-            background: "var(--admin-bg-card)",
-            transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)"
-          }}
-        >
-          <ChevronDown size={18} style={{ color: "var(--admin-text-secondary)" }} />
-        </div>
-      </button>
-
-      {/* Contenu collapsible */}
-      <div 
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        <div className={`p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-${columns} gap-3`}>
-          {children}
-        </div>
-      </div>
-    </div>
-  );
 };
 
 const AdminDashboard = () => {
