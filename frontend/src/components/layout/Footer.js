@@ -6,8 +6,8 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Code, Briefcase, Loader2 } from "lucide-react";
-import { CONFIG, DEV_MODE, TEST_ACCOUNTS, API_URL } from "@/config/constants";
+import { Shield, Code, Briefcase, Loader2, ExternalLink } from "lucide-react";
+import { CONFIG, DEV_MODE, TEST_ACCOUNTS, API_URL, CITADELLE_URL } from "@/config/constants";
 import { useAuth } from "@/context/AuthContext";
 import { setAuthData } from "@/services/authService";
 import api from "@/services/api";
@@ -110,7 +110,7 @@ const Footer = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           
           {/* Logo & Slogan */}
           <div>
@@ -180,6 +180,37 @@ const Footer = () => {
                 </a>
               </li>
             </ul>
+          </div>
+
+          {/* Notre écosystème */}
+          <div>
+            <h4 
+              className="font-semibold mb-4" 
+              style={{ color: 'var(--text-primary)' }}
+            >
+              Notre écosystème
+            </h4>
+            <a
+              href={CITADELLE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex flex-col gap-2 p-4 rounded-xl transition-all duration-200 hover:scale-105"
+              style={{ 
+                border: "1px solid #C9A45C", 
+                background: "rgba(201, 164, 92, 0.06)",
+                textDecoration: "none"
+              }}
+              data-testid="footer-citadelle"
+            >
+              <span className="flex items-center gap-2 text-sm font-bold" style={{ color: "#C9A45C" }}>
+                <Shield size={16} />
+                La Citadelle Numérique
+                <ExternalLink size={12} style={{ opacity: 0.7 }} />
+              </span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                Achetez. Vendez. Sécurisez.
+              </span>
+            </a>
           </div>
         </div>
         

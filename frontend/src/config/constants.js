@@ -7,6 +7,9 @@
 export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API_URL = `${BACKEND_URL}/api`;
 
+// URL de la plateforme partenaire La Citadelle Numérique
+export const CITADELLE_URL = "https://lacitadellenumerique.fr";
+
 // Email unique du Syndicat
 export const CONFIG = {
   companyName: "Le Syndicat du Code",

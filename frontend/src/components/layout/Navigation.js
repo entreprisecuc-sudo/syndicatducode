@@ -5,10 +5,10 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { X, LogIn } from "lucide-react";
+import { X, LogIn, Shield, ExternalLink } from "lucide-react";
 import { useModal } from "@/context/ModalContext";
 import { useAuth } from "@/context/AuthContext";
-import { CONFIG, NAV_LINKS } from "@/config/constants";
+import { CONFIG, NAV_LINKS, CITADELLE_URL } from "@/config/constants";
 
 const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -101,6 +101,20 @@ const Navigation = () => {
                 </a>
               )
             ))}
+            {/* Lien vers La Citadelle Numérique */}
+            <a
+              href={CITADELLE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105"
+              style={{ border: "1px solid #C9A45C", color: "#C9A45C", background: "transparent" }}
+              data-testid="nav-citadelle"
+            >
+              <Shield size={15} />
+              La Citadelle
+              <ExternalLink size={12} style={{ opacity: 0.7 }} />
+            </a>
+
             <button 
               onClick={openModal} 
               className="btn-primary" 
@@ -184,6 +198,20 @@ const Navigation = () => {
         >
           Devis gratuit
         </button>
+
+        {/* Lien vers La Citadelle Numérique — Menu Mobile */}
+        <a
+          href={CITADELLE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold justify-center transition-all duration-200"
+          style={{ border: "1px solid #C9A45C", color: "#C9A45C", background: "transparent" }}
+          data-testid="nav-citadelle-mobile"
+        >
+          <Shield size={15} />
+          La Citadelle Numérique
+          <ExternalLink size={12} style={{ opacity: 0.7 }} />
+        </a>
         {isAuthenticated ? (
           <Link 
             to={user?.role === "admin" ? "/syndicat-admin" : user?.role === "commercial" ? "/espace-commercial" : "/espace-developpeur"}
