@@ -169,7 +169,24 @@
 - **Solution** : Application de `handleAnchorClick` au menu mobile dans `Navigation.js`
 - **Comportement** : Depuis n'importe quelle page, un clic sur un lien d'ancre redirige vers la page d'accueil puis défile vers la section correspondante
 
-### ✅ Refactoring Phase 2 – Découpage des gros composants Frontend (Phase 21) - 01/06/2026
+### ✅ Pagination Backend + Correction N+1 (Phase 22) - 01/06/2026
+**Objectif** : Paginer les listings admin et public, corriger les requêtes N+1.
+
+**Endpoints paginés (paramètres `?page=N&limit=M`) :**
+| Endpoint | Limite avant | Après | N+1 corrigé |
+|---|---|---|---|
+| `GET /admin/users` | 500 hardcodé | 20/page, 100 max | — |
+| `GET /invoices/admin/all` | 200 hardcodé | 20/page, 100 max | ✅ (batch users + profils) |
+| `GET /projects/admin/list` | 100 hardcodé | 10/page, 50 max | ✅ (agrégation MongoDB) |
+| `GET /members/public` | 50 hardcodé | 12/page, 50 max | ✅ (pagination profils) |
+
+**Réponse enrichie** : `{ items, total, page, limit, total_pages }` pour chaque endpoint.
+
+**Frontend :**
+- Nouveau composant partagé `components/shared/Pagination.js` (55L)
+- `AdminUsers.js` : recherche server-side + debounce 350ms + pagination
+- `AdminProjects.js` : pagination
+- `MembersPage.js` : pagination + scroll to top au changement de page
 **Objectif** : Respecter la règle n°17 (Composants React < 300 lignes). Tous les fichiers > 500L découpés.
 
 **14 nouveaux sous-composants créés + 1 utilitaire :**

@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { Rocket, Plus } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
+import Pagination from "@/components/shared/Pagination";
 import ProjectCard from "@/components/admin/projects/ProjectCard";
 import ProjectFormModal from "@/components/admin/projects/ProjectFormModal";
 
@@ -17,15 +18,32 @@ const AdminProjects = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  const [page, setPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState({ total: 0, totalPages: 1 });
 
-  useEffect(() => { fetchProjects(); }, [filterStatus]);
+  useEffect(() => {
+    setPage(1);
+    fetchProjects(1); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filterStatus]);
 
-  const fetchProjects = async () => {
+  useEffect(() => {
+    fetchProjects(page); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  const fetchProjects = async (p = page) => {
     try {
       setLoading(true);
-      const params = filterStatus ? `?status=${filterStatus}` : "";
-      const response = await api.get(`/projects/admin/list${params}`);
+      const params = new URLSearchParams();
+      if (filterStatus) params.append("status", filterStatus);
+      params.append("page", p);
+      params.append("limit", 10);
+
+      const response = await api.get(`/projects/admin/list?${params}`);
       setProjects(response.data.projects);
+      setPaginationInfo({
+        total:      response.data.total,
+        totalPages: response.data.total_pages
+      });
     } catch (err) {
       setError("Erreur lors du chargement des projets");
     } finally {
@@ -49,13 +67,13 @@ const AdminProjects = () => {
     } else {
       await api.post('/projects/admin/create', formData);
     }
-    fetchProjects();
+    fetchProjects(page);
   };
 
   const updateProjectStatus = async (projectId, newStatus) => {
     try {
       await api.put(`/projects/admin/${projectId}`, { status: newStatus });
-      fetchProjects();
+      fetchProjects(page);
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
     }
@@ -65,7 +83,7 @@ const AdminProjects = () => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) return;
     try {
       await api.delete(`/projects/admin/${projectId}`);
-      fetchProjects();
+      fetchProjects(page);
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la suppression");
     }
@@ -159,6 +177,18 @@ const AdminProjects = () => {
         onClose={() => setShowModal(false)}
         onSave={handleSave}
       />
+
+      {/* Pagination */}
+      {!loading && !error && (
+        <Pagination
+          page={page}
+          totalPages={paginationInfo.totalPages}
+          total={paginationInfo.total}
+          itemsPerPage={10}
+          onPageChange={setPage}
+          activeColor="#e94560"
+        />
+      )}
     </AdminLayout>
   );
 };

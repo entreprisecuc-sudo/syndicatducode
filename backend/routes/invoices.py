@@ -440,38 +440,53 @@ async def update_invoice_status(
 @router.get("/admin/all", dependencies=[Depends(admin_only)])
 async def get_all_invoices(
     status: Optional[str] = None,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Liste toutes les factures (admin)
+    Liste toutes les factures avec pagination (admin)
+    Corrige le problème N+1 : chargement en batch des users et profils
     """
     query = {}
     if status:
         query["status"] = status
-    
+
+    skip = (page - 1) * limit
+    total = await db.invoices.count_documents(query)
+
     invoices = await db.invoices.find(
-        query,
-        {"_id": 0}
-    ).sort("created_at", -1).to_list(200)
-    
-    # Enrichir avec les infos utilisateur
+        query, {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+
+    # Correction N+1 : batch load users et profils en 2 requêtes
+    user_ids = list({inv.get("user_id") for inv in invoices if inv.get("user_id")})
+
+    users_list = await db.users.find(
+        {"id": {"$in": user_ids}},
+        {"_id": 0, "id": 1, "email": 1, "role": 1}
+    ).to_list(len(user_ids) or 1)
+
+    profiles_list = await db.profiles.find(
+        {"user_id": {"$in": user_ids}},
+        {"_id": 0, "user_id": 1, "first_name": 1, "last_name": 1}
+    ).to_list(len(user_ids) or 1)
+
+    users_map    = {u["id"]: u       for u in users_list}
+    profiles_map = {p["user_id"]: p  for p in profiles_list}
+
     for inv in invoices:
+        uid = inv.get("user_id")
         inv["status_label"] = INVOICE_STATUSES.get(inv.get("status"), "Inconnu")
-        
-        user = await db.users.find_one(
-            {"id": inv.get("user_id")},
-            {"_id": 0, "id": 1, "email": 1, "role": 1}
-        )
-        profile = await db.profiles.find_one(
-            {"user_id": inv.get("user_id")},
-            {"_id": 0, "first_name": 1, "last_name": 1}
-        )
-        inv["user"] = {
-            **(user or {}),
-            **(profile or {})
-        }
-    
-    return {"invoices": invoices}
+        inv["user"] = {**(users_map.get(uid, {})), **(profiles_map.get(uid, {}))}
+
+    return {
+        "invoices": invoices,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": max(1, -(-total // limit))
+    }
 
 
 @router.delete("/admin/{invoice_id}", dependencies=[Depends(admin_only)])

@@ -3,10 +3,11 @@
  * Support mode sombre/clair
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, ChevronRight, UserPlus, X, Eye, EyeOff } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import Pagination from "@/components/shared/Pagination";
 import api from "@/services/api";
 
 // Configuration des rôles
@@ -33,7 +34,9 @@ const AdminUsers = () => {
   const [filterRole, setFilterRole] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
-  
+  const [page, setPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState({ total: 0, totalPages: 1 });
+
   // Modal création admin
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [adminForm, setAdminForm] = useState({ email: "", password: "", confirmPassword: "" });
@@ -41,23 +44,30 @@ const AdminUsers = () => {
   const [createLoading, setCreateLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   // Vérification de correspondance des mots de passe
   const passwordsMatch = adminForm.confirmPassword === "" || adminForm.password === adminForm.confirmPassword;
 
-  useEffect(() => {
-    fetchUsers();
-  }, [filterRole, filterStatus]);
+  // Ref pour le debounce de la recherche
+  const searchTimer = useRef(null);
 
-  const fetchUsers = async () => {
+  // Fetch principal (lit les states directement)
+  const fetchUsers = async (p = page) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (filterRole) params.append("role", filterRole);
+      if (filterRole)   params.append("role", filterRole);
       if (filterStatus) params.append("status", filterStatus);
-      
+      if (search)       params.append("search", search);
+      params.append("page", p);
+      params.append("limit", 20);
+
       const response = await api.get(`/admin/users?${params}`);
       setUsers(response.data.users);
+      setPaginationInfo({
+        total:      response.data.total,
+        totalPages: response.data.total_pages
+      });
     } catch (err) {
       setError("Erreur lors du chargement des utilisateurs");
     } finally {
@@ -65,11 +75,32 @@ const AdminUsers = () => {
     }
   };
 
+  // Quand les filtres changent : reset page + fetch immédiat
+  useEffect(() => {
+    setPage(1);
+    fetchUsers(1); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filterRole, filterStatus]);
+
+  // Quand la recherche change : debounce 350ms + reset page
+  useEffect(() => {
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setPage(1);
+      fetchUsers(1); // eslint-disable-line react-hooks/exhaustive-deps
+    }, 350);
+    return () => clearTimeout(searchTimer.current);
+  }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Quand la page change : fetch avec nouvelle page
+  useEffect(() => {
+    fetchUsers(page); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [page]);
+
   const updateUserStatus = async (userId, newStatus) => {
     try {
       setActionLoading(true);
       await api.put(`/admin/users/${userId}/status?new_status=${newStatus}`,  {});
-      fetchUsers();
+      fetchUsers(page);
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
     } finally {
@@ -81,7 +112,7 @@ const AdminUsers = () => {
     try {
       setActionLoading(true);
       await api.put(`/admin/users/${userId}/role?new_role=${newRole}`,  {});
-      fetchUsers();
+      fetchUsers(page);
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
     } finally {
@@ -93,18 +124,18 @@ const AdminUsers = () => {
   const handleCreateAdmin = async (e) => {
     e.preventDefault();
     setCreateError("");
-    
+
     if (adminForm.password !== adminForm.confirmPassword) {
       setCreateError("Les mots de passe ne correspondent pas");
       return;
     }
-    
+
     try {
       setCreateLoading(true);
-      await api.post(`/admin/users/create-admin`,  { email: adminForm.email, password: adminForm.password });
+      await api.post(`/admin/users/create-admin`, { email: adminForm.email, password: adminForm.password });
       setShowCreateAdmin(false);
       setAdminForm({ email: "", password: "", confirmPassword: "" });
-      fetchUsers();
+      fetchUsers(page);
     } catch (err) {
       setCreateError(err.response?.data?.detail || "Erreur lors de la création");
     } finally {
@@ -112,10 +143,7 @@ const AdminUsers = () => {
     }
   };
 
-  // Filtrage local par recherche
-  const filteredUsers = users.filter(user => 
-    user.email.toLowerCase().includes(search.toLowerCase())
-  );
+  // La recherche se fait désormais côté serveur (plus de filtrage local)
 
   return (
     <AdminLayout>
@@ -359,7 +387,7 @@ const AdminUsers = () => {
         <div className="p-4 rounded-lg bg-red-500/20 text-red-400 text-center">
           {error}
         </div>
-      ) : filteredUsers.length === 0 ? (
+      ) : users.length === 0 ? (
         <div 
           className="p-8 rounded-xl text-center transition-colors duration-300"
           style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
@@ -369,7 +397,7 @@ const AdminUsers = () => {
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredUsers.map((user) => {
+          {users.map((user) => {
             const roleConfig = ROLE_CONFIG[user.role] || ROLE_CONFIG.null;
             const statusConfig = STATUS_CONFIG[user.status] || STATUS_CONFIG.pending;
             const RoleIcon = roleConfig.icon;
@@ -475,13 +503,17 @@ const AdminUsers = () => {
         </div>
       )}
 
-      {/* Compteur */}
-      <p 
-        className="text-center text-sm mt-4"
-        style={{ color: "var(--admin-text-muted)" }}
-      >
-        {filteredUsers.length} utilisateur(s) trouvé(s)
-      </p>
+      {/* Pagination */}
+      {!loading && !error && (
+        <Pagination
+          page={page}
+          totalPages={paginationInfo.totalPages}
+          total={paginationInfo.total}
+          itemsPerPage={20}
+          onPageChange={setPage}
+          activeColor="#e94560"
+        />
+      )}
     </AdminLayout>
   );
 };

@@ -2,7 +2,7 @@
 Routes d'administration - Gestion des utilisateurs
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Query
 from pydantic import BaseModel, EmailStr, validator
 from datetime import datetime, timezone
 from typing import Optional
@@ -59,14 +59,16 @@ async def get_all_users(
     role: Optional[str] = None,
     status: Optional[str] = None,
     search: Optional[str] = None,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Liste tous les utilisateurs
-    Filtrable par rôle, statut et recherche
+    Liste tous les utilisateurs avec pagination
+    Filtrable par rôle, statut et recherche (email)
     """
     query = {}
-    
+
     if role:
         query["role"] = role
     if status:
@@ -75,21 +77,27 @@ async def get_all_users(
         query["$or"] = [
             {"email": {"$regex": search, "$options": "i"}}
         ]
-    
+
+    skip = (page - 1) * limit
+    total = await db.users.count_documents(query)
+
     users = await db.users.find(
-        query, 
+        query,
         {"_id": 0, "password_hash": 0}
-    ).sort("created_at", -1).to_list(500)
-    
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+
     await log_admin_action(
         current_user["sub"],
         "VIEW_USERS",
-        f"Consultation liste utilisateurs (filtres: role={role}, status={status})"
+        f"Consultation liste utilisateurs (filtres: role={role}, status={status}, page={page})"
     )
-    
+
     return {
-        "total": len(users),
-        "users": users
+        "users": users,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": max(1, -(-total // limit))  # ceiling division
     }
 
 

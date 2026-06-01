@@ -12,6 +12,7 @@ import {
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
 import DevisModal from "@/components/modals/DevisModal";
+import Pagination from "@/components/shared/Pagination";
 import { API_URL } from "@/config/constants";
 import api from "@/services/api";
 
@@ -219,7 +220,9 @@ const MembersPage = () => {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  
+  const [page, setPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState({ total: 0, totalPages: 1 });
+
   // Filtres
   const [filters, setFilters] = useState({
     skill: "",
@@ -229,21 +232,27 @@ const MembersPage = () => {
   const [searchCity, setSearchCity] = useState("");
 
   useEffect(() => {
-    fetchMembers();
+    fetchMembers({}, 1);
     fetchSkills();
   }, []);
 
-  const fetchMembers = async (appliedFilters = {}) => {
+  const fetchMembers = async (appliedFilters = filters, p = page) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (appliedFilters.skill) params.append("skill", appliedFilters.skill);
-      if (appliedFilters.experience) params.append("experience", appliedFilters.experience);
-      if (appliedFilters.city) params.append("city", appliedFilters.city);
-      
-      const url = `${API_URL}/members/public${params.toString() ? `?${params}` : ""}`;
+      if (appliedFilters.skill)       params.append("skill", appliedFilters.skill);
+      if (appliedFilters.experience)  params.append("experience", appliedFilters.experience);
+      if (appliedFilters.city)        params.append("city", appliedFilters.city);
+      params.append("page", p);
+      params.append("limit", 12);
+
+      const url = `/members/public${params.toString() ? `?${params}` : ""}`;
       const response = await api.get(url);
       setMembers(response.data.members || []);
+      setPaginationInfo({
+        total:      response.data.total      || 0,
+        totalPages: response.data.total_pages || 1
+      });
     } catch (err) {
       console.error("Erreur chargement membres:", err);
     } finally {
@@ -261,14 +270,23 @@ const MembersPage = () => {
   };
 
   const applyFilters = () => {
-    fetchMembers(filters);
+    setPage(1);
+    fetchMembers(filters, 1);
     setShowFilters(false);
   };
 
   const clearFilters = () => {
-    setFilters({ skill: "", experience: "", city: "" });
+    const empty = { skill: "", experience: "", city: "" };
+    setFilters(empty);
     setSearchCity("");
-    fetchMembers({});
+    setPage(1);
+    fetchMembers(empty, 1);
+  };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    fetchMembers(filters, newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const hasActiveFilters = filters.skill || filters.experience || filters.city;
@@ -443,6 +461,18 @@ const MembersPage = () => {
                 <MemberCard key={member.id} member={member} />
               ))}
             </div>
+          )}
+
+          {/* Pagination */}
+          {!loading && paginationInfo.totalPages > 1 && (
+            <Pagination
+              page={page}
+              totalPages={paginationInfo.totalPages}
+              total={paginationInfo.total}
+              itemsPerPage={12}
+              onPageChange={handlePageChange}
+              activeColor="#e94560"
+            />
           )}
         </div>
       </section>

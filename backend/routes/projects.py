@@ -3,7 +3,7 @@ Routes de gestion des projets
 CRUD Admin + Consultation développeurs + Candidatures
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Query
 from datetime import datetime, timezone
 from typing import Optional, List
 from pydantic import BaseModel, Field
@@ -63,30 +63,43 @@ class ProjectApplicationCreate(BaseModel):
 @router.get("/admin/list", dependencies=[Depends(admin_only)])
 async def admin_get_all_projects(
     status: Optional[str] = None,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1, le=50),
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Liste tous les projets (admin)
+    Liste tous les projets avec pagination (admin)
+    Corrige le problème N+1 : comptage des candidatures en batch
     """
     query = {}
     if status:
         query["status"] = status
-    
+
+    skip = (page - 1) * limit
+    total = await db.projects.count_documents(query)
+
     projects = await db.projects.find(
-        query,
-        {"_id": 0}
-    ).sort("created_at", -1).to_list(100)
-    
-    # Compter les candidatures pour chaque projet
-    for project in projects:
-        applications_count = await db.project_applications.count_documents({
-            "project_id": project["id"]
-        })
-        project["applications_count"] = applications_count
-    
+        query, {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+
+    # Correction N+1 : compter les candidatures en une seule agrégation
+    if projects:
+        project_ids = [p["id"] for p in projects]
+        counts_cursor = db.project_applications.aggregate([
+            {"$match": {"project_id": {"$in": project_ids}}},
+            {"$group": {"_id": "$project_id", "count": {"$sum": 1}}}
+        ])
+        counts_map = {c["_id"]: c["count"] async for c in counts_cursor}
+
+        for project in projects:
+            project["applications_count"] = counts_map.get(project["id"], 0)
+
     return {
-        "total": len(projects),
-        "projects": projects
+        "projects": projects,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": max(1, -(-total // limit))
     }
 
 

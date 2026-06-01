@@ -25,10 +25,11 @@ async def get_public_members(
     skill: Optional[str] = None,
     experience: Optional[str] = None,
     city: Optional[str] = None,
-    limit: int = Query(default=50, le=100)
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=12, ge=1, le=50)
 ):
     """
-    Récupère la liste des développeurs avec un abonnement actif
+    Récupère la liste paginée des développeurs avec un abonnement actif
     pour affichage public sur la zone membres
     
     Filtres optionnels :
@@ -36,57 +37,64 @@ async def get_public_members(
     - experience: filtrer par années d'expérience
     - city: filtrer par ville
     """
-    
+
     # 1. Récupérer les user_ids avec abonnement actif
     active_subscriptions = await db.subscriptions.find(
         {"status": "active"},
         {"user_id": 1, "_id": 0}
     ).to_list(500)
-    
+
     active_user_ids = [sub["user_id"] for sub in active_subscriptions]
-    
+
     if not active_user_ids:
-        return {"members": [], "total": 0}
-    
+        return {"members": [], "total": 0, "page": page, "limit": limit, "total_pages": 1}
+
     # 2. Récupérer les utilisateurs développeurs actifs avec abonnement
     users_query = {
         "id": {"$in": active_user_ids},
         "role": "developer",
         "status": "active"
     }
-    
+
     users = await db.users.find(
         users_query,
         {"_id": 0, "password_hash": 0, "reset_token": 0}
     ).to_list(500)
-    
+
     user_ids = [u["id"] for u in users]
-    
+
     if not user_ids:
-        return {"members": [], "total": 0}
-    
-    # 3. Récupérer les profils correspondants
+        return {"members": [], "total": 0, "page": page, "limit": limit, "total_pages": 1}
+
+    # 3. Récupérer les profils correspondants avec filtres
     profile_query = {"user_id": {"$in": user_ids}}
-    
-    # Appliquer les filtres sur le profil
+
     if skill:
         profile_query["skills"] = {"$in": [skill]}
     if experience:
         profile_query["experience"] = experience
     if city:
         profile_query["city"] = {"$regex": city, "$options": "i"}
-    
+
+    # Compter le total pour la pagination
+    total = await db.profiles.count_documents(profile_query)
+
+    # Pagination sur les profils
+    skip = (page - 1) * limit
     profiles = await db.profiles.find(
-        profile_query,
-        {"_id": 0}
-    ).to_list(500)
-    
-    # 4. Récupérer les portfolios (seulement les projets approuvés)
+        profile_query, {"_id": 0}
+    ).skip(skip).limit(limit).to_list(limit)
+
+    if not profiles:
+        return {"members": [], "total": total, "page": page, "limit": limit, "total_pages": max(1, -(-total // limit))}
+
+    # 4. Récupérer les portfolios uniquement pour les profils de la page courante
+    page_user_ids = [p["user_id"] for p in profiles]
     portfolios = await db.portfolio.find(
-        {"user_id": {"$in": user_ids}, "status": "approved"},
+        {"user_id": {"$in": page_user_ids}, "status": "approved"},
         {"_id": 0}
-    ).to_list(1000)
-    
+    ).to_list(limit * 5)
+
     # Grouper les projets par user_id
     portfolio_by_user = {}
     for project in portfolios:
@@ -95,53 +103,45 @@ async def get_public_members(
             portfolio_by_user[uid] = []
         portfolio_by_user[uid].append(project)
     
-    # 5. Construire la réponse combinée
+    # 5. Construire la réponse combinée (basée sur les profils paginés)
+    users_map = {u["id"]: u for u in users if u["id"] in page_user_ids}
     members = []
-    profile_map = {p["user_id"]: p for p in profiles}
-    
-    for user in users:
-        user_id = user["id"]
-        profile = profile_map.get(user_id, {})
-        
-        # Vérifier que le profil correspond aux filtres (si profil existe)
-        if skill and skill not in profile.get("skills", []):
-            continue
-        if experience and profile.get("experience") != experience:
-            continue
-        if city and city.lower() not in profile.get("city", "").lower():
-            continue
-        
+
+    for profile in profiles:
+        user_id = profile["user_id"]
+        user = users_map.get(user_id, {})
+
         member_data = {
             "id": user_id,
-            "email": user["email"],
+            "email": user.get("email"),
             "created_at": user.get("created_at"),
             "profile": {
-                "first_name": profile.get("first_name"),
-                "last_name": profile.get("last_name"),
-                "pseudo": profile.get("pseudo"),
-                "company_name": profile.get("company_name"),
+                "first_name":          profile.get("first_name"),
+                "last_name":           profile.get("last_name"),
+                "pseudo":              profile.get("pseudo"),
+                "company_name":        profile.get("company_name"),
                 "display_name_choice": profile.get("display_name_choice", "name"),
-                "photo_url": profile.get("photo_url"),
-                "city": profile.get("city"),
-                "bio": profile.get("bio"),
-                "experience": profile.get("experience"),
-                "availability": profile.get("availability"),
-                "skills": profile.get("skills", []),
-                "github": profile.get("github"),
-                "linkedin": profile.get("linkedin"),
-                "portfolio": profile.get("portfolio")
+                "photo_url":           profile.get("photo_url"),
+                "city":                profile.get("city"),
+                "bio":                 profile.get("bio"),
+                "experience":          profile.get("experience"),
+                "availability":        profile.get("availability"),
+                "skills":              profile.get("skills", []),
+                "github":              profile.get("github"),
+                "linkedin":            profile.get("linkedin"),
+                "portfolio":           profile.get("portfolio")
             },
             "projects": portfolio_by_user.get(user_id, [])[:6]  # Max 6 projets
         }
-        
+
         members.append(member_data)
-    
-    # Limiter le nombre de résultats
-    members = members[:limit]
-    
+
     return {
         "members": members,
-        "total": len(members)
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": max(1, -(-total // limit))
     }
 
 
