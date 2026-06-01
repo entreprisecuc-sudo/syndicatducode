@@ -12,9 +12,7 @@ import {
   Mail, CheckCircle, AlertCircle, FolderOpen, ChevronDown, ChevronUp
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Clé localStorage pour les préférences
 const DASHBOARD_PREFS_KEY = "syndicat_admin_dashboard_prefs";
@@ -159,9 +157,7 @@ const AdminDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get(`${API_URL}/admin/stats`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/admin/stats');
       setStats(response.data);
     } catch (err) {
       setError("Erreur lors du chargement des statistiques");

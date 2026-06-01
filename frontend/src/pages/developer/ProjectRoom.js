@@ -11,9 +11,8 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
-import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 const ProjectRoom = () => {
   const { roomId } = useParams();
@@ -63,9 +62,7 @@ const ProjectRoom = () => {
 
   const fetchRoom = async () => {
     try {
-      const response = await axios.get(`${API_URL}/project-rooms/${roomId}`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(`/project-rooms/${roomId}`);
       setRoom(response.data);
     } catch (err) {
       setError("Impossible de charger l'espace projet");
@@ -77,9 +74,7 @@ const ProjectRoom = () => {
 
   const fetchMessages = async () => {
     try {
-      const response = await axios.get(`${API_URL}/project-rooms/${roomId}/messages`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(`/project-rooms/${roomId}/messages`);
       setMessages(response.data.messages);
     } catch (err) {
       console.error("Erreur chargement messages:", err);
@@ -88,9 +83,7 @@ const ProjectRoom = () => {
 
   const fetchNotes = async () => {
     try {
-      const response = await axios.get(`${API_URL}/project-rooms/${roomId}/notes`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(`/project-rooms/${roomId}/notes`);
       setNotes(response.data.notes);
     } catch (err) {
       console.error("Erreur chargement notes:", err);
@@ -103,11 +96,7 @@ const ProjectRoom = () => {
 
     try {
       setSendingMessage(true);
-      await axios.post(
-        `${API_URL}/project-rooms/${roomId}/messages`,
-        { content: newMessage },
-        { headers: getAuthHeaders() }
-      );
+      await api.post(`/project-rooms/${roomId}/messages`,  { content: newMessage });
       setNewMessage("");
       fetchMessages();
       messageInputRef.current?.focus();
@@ -125,17 +114,9 @@ const ProjectRoom = () => {
       setSavingNote(true);
       
       if (editingNote) {
-        await axios.put(
-          `${API_URL}/project-rooms/${roomId}/notes/${editingNote.id}`,
-          { content: noteContent, is_pinned: notePinned },
-          { headers: getAuthHeaders() }
-        );
+        await api.put(`/project-rooms/${roomId}/notes/${editingNote.id}`,  { content: noteContent, is_pinned: notePinned });
       } else {
-        await axios.post(
-          `${API_URL}/project-rooms/${roomId}/notes`,
-          { content: noteContent, is_pinned: notePinned },
-          { headers: getAuthHeaders() }
-        );
+        await api.post(`/project-rooms/${roomId}/notes`,  { content: noteContent, is_pinned: notePinned });
       }
       
       setNoteContent("");
@@ -154,9 +135,8 @@ const ProjectRoom = () => {
     if (!window.confirm("Supprimer cette note ?")) return;
 
     try {
-      await axios.delete(
-        `${API_URL}/project-rooms/${roomId}/notes/${noteId}`,
-        { headers: getAuthHeaders() }
+      await api.delete(
+        `/project-rooms/${roomId}/notes/${noteId}`
       );
       fetchNotes();
     } catch (err) {

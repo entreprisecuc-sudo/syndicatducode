@@ -9,9 +9,7 @@ import {
   Rocket, Plus, Edit, Trash2, Users, ChevronRight
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des statuts
 const STATUS_CONFIG = {
@@ -60,9 +58,7 @@ const AdminProjects = () => {
     try {
       setLoading(true);
       const params = filterStatus ? `?status=${filterStatus}` : "";
-      const response = await axios.get(`${API_URL}/projects/admin/list${params}`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(`/projects/admin/list${params}`);
       setProjects(response.data.projects);
     } catch (err) {
       setError("Erreur lors du chargement des projets");
@@ -101,17 +97,9 @@ const AdminProjects = () => {
 
     try {
       if (editingProject) {
-        await axios.put(
-          `${API_URL}/projects/admin/${editingProject.id}`,
-          formData,
-          { headers: getAuthHeaders() }
-        );
+        await api.put(`/projects/admin/${editingProject.id}`, formData);
       } else {
-        await axios.post(
-          `${API_URL}/projects/admin/create`,
-          formData,
-          { headers: getAuthHeaders() }
-        );
+        await api.post(`/projects/admin/create`, formData);
       }
       setShowModal(false);
       fetchProjects();
@@ -124,11 +112,7 @@ const AdminProjects = () => {
 
   const updateProjectStatus = async (projectId, newStatus) => {
     try {
-      await axios.put(
-        `${API_URL}/projects/admin/${projectId}`,
-        { status: newStatus },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/projects/admin/${projectId}`,  { status: newStatus });
       fetchProjects();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
@@ -139,9 +123,7 @@ const AdminProjects = () => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) return;
     
     try {
-      await axios.delete(`${API_URL}/projects/admin/${projectId}`, {
-        headers: getAuthHeaders()
-      });
+      await api.delete(`/projects/admin/${projectId}`);
       fetchProjects();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la suppression");

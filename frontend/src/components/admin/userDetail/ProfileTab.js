@@ -9,8 +9,7 @@ import {
   Github, Linkedin, Globe, Shield, Code, Users, UserX, UserCheck, Loader2, X
 } from "lucide-react";
 import { API_URL } from "@/config/constants";
-import { getAuthHeaders } from "@/services/authService";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des rôles
 const ROLE_CONFIG = {
@@ -53,11 +52,7 @@ export const ProfileTab = ({ user, profile, onUserUpdate }) => {
     try {
       setActionLoading(true);
       setActionError("");
-      await axios.put(
-        `${API_URL}/admin/users/${user.id}/suspend`,
-        { reason: suspensionReason },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/admin/users/${user.id}/suspend`,  { reason: suspensionReason });
       setShowSuspendModal(false);
       setSuspensionReason("");
       if (onUserUpdate) onUserUpdate();
@@ -75,11 +70,7 @@ export const ProfileTab = ({ user, profile, onUserUpdate }) => {
     try {
       setActionLoading(true);
       setActionError("");
-      await axios.put(
-        `${API_URL}/admin/users/${user.id}/reactivate`,
-        {},
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/admin/users/${user.id}/reactivate`,  {});
       if (onUserUpdate) onUserUpdate();
       window.location.reload();
     } catch (err) {

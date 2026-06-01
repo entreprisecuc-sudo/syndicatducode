@@ -8,9 +8,8 @@ import {
   Handshake, ExternalLink, Tag, Copy, Check, Star, Filter
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 const CATEGORY_CONFIG = {
   hosting: { label: "Hébergement", color: "#3b82f6" },
@@ -40,8 +39,8 @@ const MemberPartners = () => {
   const fetchData = async () => {
     try {
       const [partnersRes, categoriesRes] = await Promise.all([
-        axios.get(`${API_URL}/partners/`, { headers: getAuthHeaders() }),
-        axios.get(`${API_URL}/partners/categories`, { headers: getAuthHeaders() })
+        api.get('/partners/'),
+        api.get('/partners/categories')
       ]);
       setPartners(partnersRes.data.partners);
       setCategories(categoriesRes.data.categories);
@@ -57,7 +56,7 @@ const MemberPartners = () => {
       const url = selectedCategory 
         ? `${API_URL}/partners/?category=${selectedCategory}`
         : `${API_URL}/partners/`;
-      const res = await axios.get(url, { headers: getAuthHeaders() });
+      const res = await api.get(url);
       setPartners(res.data.partners);
     } catch (err) {
       console.error(err);

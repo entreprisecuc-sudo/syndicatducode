@@ -9,9 +9,8 @@ import {
   Github, Loader2, Filter, Image as ImageIcon, User, AlertTriangle, X
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 /**
  * Modal de rejet avec raison
@@ -403,9 +402,7 @@ const AdminPortfolioValidation = () => {
         ? `${API_URL}/admin/portfolio/all`
         : `${API_URL}/admin/portfolio/all?status=${filter}`;
       
-      const response = await axios.get(url, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(url);
       setProjects(response.data.projects || []);
     } catch (err) {
       console.error("Erreur chargement projets:", err);
@@ -416,11 +413,7 @@ const AdminPortfolioValidation = () => {
 
   const handleApprove = async (projectId) => {
     try {
-      await axios.put(
-        `${API_URL}/admin/portfolio/${projectId}/approve`,
-        {},
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/admin/portfolio/${projectId}/approve`,  {});
       
       // Mettre à jour la liste
       setProjects(prev => prev.map(p => 
@@ -434,11 +427,7 @@ const AdminPortfolioValidation = () => {
 
   const handleReject = async (projectId, reason) => {
     try {
-      await axios.put(
-        `${API_URL}/admin/portfolio/${projectId}/reject`,
-        { reason },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/admin/portfolio/${projectId}/reject`,  { reason });
       
       // Mettre à jour la liste
       setProjects(prev => prev.map(p => 

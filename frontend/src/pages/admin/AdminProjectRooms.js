@@ -10,9 +10,7 @@ import {
   Calendar, Loader2, FolderOpen
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 const AdminProjectRooms = () => {
   const [rooms, setRooms] = useState([]);
@@ -26,9 +24,7 @@ const AdminProjectRooms = () => {
   const fetchRooms = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/project-rooms/admin/list`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/project-rooms/admin/list');
       setRooms(response.data.rooms);
     } catch (err) {
       setError("Erreur lors du chargement des espaces projets");

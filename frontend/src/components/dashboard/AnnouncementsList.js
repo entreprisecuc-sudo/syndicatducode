@@ -8,9 +8,7 @@ import {
   Megaphone, Info, Bell, Calendar, AlertTriangle, 
   Pin, X, ChevronDown, ChevronUp
 } from "lucide-react";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des types d'annonces
 const TYPE_CONFIG = {
@@ -134,9 +132,7 @@ const AnnouncementsList = ({ maxItems = 5 }) => {
   const fetchAnnouncements = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/announcements/`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/announcements/');
       setAnnouncements(response.data.announcements);
     } catch (err) {
       console.error("Erreur chargement annonces:", err);

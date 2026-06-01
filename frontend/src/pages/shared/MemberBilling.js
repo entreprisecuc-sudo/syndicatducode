@@ -9,9 +9,9 @@ import {
   XCircle, Eye, Loader2, AlertCircle, Download, X
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { getAuthHeaders, getToken } from "@/services/authService";
+import { getToken } from "@/services/authService";
 import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des statuts
 const STATUS_CONFIG = {
@@ -96,9 +96,7 @@ const MemberBilling = () => {
   const fetchBillingInfo = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/invoices/my-billing`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/invoices/my-billing');
       setBillingInfo(response.data);
     } catch (err) {
       setError("Erreur lors du chargement des informations de facturation");
@@ -143,7 +141,7 @@ const MemberBilling = () => {
       if (invoiceNumber) formData.append("invoice_number", invoiceNumber);
       if (description) formData.append("description", description);
       
-      await axios.post(`${API_URL}/invoices/submit`, formData, {
+      await api.post(`/invoices/submit`, formData, {
         headers: {
           ...getAuthHeaders(),
           "Content-Type": "multipart/form-data"

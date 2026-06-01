@@ -14,10 +14,10 @@ import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
 import DevisModal from "@/components/modals/DevisModal";
 import { API_URL } from "@/config/constants";
-import axios from "axios";
 
 // Import des sous-composants
 import { ContactModal, MemberProjectCard } from "@/components/members";
+import api from "@/services/api";
 
 // Configuration des disponibilités
 const AVAILABILITY_LABELS = {
@@ -40,7 +40,7 @@ const MemberDetailPage = () => {
 
   const fetchMember = async () => {
     try {
-      const response = await axios.get(`${API_URL}/members/public/${memberId}`);
+      const response = await api.get(`/members/public/${memberId}`);
       setMember(response.data);
     } catch (err) {
       setError(err.response?.data?.detail || "Membre non trouvé");

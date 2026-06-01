@@ -7,8 +7,7 @@ import { useState, useEffect } from "react";
 import { 
   X, Info, CheckCircle, AlertTriangle, XCircle, ExternalLink
 } from "lucide-react";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des styles
 const STYLE_CONFIG = {
@@ -162,7 +161,7 @@ const PublicAlerts = () => {
 
   const fetchAlerts = async () => {
     try {
-      const response = await axios.get(`${API_URL}/alerts/public`);
+      const response = await api.get('/alerts/public');
       setAlerts(response.data.alerts);
     } catch (err) {
       // Silencieux - pas d'alertes publiques

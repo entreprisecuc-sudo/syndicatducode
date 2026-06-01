@@ -5,9 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { X, AlertTriangle, CheckCircle, Info, Bell } from "lucide-react";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 /**
  * Icône selon le type de notification
@@ -137,9 +135,7 @@ const NotificationsPopup = () => {
 
   const fetchPopupNotifications = async () => {
     try {
-      const response = await axios.get(`${API_URL}/notifications/popup`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/notifications/popup');
       setNotifications(response.data.notifications || []);
     } catch (err) {
       // Silently fail - pas critique
@@ -151,11 +147,7 @@ const NotificationsPopup = () => {
     const current = notifications[currentIndex];
     if (current) {
       try {
-        await axios.put(
-          `${API_URL}/notifications/popup/${current.id}/dismiss`,
-          {},
-          { headers: getAuthHeaders() }
-        );
+        await api.put(`/notifications/popup/${current.id}/dismiss`,  {});
       } catch (err) {
         console.error("Erreur dismiss notification:", err);
       }

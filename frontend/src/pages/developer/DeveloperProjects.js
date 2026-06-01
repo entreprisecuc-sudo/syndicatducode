@@ -10,9 +10,7 @@ import {
   CheckCircle, AlertCircle, ChevronRight, X, MessageSquare, Users
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des types de collaboration
 const COLLAB_CONFIG = {
@@ -42,9 +40,7 @@ const DeveloperProjects = () => {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/projects/`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/projects/');
       setProjects(response.data.projects);
     } catch (err) {
       setError("Erreur lors du chargement des projets");
@@ -55,9 +51,7 @@ const DeveloperProjects = () => {
 
   const fetchProjectRooms = async () => {
     try {
-      const response = await axios.get(`${API_URL}/project-rooms/my-rooms`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/project-rooms/my-rooms');
       setProjectRooms(response.data.rooms);
     } catch (err) {
       console.error("Erreur chargement espaces projets:", err);
@@ -82,11 +76,7 @@ const DeveloperProjects = () => {
 
     setApplying(true);
     try {
-      await axios.post(
-        `${API_URL}/projects/${selectedProject.id}/apply`,
-        { message },
-        { headers: getAuthHeaders() }
-      );
+      await api.post(`/projects/${selectedProject.id}/apply`,  { message });
       setApplySuccess(true);
       // Rafraîchir la liste pour mettre à jour le statut "has_applied"
       fetchProjects();

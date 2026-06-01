@@ -8,9 +8,9 @@ import {
   Euro, FileText, CheckCircle, XCircle, Clock, Eye, 
   Loader2, Download, Trash2, Edit2, Save, X
 } from "lucide-react";
-import { getAuthHeaders, getToken } from "@/services/authService";
+import { getToken } from "@/services/authService";
 import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des statuts
 const STATUS_CONFIG = {
@@ -94,9 +94,7 @@ const BillingTab = ({ userId, userEmail }) => {
   const fetchBillingInfo = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/invoices/admin/user/${userId}/billing`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(`/invoices/admin/user/${userId}/billing`);
       setBillingInfo(response.data);
       setNewAmount(response.data.amount_to_invoice?.toString() || "0");
       setNewNote(response.data.billing_note || "");
@@ -110,11 +108,7 @@ const BillingTab = ({ userId, userEmail }) => {
   const handleSaveAmount = async () => {
     try {
       setSavingAmount(true);
-      await axios.put(
-        `${API_URL}/invoices/admin/user/${userId}/billing`,
-        { amount: parseFloat(newAmount) || 0, note: newNote || null },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/invoices/admin/user/${userId}/billing`,  { amount: parseFloat(newAmount) || 0, note: newNote || null });
       setEditingAmount(false);
       fetchBillingInfo();
     } catch (err) {
@@ -127,11 +121,7 @@ const BillingTab = ({ userId, userEmail }) => {
   const handleUpdateStatus = async (invoiceId, newStatus) => {
     try {
       setUpdatingInvoice(invoiceId);
-      await axios.put(
-        `${API_URL}/invoices/admin/${invoiceId}/status`,
-        { status: newStatus },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/invoices/admin/${invoiceId}/status`,  { status: newStatus });
       fetchBillingInfo();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
@@ -144,9 +134,7 @@ const BillingTab = ({ userId, userEmail }) => {
     if (!window.confirm("Supprimer cette facture ?")) return;
     
     try {
-      await axios.delete(`${API_URL}/invoices/admin/${invoiceId}`, {
-        headers: getAuthHeaders()
-      });
+      await api.delete(`/invoices/admin/${invoiceId}`);
       fetchBillingInfo();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la suppression");

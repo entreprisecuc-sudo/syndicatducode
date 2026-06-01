@@ -11,9 +11,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 /**
  * Modal de détail d'un message
@@ -320,8 +319,8 @@ const DeveloperMessages = () => {
   const fetchData = async () => {
     try {
       const [messagesRes, statsRes] = await Promise.all([
-        axios.get(`${API_URL}/messages/my`, { headers: getAuthHeaders() }),
-        axios.get(`${API_URL}/messages/stats`, { headers: getAuthHeaders() })
+        api.get('/messages/my'),
+        api.get('/messages/stats')
       ]);
       
       setMessages(messagesRes.data.messages || []);
@@ -342,9 +341,8 @@ const DeveloperMessages = () => {
     if (!stats.can_read) return;
     
     try {
-      const response = await axios.get(
-        `${API_URL}/messages/my/${message.id}`,
-        { headers: getAuthHeaders() }
+      const response = await api.get(
+        `/messages/my/${message.id}`
       );
       setSelectedMessage(response.data);
       
@@ -362,9 +360,8 @@ const DeveloperMessages = () => {
     if (!window.confirm("Supprimer ce message ?")) return;
     
     try {
-      await axios.delete(
-        `${API_URL}/messages/my/${messageId}`,
-        { headers: getAuthHeaders() }
+      await api.delete(
+        `/messages/my/${messageId}`
       );
       
       setMessages(prev => prev.filter(m => m.id !== messageId));

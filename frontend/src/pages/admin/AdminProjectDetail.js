@@ -10,9 +10,7 @@ import {
   CheckCircle, XCircle, Clock, Eye, X, Loader2, Send, ExternalLink
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des statuts de candidature
 const APPLICATION_STATUS = {
@@ -45,9 +43,7 @@ const AdminProjectDetail = () => {
   const fetchProject = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/projects/admin/${projectId}`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(`/projects/admin/${projectId}`);
       setProject(response.data);
     } catch (err) {
       setError("Projet non trouvé");
@@ -58,9 +54,7 @@ const AdminProjectDetail = () => {
 
   const fetchProjectRoom = async () => {
     try {
-      const response = await axios.get(`${API_URL}/project-rooms/by-project/${projectId}`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(`/project-rooms/by-project/${projectId}`);
       setProjectRoom(response.data);
     } catch (err) {
       // Pas d'espace projet, c'est normal si aucune candidature n'a été acceptée
@@ -87,14 +81,10 @@ const AdminProjectDetail = () => {
     
     try {
       setSubmitting(true);
-      await axios.put(
-        `${API_URL}/projects/admin/applications/${selectedApplication.id}/status`,
-        { 
+      await api.put(`/projects/admin/applications/${selectedApplication.id}/status`,  { 
           status: decisionType,
           note: decisionNote || null
-        },
-        { headers: getAuthHeaders() }
-      );
+        });
       closeDecisionModal();
       fetchProject();
     } catch (err) {
@@ -113,11 +103,7 @@ const AdminProjectDetail = () => {
     }
     
     try {
-      await axios.put(
-        `${API_URL}/projects/admin/applications/${applicationId}/status`,
-        { status: newStatus },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/projects/admin/applications/${applicationId}/status`,  { status: newStatus });
       fetchProject();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");

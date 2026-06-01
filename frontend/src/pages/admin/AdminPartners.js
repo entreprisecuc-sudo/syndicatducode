@@ -18,9 +18,7 @@ import AdminModal, {
   ModalSubmitButton,
   ModalCancelButton 
 } from "@/components/admin/AdminModal";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 const CATEGORY_CONFIG = {
   hosting: { label: "Hébergement", color: "#3b82f6" },
@@ -60,7 +58,7 @@ const AdminPartners = () => {
   const fetchPartners = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/partners/admin`, { headers: getAuthHeaders() });
+      const res = await api.get('/partners/admin');
       setPartners(res.data.partners);
     } catch (err) {
       setError("Erreur lors du chargement");
@@ -110,9 +108,9 @@ const AdminPartners = () => {
 
     try {
       if (editingPartner) {
-        await axios.put(`${API_URL}/partners/admin/${editingPartner.id}`, dataToSend, { headers: getAuthHeaders() });
+        await api.put(`/partners/admin/${editingPartner.id}`, dataToSend);
       } else {
-        await axios.post(`${API_URL}/partners/admin`, dataToSend, { headers: getAuthHeaders() });
+        await api.post(`/partners/admin`, dataToSend);
       }
       setShowModal(false);
       fetchPartners();
@@ -125,11 +123,7 @@ const AdminPartners = () => {
 
   const toggleStatus = async (partner) => {
     try {
-      await axios.put(
-        `${API_URL}/partners/admin/${partner.id}`,
-        { status: partner.status === "active" ? "inactive" : "active" },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/partners/admin/${partner.id}`,  { status: partner.status === "active" ? "inactive" : "active" });
       fetchPartners();
     } catch (err) {
       alert("Erreur");
@@ -138,11 +132,7 @@ const AdminPartners = () => {
 
   const toggleFeatured = async (partner) => {
     try {
-      await axios.put(
-        `${API_URL}/partners/admin/${partner.id}`,
-        { is_featured: !partner.is_featured },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/partners/admin/${partner.id}`,  { is_featured: !partner.is_featured });
       fetchPartners();
     } catch (err) {
       alert("Erreur");
@@ -152,7 +142,7 @@ const AdminPartners = () => {
   const deletePartner = async (id) => {
     if (!confirm("Supprimer ce partenaire ?")) return;
     try {
-      await axios.delete(`${API_URL}/partners/admin/${id}`, { headers: getAuthHeaders() });
+      await api.delete(`/partners/admin/${id}`);
       fetchPartners();
     } catch (err) {
       alert("Erreur");

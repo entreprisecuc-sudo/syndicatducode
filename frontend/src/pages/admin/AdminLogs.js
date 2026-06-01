@@ -6,9 +6,7 @@
 import { useState, useEffect } from "react";
 import { History, Shield, User, Eye, Edit, RefreshCw } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des actions
 const ACTION_CONFIG = {
@@ -33,9 +31,7 @@ const AdminLogs = () => {
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/admin/logs?limit=100`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/admin/logs?limit=100');
       setLogs(response.data.logs);
     } catch (err) {
       setError("Erreur lors du chargement des logs");

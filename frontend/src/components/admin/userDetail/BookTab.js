@@ -6,8 +6,7 @@
 import { useState } from "react";
 import { Briefcase, ExternalLink, Github, Trash2, Loader2 } from "lucide-react";
 import { API_URL } from "@/config/constants";
-import { getAuthHeaders } from "@/services/authService";
-import axios from "axios";
+import api from "@/services/api";
 
 const statusLabels = {
   pending: { label: "En attente", color: "#f59e0b", bg: "#f59e0b20" },
@@ -25,9 +24,8 @@ export const BookTab = ({ portfolio, onUpdate }) => {
     try {
       setDeletingId(projectId);
       setError("");
-      await axios.delete(
-        `${API_URL}/admin/portfolio/${projectId}`,
-        { headers: getAuthHeaders() }
+      await api.delete(
+        `/admin/portfolio/${projectId}`
       );
       if (onUpdate) onUpdate();
       window.location.reload();

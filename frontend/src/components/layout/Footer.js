@@ -10,7 +10,7 @@ import { Shield, Code, Briefcase, Loader2 } from "lucide-react";
 import { CONFIG, DEV_MODE, TEST_ACCOUNTS, API_URL } from "@/config/constants";
 import { useAuth } from "@/context/AuthContext";
 import { setAuthData } from "@/services/authService";
-import axios from "axios";
+import api from "@/services/api";
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const Footer = () => {
     setLoading(accountType);
     try {
       const account = TEST_ACCOUNTS[accountType];
-      const response = await axios.post(`${API_URL}/auth/login`, {
+      const response = await api.post(`/auth/login`, {
         email: account.email,
         password: account.password
       });

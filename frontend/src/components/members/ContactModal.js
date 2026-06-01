@@ -8,8 +8,7 @@ import {
   X, User, Mail, Phone, FileText, Send, 
   Loader2, CheckCircle, MessageCircle
 } from "lucide-react";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 export const ContactModal = ({ isOpen, onClose, memberId, memberName }) => {
   const [loading, setLoading] = useState(false);
@@ -44,7 +43,7 @@ export const ContactModal = ({ isOpen, onClose, memberId, memberName }) => {
     setError("");
 
     try {
-      await axios.post(`${API_URL}/messages/send`, {
+      await api.post(`/messages/send`, {
         developer_id: memberId,
         ...formData
       });

@@ -13,7 +13,7 @@ import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
 import DevisModal from "@/components/modals/DevisModal";
 import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 /**
  * Carte de membre
@@ -242,7 +242,7 @@ const MembersPage = () => {
       if (appliedFilters.city) params.append("city", appliedFilters.city);
       
       const url = `${API_URL}/members/public${params.toString() ? `?${params}` : ""}`;
-      const response = await axios.get(url);
+      const response = await api.get(url);
       setMembers(response.data.members || []);
     } catch (err) {
       console.error("Erreur chargement membres:", err);
@@ -253,7 +253,7 @@ const MembersPage = () => {
 
   const fetchSkills = async () => {
     try {
-      const response = await axios.get(`${API_URL}/members/skills`);
+      const response = await api.get('/members/skills');
       setSkills(response.data.skills || []);
     } catch (err) {
       console.error("Erreur chargement compétences:", err);

@@ -7,9 +7,8 @@ import { useState, useEffect } from "react";
 import { 
   X, Info, CheckCircle, AlertTriangle, XCircle, ExternalLink
 } from "lucide-react";
-import { getAuthHeaders, getToken } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
+import { getToken } from "@/services/authService";
 
 // Configuration des styles
 const STYLE_CONFIG = {
@@ -166,9 +165,7 @@ const GlobalAlerts = () => {
     if (!token) return;
     
     try {
-      const response = await axios.get(`${API_URL}/alerts/`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/alerts/');
       setAlerts(response.data.alerts);
     } catch (err) {
       console.error("Erreur chargement alertes:", err);
@@ -198,9 +195,7 @@ const GlobalAlerts = () => {
     
     // Notifier le serveur
     try {
-      await axios.post(`${API_URL}/alerts/${alertId}/dismiss`, {}, {
-        headers: getAuthHeaders()
-      });
+      await api.post(`/alerts/${alertId}/dismiss`,  {});
     } catch (err) {
       // Silencieux
     }

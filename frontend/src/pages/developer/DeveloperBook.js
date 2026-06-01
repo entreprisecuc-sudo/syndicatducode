@@ -7,12 +7,10 @@
 import { useState, useEffect } from "react";
 import { Plus, Loader2, Image as ImageIcon } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
 
 // Import des sous-composants
 import { ProjectCard, ProjectModal } from "@/components/developer/book";
+import api from "@/services/api";
 
 /**
  * Page principale du Book/Portfolio
@@ -29,9 +27,7 @@ const DeveloperBook = () => {
 
   const fetchProjects = async () => {
     try {
-      const response = await axios.get(`${API_URL}/profile/portfolio`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/profile/portfolio');
       setProjects(response.data.projects || []);
     } catch (err) {
       console.error("Erreur chargement portfolio:", err);
@@ -43,14 +39,10 @@ const DeveloperBook = () => {
   const handleSave = async (formData, projectId) => {
     if (projectId) {
       // Mise à jour
-      await axios.put(`${API_URL}/profile/portfolio/${projectId}`, formData, {
-        headers: getAuthHeaders()
-      });
+      await api.put(`/profile/portfolio/${projectId}`, formData);
     } else {
       // Création
-      await axios.post(`${API_URL}/profile/portfolio`, formData, {
-        headers: getAuthHeaders()
-      });
+      await api.post(`/profile/portfolio`, formData);
     }
     
     // Rafraîchir la liste
@@ -66,9 +58,7 @@ const DeveloperBook = () => {
     if (!window.confirm("Supprimer ce projet de votre portfolio ?")) return;
 
     try {
-      await axios.delete(`${API_URL}/profile/portfolio/${projectId}`, {
-        headers: getAuthHeaders()
-      });
+      await api.delete(`/profile/portfolio/${projectId}`);
       setProjects(projects.filter(p => p.id !== projectId));
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la suppression");

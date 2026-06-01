@@ -9,9 +9,7 @@ import {
   Clock, ArrowRight, X
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 const DeveloperSubscription = () => {
   const [plans, setPlans] = useState([]);
@@ -33,8 +31,8 @@ const DeveloperSubscription = () => {
     try {
       setLoading(true);
       const [plansRes, subRes] = await Promise.all([
-        axios.get(`${API_URL}/subscriptions/plans`, { headers: getAuthHeaders() }),
-        axios.get(`${API_URL}/subscriptions/my-subscription`, { headers: getAuthHeaders() })
+        api.get('/subscriptions/plans'),
+        api.get('/subscriptions/my-subscription')
       ]);
       setPlans(plansRes.data.plans);
       setCurrentSubscription(subRes.data.subscription);
@@ -56,11 +54,7 @@ const DeveloperSubscription = () => {
     
     setSubscribing(true);
     try {
-      await axios.post(
-        `${API_URL}/subscriptions/subscribe`,
-        { plan_id: selectedPlan.id, duration: selectedDuration },
-        { headers: getAuthHeaders() }
-      );
+      await api.post(`/subscriptions/subscribe`,  { plan_id: selectedPlan.id, duration: selectedDuration });
       setShowModal(false);
       fetchData();
     } catch (err) {
@@ -74,9 +68,7 @@ const DeveloperSubscription = () => {
     if (!confirm("Êtes-vous sûr de vouloir annuler votre abonnement ?")) return;
     
     try {
-      await axios.post(`${API_URL}/subscriptions/cancel`, {}, {
-        headers: getAuthHeaders()
-      });
+      await api.post(`/subscriptions/cancel`,  {});
       fetchData();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur");

@@ -19,9 +19,7 @@ import AdminModal, {
   ModalSubmitButton,
   ModalCancelButton 
 } from "@/components/admin/AdminModal";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des types d'annonces
 const TYPE_CONFIG = {
@@ -62,9 +60,7 @@ const AdminAnnouncements = () => {
   const fetchAnnouncements = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/announcements/admin`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/announcements/admin');
       setAnnouncements(response.data.announcements);
     } catch (err) {
       setError("Erreur lors du chargement des annonces");
@@ -103,17 +99,9 @@ const AdminAnnouncements = () => {
 
     try {
       if (editingAnnouncement) {
-        await axios.put(
-          `${API_URL}/announcements/admin/${editingAnnouncement.id}`,
-          formData,
-          { headers: getAuthHeaders() }
-        );
+        await api.put(`/announcements/admin/${editingAnnouncement.id}`, formData);
       } else {
-        await axios.post(
-          `${API_URL}/announcements/admin`,
-          formData,
-          { headers: getAuthHeaders() }
-        );
+        await api.post(`/announcements/admin`, formData);
       }
       setShowModal(false);
       fetchAnnouncements();
@@ -126,11 +114,7 @@ const AdminAnnouncements = () => {
 
   const togglePin = async (announcement) => {
     try {
-      await axios.put(
-        `${API_URL}/announcements/admin/${announcement.id}`,
-        { is_pinned: !announcement.is_pinned },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/announcements/admin/${announcement.id}`,  { is_pinned: !announcement.is_pinned });
       fetchAnnouncements();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
@@ -139,11 +123,7 @@ const AdminAnnouncements = () => {
 
   const togglePublish = async (announcement) => {
     try {
-      await axios.put(
-        `${API_URL}/announcements/admin/${announcement.id}`,
-        { is_published: !announcement.is_published },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/announcements/admin/${announcement.id}`,  { is_published: !announcement.is_published });
       fetchAnnouncements();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
@@ -154,9 +134,7 @@ const AdminAnnouncements = () => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette annonce ?")) return;
     
     try {
-      await axios.delete(`${API_URL}/announcements/admin/${announcementId}`, {
-        headers: getAuthHeaders()
-      });
+      await api.delete(`/announcements/admin/${announcementId}`);
       fetchAnnouncements();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la suppression");

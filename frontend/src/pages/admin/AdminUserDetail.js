@@ -11,9 +11,6 @@ import {
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useAdminTheme } from "@/context/AdminThemeContext";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
 
 // Import des onglets
 import { 
@@ -24,6 +21,7 @@ import {
   DocumentsTab 
 } from "@/components/admin/userDetail";
 import BillingTab from "@/components/admin/userDetail/BillingTab";
+import api from "@/services/api";
 
 // Onglets disponibles
 const TABS = [
@@ -63,9 +61,7 @@ const AdminUserDetail = () => {
   const fetchUserData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/admin/users/${userId}/full`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(`/admin/users/${userId}/full`);
       setUserData(response.data);
     } catch (err) {
       setError(err.response?.data?.detail || "Erreur lors du chargement");
@@ -77,9 +73,7 @@ const AdminUserDetail = () => {
   const fetchActivity = async () => {
     try {
       setActivityLoading(true);
-      const response = await axios.get(`${API_URL}/admin/users/${userId}/activity`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(`/admin/users/${userId}/activity`);
       setActivity(response.data.activity || []);
     } catch (err) {
       console.error("Erreur chargement activité:", err);

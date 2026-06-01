@@ -6,9 +6,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Shield, RefreshCw, Unlock, Lock } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 const DEFAULT_CONFIG = {
   max_attempts: 5,
@@ -28,9 +26,7 @@ const AdminBruteForce = () => {
 
   const fetchConfig = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/admin/brute-force/config`, {
-        headers: getAuthHeaders()
-      });
+      const res = await api.get('/admin/brute-force/config');
       setConfig(res.data);
     } catch {
       showMessage("Erreur lors du chargement de la configuration", "error");
@@ -42,9 +38,7 @@ const AdminBruteForce = () => {
   const fetchBlocked = useCallback(async () => {
     try {
       setLoadingBlocked(true);
-      const res = await axios.get(`${API_URL}/admin/brute-force/blocked`, {
-        headers: getAuthHeaders()
-      });
+      const res = await api.get('/admin/brute-force/blocked');
       setBlocked(res.data.blocked);
       setBlockedCount(res.data.count);
     } catch {
@@ -68,9 +62,7 @@ const AdminBruteForce = () => {
     const newConfig = { ...config, is_active: !config.is_active };
     setConfig(newConfig);
     try {
-      await axios.put(`${API_URL}/admin/brute-force/config`, newConfig, {
-        headers: getAuthHeaders()
-      });
+      await api.put(`/admin/brute-force/config`, newConfig);
       showMessage(newConfig.is_active ? "Protection activée" : "Protection désactivée");
     } catch {
       setConfig(config);
@@ -81,9 +73,7 @@ const AdminBruteForce = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await axios.put(`${API_URL}/admin/brute-force/config`, config, {
-        headers: getAuthHeaders()
-      });
+      await api.put(`/admin/brute-force/config`, config);
       showMessage("Configuration sauvegardée avec succès");
     } catch (err) {
       const detail = err.response?.data?.detail || "Erreur lors de la sauvegarde";
@@ -95,11 +85,7 @@ const AdminBruteForce = () => {
 
   const handleUnblock = async (ip) => {
     try {
-      await axios.post(
-        `${API_URL}/admin/brute-force/unblock`,
-        { ip },
-        { headers: getAuthHeaders() }
-      );
+      await api.post(`/admin/brute-force/unblock`,  { ip });
       showMessage(`IP ${ip} débloquée`);
       fetchBlocked();
     } catch {

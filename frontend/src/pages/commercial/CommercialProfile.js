@@ -7,9 +7,8 @@ import { useState, useEffect, useRef } from "react";
 import { Camera, X, Phone, MapPin, Building2, Save, Loader2, CreditCard } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
-import { getAuthHeaders } from "@/services/authService";
 import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 const CommercialProfile = () => {
   const { user } = useAuth();
@@ -45,9 +44,7 @@ const CommercialProfile = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(`${API_URL}/profile/me`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/profile/me');
       
       const profile = response.data.profile || {};
       
@@ -90,9 +87,7 @@ const CommercialProfile = () => {
     setError("");
     
     try {
-      await axios.put(`${API_URL}/profile/me`, formData, {
-        headers: getAuthHeaders()
-      });
+      await api.put(`/profile/me`, formData);
       setSuccess(true);
     } catch (err) {
       setError(err.response?.data?.detail || "Erreur lors de la sauvegarde");
@@ -131,11 +126,7 @@ const CommercialProfile = () => {
       const reader = new FileReader();
       reader.onloadend = async () => {
         try {
-          const response = await axios.post(
-            `${API_URL}/profile/photo`,
-            { image_data: reader.result },
-            { headers: getAuthHeaders() }
-          );
+          const response = await api.post(`/profile/photo`,  { image_data: reader.result });
           
           // Mettre à jour l'URL de la photo avec timestamp pour éviter le cache
           setPhotoUrl(`${API_URL}${response.data.photo_url}?t=${Date.now()}`);
@@ -157,9 +148,7 @@ const CommercialProfile = () => {
     if (!window.confirm("Supprimer votre photo de profil ?")) return;
 
     try {
-      await axios.delete(`${API_URL}/profile/photo`, {
-        headers: getAuthHeaders()
-      });
+      await api.delete('/profile/photo');
       setPhotoUrl(null);
     } catch (err) {
       setError(err.response?.data?.detail || "Erreur lors de la suppression");

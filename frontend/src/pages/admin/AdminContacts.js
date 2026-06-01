@@ -6,9 +6,7 @@
 import { useState, useEffect } from "react";
 import { FileText, Mail, Phone, Calendar } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des statuts
 const STATUS_CONFIG = {
@@ -33,9 +31,7 @@ const AdminContacts = () => {
     try {
       setLoading(true);
       const params = filterStatus ? `?status=${filterStatus}` : "";
-      const response = await axios.get(`${API_URL}/admin/contacts${params}`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(`/admin/contacts${params}`);
       setContacts(response.data.contacts);
     } catch (err) {
       setError("Erreur lors du chargement des contacts");
@@ -47,11 +43,7 @@ const AdminContacts = () => {
   const updateContactStatus = async (contactId, newStatus) => {
     try {
       setActionLoading(true);
-      await axios.put(
-        `${API_URL}/admin/contacts/${contactId}/status?new_status=${newStatus}`,
-        {},
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/admin/contacts/${contactId}/status?new_status=${newStatus}`,  {});
       fetchContacts();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");

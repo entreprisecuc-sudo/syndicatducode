@@ -18,9 +18,7 @@ import AdminModal, {
   ModalSubmitButton,
   ModalCancelButton 
 } from "@/components/admin/AdminModal";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 const AdminSubscriptions = () => {
   const [activeTab, setActiveTab] = useState("plans"); // plans, subscribers, config
@@ -62,9 +60,9 @@ const AdminSubscriptions = () => {
     try {
       setLoading(true);
       const [plansRes, statsRes, configRes] = await Promise.all([
-        axios.get(`${API_URL}/subscriptions/admin/plans`, { headers: getAuthHeaders() }),
-        axios.get(`${API_URL}/subscriptions/admin/stats`, { headers: getAuthHeaders() }),
-        axios.get(`${API_URL}/subscriptions/admin/stripe-config`, { headers: getAuthHeaders() })
+        api.get('/subscriptions/admin/plans'),
+        api.get('/subscriptions/admin/stats'),
+        api.get('/subscriptions/admin/stripe-config')
       ]);
       setPlans(plansRes.data.plans);
       setStats(statsRes.data);
@@ -78,9 +76,7 @@ const AdminSubscriptions = () => {
 
   const fetchSubscriptions = async () => {
     try {
-      const res = await axios.get(`${API_URL}/subscriptions/admin/subscriptions`, {
-        headers: getAuthHeaders()
-      });
+      const res = await api.get('/subscriptions/admin/subscriptions');
       setSubscriptions(res.data.subscriptions);
     } catch (err) {
       console.error(err);
@@ -138,17 +134,9 @@ const AdminSubscriptions = () => {
 
     try {
       if (editingPlan) {
-        await axios.put(
-          `${API_URL}/subscriptions/admin/plans/${editingPlan.id}`,
-          dataToSend,
-          { headers: getAuthHeaders() }
-        );
+        await api.put(`/subscriptions/admin/plans/${editingPlan.id}`, dataToSend);
       } else {
-        await axios.post(
-          `${API_URL}/subscriptions/admin/plans`,
-          dataToSend,
-          { headers: getAuthHeaders() }
-        );
+        await api.post(`/subscriptions/admin/plans`, dataToSend);
       }
       setShowPlanModal(false);
       fetchData();
@@ -161,11 +149,7 @@ const AdminSubscriptions = () => {
 
   const togglePlanStatus = async (plan) => {
     try {
-      await axios.put(
-        `${API_URL}/subscriptions/admin/plans/${plan.id}`,
-        { status: plan.status === "active" ? "inactive" : "active" },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/subscriptions/admin/plans/${plan.id}`,  { status: plan.status === "active" ? "inactive" : "active" });
       fetchData();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur");
@@ -175,9 +159,7 @@ const AdminSubscriptions = () => {
   const deletePlan = async (planId) => {
     if (!confirm("Supprimer ce plan ?")) return;
     try {
-      await axios.delete(`${API_URL}/subscriptions/admin/plans/${planId}`, {
-        headers: getAuthHeaders()
-      });
+      await api.delete(`/subscriptions/admin/plans/${planId}`);
       fetchData();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur");
@@ -190,11 +172,7 @@ const AdminSubscriptions = () => {
     setFormLoading(true);
 
     try {
-      await axios.put(
-        `${API_URL}/subscriptions/admin/stripe-config`,
-        stripeForm,
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/subscriptions/admin/stripe-config`, stripeForm);
       setShowStripeModal(false);
       fetchData();
     } catch (err) {

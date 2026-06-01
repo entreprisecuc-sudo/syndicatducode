@@ -10,18 +10,16 @@ import {
   MessageSquare, ExternalLink
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import AdminModal, { 
-  ModalFormGroup, 
-  ModalInput, 
-  ModalTextarea, 
+import AdminModal, {
+  ModalFormGroup,
+  ModalInput,
+  ModalTextarea,
   ModalSelect,
   ModalActions,
   ModalSubmitButton,
-  ModalCancelButton 
+  ModalCancelButton
 } from "@/components/admin/AdminModal";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des types d'alertes
 const TYPE_CONFIG = {
@@ -73,9 +71,7 @@ const AdminAlerts = () => {
   const fetchAlerts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/alerts/admin`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get('/alerts/admin');
       setAlerts(response.data.alerts);
     } catch (err) {
       setError("Erreur lors du chargement des alertes");
@@ -130,17 +126,9 @@ const AdminAlerts = () => {
 
     try {
       if (editingAlert) {
-        await axios.put(
-          `${API_URL}/alerts/admin/${editingAlert.id}`,
-          dataToSend,
-          { headers: getAuthHeaders() }
-        );
+        await api.put(`/alerts/admin/${editingAlert.id}`, dataToSend);
       } else {
-        await axios.post(
-          `${API_URL}/alerts/admin`,
-          dataToSend,
-          { headers: getAuthHeaders() }
-        );
+        await api.post(`/alerts/admin`, dataToSend);
       }
       setShowModal(false);
       fetchAlerts();
@@ -153,11 +141,7 @@ const AdminAlerts = () => {
 
   const toggleActive = async (alertItem) => {
     try {
-      await axios.put(
-        `${API_URL}/alerts/admin/${alertItem.id}`,
-        { is_active: !alertItem.is_active },
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/alerts/admin/${alertItem.id}`,  { is_active: !alertItem.is_active });
       fetchAlerts();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
@@ -168,9 +152,7 @@ const AdminAlerts = () => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette alerte ?")) return;
     
     try {
-      await axios.delete(`${API_URL}/alerts/admin/${alertId}`, {
-        headers: getAuthHeaders()
-      });
+      await api.delete(`/alerts/admin/${alertId}`);
       fetchAlerts();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la suppression");

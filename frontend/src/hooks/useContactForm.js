@@ -4,8 +4,7 @@
  */
 
 import { useState } from "react";
-import axios from "axios";
-import { API_URL } from "@/config/constants";
+import api from "@/services/api";
 
 /**
  * Hook pour gérer le formulaire de contact
@@ -80,7 +79,7 @@ const useContactForm = (onSuccess = null) => {
         formDataToSend.append("files", file);
       });
 
-      await axios.post(`${API_URL}/contact`, formDataToSend, {
+      await api.post(`/contact`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       

@@ -7,9 +7,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, ChevronRight, UserPlus, X, Eye, EyeOff } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { getAuthHeaders } from "@/services/authService";
-import { API_URL } from "@/config/constants";
-import axios from "axios";
+import api from "@/services/api";
 
 // Configuration des rôles
 const ROLE_CONFIG = {
@@ -58,9 +56,7 @@ const AdminUsers = () => {
       if (filterRole) params.append("role", filterRole);
       if (filterStatus) params.append("status", filterStatus);
       
-      const response = await axios.get(`${API_URL}/admin/users?${params}`, {
-        headers: getAuthHeaders()
-      });
+      const response = await api.get(`/admin/users?${params}`);
       setUsers(response.data.users);
     } catch (err) {
       setError("Erreur lors du chargement des utilisateurs");
@@ -72,11 +68,7 @@ const AdminUsers = () => {
   const updateUserStatus = async (userId, newStatus) => {
     try {
       setActionLoading(true);
-      await axios.put(
-        `${API_URL}/admin/users/${userId}/status?new_status=${newStatus}`,
-        {},
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/admin/users/${userId}/status?new_status=${newStatus}`,  {});
       fetchUsers();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
@@ -88,11 +80,7 @@ const AdminUsers = () => {
   const updateUserRole = async (userId, newRole) => {
     try {
       setActionLoading(true);
-      await axios.put(
-        `${API_URL}/admin/users/${userId}/role?new_role=${newRole}`,
-        {},
-        { headers: getAuthHeaders() }
-      );
+      await api.put(`/admin/users/${userId}/role?new_role=${newRole}`,  {});
       fetchUsers();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur lors de la mise à jour");
@@ -113,11 +101,7 @@ const AdminUsers = () => {
     
     try {
       setCreateLoading(true);
-      await axios.post(
-        `${API_URL}/admin/users/create-admin`,
-        { email: adminForm.email, password: adminForm.password },
-        { headers: getAuthHeaders() }
-      );
+      await api.post(`/admin/users/create-admin`,  { email: adminForm.email, password: adminForm.password });
       setShowCreateAdmin(false);
       setAdminForm({ email: "", password: "", confirmPassword: "" });
       fetchUsers();
