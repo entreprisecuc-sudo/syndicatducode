@@ -1,0 +1,153 @@
+<analysis>**original_problem_statement**: 
+Création d'une plateforme full-stack Le Syndicat du Code (React/FastAPI/MongoDB). Le client a imposé **27 RÈGLES STRICTES** de développement à respecter impérativement, dont le principe KISS, DRY, Zéro Hardcoding, et surtout **l'interdiction formelle de modifier du code, de lancer des tests ou de faire du refactoring sans son instruction ou accord explicite**. Le projet intègre un espace membre, un espace admin, et s'oriente vers la mise en place d'outils d'administration critiques (Sauvegardes MongoDB, logs, traçabilité).
+
+**User's preferred language**: **FRENCH**. You MUST respond and think exclusively in French. All explanations, plans, thoughts, and comments MUST be in French. (Règle n°1 du client).
+
+**what currently exists?** 
+Une application full-stack fonctionnelle. Le refactoring des gros composants React (>500 lignes) est terminé. La pagination backend et frontend a été ajoutée pour les listes principales (utilisateurs, projets, factures, membres). L'application possède un système de rate-limiting (SlowAPI) et un service Axios centralisé. Le client souhaite maintenant implémenter un module de sauvegarde complète de la base de données (Export manuel + Auto backup).
+
+**Last working item**: 
+    - Last item agent was working: Création d'une page Admin Sauvegarde des Données. L'agent a proposé et le client a validé un plan en 2 étapes : 1) Export manuel (JSON + Excel) des données, 2) Sauvegarde automatique vers Google Drive + notification Email. L'agent vient juste de récupérer le playbook d'intégration Google Drive via le sous-agent et a listé les 23 collections de la DB.
+    - Status: IN PROGRESS
+    - Agent Testing Done: N
+    - Which testing method agent to use?: Both (curl/python for backend export generation, screenshot tool for frontend UI).
+    - User Testing Done: N
+
+**All Pending/In progress Issue list**: 
+  - Issue 1: Fichiers d'uploads exposés publiquement sans authentification ( dans ) (P0)
+     - Attempted fixes: Identifié dans de précédentes sessions.
+     - Next debug checklist: Retirer  de .
+     - Why fix this issue and what will be achieved with the fix?: Sécurité, empêcher l'accès public.
+     - Status: BLOCKED (Le client a expressément demandé de garder cela ouvert pour ses tests de développement).
+     - Is recurring issue?: N
+     - Should Test frontend/backend/both after fix?: Backend
+     - Blocked on other issue: User requested to delay until pre-production.
+
+  - Issue 2: Désactiver DEV_MODE et nettoyer TEST_ACCOUNTS dans  (P0)
+     - Attempted fixes: Identifié dans de précédentes sessions.
+     - Next debug checklist:  - passer  à .
+     - Why fix this issue and what will be achieved with the fix?: Sécurité avant prod.
+     - Status: BLOCKED (Le client a demandé de garder cela pour l'instant).
+     - Is recurring issue?: Y
+     - Should Test frontend/backend/both after fix?: Frontend
+     - Blocked on other issue: User requested to delay until pre-production.
+
+**In progress Task List**: 
+  - Task 1: Module Admin Sauvegarde des Données (Backup)
+     - Where to resume: L'agent a récupéré les instructions Google Drive. Il faut implémenter le backend pour exporter les 23 collections identifiées (, , etc.) en JSON et Excel (nécessitera probablement /), créer l'UI frontend correspondante, puis implémenter le cron/scheduler pour l'envoi Google Drive + Email (via la fonction  existante dans ).
+     - What will be achieved with this?: Protection des données (P0) avec export manuel et automatisé.
+     - Status: IN PROGRESS
+     - Should Test frontend/backend/both after fix?: Both
+     - Blocked on something: En attente de l'implémentation par le nouvel agent.
+
+**Upcoming and Future Tasks**
+  - **P0**: Documenter et tester la stratégie de restauration MongoDB (à faire *après* le module de backup).
+  - **P1**: Audit logs admin (Traçabilité des actions critiques).
+  - **P1**: Intégration e-invoicing légal France (Factur-X / PDP) - Ajouté en note dans le PRD pour anticipation réglementaire.
+  - **P2**: Logs centralisés.
+  - **P2**: Intégration de la vraie version de Stripe (actuellement mockée).
+  - **P2**: Migration du stockage de fichiers vers Object Storage (S3/GCS).
+
+**Completed work in this session**
+- Découpage de 5 gros composants React (, , , , ) en 14 sous-composants (DONE)
+- Correction d'un bug UI (import manquant  dans ) (DONE)
+- Implémentation de la pagination côté backend (/ sur routes users, invoices, projects, members) et correction de requêtes N+1 (DONE)
+- Implémentation de la pagination côté frontend avec un nouveau composant partagé  (DONE)
+- Mise à jour du PRD avec des notes sur la future loi française de facturation électronique (DONE)
+
+**Earlier issues found/mentioned but not fixed**
+   - Issue 1: Prévisualisation PDF (frontend) blanche si le navigateur ne possède pas de plugin natif.
+     - Debug checklist: Utiliser  si besoin.
+     - Why to solve this issue and what will be achieved with this?: Accessibilité.
+     - Should Test frontend/backend/both after fix: Frontend
+     - Is recurring issue? N
+
+**Known issue recurrence from previous fork**
+  - Issue recurrence in previous fork: None.
+  - Recurrence count: 0
+  - Status: RESOLVED (L'agent a parfaitement respecté la règle de demander l'autorisation avant chaque étape technique majeure).
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- Frontend: React 19, TailwindCSS, Axios (centralisé).
+- Backend: FastAPI, MongoDB (Motor).
+- Export: Le client veut du JSON et du Excel. Pensez aux librairies requises (ex: , , ou ).
+- Backup auto: Nécessitera une intégration Google Drive (via clés de service JSON) et un ordonnanceur (ex: ).
+
+**key DB schema**
+L'agent a listé 23 collections à sauvegarder, incluant : , , , , , , , , , , etc.
+
+**changes in tech stack**
+  - Ajout probable à prévoir de dépendances Python pour l'export Excel ( / ) et pour l'intégration Google Drive.
+
+**All files of reference** 
+- : Contient les 27 règles strictes et le statut des tâches.
+- : Composant créé dans cette session.
+- Fichiers backend modifiés pour la pagination : , , , .
+
+**Areas that need refactoring**: 
+- Le découpage des fichiers frontend a été fait. Surveiller la taille des futurs fichiers de backup.
+
+**key api endpoints**
+- Nouvelles routes à prévoir : GET  (JSON/Excel), POST .
+
+**Critical Info for New Agent** 
+- **RÈGLE D'OR :** Les 27 consignes du client (voir début de l'historique) sont absolues. Toujours proposer un plan et demander l'autorisation avant de coder (KISS, DRY, Pas de tests automatisés sans accord).
+- **Langue :** Français obligatoire.
+- Le client vient d'approuver l'implémentation du système de sauvegarde (Export manuel Excel/JSON + Auto backup sur Google Drive et Email). Vous pouvez commencer directement le développement de cette fonctionnalité en suivant le playbook Google Drive récemment récupéré.
+- Pensez à vérifier/installer les librairies pour l'export Excel (ex: Looking in indexes: https://pypi.org/simple, https://d33sy5i8bnduwe.cloudfront.net/simple/
+Collecting openpyxl
+  Downloading openpyxl-3.1.5-py2.py3-none-any.whl.metadata (2.5 kB)
+Collecting et-xmlfile (from openpyxl)
+  Downloading et_xmlfile-2.0.0-py3-none-any.whl.metadata (2.7 kB)
+Downloading openpyxl-3.1.5-py2.py3-none-any.whl (250 kB)
+Downloading et_xmlfile-2.0.0-py3-none-any.whl (18 kB)
+Installing collected packages: et-xmlfile, openpyxl
+
+Successfully installed et-xmlfile-2.0.0 openpyxl-3.1.5). N'oubliez pas d'utiliser  pour geler les dépendances () si vous en ajoutez.
+
+**documents and test reports created in this job** 
+  - /app/memory/PRD.md (mis à jour)
+  - /app/memory/test_credentials.md (existant, inchangé)
+
+**Last 10 User Messages and any pending HUMAN messages** 
+1. **User:** ok go (Pour le découpage des composants) -> *Completed*
+2. **User:** [Signale l'erreur ] -> *Completed*
+3. **User:** oui go (Pour la pagination backend P1) -> *Completed*
+4. **User:** ok go (Pour l'implémentation de la pagination) -> *Completed*
+5. **User:** alors non car a partir de juillet je devrais adapter avec la loi... (Rejette une feature pour raison légale e-invoicing) -> *Completed*
+6. **User:** oui mais une note stp (Demande de noter la loi dans le PRD) -> *Completed*
+7. **User:** [Demande d'explication sur Observabilité vs Backups MongoDB] -> *Completed*
+8. **User:** [Envoie une maquette d'UI pour la page Sauvegarde Admin] -> *Completed*
+9. **User:** a les deux, b oui pou l'export excel (Valide Drive+Email pour l'auto, et Excel+JSON pour le manuel). -> **IN PROGRESS** (Agent a récupéré le playbook, prêt à coder).
+
+**Project Health Check:**
+- Broken: Fichiers  toujours publics & DEV_MODE actif (Volontaire, maintenu pour le dev par le client).
+- Mocked: Stripe (Paiements).
+
+**3rd Party Integrations** 
+- Hostinger SMTP (Emails) - requires User credentials (Déjà configuré)
+- Stripe (Payments) - requires User API Key (Mocked for now)
+- Google Drive (Backup) - requires Service Account JSON Key (Playbook retrieved, awaiting implementation)
+
+**Testing status** 
+- Testing agent used after significant changes: NO (Forbidden by user rule unless explicitly asked).
+- Troubleshoot agent used after agent stuck in loop: NO
+- Test files created: None
+- Known regressions: None
+
+**Credentials to test flow:**
+Check .
+
+**What agent forgot to execute**
+Aucun oubli, l'agent s'est arrêté proprement après avoir gather le contexte pour la tâche de backup.
+
+**Debugging checklist for current issue**
+Task: Création page Sauvegarde des Données (Backup Admin)
+  - Backend files to create/update: Créer une route .
+  - Action 1 (Manuel): Implémenter l'export de TOUTES les collections en JSON, et la conversion en Excel (nécessite ). Retourner un fichier ZIP ou Excel directement.
+  - Action 2 (Automatique): Implémenter l'upload Google Drive en respectant le playbook  récupéré, et utiliser  pour l'alerte email.
+  - Frontend files to create: Créer  (ou similaire) pour afficher les compteurs de données, le bouton d'export manuel, et le formulaire de planification. 
+  - Note: Rappelez-vous de faire des appels parallèles et de proposer un plan clair si l'implémentation nécessite de toucher à plus de 5 fichiers.</analysis>
