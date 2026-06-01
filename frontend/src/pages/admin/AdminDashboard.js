@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { 
   Users, UserCheck, UserX, Clock, FileText, TrendingUp,
   Rocket, Megaphone, Bell, CreditCard, Handshake, Euro,
-  Mail, CheckCircle, AlertCircle, FolderOpen
+  Mail, CheckCircle, AlertCircle, FolderOpen, ChevronUp, ChevronDown
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatCard from "@/components/admin/dashboard/StatCard";
