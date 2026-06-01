@@ -188,6 +188,10 @@
 
 **Architecture Google Drive prête** : La clé est stockée en base MongoDB (`backup_config`). L'activation ne nécessite aucun recodage — il suffira d'implémenter la logique d'upload Drive et d'appeler `send_email_notification` existante.
 
+### ✅ Documentation Restauration MongoDB (P0) — 01/06/2026
+- Guide complet `/app/memory/RESTAURATION_MONGODB.md` (8 sections : prérequis, décompression, restauration complète via mongoimport, script Python de secours, restauration partielle, vérifications post-restauration, restauration depuis Excel, points d'attention)
+- Accordéon "Guide de restauration MongoDB" intégré directement dans la page admin `AdminBackup.js` avec commandes prêtes à copier-coller
+
 ---
 
 ### ✅ Pagination Backend + Correction N+1 (Phase 22) - 01/06/2026

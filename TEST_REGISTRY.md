@@ -47,6 +47,9 @@ Ce document recense tous les tests existants et à implémenter pour le projet.
 | **Backup : export Excel** | GET /api/admin/backup/export/excel - Retourne XLSX avec 24 onglets et en-têtes stylisés | Intégration | ✅ Validé |
 | **Backup : config GET** | GET /api/admin/backup/config - Lire la configuration Google Drive + email | Intégration | ✅ Validé |
 | **Backup : config POST** | POST /api/admin/backup/config - Sauvegarder la configuration (upsert) | Intégration | ✅ Validé |
+| **Guide restauration (UI)** | Accordéon "Guide de restauration MongoDB" ouvert/fermé dans AdminBackup.js | Interface | ✅ Validé |
+| **Doc restauration** | Fichier /app/memory/RESTAURATION_MONGODB.md créé (8 sections, scripts mongoimport + Python) | Documentation | ✅ Validé |
+
 
 
 ### 1.3 Projets (`/api/projects`)

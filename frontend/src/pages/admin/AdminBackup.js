@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { Database, Download, FileSpreadsheet, Settings, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
+import { Database, Download, FileSpreadsheet, Settings, RefreshCw, CheckCircle, AlertCircle, BookOpen, ChevronDown, ChevronRight } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useAdminTheme } from "@/context/AdminThemeContext";
 import api from "@/services/api";
@@ -35,6 +35,7 @@ const AdminBackup = () => {
   const [exportingExcel, setExportingExcel] = useState(false);
   const [savingConfig, setSavingConfig] = useState(false);
   const [message, setMessage] = useState(null);
+  const [guideOpen, setGuideOpen] = useState(false);
 
   const showMessage = (text, type = "success") => {
     setMessage({ text, type });
@@ -375,6 +376,99 @@ const AdminBackup = () => {
               >
                 {savingConfig ? "Sauvegarde en cours..." : "Sauvegarder la configuration"}
               </button>
+            </div>
+          )}
+        </div>
+
+        {/* Guide de restauration */}
+        <div className="rounded-xl overflow-hidden" style={cardStyle}>
+          <button
+            onClick={() => setGuideOpen(!guideOpen)}
+            data-testid="backup-guide-toggle"
+            className="w-full px-5 py-4 flex items-center justify-between transition-colors"
+            style={{ color: currentTheme.text }}
+          >
+            <span className="font-semibold flex items-center gap-2">
+              <BookOpen size={18} style={{ color: currentTheme.accent }} />
+              Guide de restauration MongoDB
+            </span>
+            {guideOpen
+              ? <ChevronDown size={18} style={{ color: currentTheme.textMuted }} />
+              : <ChevronRight size={18} style={{ color: currentTheme.textMuted }} />
+            }
+          </button>
+
+          {guideOpen && (
+            <div
+              className="px-5 pb-5 space-y-4 border-t text-sm"
+              style={{ borderColor: currentTheme.border, color: currentTheme.textSecondary }}
+            >
+              {/* Prérequis */}
+              <div className="pt-4">
+                <p className="font-semibold mb-2" style={{ color: currentTheme.text }}>1. Prérequis</p>
+                <ul className="space-y-1 list-disc list-inside" style={{ color: currentTheme.textSecondary }}>
+                  <li><code className="px-1 rounded text-xs" style={{ background: currentTheme.bgSection }}>mongoimport</code> — MongoDB Database Tools (recommandé)</li>
+                  <li><code className="px-1 rounded text-xs" style={{ background: currentTheme.bgSection }}>Python 3.8+</code> + <code className="px-1 rounded text-xs" style={{ background: currentTheme.bgSection }}>pymongo</code> — alternative si mongoimport non dispo</li>
+                  <li>Fichier ZIP généré depuis ce panneau (bouton "Exporter JSON")</li>
+                </ul>
+              </div>
+
+              {/* Étape 1 */}
+              <div>
+                <p className="font-semibold mb-2" style={{ color: currentTheme.text }}>2. Décompresser le ZIP</p>
+                <pre
+                  className="p-3 rounded-lg text-xs overflow-x-auto"
+                  style={{ background: currentTheme.bgSection, color: currentTheme.text }}
+                >{`unzip backup_syndicat_YYYY-MM-DD.zip -d /tmp/restore_syndicat/`}</pre>
+              </div>
+
+              {/* Étape 2 — mongoimport */}
+              <div>
+                <p className="font-semibold mb-2" style={{ color: currentTheme.text }}>3. Restauration complète (mongoimport)</p>
+                <pre
+                  className="p-3 rounded-lg text-xs overflow-x-auto"
+                  style={{ background: currentTheme.bgSection, color: currentTheme.text }}
+                >{`for file in /tmp/restore_syndicat/*.json; do
+  collection=$(basename "$file" .json)
+  mongoimport \\
+    --uri="$MONGO_URL" \\
+    --db="test_database" \\
+    --collection="$collection" \\
+    --file="$file" \\
+    --jsonArray \\
+    --mode=upsert
+done`}</pre>
+                <p className="text-xs mt-1" style={{ color: currentTheme.textMuted }}>
+                  <code className="px-1 rounded" style={{ background: currentTheme.bgSection }}>--mode=upsert</code> est idempotent — rejouer la restauration est sans danger.
+                </p>
+              </div>
+
+              {/* Restauration partielle */}
+              <div>
+                <p className="font-semibold mb-2" style={{ color: currentTheme.text }}>4. Restauration partielle (1 collection)</p>
+                <pre
+                  className="p-3 rounded-lg text-xs overflow-x-auto"
+                  style={{ background: currentTheme.bgSection, color: currentTheme.text }}
+                >{`mongoimport --uri="$MONGO_URL" --db="test_database" \\
+  --collection="users" \\
+  --file="/tmp/restore_syndicat/users.json" \\
+  --jsonArray --mode=upsert`}</pre>
+              </div>
+
+              {/* Points d'attention */}
+              <div
+                className="p-3 rounded-lg text-xs space-y-1"
+                style={{ background: `#f59e0b15`, border: `1px solid #f59e0b30`, color: currentTheme.textSecondary }}
+              >
+                <p className="font-semibold" style={{ color: "#f59e0b" }}>Points d'attention</p>
+                <p>• Les <strong>indexes</strong> ne sont pas restaurés par mongoimport. Redémarrer l'application pour les recréer.</p>
+                <p>• Les <strong>fichiers uploadés</strong> (dossier <code>/uploads</code>) ne sont pas inclus dans le ZIP — à sauvegarder séparément.</p>
+                <p>• Le fichier Excel est un complément de lecture, pas la source recommandée pour une restauration automatisée.</p>
+              </div>
+
+              <p className="text-xs" style={{ color: currentTheme.textMuted }}>
+                Documentation complète : <code className="px-1 rounded" style={{ background: currentTheme.bgSection }}>/app/memory/RESTAURATION_MONGODB.md</code>
+              </p>
             </div>
           )}
         </div>
