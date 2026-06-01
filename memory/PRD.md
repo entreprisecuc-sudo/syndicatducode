@@ -357,4 +357,28 @@
 
 ---
 
+## ⚠️ NOTE RÉGLEMENTAIRE — Facturation Électronique Obligatoire (e-invoicing)
+
+**Contexte :** Réforme française B2B (Ordonnance n° 2021-1190) — entrée en vigueur **septembre 2026**.
+
+**Impact sur la plateforme :**
+- L'upload PDF/Excel actuel (`/invoices/submit`) ne suffira plus pour les flux B2B légaux
+- Les factures devront transiter via une **PDP agréée** ou le **PPF (Portail Public de Facturation)**
+- Format structuré requis : **Factur-X** (PDF/A-3 + XML), UBL ou CII
+
+**Calendrier :**
+- Sept. 2026 : Réception obligatoire pour TOUS
+- Sept. 2026 : Émission obligatoire pour les grandes entreprises
+- Sept. 2027 : Émission obligatoire pour PME / TPE / micro
+
+**Actions à prévoir :**
+1. Choisir un PDP partenaire (Chorus Pro, Yooz, etc.)
+2. Adapter le workflow de soumission pour générer du Factur-X
+3. Mettre en place l'e-reporting (données TVA)
+4. Archivage légal 10 ans
+
+**Statut :** 🟡 À planifier — ne pas démarrer sans accord explicite
+
+---
+
 *Dernière mise à jour : 08/03/2026*
