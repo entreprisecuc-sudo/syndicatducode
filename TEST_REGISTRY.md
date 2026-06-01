@@ -42,6 +42,12 @@ Ce document recense tous les tests existants et à implémenter pour le projet.
 | Rejeter portfolio | PUT /api/admin/portfolio/{id}/reject | Intégration | ⏳ À faire |
 | Détail complet user | GET /api/admin/users/{id}/full | Intégration | ⏳ À faire |
 | Historique activité | GET /api/admin/users/{id}/activity | Intégration | ⏳ À faire |
+| **Backup : stats** | GET /api/admin/backup/stats - Comptage documents par collection (24 collections, total docs) | Intégration | ✅ Validé |
+| **Backup : export JSON** | GET /api/admin/backup/export/json - Retourne ZIP contenant 24 fichiers JSON | Intégration | ✅ Validé |
+| **Backup : export Excel** | GET /api/admin/backup/export/excel - Retourne XLSX avec 24 onglets et en-têtes stylisés | Intégration | ✅ Validé |
+| **Backup : config GET** | GET /api/admin/backup/config - Lire la configuration Google Drive + email | Intégration | ✅ Validé |
+| **Backup : config POST** | POST /api/admin/backup/config - Sauvegarder la configuration (upsert) | Intégration | ✅ Validé |
+
 
 ### 1.3 Projets (`/api/projects`)
 

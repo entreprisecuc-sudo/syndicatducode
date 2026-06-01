@@ -63,7 +63,8 @@ import {
   AdminPartners,
   AdminPortfolioValidation,
   AdminUserDetail,
-  AdminBruteForce
+  AdminBruteForce,
+  AdminBackup
 } from "@/pages/admin";
 import AdminProjectRooms from "@/pages/admin/AdminProjectRooms";
 import AdminProjectRoomDetail from "@/pages/admin/AdminProjectRoomDetail";
@@ -275,6 +276,10 @@ function App() {
               <Route
                 path="/syndicat-admin/securite"
                 element={<RoleRoute allowedRoles={["admin"]}><AdminBruteForce /></RoleRoute>}
+              />
+              <Route
+                path="/syndicat-admin/sauvegarde"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminBackup /></RoleRoute>}
               />
 
               {/* ============================================ */}

@@ -169,6 +169,27 @@
 - **Solution** : Application de `handleAnchorClick` au menu mobile dans `Navigation.js`
 - **Comportement** : Depuis n'importe quelle page, un clic sur un lien d'ancre redirige vers la page d'accueil puis défile vers la section correspondante
 
+### ✅ Sauvegarde des Données (Phase 23) — 01/06/2026
+**Objectif** : Protection des données (P0) — export manuel et configuration auto-backup.
+
+**Backend** : `routes/admin/backup.py` (nouveau module)
+- `GET /api/admin/backup/stats` — Comptage de documents pour les 24 collections
+- `GET /api/admin/backup/export/json` — ZIP contenant 1 fichier JSON par collection (ObjectId/datetime sérialisés)
+- `GET /api/admin/backup/export/excel` — XLSX multi-onglets (1 onglet/collection, en-têtes stylisés, colonnes auto-dimensionnées)
+- `GET /api/admin/backup/config` — Lire la configuration sauvegardée
+- `POST /api/admin/backup/config` — Sauvegarder email notif + clé Google Drive JSON + paramètres auto-backup
+
+**Frontend** : `AdminBackup.js` — Page admin complète
+- Résumé global : 24 collections, total documents, date de dernière vérification
+- Boutons export manuel : JSON (ZIP) et Excel (multi-onglets)
+- Tableau détaillé par collection avec comptage de documents
+- Formulaire configuration Google Drive (champ clé JSON + dossier destination + email + fréquence)
+- Badge "Non configuré" visible tant que la clé n'est pas renseignée
+
+**Architecture Google Drive prête** : La clé est stockée en base MongoDB (`backup_config`). L'activation ne nécessite aucun recodage — il suffira d'implémenter la logique d'upload Drive et d'appeler `send_email_notification` existante.
+
+---
+
 ### ✅ Pagination Backend + Correction N+1 (Phase 22) - 01/06/2026
 **Objectif** : Paginer les listings admin et public, corriger les requêtes N+1.
 

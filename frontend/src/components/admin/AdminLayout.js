@@ -9,7 +9,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, Users, BarChart3, 
   FileText, History, Shield, Home, Rocket, Megaphone, Bell, 
-  CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare
+  CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare, Database
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminTheme } from "@/context/AdminThemeContext";
@@ -110,6 +110,12 @@ const ADMIN_MENU_SECTIONS = [
         label: "Anti-Brute Force",
         icon: Shield,
         description: "Configurer la protection anti-brute force et gérer les IP bloquées"
+      },
+      {
+        path: "/syndicat-admin/sauvegarde",
+        label: "Sauvegarde données",
+        icon: Database,
+        description: "Exporter les données de la base MongoDB (JSON, Excel) et configurer la sauvegarde automatique"
       }
     ]
   }
