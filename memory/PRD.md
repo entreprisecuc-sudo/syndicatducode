@@ -169,6 +169,38 @@
 - **Solution** : Application de `handleAnchorClick` au menu mobile dans `Navigation.js`
 - **Comportement** : Depuis n'importe quelle page, un clic sur un lien d'ancre redirige vers la page d'accueil puis défile vers la section correspondante
 
+### ✅ Refactoring Phase 2 – Découpage des gros composants Frontend (Phase 21) - 01/06/2026
+**Objectif** : Respecter la règle n°17 (Composants React < 300 lignes). Tous les fichiers > 500L découpés.
+
+**14 nouveaux sous-composants créés + 1 utilitaire :**
+
+- `utils/billingUtils.js` — formatDate, formatCurrency, downloadInvoiceFile, STATUS_CONFIG (partagé)
+- `components/profile/ProfilePhotoUpload.js` — Upload photo profil (partagé Developer + Commercial)
+- `components/profile/CompanyInfoSection.js` — Section entreprise (partagée)
+- `components/profile/BankingInfoSection.js` — Section bancaire (partagée)
+- `components/developer/profile/PersonalInfoSection.js` — Infos personnelles développeur
+- `components/developer/profile/ProfessionalInfoSection.js` — Profil pro développeur (exp, dispo, liens)
+- `components/billing/InvoiceSubmitForm.js` — Formulaire soumission facture (état interne)
+- `components/billing/InvoiceList.js` — Liste des factures
+- `components/billing/InvoiceViewModal.js` — Modal visualisation PDF/Excel
+- `components/admin/alerts/alertConfig.js` — Config partagée TYPE_CONFIG, STYLE_CONFIG, TARGET_CONFIG
+- `components/admin/alerts/AlertList.js` — Liste des alertes admin
+- `components/admin/alerts/AlertForm.js` — Modal formulaire alerte (état interne)
+- `components/admin/projects/ProjectCard.js` — Carte projet admin
+- `components/admin/projects/ProjectFormModal.js` — Modal formulaire projet (état interne)
+
+**Résultats (réduction de taille) :**
+| Fichier parent | Avant | Après | Réduction |
+|---|---|---|---|
+| DeveloperProfile.js | 676L | 169L | -75% |
+| MemberBilling.js | 637L | 174L | -73% |
+| AdminAlerts.js | 523L | 140L | -73% |
+| AdminProjects.js | 522L | 166L | -68% |
+| CommercialProfile.js | 505L | 237L | -53% |
+
+**Bugs corrigés au passage :**
+- `MemberBilling.js` : Suppression de `getAuthHeaders()` non défini dans les headers du submit (ReferenceError potentiel)
+
 ---
 
 ## Architecture technique
