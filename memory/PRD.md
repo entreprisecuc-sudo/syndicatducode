@@ -188,6 +188,16 @@
 
 **Architecture Google Drive prête** : La clé est stockée en base MongoDB (`backup_config`). L'activation ne nécessite aucun recodage — il suffira d'implémenter la logique d'upload Drive et d'appeler `send_email_notification` existante.
 
+### ✅ Auto-Backup Google Drive + Email (Phase 23b) — 01/06/2026
+- `POST /api/admin/backup/trigger` : génère le ZIP → upload Drive (si clé JSON présente) → email de notification (si email configuré) → historique en base (`backup_history`)
+- `send_backup_notification_email()` ajoutée dans `services/email_service.py` (respecte le pattern DRY existant)
+- Bouton "Déclencher maintenant" dans l'UI avec résultat en temps réel (fichier, Drive, email)
+- `requirements.txt` mis à jour : `openpyxl`, `google-api-python-client`, `google-auth`
+- `export_json()` refactorisé via helper `_generate_zip_buffer()` (DRY interne)
+- PRD corrigé : `test_database` → `syndicat_base`
+
+**Activation Google Drive** : coller la clé JSON dans le formulaire de configuration → la logique est déjà en place.
+
 ### ✅ Documentation Restauration MongoDB (P0) — 01/06/2026
 - Guide complet `/app/memory/RESTAURATION_MONGODB.md` (8 sections : prérequis, décompression, restauration complète via mongoimport, script Python de secours, restauration partielle, vérifications post-restauration, restauration depuis Excel, points d'attention)
 - Accordéon "Guide de restauration MongoDB" intégré directement dans la page admin `AdminBackup.js` avec commandes prêtes à copier-coller
@@ -296,7 +306,7 @@
 
 ---
 
-## Collections MongoDB (DB: test_database)
+## Collections MongoDB (DB: syndicat_base)
 
 | Collection | Description |
 |------------|-------------|

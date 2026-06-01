@@ -299,3 +299,83 @@ Pour toute question, contactez-nous à : contact@syndicatducode.fr
     except Exception as e:
         logger.error(f"Erreur envoi email décision candidature: {e}")
         return False
+
+
+def send_backup_notification_email(
+    to_email: str,
+    filename: str,
+    drive_url: str,
+    drive_enabled: bool,
+    error_message: str = "",
+) -> bool:
+    """
+    Envoie un email de notification après une sauvegarde déclenchée.
+
+    Args:
+        to_email: Email du destinataire
+        filename: Nom du fichier ZIP généré
+        drive_url: URL Google Drive (vide si upload non effectué)
+        drive_enabled: True si Google Drive est configuré
+        error_message: Message d'erreur éventuel (vide si succès)
+
+    Returns:
+        True si l'envoi a réussi
+    """
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = to_email
+        msg['Subject'] = "Sauvegarde MongoDB effectuée - Le Syndicat du Code"
+
+        drive_section = ""
+        if drive_enabled:
+            if drive_url:
+                drive_section = f"""
+📁 GOOGLE DRIVE : Upload réussi
+🔗 Lien : {drive_url}
+"""
+            else:
+                drive_section = """
+📁 GOOGLE DRIVE : Échec de l'upload (voir les logs pour le détail)
+"""
+        else:
+            drive_section = """
+📁 GOOGLE DRIVE : Non configuré (export local uniquement)
+"""
+
+        error_section = ""
+        if error_message:
+            error_section = f"""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ AVERTISSEMENT :
+{error_message}
+"""
+
+        body = f"""
+Bonjour,
+
+Une sauvegarde de la base de données MongoDB a été déclenchée avec succès.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💾 FICHIER GÉNÉRÉ : {filename}
+{drive_section}{error_section}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Notre loi. Unis par le code.
+Le Syndicat du Code
+        """
+
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+
+        logger.info("Email de notification de backup envoyé à %s", to_email)
+        return True
+
+    except Exception as e:
+        logger.error("Erreur envoi email de backup : %s", e)
+        return False

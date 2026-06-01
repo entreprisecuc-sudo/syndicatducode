@@ -1,9 +1,11 @@
 """
 Routes admin - Sauvegarde des Données
 Export manuel JSON (ZIP) et Excel multi-onglets.
-Configuration Google Drive prévue : activable sans recoder (clé stockée en BDD).
+Sauvegarde automatique vers Google Drive + notification email.
+La clé Google est stockée en base : aucun recodage nécessaire à l'activation.
 """
 
+import asyncio
 import io
 import json
 import zipfile
@@ -17,6 +19,9 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
 
 from middleware.auth import RoleChecker
 
@@ -26,6 +31,9 @@ router = APIRouter(prefix="/backup", tags=["Sauvegarde"])
 admin_only = RoleChecker(["admin"])
 
 db = None
+
+# Scope Google Drive : création et gestion des fichiers déposés par l'application
+DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 
 # Liste ordonnée de toutes les collections à sauvegarder
 COLLECTIONS_TO_BACKUP = [
@@ -97,6 +105,70 @@ class BackupConfig(BaseModel):
     auto_backup_frequency: str = "weekly"  # daily | weekly | monthly
 
 
+class TriggerResult(BaseModel):
+    success: bool
+    filename: str
+    drive_uploaded: bool
+    drive_url: str = ""
+    email_sent: bool
+    error: str = ""
+    triggered_at: str
+
+
+# ============================================
+# UTILITAIRES INTERNES
+# ============================================
+
+async def _generate_zip_buffer() -> io.BytesIO:
+    """Génère le ZIP de backup de toutes les collections en mémoire."""
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for collection_name in COLLECTIONS_TO_BACKUP:
+            try:
+                cursor = db[collection_name].find({})
+                documents = await cursor.to_list(length=None)
+                serialized = [_serialize_document(doc) for doc in documents]
+                json_content = json.dumps(serialized, ensure_ascii=False, indent=2)
+                zf.writestr(f"{collection_name}.json", json_content)
+            except Exception as e:
+                logger.error("Erreur export JSON collection %s : %s", collection_name, e)
+                zf.writestr(f"{collection_name}.json", json.dumps({"error": str(e)}))
+    zip_buffer.seek(0)
+    return zip_buffer
+
+
+def _drive_upload_sync(credentials_json: str, folder_id: str, filename: str, file_bytes: bytes) -> str:
+    """
+    Upload synchrone d'un fichier vers Google Drive.
+    Conçu pour être exécuté dans un thread (non-async).
+    Retourne l'URL de partage du fichier.
+    """
+    credentials_info = json.loads(credentials_json)
+    credentials = service_account.Credentials.from_service_account_info(
+        credentials_info,
+        scopes=DRIVE_SCOPES
+    )
+    service = build("drive", "v3", credentials=credentials, cache_discovery=False)
+
+    file_metadata = {"name": filename}
+    if folder_id:
+        file_metadata["parents"] = [folder_id]
+
+    media = MediaIoBaseUpload(
+        io.BytesIO(file_bytes),
+        mimetype="application/zip",
+        resumable=False
+    )
+
+    created = service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields="id,webViewLink"
+    ).execute()
+
+    return created.get("webViewLink", "")
+
+
 # ============================================
 # ENDPOINTS
 # ============================================
@@ -133,21 +205,7 @@ async def export_json():
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H%M%S")
     zip_filename = f"backup_syndicat_{timestamp}.zip"
 
-    zip_buffer = io.BytesIO()
-
-    with zipfile.ZipFile(zip_buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-        for collection_name in COLLECTIONS_TO_BACKUP:
-            try:
-                cursor = db[collection_name].find({})
-                documents = await cursor.to_list(length=None)
-                serialized = [_serialize_document(doc) for doc in documents]
-                json_content = json.dumps(serialized, ensure_ascii=False, indent=2)
-                zf.writestr(f"{collection_name}.json", json_content)
-            except Exception as e:
-                logger.error("Erreur export JSON collection %s : %s", collection_name, e)
-                zf.writestr(f"{collection_name}.json", json.dumps({"error": str(e)}))
-
-    zip_buffer.seek(0)
+    zip_buffer = await _generate_zip_buffer()
     logger.info("Export JSON généré : %s", zip_filename)
 
     return StreamingResponse(
@@ -228,6 +286,98 @@ async def export_excel():
         excel_buffer,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename={excel_filename}"},
+    )
+
+
+@router.post("/trigger", dependencies=[Depends(admin_only)])
+async def trigger_backup():
+    """
+    Déclenche une sauvegarde complète :
+    1. Génère le ZIP de toutes les collections
+    2. Uploade vers Google Drive (si clé configurée)
+    3. Envoie un email de notification (si email configuré)
+    Retourne le résultat détaillé de chaque étape.
+    """
+    config = await db.backup_config.find_one({}, {"_id": 0}) or {}
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H%M%S")
+    filename = f"backup_syndicat_{timestamp}.zip"
+    triggered_at = datetime.now(timezone.utc).isoformat()
+
+    drive_uploaded = False
+    drive_url = ""
+    email_sent = False
+    error = ""
+
+    # Étape 1 — Générer le ZIP
+    try:
+        zip_buffer = await _generate_zip_buffer()
+        file_bytes = zip_buffer.read()
+        logger.info("ZIP de backup généré : %s (%d octets)", filename, len(file_bytes))
+    except Exception as e:
+        logger.error("Erreur génération ZIP : %s", e)
+        return TriggerResult(
+            success=False,
+            filename=filename,
+            drive_uploaded=False,
+            email_sent=False,
+            error=f"Erreur génération ZIP : {e}",
+            triggered_at=triggered_at,
+        )
+
+    # Étape 2 — Upload Google Drive (uniquement si clé présente)
+    credentials_json = config.get("google_drive_credentials_json", "")
+    folder_id = config.get("google_drive_folder_id", "")
+
+    if credentials_json:
+        try:
+            loop = asyncio.get_event_loop()
+            drive_url = await loop.run_in_executor(
+                None,
+                _drive_upload_sync,
+                credentials_json,
+                folder_id,
+                filename,
+                file_bytes,
+            )
+            drive_uploaded = True
+            logger.info("Backup uploadé sur Google Drive : %s", drive_url)
+        except Exception as e:
+            logger.error("Erreur upload Google Drive : %s", e)
+            error = f"Erreur Google Drive : {e}"
+    else:
+        logger.info("Google Drive non configuré — upload ignoré")
+
+    # Étape 3 — Email de notification (si email renseigné)
+    notification_email = config.get("notification_email", "")
+    if notification_email:
+        from services.email_service import send_backup_notification_email
+        email_sent = send_backup_notification_email(
+            to_email=notification_email,
+            filename=filename,
+            drive_url=drive_url,
+            drive_enabled=bool(credentials_json),
+            error_message=error,
+        )
+
+    # Sauvegarde de l'historique en base
+    await db.backup_history.insert_one({
+        "filename": filename,
+        "drive_uploaded": drive_uploaded,
+        "drive_url": drive_url,
+        "email_sent": email_sent,
+        "error": error,
+        "triggered_at": triggered_at,
+    })
+
+    return TriggerResult(
+        success=True,
+        filename=filename,
+        drive_uploaded=drive_uploaded,
+        drive_url=drive_url,
+        email_sent=email_sent,
+        error=error,
+        triggered_at=triggered_at,
     )
 
 

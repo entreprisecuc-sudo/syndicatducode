@@ -49,6 +49,9 @@ Ce document recense tous les tests existants et à implémenter pour le projet.
 | **Backup : config POST** | POST /api/admin/backup/config - Sauvegarder la configuration (upsert) | Intégration | ✅ Validé |
 | **Guide restauration (UI)** | Accordéon "Guide de restauration MongoDB" ouvert/fermé dans AdminBackup.js | Interface | ✅ Validé |
 | **Doc restauration** | Fichier /app/memory/RESTAURATION_MONGODB.md créé (8 sections, scripts mongoimport + Python) | Documentation | ✅ Validé |
+| **Backup : trigger** | POST /api/admin/backup/trigger - Génère ZIP + upload Drive (si clé) + email (si config) | Intégration | ✅ Validé |
+| **Email backup** | send_backup_notification_email dans email_service.py | Email | ✅ Validé |
+
 
 
 

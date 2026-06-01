@@ -34,6 +34,8 @@ const AdminBackup = () => {
   const [exportingJson, setExportingJson] = useState(false);
   const [exportingExcel, setExportingExcel] = useState(false);
   const [savingConfig, setSavingConfig] = useState(false);
+  const [triggering, setTriggering] = useState(false);
+  const [triggerResult, setTriggerResult] = useState(null);
   const [message, setMessage] = useState(null);
   const [guideOpen, setGuideOpen] = useState(false);
 
@@ -110,6 +112,25 @@ const AdminBackup = () => {
       showMessage(detail, "error");
     } finally {
       setSavingConfig(false);
+    }
+  };
+
+  const handleTrigger = async () => {
+    setTriggering(true);
+    setTriggerResult(null);
+    try {
+      const res = await api.post("/admin/backup/trigger");
+      setTriggerResult(res.data);
+      if (res.data.success) {
+        showMessage("Sauvegarde déclenchée avec succès");
+      } else {
+        showMessage(res.data.error || "Erreur lors de la sauvegarde", "error");
+      }
+    } catch (err) {
+      const detail = err.response?.data?.detail || "Erreur lors du déclenchement";
+      showMessage(detail, "error");
+    } finally {
+      setTriggering(false);
     }
   };
 
@@ -329,6 +350,62 @@ const AdminBackup = () => {
               >
                 {savingConfig ? "Sauvegarde en cours..." : "Sauvegarder la configuration"}
               </button>
+
+              {/* Bouton déclenchement */}
+              <div className="pt-4 border-t" style={{ borderColor: currentTheme.border }}>
+                <p className="text-sm font-medium mb-2" style={{ color: currentTheme.text }}>
+                  Déclenchement manuel
+                </p>
+                <p className="text-xs mb-3" style={{ color: currentTheme.textMuted }}>
+                  Génère le ZIP, l'envoie sur Google Drive (si configuré) et envoie l'email de notification.
+                </p>
+                <button
+                  onClick={handleTrigger}
+                  disabled={triggering}
+                  data-testid="backup-trigger-btn"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-opacity disabled:opacity-50"
+                  style={{ background: "#0f4c81", color: "#fff" }}
+                >
+                  <Database size={16} />
+                  {triggering ? "Sauvegarde en cours..." : "Déclencher maintenant"}
+                </button>
+              </div>
+
+              {/* Résultat du dernier déclenchement */}
+              {triggerResult && (
+                <div
+                  className="p-4 rounded-lg text-sm space-y-1"
+                  style={{
+                    background: triggerResult.success ? "#16a34a15" : "#dc262615",
+                    border: `1px solid ${triggerResult.success ? "#16a34a40" : "#dc262640"}`,
+                  }}
+                >
+                  <p className="font-medium" style={{ color: triggerResult.success ? "#16a34a" : "#dc2626" }}>
+                    {triggerResult.success ? "Sauvegarde effectuée" : "Sauvegarde échouée"}
+                  </p>
+                  <p style={{ color: currentTheme.textSecondary }}>
+                    Fichier : <code className="px-1 rounded text-xs" style={{ background: currentTheme.bgSection }}>{triggerResult.filename}</code>
+                  </p>
+                  <p style={{ color: currentTheme.textSecondary }}>
+                    Google Drive : {triggerResult.drive_uploaded
+                      ? <span style={{ color: "#16a34a" }}>Uploadé ✓</span>
+                      : <span style={{ color: "#f59e0b" }}>Non uploadé</span>}
+                    {triggerResult.drive_url && (
+                      <a href={triggerResult.drive_url} target="_blank" rel="noreferrer" className="ml-2 underline" style={{ color: currentTheme.accent }}>
+                        Voir le fichier
+                      </a>
+                    )}
+                  </p>
+                  <p style={{ color: currentTheme.textSecondary }}>
+                    Email : {triggerResult.email_sent
+                      ? <span style={{ color: "#16a34a" }}>Envoyé ✓</span>
+                      : <span style={{ color: "#f59e0b" }}>Non envoyé</span>}
+                  </p>
+                  {triggerResult.error && (
+                    <p className="text-xs mt-1" style={{ color: "#dc2626" }}>{triggerResult.error}</p>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
