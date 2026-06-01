@@ -263,6 +263,11 @@
 
 ---
 
+## Audit technique (déc. 2025)
+- Rapport CTO complet sauvegardé dans **`/app/AUDIT_TECHNIQUE.md`** (à transmettre au prochain fork).
+- Synthèse : projet NON prêt pour la production. Bloquants P0 = chemins absolus codés en dur, `DEV_MODE`/identifiants en clair, uploads exposés publiquement (`/uploads`), absence de rate-limiting auth.
+- Aucune Phase de correction n'a été démarrée. Attendre l'instruction explicite du client (consignes strictes : KISS/DRY/Zéro Hardcoding/aucun test sans accord).
+
 ## Tâches à venir
 
 ### P1 - Intégration Stripe
