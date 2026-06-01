@@ -104,6 +104,12 @@ const ADMIN_MENU_SECTIONS = [
         label: "Historique actions", 
         icon: History,
         description: "Consulter l'historique des actions administratives"
+      },
+      {
+        path: "/syndicat-admin/securite",
+        label: "Anti-Brute Force",
+        icon: Shield,
+        description: "Configurer la protection anti-brute force et gérer les IP bloquées"
       }
     ]
   }

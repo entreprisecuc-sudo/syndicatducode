@@ -62,7 +62,8 @@ import {
   AdminSubscriptions,
   AdminPartners,
   AdminPortfolioValidation,
-  AdminUserDetail
+  AdminUserDetail,
+  AdminBruteForce
 } from "@/pages/admin";
 import AdminProjectRooms from "@/pages/admin/AdminProjectRooms";
 import AdminProjectRoomDetail from "@/pages/admin/AdminProjectRoomDetail";
@@ -270,6 +271,10 @@ function App() {
               <Route 
                 path="/syndicat-admin/validation-books" 
                 element={<RoleRoute allowedRoles={["admin"]}><AdminPortfolioValidation /></RoleRoute>} 
+              />
+              <Route
+                path="/syndicat-admin/securite"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminBruteForce /></RoleRoute>}
               />
 
               {/* ============================================ */}

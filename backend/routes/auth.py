@@ -3,8 +3,8 @@ Routes d'authentification
 Inscription, connexion, mot de passe oublié, réinitialisation
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends
-from datetime import datetime, timezone
+from fastapi import APIRouter, HTTPException, status, Depends, Request
+from datetime import datetime, timezone, timedelta
 import uuid
 import logging
 
@@ -42,6 +42,76 @@ def set_database(database):
     """Injecte la connexion à la base de données"""
     global db
     db = database
+
+
+def _get_client_ip(request: Request) -> str:
+    """Extrait l'IP réelle du client (gère les proxys)"""
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+async def _check_brute_force(ip: str) -> None:
+    """Vérifie si l'IP est bloquée par la protection anti-brute force"""
+    config = await db.brute_force_config.find_one({}, {"_id": 0})
+    if not config:
+        config = {"max_attempts": 5, "block_duration_minutes": 15, "window_minutes": 5, "is_active": True}
+
+    if not config.get("is_active", True):
+        return
+
+    now = datetime.now(timezone.utc)
+
+    # Vérifier si déjà bloqué
+    blocked = await db.blocked_ips.find_one({"ip": ip}, {"_id": 0})
+    if blocked:
+        blocked_until = datetime.fromisoformat(blocked["blocked_until"])
+        if blocked_until > now:
+            remaining = max(1, int((blocked_until - now).total_seconds() / 60) + 1)
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Trop de tentatives de connexion. Réessayez dans {remaining} minute(s)."
+            )
+        else:
+            await db.blocked_ips.delete_one({"ip": ip})
+
+    # Compter les tentatives récentes
+    window_start = (now - timedelta(minutes=config["window_minutes"])).isoformat()
+    count = await db.login_attempts.count_documents({
+        "ip": ip,
+        "timestamp": {"$gte": window_start}
+    })
+
+    if count >= config["max_attempts"]:
+        block_duration = config["block_duration_minutes"]
+        blocked_until = (now + timedelta(minutes=block_duration)).isoformat()
+        await db.blocked_ips.update_one(
+            {"ip": ip},
+            {"$set": {
+                "ip": ip,
+                "blocked_at": now.isoformat(),
+                "blocked_until": blocked_until,
+                "attempts_count": count
+            }},
+            upsert=True
+        )
+        logger.warning(f"IP bloquée pour brute force: {ip} ({count} tentatives)")
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Trop de tentatives de connexion. IP bloquée pour {block_duration} minute(s)."
+        )
+
+
+async def _log_failed_attempt(ip: str, email: str) -> None:
+    """Enregistre une tentative de connexion échouée"""
+    now = datetime.now(timezone.utc)
+    await db.login_attempts.insert_one({
+        "ip": ip,
+        "email": email,
+        "timestamp": now.isoformat(),
+        "created_at": now
+    })
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -94,30 +164,37 @@ async def register(user_data: UserRegister):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(credentials: UserLogin):
+async def login(credentials: UserLogin, request: Request):
     """
     Connexion utilisateur
-    
+
     - Retourne un token JWT
     - Indique si c'est la première connexion (choix du rôle requis)
+    - Protégé contre le brute force (rate limiting par IP)
     """
+    ip = _get_client_ip(request)
+
+    # Vérification anti-brute force
+    await _check_brute_force(ip)
+
     # Rechercher l'utilisateur
     user = await db.users.find_one({"email": credentials.email.lower()})
-    
+
     if not user:
-        # Message générique pour ne pas révéler si l'email existe
+        await _log_failed_attempt(ip, credentials.email.lower())
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou mot de passe incorrect"
         )
-    
+
     # Vérifier le mot de passe
     if not verify_password(credentials.password, user["password_hash"]):
+        await _log_failed_attempt(ip, credentials.email.lower())
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou mot de passe incorrect"
         )
-    
+
     # Vérifier le statut du compte
     if user.get("status") == UserStatus.SUSPENDED:
         suspension_reason = user.get("suspension_reason", "")

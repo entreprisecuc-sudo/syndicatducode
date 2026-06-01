@@ -31,7 +31,17 @@
 - Layout commun avec sidebar responsive
 - Actions rapides contextuelles
 
-### ✅ Back-office Admin (Phase 4)
+### ✅ Sécurité - Phase 1 (Audit CTO - Corrections P0)
+- **P0 TERMINÉ** : Chemins d'uploads centralisés via `UPLOADS_DIR` dans `.env` → `settings.py` (01/06/2026)
+- **P0 REPORTÉ** : Fichiers uploads accessibles publiquement → à fermer avant mise en production
+- **P0 REPORTÉ** : DEV_MODE + TEST_ACCOUNTS → à désactiver avant mise en production
+- **P0 TERMINÉ** : Protection Anti-Brute Force complète (01/06/2026)
+  - Rate limiting par IP sur `/api/auth/login`
+  - Configuration admin (max tentatives, durée blocage, fenêtre détection)
+  - Interface admin `/syndicat-admin/securite` avec toggle, déblocage manuel
+  - Collections MongoDB : `login_attempts`, `blocked_ips`, `brute_force_config`
+
+
 - URL secrète : `/syndicat-admin`
 - Gestion des utilisateurs (liste, statut, rôle)
 - Gestion des demandes de contact

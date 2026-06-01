@@ -310,6 +310,12 @@ async def startup_event():
     await db.invoices.create_index("user_id")
     await db.invoices.create_index([("user_id", 1), ("status", 1)])
     await db.user_billing.create_index("user_id", unique=True)
+    # Index pour la protection anti-brute force
+    await db.login_attempts.create_index("ip")
+    await db.login_attempts.create_index("timestamp")
+    await db.login_attempts.create_index("created_at", expireAfterSeconds=86400)
+    await db.blocked_ips.create_index("ip", unique=True)
+    await db.blocked_ips.create_index("blocked_until")
     logger.info("Indexes créés pour toutes les collections")
 
 

@@ -11,3 +11,4 @@ export { default as AdminAlerts } from "./AdminAlerts";
 export { default as AdminSubscriptions } from "./AdminSubscriptions";
 export { default as AdminPartners } from "./AdminPartners";
 export { default as AdminPortfolioValidation } from "./AdminPortfolioValidation";
+export { default as AdminBruteForce } from "./AdminBruteForce";
