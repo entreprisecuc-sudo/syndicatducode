@@ -222,6 +222,7 @@ from routes.messages import router as messages_router, set_database as set_messa
 from routes.notifications import router as notifications_router, set_database as set_notifications_db
 from routes.project_rooms import router as project_rooms_router, set_database as set_project_rooms_db
 from routes.invoices import router as invoices_router, set_database as set_invoices_db
+from routes.citadelle import router as citadelle_router, set_database as set_citadelle_db
 
 # Injecter la base de données dans les modules
 set_auth_db(db)
@@ -237,6 +238,7 @@ set_messages_db(db)
 set_notifications_db(db)
 set_project_rooms_db(db)
 set_invoices_db(db)
+set_citadelle_db(db)
 
 # Inclure les routes
 api_router.include_router(auth_router)
@@ -252,6 +254,7 @@ api_router.include_router(messages_router)
 api_router.include_router(notifications_router)
 api_router.include_router(project_rooms_router)
 api_router.include_router(invoices_router)
+api_router.include_router(citadelle_router)
 
 
 # ============================================
@@ -316,6 +319,12 @@ async def startup_event():
     await db.login_attempts.create_index("created_at", expireAfterSeconds=86400)
     await db.blocked_ips.create_index("ip", unique=True)
     await db.blocked_ips.create_index("blocked_until")
+    # Index pour La Citadelle Numérique
+    await db.citadelle_listings.create_index("slug", unique=True, sparse=True)
+    await db.citadelle_listings.create_index([("status", 1), ("type", 1), ("created_at", -1)])
+    await db.citadelle_listings.create_index([("title", "text"), ("description", "text")])
+    await db.citadelle_transactions.create_index([("seller_id", 1), ("status", 1)])
+    await db.citadelle_transactions.create_index([("buyer_id", 1), ("status", 1)])
     logger.info("Indexes créés pour toutes les collections")
 
 

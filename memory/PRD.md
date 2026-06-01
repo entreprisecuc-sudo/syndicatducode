@@ -417,3 +417,36 @@
 ---
 
 *Dernière mise à jour : 08/03/2026*
+
+---
+
+## La Citadelle Numérique — Projet intégré (02/06/2026)
+
+### Phase A — Socle technique (TERMINÉ 02/06/2026)
+- Frontend Citadelle intégré sous `/citadelle` dans l'app React existante
+- Charte graphique officielle (Bleu #0F2747, Or #C9A45C, Montserrat + Inter)
+- Auth indépendante : `/api/citadelle/auth/` avec `platform: "citadelle"` (isolation stricte)
+- Page d'accueil (Hero, Catégories, Comment ça marche, Services, CTA)
+- Pages Connexion + Inscription
+- Espace membre (stub)
+- Menu admin "La Citadelle Numérique" dans le back-office Syndicat
+- Index MongoDB `citadelle_listings` + `citadelle_transactions`
+
+### Phase B — Marketplace Annonces (À FAIRE)
+- CRUD annonces (backend + admin)
+- Workflow validation admin (pending → active → rejected)
+- Pages publiques : liste + détail annonce
+- Espace membre : créer/gérer annonces
+- Recherche + filtres
+
+### Phase C — Transactions & Messagerie (À FAIRE — nécessite Stripe réel)
+### Phase D — Services, Avis & Blog (À FAIRE)
+### Phase E — Statistiques & SEO (À FAIRE)
+
+### Fichiers de référence Citadelle
+- `/app/memory/CITADELLE_CHARTE_GRAPHIQUE.md` — Charte visuelle complète
+- `/app/memory/CITADELLE_ARCHITECTURE.md` — Architecture technique validée
+- `/app/backend/routes/citadelle/` — Routes backend Citadelle
+- `/app/frontend/src/pages/citadelle/` — Pages frontend Citadelle
+- `/app/frontend/src/components/citadelle/` — Composants Citadelle
+- `/app/frontend/src/config/citadelleConstants.js` — Config et constantes

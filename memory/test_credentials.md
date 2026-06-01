@@ -13,4 +13,12 @@
 - **Email** : commercial1772755291@test.com
 - **Mot de passe** : TestPassword123!
 
-> Note : Ces comptes sont visibles via TEST_ACCOUNTS dans constants.js (DEV_MODE actif volontairement pendant le développement)
+## Compte La Citadelle Numérique (test)
+- **Email** : jean.test.citadelle@test.fr
+- **Mot de passe** : TestPass1
+- **Role** : citadelle_user
+- **Platform** : citadelle
+- **URL** : /citadelle
+
+> Note : Les comptes Syndicat sont visibles via TEST_ACCOUNTS dans constants.js (DEV_MODE actif volontairement).
+> Le compte Citadelle est isolé (platform: "citadelle") — ne peut pas se connecter sur le Syndicat.

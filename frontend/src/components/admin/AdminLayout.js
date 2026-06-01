@@ -118,6 +118,17 @@ const ADMIN_MENU_SECTIONS = [
         description: "Exporter les données de la base MongoDB (JSON, Excel) et configurer la sauvegarde automatique"
       }
     ]
+  },
+  {
+    title: "La Citadelle Numérique",
+    items: [
+      {
+        path: "/syndicat-admin/citadelle",
+        label: "Tableau de bord",
+        icon: Shield,
+        description: "Gérer la plateforme La Citadelle Numérique — annonces, transactions, services"
+      }
+    ]
   }
 ];
 

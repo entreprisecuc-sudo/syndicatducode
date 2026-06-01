@@ -68,6 +68,14 @@ import {
 } from "@/pages/admin";
 import AdminProjectRooms from "@/pages/admin/AdminProjectRooms";
 import AdminProjectRoomDetail from "@/pages/admin/AdminProjectRoomDetail";
+import AdminCitadelle from "@/pages/admin/AdminCitadelle";
+
+// Pages La Citadelle Numérique
+import CitadelleHome from "@/pages/citadelle/CitadelleHome";
+import CitadelleLogin from "@/pages/citadelle/CitadelleLogin";
+import CitadelleRegister from "@/pages/citadelle/CitadelleRegister";
+import CitadelleDashboard from "@/pages/citadelle/member/CitadelleDashboard";
+import { CitadelleAuthProvider } from "@/context/CitadelleAuthContext";
 
 // Pages partagées (tous les membres)
 import MemberPartners from "@/pages/shared/MemberPartners";
@@ -97,6 +105,7 @@ const PageLayout = ({ children }) => (
 function App() {
   return (
     <AuthProvider>
+      <CitadelleAuthProvider>
       <ModalProvider>
         <AdminThemeProvider>
           <div className="App">
@@ -283,6 +292,22 @@ function App() {
               />
 
               {/* ============================================ */}
+              {/* LA CITADELLE NUMÉRIQUE */}
+              {/* ============================================ */}
+
+              <Route path="/citadelle" element={<CitadelleHome />} />
+              <Route path="/citadelle/connexion" element={<CitadelleLogin />} />
+              <Route path="/citadelle/inscription" element={<CitadelleRegister />} />
+              <Route path="/citadelle/espace-membre" element={<CitadelleDashboard />} />
+              <Route path="/citadelle/espace-membre/*" element={<CitadelleDashboard />} />
+
+              {/* Admin Citadelle */}
+              <Route
+                path="/syndicat-admin/citadelle"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelle /></RoleRoute>}
+              />
+
+              {/* ============================================ */}
               {/* REDIRECTION DASHBOARD GÉNÉRIQUE */}
               {/* ============================================ */}
               
@@ -296,6 +321,7 @@ function App() {
         </div>
         </AdminThemeProvider>
       </ModalProvider>
+      </CitadelleAuthProvider>
     </AuthProvider>
   );
 }
