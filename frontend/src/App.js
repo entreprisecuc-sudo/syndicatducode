@@ -70,12 +70,20 @@ import AdminProjectRooms from "@/pages/admin/AdminProjectRooms";
 import AdminProjectRoomDetail from "@/pages/admin/AdminProjectRoomDetail";
 import AdminCitadelle from "@/pages/admin/AdminCitadelle";
 
-// Pages La Citadelle Numérique
+// Pages La Citadelle Numérique — Socle
 import CitadelleHome from "@/pages/citadelle/CitadelleHome";
 import CitadelleLogin from "@/pages/citadelle/CitadelleLogin";
 import CitadelleRegister from "@/pages/citadelle/CitadelleRegister";
 import CitadelleDashboard from "@/pages/citadelle/member/CitadelleDashboard";
 import { CitadelleAuthProvider } from "@/context/CitadelleAuthContext";
+
+// Pages La Citadelle Numérique — Phase B (Marketplace Annonces)
+import CitadelleListings from "@/pages/citadelle/CitadelleListings";
+import CitadelleListingDetail from "@/pages/citadelle/CitadelleListingDetail";
+import CitadelleMyListings from "@/pages/citadelle/member/CitadelleMyListings";
+import CitadelleCreateListing from "@/pages/citadelle/member/CitadelleCreateListing";
+import CitadelleEditListing from "@/pages/citadelle/member/CitadelleEditListing";
+import AdminCitadelleListings from "@/pages/admin/AdminCitadelleListings";
 
 // Pages partagées (tous les membres)
 import MemberPartners from "@/pages/shared/MemberPartners";
@@ -295,9 +303,17 @@ function App() {
               {/* LA CITADELLE NUMÉRIQUE */}
               {/* ============================================ */}
 
+              {/* Citadelle — Pages publiques */}
               <Route path="/citadelle" element={<CitadelleHome />} />
               <Route path="/citadelle/connexion" element={<CitadelleLogin />} />
               <Route path="/citadelle/inscription" element={<CitadelleRegister />} />
+              <Route path="/citadelle/annonces" element={<CitadelleListings />} />
+              <Route path="/citadelle/annonces/:slug" element={<CitadelleListingDetail />} />
+
+              {/* Citadelle — Espace membre (routes spécifiques avant le wildcard) */}
+              <Route path="/citadelle/espace-membre/mes-annonces/creer" element={<CitadelleCreateListing />} />
+              <Route path="/citadelle/espace-membre/mes-annonces/:id/modifier" element={<CitadelleEditListing />} />
+              <Route path="/citadelle/espace-membre/mes-annonces" element={<CitadelleMyListings />} />
               <Route path="/citadelle/espace-membre" element={<CitadelleDashboard />} />
               <Route path="/citadelle/espace-membre/*" element={<CitadelleDashboard />} />
 
@@ -305,6 +321,10 @@ function App() {
               <Route
                 path="/syndicat-admin/citadelle"
                 element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelle /></RoleRoute>}
+              />
+              <Route
+                path="/syndicat-admin/citadelle/annonces"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleListings /></RoleRoute>}
               />
 
               {/* ============================================ */}

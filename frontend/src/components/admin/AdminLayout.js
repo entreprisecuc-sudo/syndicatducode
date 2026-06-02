@@ -9,7 +9,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, Users, BarChart3, 
   FileText, History, Shield, Home, Rocket, Megaphone, Bell, 
-  CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare, Database
+  CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare, Database, Globe
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminTheme } from "@/context/AdminThemeContext";
@@ -127,6 +127,12 @@ const ADMIN_MENU_SECTIONS = [
         label: "Tableau de bord",
         icon: Shield,
         description: "Gérer la plateforme La Citadelle Numérique — annonces, transactions, services"
+      },
+      {
+        path: "/syndicat-admin/citadelle/annonces",
+        label: "Annonces",
+        icon: Globe,
+        description: "Valider, rejeter et mettre en avant les annonces soumises"
       }
     ]
   }

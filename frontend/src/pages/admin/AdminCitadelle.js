@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Shield, Globe, ShoppingCart, Cloud, Monitor, Users, Settings, ExternalLink } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
@@ -30,12 +31,12 @@ export default function AdminCitadelle() {
   };
 
   const modules = [
-    { icon: Globe, label: "Annonces", desc: "Gérer et valider les annonces de vente", status: "Phase B", count: 0 },
-    { icon: ShoppingCart, label: "Transactions", desc: "Suivre les transactions en cours", status: "Phase C", count: 0 },
-    { icon: Users, label: "Utilisateurs", desc: "Membres inscrits sur La Citadelle", status: "Actif", count: null },
-    { icon: Cloud, label: "Services", desc: "Demandes de services (éval., audit, migration)", status: "Phase D", count: 0 },
-    { icon: Monitor, label: "Blog", desc: "Articles et publications", status: "Phase D", count: 0 },
-    { icon: Settings, label: "Paramètres", desc: "Configuration de la plateforme", status: "Phase A", count: null },
+    { icon: Globe, label: "Annonces", desc: "Gérer et valider les annonces de vente", status: "Phase B", count: 0, href: "/syndicat-admin/citadelle/annonces" },
+    { icon: ShoppingCart, label: "Transactions", desc: "Suivre les transactions en cours", status: "Phase C", count: 0, href: null },
+    { icon: Users, label: "Utilisateurs", desc: "Membres inscrits sur La Citadelle", status: "Actif", count: null, href: null },
+    { icon: Cloud, label: "Services", desc: "Demandes de services (éval., audit, migration)", status: "Phase D", count: 0, href: null },
+    { icon: Monitor, label: "Blog", desc: "Articles et publications", status: "Phase D", count: 0, href: null },
+    { icon: Settings, label: "Paramètres", desc: "Configuration de la plateforme", status: "Phase A", count: null, href: null },
   ];
 
   return (
@@ -87,16 +88,17 @@ export default function AdminCitadelle() {
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 opacity-50">Modules disponibles</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {modules.map(({ icon: Icon, label, desc, status, count }) => {
-              const isActive = status === "Actif" || status === "Phase A";
-              return (
+            {modules.map(({ icon: Icon, label, desc, status, count, href }) => {
+              const isActive = status === "Actif" || status === "Phase A" || status === "Phase B";
+              const cardContent = (
                 <div
                   key={label}
-                  className="p-5 rounded-xl"
+                  className="p-5 rounded-xl transition-all"
                   style={{
                     background: "var(--admin-bg-card, rgba(255,255,255,0.05))",
-                    border: "1px solid var(--admin-border, rgba(255,255,255,0.1))",
-                    opacity: isActive ? 1 : 0.6
+                    border: href ? "1px solid rgba(201,164,92,0.3)" : "1px solid var(--admin-border, rgba(255,255,255,0.1))",
+                    opacity: isActive ? 1 : 0.6,
+                    cursor: href ? "pointer" : "default"
                   }}
                   data-testid={`admin-citadelle-module-${label.toLowerCase()}`}
                 >
@@ -119,7 +121,15 @@ export default function AdminCitadelle() {
                       {loading ? "—" : count}
                     </p>
                   )}
+                  {href && <p className="text-xs mt-3" style={{ color: "#C9A45C" }}>Accéder →</p>}
                 </div>
+              );
+              return href ? (
+                <Link key={label} to={href} className="block hover:scale-[1.02] transition-transform">
+                  {cardContent}
+                </Link>
+              ) : (
+                <div key={label}>{cardContent}</div>
               );
             })}
           </div>
@@ -131,7 +141,7 @@ export default function AdminCitadelle() {
           <div className="space-y-3">
             {[
               { phase: "Phase A", label: "Socle technique", status: "done", items: "Frontend, Auth, Admin menu" },
-              { phase: "Phase B", label: "Marketplace Annonces", status: "next", items: "CRUD annonces, validation, recherche, filtres" },
+              { phase: "Phase B", label: "Marketplace Annonces", status: "done", items: "CRUD annonces, validation admin, recherche, filtres" },
               { phase: "Phase C", label: "Transactions & Paiements", status: "todo", items: "Offres, messagerie, Stripe escrow, litiges" },
               { phase: "Phase D", label: "Services, Avis & Blog", status: "todo", items: "Catalogue services, avis post-transaction, blog CMS" },
               { phase: "Phase E", label: "Stats & SEO", status: "todo", items: "Dashboard analytique, SEO, performance" },
