@@ -25,7 +25,7 @@ const TYPE_OPTIONS = [
 export default function CitadelleEditListing() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useCitadelleAuth();
+  const { isAuthenticated, loading: authLoading } = useCitadelleAuth();
 
   const [form, setForm] = useState(null);
   const [loadingData, setLoadingData] = useState(true);
@@ -35,12 +35,13 @@ export default function CitadelleEditListing() {
 
   // Chargement de l'annonce existante
   useEffect(() => {
+    if (authLoading) return; // Wait for auth context to finish loading
     if (!isAuthenticated) {
       navigate("/citadelle/connexion");
       return;
     }
     loadListing();
-  }, [id, isAuthenticated]);
+  }, [id, isAuthenticated, authLoading]);
 
   const loadListing = async () => {
     setLoadingData(true);

@@ -23,13 +23,14 @@ export default function CitadelleMyListings() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
-  const { isAuthenticated } = useCitadelleAuth();
+  const { isAuthenticated, loading: authLoading } = useCitadelleAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (authLoading) return; // Wait for auth context to finish loading
     if (!isAuthenticated) { navigate("/citadelle/connexion"); return; }
     fetchMyListings();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading]);
 
   const fetchMyListings = async () => {
     setLoading(true);
