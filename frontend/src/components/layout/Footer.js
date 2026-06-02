@@ -5,9 +5,9 @@
  */
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Shield, Code, Briefcase, Loader2, ExternalLink } from "lucide-react";
-import { CONFIG, DEV_MODE, TEST_ACCOUNTS, API_URL, CITADELLE_URL } from "@/config/constants";
+import { useNavigate, Link } from "react-router-dom";
+import { Shield, Code, Briefcase, Loader2 } from "lucide-react";
+import { CONFIG, DEV_MODE, TEST_ACCOUNTS, API_URL } from "@/config/constants";
 import { useAuth } from "@/context/AuthContext";
 import { setAuthData } from "@/services/authService";
 import api from "@/services/api";
@@ -190,10 +190,8 @@ const Footer = () => {
             >
               Notre écosystème
             </h4>
-            <a
-              href={CITADELLE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to="/citadelle"
               className="inline-flex flex-col gap-2 p-4 rounded-xl transition-all duration-200 hover:scale-105"
               style={{ 
                 border: "1px solid #C9A45C", 
@@ -205,12 +203,11 @@ const Footer = () => {
               <span className="flex items-center gap-2 text-sm font-bold" style={{ color: "#C9A45C" }}>
                 <Shield size={16} />
                 La Citadelle Numérique
-                <ExternalLink size={12} style={{ opacity: 0.7 }} />
               </span>
               <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 Achetez. Vendez. Sécurisez.
               </span>
-            </a>
+            </Link>
           </div>
         </div>
         
