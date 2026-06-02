@@ -32,24 +32,28 @@ const CitadelleNav = () => {
     <>
       <nav
         className="sticky top-0 z-50 border-b"
-        style={{ background: CITADELLE_COLORS.night, borderColor: "rgba(201,164,92,0.2)" }}
+        style={{
+          background: CITADELLE_COLORS.white,
+          borderColor: CITADELLE_COLORS.border,
+          boxShadow: "0 1px 12px rgba(15,39,71,0.06)"
+        }}
         data-testid="citadelle-nav"
       >
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
           {/* Logo */}
           <Link to="/citadelle" className="flex items-center gap-3" data-testid="citadelle-logo">
-            <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-10 w-auto" />
+            <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-14 w-auto" />
           </Link>
 
           {/* Liens desktop */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-7">
             {CITADELLE_NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                className="text-sm font-medium transition-colors duration-200"
+                className="text-sm font-semibold transition-colors duration-200"
                 style={{
-                  color: location.pathname === link.href ? CITADELLE_COLORS.gold : "rgba(255,255,255,0.75)"
+                  color: location.pathname === link.href ? CITADELLE_COLORS.gold : CITADELLE_COLORS.blue
                 }}
               >
                 {link.label}
@@ -63,7 +67,7 @@ const CitadelleNav = () => {
               <>
                 <Link
                   to="/citadelle/espace-membre"
-                  className="text-sm font-medium px-4 py-2 rounded-lg transition-all"
+                  className="text-sm font-semibold px-4 py-2 rounded-lg transition-all"
                   style={{ color: CITADELLE_COLORS.gold, border: `1px solid ${CITADELLE_COLORS.gold}` }}
                   data-testid="citadelle-nav-espace"
                 >
@@ -72,7 +76,7 @@ const CitadelleNav = () => {
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-1 text-sm px-3 py-2 rounded-lg transition-all"
-                  style={{ color: "rgba(255,255,255,0.6)" }}
+                  style={{ color: CITADELLE_COLORS.textMuted }}
                   data-testid="citadelle-nav-logout"
                 >
                   <LogOut size={15} />
@@ -83,8 +87,8 @@ const CitadelleNav = () => {
               <>
                 <Link
                   to="/citadelle/connexion"
-                  className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-all"
-                  style={{ color: "rgba(255,255,255,0.8)" }}
+                  className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-all"
+                  style={{ color: CITADELLE_COLORS.blue }}
                   data-testid="citadelle-nav-login"
                 >
                   <LogIn size={15} />
@@ -92,7 +96,7 @@ const CitadelleNav = () => {
                 </Link>
                 <Link
                   to="/citadelle/inscription"
-                  className="text-sm font-bold px-5 py-2 rounded-lg transition-all hover:scale-105"
+                  className="text-sm font-bold px-5 py-2.5 rounded-lg transition-all hover:scale-105"
                   style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                   data-testid="citadelle-nav-register"
                 >
@@ -106,7 +110,7 @@ const CitadelleNav = () => {
           <button
             className="md:hidden p-2 rounded-lg"
             onClick={() => setMenuOpen(!menuOpen)}
-            style={{ color: "white" }}
+            style={{ color: CITADELLE_COLORS.blue }}
             data-testid="citadelle-mobile-toggle"
           >
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
