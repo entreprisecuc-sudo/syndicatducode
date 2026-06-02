@@ -1,13 +1,14 @@
 /**
  * Page d'accueil — La Citadelle Numérique
  * Charte graphique : Bleu Citadelle #0F2747 / Or Prestige #C9A45C
- * Sections : Hero → Catégories → Comment ça marche → Services → CTA
+ * Sections : Hero (+ barre de recherche) → Catégories → Comment ça marche → Services → CTA
  */
 
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Shield, TrendingUp, Lock, Globe, ShoppingCart, Cloud,
-  Monitor, Users, CheckCircle, ArrowRight, Star,
+  Monitor, Users, ArrowRight, Star, Search, SlidersHorizontal,
   ShieldCheck, ArrowRightLeft, FileSearch, ChevronRight
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
@@ -21,6 +22,106 @@ const CATEGORY_ICONS = {
 
 const SERVICE_ICONS = {
   TrendingUp, ShieldCheck, ArrowRightLeft, FileSearch
+};
+
+// ── Barre de recherche ────────────────────────────────────────────────────────
+
+const BUDGET_OPTIONS = [
+  { value: "", label: "Tous les budgets" },
+  { value: "0-5000", label: "Moins de 5 000 €" },
+  { value: "5000-20000", label: "5 000 € — 20 000 €" },
+  { value: "20000-50000", label: "20 000 € — 50 000 €" },
+  { value: "50000-100000", label: "50 000 € — 100 000 €" },
+  { value: "100000+", label: "Plus de 100 000 €" },
+];
+
+const SearchBar = () => {
+  const [keyword, setKeyword] = useState("");
+  const [type, setType] = useState("");
+  const [budget, setBudget] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (keyword.trim()) params.set("q", keyword.trim());
+    if (type) params.set("type", type);
+    if (budget) params.set("budget", budget);
+    navigate(`/citadelle/annonces?${params.toString()}`);
+  };
+
+  return (
+    <div
+      className="relative z-10 mx-4 md:mx-0 rounded-2xl p-2"
+      style={{
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(201,164,92,0.3)",
+        backdropFilter: "blur(16px)",
+        marginTop: "2rem"
+      }}
+      data-testid="citadelle-searchbar"
+    >
+      <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-2">
+        {/* Mot-clé */}
+        <div className="flex items-center gap-3 flex-1 px-4 py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.07)" }}>
+          <Search size={18} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0 }} />
+          <input
+            type="text"
+            value={keyword}
+            onChange={e => setKeyword(e.target.value)}
+            placeholder="Mot-clé, niche, technologie..."
+            className="bg-transparent outline-none text-sm w-full"
+            style={{ color: "white" }}
+            data-testid="citadelle-search-keyword"
+          />
+        </div>
+
+        {/* Type d'actif */}
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl md:w-52" style={{ background: "rgba(255,255,255,0.07)" }}>
+          <SlidersHorizontal size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0 }} />
+          <select
+            value={type}
+            onChange={e => setType(e.target.value)}
+            className="bg-transparent outline-none text-sm w-full cursor-pointer appearance-none"
+            style={{ color: type ? "white" : "rgba(255,255,255,0.5)" }}
+            data-testid="citadelle-search-type"
+          >
+            <option value="" style={{ background: "#0F2747" }}>Type d'actif</option>
+            {CITADELLE_CATEGORIES.map(c => (
+              <option key={c.slug} value={c.slug} style={{ background: "#0F2747" }}>{c.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Budget */}
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl md:w-52" style={{ background: "rgba(255,255,255,0.07)" }}>
+          <TrendingUp size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0 }} />
+          <select
+            value={budget}
+            onChange={e => setBudget(e.target.value)}
+            className="bg-transparent outline-none text-sm w-full cursor-pointer appearance-none"
+            style={{ color: budget ? "white" : "rgba(255,255,255,0.5)" }}
+            data-testid="citadelle-search-budget"
+          >
+            {BUDGET_OPTIONS.map(o => (
+              <option key={o.value} value={o.value} style={{ background: "#0F2747" }}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Bouton recherche */}
+        <button
+          type="submit"
+          className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105 flex-shrink-0"
+          style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+          data-testid="citadelle-search-submit"
+        >
+          <Search size={16} />
+          Rechercher
+        </button>
+      </form>
+    </div>
+  );
 };
 
 // ── Section Hero ─────────────────────────────────────────────────────────────
@@ -41,7 +142,7 @@ const HeroSection = () => (
     <div className="absolute bottom-1/4 left-1/4 w-64 h-64 rounded-full opacity-8" style={{ background: CITADELLE_COLORS.blue, filter: "blur(80px)" }} />
 
     <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-20 w-full">
-      <div className="max-w-3xl">
+      <div className="max-w-4xl">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 text-xs font-semibold tracking-wider uppercase"
           style={{ background: "rgba(201,164,92,0.15)", border: "1px solid rgba(201,164,92,0.3)", color: CITADELLE_COLORS.gold }}>
@@ -66,7 +167,7 @@ const HeroSection = () => (
         </p>
 
         {/* CTAs */}
-        <div className="flex flex-wrap gap-4 mb-12">
+        <div className="flex flex-wrap gap-4 mb-8">
           <Link
             to="/citadelle/annonces"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base transition-all hover:scale-105"
@@ -87,8 +188,11 @@ const HeroSection = () => (
           </Link>
         </div>
 
+        {/* Barre de recherche */}
+        <SearchBar />
+
         {/* Stats */}
-        <div className="flex flex-wrap gap-6">
+        <div className="flex flex-wrap gap-6 mt-8">
           {[
             { value: "100%", label: "Transactions sécurisées", icon: Lock },
             { value: "Gratuit", label: "Publication d'annonce", icon: Star },
