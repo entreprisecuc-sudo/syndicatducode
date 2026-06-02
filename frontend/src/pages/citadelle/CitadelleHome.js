@@ -112,7 +112,7 @@ const SearchBar = () => {
         {/* Bouton recherche */}
         <button
           type="submit"
-          className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105 flex-shrink-0"
+          className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105 w-full md:w-auto flex-shrink-0"
           style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
           data-testid="citadelle-search-submit"
         >
@@ -141,7 +141,7 @@ const HeroSection = () => (
     <div className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full opacity-10" style={{ background: CITADELLE_COLORS.gold, filter: "blur(120px)" }} />
     <div className="absolute bottom-1/4 left-1/4 w-64 h-64 rounded-full opacity-8" style={{ background: CITADELLE_COLORS.blue, filter: "blur(80px)" }} />
 
-    <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-20 w-full">
+    <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-20 w-full">
       <div className="max-w-4xl">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 text-xs font-semibold tracking-wider uppercase"
@@ -192,18 +192,18 @@ const HeroSection = () => (
         <SearchBar />
 
         {/* Stats */}
-        <div className="flex flex-wrap gap-6 mt-8">
+        <div className="flex flex-wrap gap-4 mt-8">
           {[
             { value: "100%", label: "Transactions sécurisées", icon: Lock },
             { value: "Gratuit", label: "Publication d'annonce", icon: Star },
             { value: "5%", label: "Commission à la vente", icon: TrendingUp },
           ].map(({ value, label, icon: Icon }) => (
-            <div key={label} className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: "rgba(201,164,92,0.15)" }}>
+            <div key={label} className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(201,164,92,0.15)" }}>
                 <Icon size={18} style={{ color: CITADELLE_COLORS.gold }} />
               </div>
               <div>
-                <p className="font-bold text-base" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>{value}</p>
+                <p className="font-bold text-sm md:text-base" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>{value}</p>
                 <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</p>
               </div>
             </div>
@@ -234,7 +234,7 @@ const CategoriesSection = () => (
               key={cat.slug}
               to={`/citadelle/annonces?type=${cat.slug}`}
               className="group flex flex-col items-center gap-3 p-6 rounded-2xl transition-all duration-200 hover:-translate-y-1"
-              style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}", boxShadow: "0 2px 8px rgba(15,39,71,0.05)` }}
+              style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, boxShadow: "0 2px 8px rgba(15,39,71,0.05)" }}
               data-testid={`citadelle-category-${cat.slug}`}
             >
               <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"

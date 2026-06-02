@@ -121,7 +121,7 @@ const CitadelleNav = () => {
       {/* Menu mobile */}
       {menuOpen && (
         <div
-          className="fixed inset-0 z-40 flex flex-col pt-16"
+          className="fixed inset-0 z-40 flex flex-col pt-20 md:hidden"
           style={{ background: CITADELLE_COLORS.night }}
         >
           <div className="flex flex-col gap-2 p-6">
