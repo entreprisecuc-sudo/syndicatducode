@@ -432,12 +432,15 @@
 - Menu admin "La Citadelle Numérique" dans le back-office Syndicat
 - Index MongoDB `citadelle_listings` + `citadelle_transactions`
 
-### Phase B — Marketplace Annonces (À FAIRE)
-- CRUD annonces (backend + admin)
+### Phase B — Marketplace Annonces (TERMINÉ 02/06/2026)
+- CRUD annonces complet (backend : create, read, update, delete, admin validate/reject/feature)
 - Workflow validation admin (pending → active → rejected)
-- Pages publiques : liste + détail annonce
-- Espace membre : créer/gérer annonces
-- Recherche + filtres
+- Pages publiques : liste avec filtres/recherche/pagination + détail annonce
+- Espace membre : créer (formulaire 4 étapes), voir mes annonces, modifier une annonce
+- Interface admin Citadelle : tableau de bord + page dédiée annonces (validation/rejet/mise en avant)
+- Menu admin latéral enrichi (section Citadelle Numérique avec lien Annonces)
+- Correction race condition auth (CitadelleMyListings, CitadelleEditListing)
+- Alignement slugs CITADELLE_CATEGORIES avec LISTING_TYPES backend
 
 ### Phase C — Transactions & Messagerie (À FAIRE — nécessite Stripe réel)
 ### Phase D — Services, Avis & Blog (À FAIRE)

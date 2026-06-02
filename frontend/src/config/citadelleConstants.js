@@ -30,13 +30,13 @@ export const CITADELLE_COLORS = {
   error: "#DC2626",
 };
 
-// Catégories d'annonces disponibles
+// Catégories d'annonces — les slugs doivent correspondre aux LISTING_TYPES du backend
 export const CITADELLE_CATEGORIES = [
-  { slug: "site-vitrine", label: "Sites internet", icon: "Globe", description: "Sites vitrines, blogs, portfolios" },
-  { slug: "ecommerce", label: "E-commerce", icon: "ShoppingCart", description: "Boutiques en ligne, marketplaces" },
-  { slug: "saas", label: "SaaS", icon: "Cloud", description: "Logiciels en tant que service" },
-  { slug: "application", label: "Applications web", icon: "Monitor", description: "Apps web, outils en ligne" },
-  { slug: "reseaux-sociaux", label: "Réseaux sociaux", icon: "Users", description: "Comptes, pages, communautés" },
+  { slug: "website",        label: "Sites internet",    icon: "Globe",        description: "Sites vitrines, blogs, portfolios" },
+  { slug: "ecommerce",      label: "E-commerce",        icon: "ShoppingCart", description: "Boutiques en ligne, marketplaces" },
+  { slug: "saas",           label: "SaaS",              icon: "Cloud",        description: "Logiciels en tant que service" },
+  { slug: "webapp",         label: "Applications web",  icon: "Monitor",      description: "Apps web, outils en ligne" },
+  { slug: "social_account", label: "Réseaux sociaux",   icon: "Users",        description: "Comptes, pages, communautés" },
 ];
 
 // Types de services proposés
