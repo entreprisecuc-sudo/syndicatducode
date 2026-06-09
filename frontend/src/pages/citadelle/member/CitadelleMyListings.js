@@ -8,7 +8,7 @@ import { Plus, Eye, Edit2, Trash2, AlertCircle, Clock, CheckCircle, XCircle, Sho
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
-import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { CITADELLE_COLORS, getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
 
 const STATUS_CONFIG = {
   draft:    { label: "Brouillon",       color: CITADELLE_COLORS.textMuted, bg: "rgba(95,102,114,0.1)", icon: Edit2 },
@@ -105,8 +105,8 @@ export default function CitadelleMyListings() {
                   {/* Image miniature */}
                   <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
                     style={{ background: CITADELLE_COLORS.bg }}>
-                    {listing.images?.[0]
-                      ? <img src={listing.images[0]} alt="" className="w-full h-full object-cover" onError={e => e.target.style.display="none"} />
+                    {listing.images?.filter(Boolean).find(img => isImageFile(img))
+                      ? <img src={getListingImageUrl(listing.images.filter(Boolean).find(img => isImageFile(img)))} alt="" className="w-full h-full object-cover" onError={e => e.target.style.display="none"} />
                       : <span className="text-2xl">🏰</span>}
                   </div>
                   {/* Infos */}
