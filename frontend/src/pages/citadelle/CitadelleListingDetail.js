@@ -11,6 +11,7 @@ import {
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { getListingImageUrl } from "@/config/citadelleConstants";
 
 const TYPE_CONFIG = {
   website:        { label: "Site internet",    icon: Globe },
@@ -63,7 +64,9 @@ export default function CitadelleListingDetail() {
   );
 
   const { label: typeLabel, icon: TypeIcon } = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
-  const images = listing.images?.length ? listing.images : [null];
+  const images = listing.images?.filter(Boolean).length
+    ? listing.images.filter(Boolean)
+    : [null];
 
   return (
     <CitadelleLayout>
@@ -83,7 +86,7 @@ export default function CitadelleListingDetail() {
             {/* Image principale */}
             <div className="rounded-2xl overflow-hidden" style={{ height: "320px", background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
               {images[activeImg] ? (
-                <img src={images[activeImg]} alt={listing.title} className="w-full h-full object-cover" onError={e => e.target.style.display="none"} />
+                <img src={getListingImageUrl(images[activeImg])} alt={listing.title} className="w-full h-full object-cover" onError={e => e.target.style.display="none"} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <span className="text-6xl">🏰</span>
@@ -95,7 +98,7 @@ export default function CitadelleListingDetail() {
                 {images.map((img, i) => (
                   <button key={i} onClick={() => setActiveImg(i)} className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 transition-all"
                     style={{ border: i === activeImg ? `2px solid ${CITADELLE_COLORS.gold}` : `2px solid ${CITADELLE_COLORS.border}` }}>
-                    {img ? <img src={img} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-lg">🏰</div>}
+                    {img ? <img src={getListingImageUrl(img)} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-lg">🏰</div>}
                   </button>
                 ))}
               </div>

@@ -29,8 +29,8 @@ CITADELLE_UPLOADS_DIR = Path("/app/backend/uploads/citadelle")
 CITADELLE_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Types d'images autorisés et taille max (5 Mo)
-ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
-MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"}
+MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024  # 10 Mo
 
 def set_database(database):
     global db
@@ -74,7 +74,7 @@ async def upload_listing_image(
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Type de fichier non autorisé. Formats acceptés : JPEG, PNG, WebP, GIF"
+            detail="Type de fichier non autorisé. Formats acceptés : JPEG, PNG, WebP, GIF, SVG"
         )
 
     # Lecture et validation taille
@@ -86,9 +86,9 @@ async def upload_listing_image(
         )
 
     # Génération du nom de fichier unique
-    ext = Path(file.filename).suffix.lower() if file.filename else ".jpg"
-    if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
-        ext = ".jpg"
+    ext_map = {".jpg": ".jpg", ".jpeg": ".jpg", ".png": ".png", ".webp": ".webp", ".gif": ".gif", ".svg": ".svg"}
+    raw_ext = Path(file.filename).suffix.lower() if file.filename else ".jpg"
+    ext = ext_map.get(raw_ext, ".jpg")
     filename = f"listing_{uuid.uuid4().hex}{ext}"
     file_path = CITADELLE_UPLOADS_DIR / filename
 

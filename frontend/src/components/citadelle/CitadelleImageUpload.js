@@ -13,12 +13,12 @@
 import { useState, useRef } from "react";
 import { Upload, Link2, X, Image as ImageIcon, Loader } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
-import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { CITADELLE_COLORS, getListingImageUrl } from "@/config/citadelleConstants";
 
 const MAX_IMAGES   = 5;
-const MAX_SIZE_MB  = 5;
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-
+const MAX_SIZE_MB  = 10;
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
+const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"];
 /**
  * Un slot image unique : toggle URL / Upload
  */
@@ -41,7 +41,7 @@ function ImageSlot({ index, value, onUpdate, inputStyle }) {
 
     // Validation côté client
     if (!ALLOWED_TYPES.includes(file.type)) {
-      setUploadError("Format non supporté. Utilisez JPEG, PNG ou WebP.");
+      setUploadError("Format non supporté. Utilisez JPEG, PNG, WebP ou GIF.");
       return;
     }
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
@@ -108,7 +108,7 @@ function ImageSlot({ index, value, onUpdate, inputStyle }) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
         className="hidden"
         onChange={handleFileChange}
         data-testid={`image-file-input-${index}`}
@@ -120,7 +120,7 @@ function ImageSlot({ index, value, onUpdate, inputStyle }) {
           style={{ background: "rgba(201,164,92,0.06)", border: `1px solid rgba(201,164,92,0.2)` }}>
           <div className="w-12 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center">
             <img
-              src={value.startsWith("/") ? `${process.env.REACT_APP_BACKEND_URL}${value}` : value}
+              src={getListingImageUrl(value)}
               alt={`Aperçu ${index + 1}`}
               className="w-full h-full object-cover"
               onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
@@ -190,7 +190,7 @@ export function CitadelleImageUpload({ images, onChange, inputStyle, labelStyle 
           Captures d'écran
         </label>
         <span className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-          {slots.filter(Boolean).length}/{MAX_IMAGES} — JPEG, PNG, WebP · max {MAX_SIZE_MB} Mo
+          {slots.filter(Boolean).length}/{MAX_IMAGES} — JPEG, PNG, WebP, GIF, SVG · max {MAX_SIZE_MB} Mo
         </span>
       </div>
 

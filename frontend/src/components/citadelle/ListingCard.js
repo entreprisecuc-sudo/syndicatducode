@@ -3,9 +3,10 @@
  * Composant réutilisable pour la liste et les suggestions
  */
 
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, BarChart2, Calendar, ShieldCheck, Star } from "lucide-react";
-import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { CITADELLE_COLORS, getListingImageUrl } from "@/config/citadelleConstants";
 
 const TYPE_CONFIG = {
   website:       { label: "Site internet",    icon: Globe },
@@ -19,7 +20,9 @@ const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000
 
 export default function ListingCard({ listing }) {
   const { label: typeLabel, icon: TypeIcon } = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
-  const mainImage = listing.images?.[0] || PLACEHOLDER_IMG;
+  const mainImage = listing.images?.filter(Boolean)[0]
+    ? getListingImageUrl(listing.images.filter(Boolean)[0])
+    : PLACEHOLDER_IMG;
 
   return (
     <Link

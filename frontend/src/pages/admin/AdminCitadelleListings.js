@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { CheckCircle, XCircle, Star, Eye, Clock, Filter, AlertCircle } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
+import { getListingImageUrl } from "@/config/citadelleConstants";
 
 const STATUS_LABELS = {
   pending:  { label: "En attente", color: "#F59E0B", bg: "rgba(245,158,11,0.1)" },
@@ -156,7 +157,7 @@ export default function AdminCitadelleListings() {
                   <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center"
                     style={{ background: "rgba(255,255,255,0.05)" }}>
                     {listing.images?.[0]
-                      ? <img src={listing.images[0]} alt="" className="w-full h-full object-cover" />
+                      ? <img src={getListingImageUrl(listing.images[0])} alt="" className="w-full h-full object-cover" onError={e => e.target.style.display="none"} />
                       : <span className="text-xl">🏰</span>}
                   </div>
                   {/* Infos */}

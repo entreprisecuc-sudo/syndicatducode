@@ -54,3 +54,16 @@ export const CITADELLE_NAV_LINKS = [
   { href: "/citadelle/services", label: "Services" },
   { href: "/citadelle/blog", label: "Blog" },
 ];
+
+/**
+ * Résout l'URL complète d'une image d'annonce.
+ * - Chemins relatifs /uploads/* → préfixés avec REACT_APP_BACKEND_URL
+ * - URLs externes http(s):// → retournées telles quelles
+ * - null/undefined → null
+ */
+export const getListingImageUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  if (path.startsWith("/")) return `${process.env.REACT_APP_BACKEND_URL}${path}`;
+  return path;
+};
