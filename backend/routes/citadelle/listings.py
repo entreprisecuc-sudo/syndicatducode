@@ -3,11 +3,12 @@ Routes annonces — La Citadelle Numérique
 Gestion complète du cycle de vie des annonces : création, publication, validation admin
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends, Query
+from fastapi import APIRouter, HTTPException, status, Depends, Query, UploadFile, File, Request
 from pydantic import BaseModel, Field, HttpUrl
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
-import re, uuid
+from pathlib import Path
+import re, uuid, shutil
 import logging
 
 from middleware.auth import get_current_user
@@ -18,6 +19,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Citadelle Listings"])
 
 db = None
+
+# Dossier d'upload pour les images d'annonces Citadelle
+CITADELLE_UPLOADS_DIR = Path("/app/backend/uploads/citadelle")
+CITADELLE_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Types d'images autorisés et taille max (5 Mo)
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
 
 def set_database(database):
     global db
@@ -36,6 +45,56 @@ def generate_slug(title: str) -> str:
 
 def generate_listing_id() -> str:
     return str(uuid.uuid4())
+
+
+# ── Upload image annonce ────────────────────────────────────────────────────────
+
+@router.post("/upload-image")
+async def upload_listing_image(
+    file: UploadFile = File(...),
+    request: Request = None
+):
+    """
+    Upload une image pour une annonce Citadelle.
+    - Types acceptés : JPEG, PNG, WebP, GIF
+    - Taille max : 5 Mo
+    - Authentification requise (token Citadelle)
+    - Retourne l'URL publique de l'image
+    """
+    # Vérification authentification
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token manquant")
+
+    # Validation type de fichier
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Type de fichier non autorisé. Formats acceptés : JPEG, PNG, WebP, GIF"
+        )
+
+    # Lecture et validation taille
+    content = await file.read()
+    if len(content) > MAX_IMAGE_SIZE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Fichier trop volumineux. Taille maximale : 5 Mo"
+        )
+
+    # Génération du nom de fichier unique
+    ext = Path(file.filename).suffix.lower() if file.filename else ".jpg"
+    if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
+        ext = ".jpg"
+    filename = f"listing_{uuid.uuid4().hex}{ext}"
+    file_path = CITADELLE_UPLOADS_DIR / filename
+
+    # Sauvegarde
+    with open(file_path, "wb") as buffer:
+        buffer.write(content)
+
+    url = f"/uploads/citadelle/{filename}"
+    logger.info(f"[Citadelle] Image uploadée: {url}")
+    return {"url": url, "filename": filename}
 
 
 async def require_citadelle_user(current_user: dict = Depends(get_current_user)) -> dict:

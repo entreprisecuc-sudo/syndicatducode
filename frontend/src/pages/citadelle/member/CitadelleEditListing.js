@@ -10,6 +10,7 @@ import {
   ChevronLeft, CheckCircle, AlertCircle, ArrowLeft
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
+import { CitadelleImageUpload } from "@/components/citadelle/CitadelleImageUpload";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
@@ -65,7 +66,7 @@ export default function CitadelleEditListing() {
         description: listing.description || "",
         technologies: (listing.technologies || []).join(", "),
         url_preview: listing.url_preview || "",
-        images: [...(listing.images || []), "", "", ""].slice(0, 3),
+        images: [...(listing.images || []), "", "", "", "", ""].slice(0, 5),
       });
     } catch {
       setNotFound(true);
@@ -311,19 +312,12 @@ export default function CitadelleEditListing() {
           </div>
 
           {/* Captures d'écran */}
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-              Captures d'écran <span className="font-normal text-xs">(URLs d'images, 3 max)</span>
-            </label>
-            {form.images.map((img, i) => (
-              <input key={i} value={img}
-                onChange={e => { const arr = [...form.images]; arr[i] = e.target.value; set("images", arr); }}
-                placeholder={`URL image ${i + 1}`}
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none mb-2"
-                style={inputStyle}
-              />
-            ))}
-          </div>
+          <CitadelleImageUpload
+            images={form.images}
+            onChange={(imgs) => set("images", imgs)}
+            inputStyle={inputStyle}
+            labelStyle={labelStyle}
+          />
         </div>
 
         {/* Boutons d'action */}
