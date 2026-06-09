@@ -5,17 +5,18 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, ChevronRight, UserPlus, X, Eye, EyeOff } from "lucide-react";
+import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, ChevronRight, UserPlus, X, Eye, EyeOff, Castle } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import Pagination from "@/components/shared/Pagination";
 import api from "@/services/api";
 
 // Configuration des rôles
 const ROLE_CONFIG = {
-  commercial: { label: "Commercial", icon: Briefcase, color: "#10b981" },
-  developer: { label: "Développeur", icon: Code, color: "#3b82f6" },
-  admin: { label: "Admin", icon: Shield, color: "#ef4444" },
-  null: { label: "Non défini", icon: Users, color: "#6b7280" }
+  commercial:      { label: "Commercial",  icon: Briefcase, color: "#10b981" },
+  developer:       { label: "Développeur", icon: Code,      color: "#3b82f6" },
+  admin:           { label: "Admin",       icon: Shield,    color: "#ef4444" },
+  citadelle_user:  { label: "Citadelle",   icon: Castle,    color: "#C9A45C" },
+  null:            { label: "Non défini",  icon: Users,     color: "#6b7280" }
 };
 
 // Configuration des statuts
@@ -439,6 +440,16 @@ const AdminUsers = () => {
                         <RoleIcon size={12} />
                         {roleConfig.label}
                       </span>
+                      {/* Badge plateforme Citadelle */}
+                      {user.platform === "citadelle" && (
+                        <span
+                          className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded font-semibold"
+                          style={{ background: "rgba(201,164,92,0.15)", color: "#C9A45C", border: "1px solid rgba(201,164,92,0.3)" }}
+                        >
+                          <Castle size={10} />
+                          La Citadelle
+                        </span>
+                      )}
                       {/* Statut */}
                       <span 
                         className="text-xs px-2 py-0.5 rounded"
@@ -471,7 +482,8 @@ const AdminUsers = () => {
                     </button>
                   )}
                   
-                  {/* Changer rôle */}
+                  {/* Changer rôle — masqué pour les comptes Citadelle (géré côté Citadelle) */}
+                  {user.platform !== "citadelle" ? (
                   <select
                     value={user.role || ""}
                     onChange={(e) => updateUserRole(user.id, e.target.value)}
@@ -489,6 +501,7 @@ const AdminUsers = () => {
                     <option value="developer">Développeur</option>
                     <option value="admin">Admin</option>
                   </select>
+                  ) : null}
                   
                   {/* Indicateur cliquable */}
                   <ChevronRight 
