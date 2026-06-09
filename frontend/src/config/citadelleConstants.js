@@ -64,6 +64,8 @@ export const CITADELLE_NAV_LINKS = [
 export const getListingImageUrl = (path) => {
   if (!path) return null;
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  // Les chemins /uploads/* doivent passer par /api/uploads/* pour le routage Kubernetes
+  if (path.startsWith("/uploads/")) return `${process.env.REACT_APP_BACKEND_URL}/api${path}`;
   if (path.startsWith("/")) return `${process.env.REACT_APP_BACKEND_URL}${path}`;
   return path;
 };

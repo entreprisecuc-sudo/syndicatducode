@@ -60,6 +60,8 @@ app = FastAPI(
 
 # Monter les fichiers statiques (uploads)
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
+# Second point de montage pour l'accès via le routage Kubernetes (/api/* → backend)
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="api_uploads")
 
 # Router principal
 api_router = APIRouter(prefix="/api")
