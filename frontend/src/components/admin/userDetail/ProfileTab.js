@@ -6,17 +6,18 @@
 import { useState } from "react";
 import { 
   User, Phone, MapPin, Briefcase, Clock, Calendar,
-  Github, Linkedin, Globe, Shield, Code, Users, UserX, UserCheck, Loader2, X
+  Github, Linkedin, Globe, Shield, Code, Users, UserX, UserCheck, Loader2, X, Castle
 } from "lucide-react";
 import { API_URL } from "@/config/constants";
 import api from "@/services/api";
 
 // Configuration des rôles
 const ROLE_CONFIG = {
-  commercial: { label: "Commercial", icon: Briefcase, color: "#10b981" },
-  developer: { label: "Développeur", icon: Code, color: "#3b82f6" },
-  admin: { label: "Admin", icon: Shield, color: "#ef4444" },
-  null: { label: "Non défini", icon: Users, color: "#6b7280" }
+  commercial:     { label: "Commercial",  icon: Briefcase, color: "#10b981" },
+  developer:      { label: "Développeur", icon: Code,      color: "#3b82f6" },
+  admin:          { label: "Admin",       icon: Shield,    color: "#ef4444" },
+  citadelle_user: { label: "Citadelle",   icon: Castle,    color: "#C9A45C" },
+  null:           { label: "Non défini",  icon: Users,     color: "#6b7280" }
 };
 
 // Configuration des statuts
@@ -203,6 +204,16 @@ export const ProfileTab = ({ user, profile, onUserUpdate }) => {
               <RoleIcon size={16} />
               {roleConfig.label}
             </span>
+
+            {/* Badge plateforme Citadelle */}
+            {user.platform === "citadelle" && (
+              <span
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold"
+                style={{ background: "rgba(201,164,92,0.12)", color: "#C9A45C", border: "1px solid rgba(201,164,92,0.25)" }}
+              >
+                <Castle size={14} /> La Citadelle Numérique
+              </span>
+            )}
             
             {/* Statut */}
             <span 

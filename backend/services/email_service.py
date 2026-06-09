@@ -357,6 +357,109 @@ Marketplace française d'actifs numériques
         return False
 
 
+def send_citadelle_listing_approved_email(to_email: str, listing_title: str, listing_slug: str) -> bool:
+    """
+    Notifie le vendeur que son annonce a été validée et est en ligne.
+
+    Args:
+        to_email: Email du vendeur
+        listing_title: Titre de l'annonce
+        listing_slug: Slug pour construire le lien public
+    """
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = to_email
+        msg['Subject'] = f"Votre annonce est en ligne — La Citadelle Numérique"
+
+        listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
+
+        body = f"""
+Bonjour,
+
+Bonne nouvelle ! Votre annonce a été validée par notre équipe et est maintenant visible sur La Citadelle Numérique.
+
+📋 Annonce : {listing_title}
+🔗 Lien public : {listing_url}
+
+Les acheteurs peuvent désormais la découvrir et vous contacter directement.
+
+Bon courage pour votre vente !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+La Citadelle Numérique
+Marketplace française d'actifs numériques
+{CITADELLE_URL}
+        """
+
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+
+        logger.info(f"[Citadelle] Email validation envoyé à {to_email} pour annonce: {listing_title[:40]}")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Citadelle] Erreur email validation annonce: {e}")
+        return False
+
+
+def send_citadelle_listing_rejected_email(to_email: str, listing_title: str, reason: str) -> bool:
+    """
+    Notifie le vendeur que son annonce a été refusée avec le motif détaillé.
+
+    Args:
+        to_email: Email du vendeur
+        listing_title: Titre de l'annonce
+        reason: Motif du refus saisi par l'admin
+    """
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = to_email
+        msg['Subject'] = f"Votre annonce nécessite des modifications — La Citadelle Numérique"
+
+        dashboard_url = f"{CITADELLE_URL}/citadelle/espace-membre/mes-annonces"
+
+        body = f"""
+Bonjour,
+
+Nous avons examiné votre annonce et elle ne peut pas être publiée en l'état.
+
+📋 Annonce : {listing_title}
+
+❌ Motif du refus / modifications demandées :
+{reason}
+
+Vous pouvez modifier votre annonce depuis votre espace membre et la soumettre à nouveau :
+{dashboard_url}
+
+Notre équipe la réexaminera dans les plus brefs délais.
+
+N'hésitez pas à nous contacter si vous avez des questions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+La Citadelle Numérique
+Marketplace française d'actifs numériques
+{CITADELLE_URL}
+        """
+
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+
+        logger.info(f"[Citadelle] Email refus annonce envoyé à {to_email}: {listing_title[:40]}")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Citadelle] Erreur email refus annonce: {e}")
+        return False
+
+
 def send_backup_notification_email(    to_email: str,
     filename: str,
     drive_url: str,

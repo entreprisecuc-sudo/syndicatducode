@@ -13,6 +13,10 @@ import logging
 
 from middleware.auth import get_current_user
 from services.auth_service import decode_access_token
+from services.email_service import (
+    send_citadelle_listing_approved_email,
+    send_citadelle_listing_rejected_email
+)
 
 logger = logging.getLogger(__name__)
 
@@ -410,12 +414,12 @@ async def admin_validate_listing(
     listing_id: str,
     current_user: dict = Depends(require_admin)
 ):
-    """Admin : valide une annonce pending → active"""
+    """Admin : valide une annonce → active. Notifie le vendeur par email."""
     listing = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
     if not listing:
         raise HTTPException(status_code=404, detail="Annonce introuvable")
-    if listing["status"] != "pending":
-        raise HTTPException(status_code=400, detail=f"L'annonce est en statut '{listing['status']}', pas 'pending'")
+    if listing["status"] not in ("pending", "rejected"):
+        raise HTTPException(status_code=400, detail=f"L'annonce est déjà en statut '{listing['status']}'")
 
     now = datetime.now(timezone.utc)
     expires = now + timedelta(days=LISTING_EXPIRY_DAYS)
@@ -426,9 +430,19 @@ async def admin_validate_listing(
             "status": "active",
             "published_at": now.isoformat(),
             "expires_at": expires.isoformat(),
-            "updated_at": now.isoformat()
+            "updated_at": now.isoformat(),
+            "rejection_reason": None
         }}
     )
+
+    # Email de notification au vendeur
+    if listing.get("seller_email"):
+        send_citadelle_listing_approved_email(
+            listing["seller_email"],
+            listing["title"],
+            listing["slug"]
+        )
+
     logger.info(f"[Citadelle Admin] Annonce validée: {listing_id} par {current_user.get('email')}")
     return {"message": "Annonce validée et publiée avec succès"}
 
@@ -453,6 +467,15 @@ async def admin_reject_listing(
             "updated_at": now
         }}
     )
+
+    # Email de notification au vendeur avec le motif détaillé
+    if listing.get("seller_email"):
+        send_citadelle_listing_rejected_email(
+            listing["seller_email"],
+            listing["title"],
+            data.reason
+        )
+
     logger.info(f"[Citadelle Admin] Annonce rejetée: {listing_id} - Raison: {data.reason[:50]}")
     return {"message": "Annonce rejetée"}
 
