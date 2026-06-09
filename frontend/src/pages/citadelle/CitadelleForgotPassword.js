@@ -53,7 +53,7 @@ export default function CitadelleForgotPassword() {
 
         <div
           className="rounded-2xl p-8"
-          style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,164,92,0.2)", backdropFilter: "blur(12px)" }}
           data-testid="forgot-password-card"
         >
           {sent ? (
@@ -66,10 +66,10 @@ export default function CitadelleForgotPassword() {
               <h1 className="text-xl font-bold mb-2" style={{ color: CITADELLE_COLORS.white }}>
                 Email envoyé !
               </h1>
-              <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
+              <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.5)" }}>
                 Si un compte Citadelle existe avec l'adresse <strong style={{ color: CITADELLE_COLORS.white }}>{email}</strong>, vous recevrez un lien de réinitialisation dans quelques minutes.
               </p>
-              <p className="text-xs mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
+              <p className="text-xs mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
                 Vérifiez vos courriers indésirables si vous ne recevez rien.
               </p>
               <Link
@@ -87,7 +87,7 @@ export default function CitadelleForgotPassword() {
                 <h1 className="text-xl font-bold mb-1" style={{ color: CITADELLE_COLORS.white }}>
                   Mot de passe oublié ?
                 </h1>
-                <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
                   Saisissez votre email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
                 </p>
               </div>
@@ -105,7 +105,7 @@ export default function CitadelleForgotPassword() {
                     Adresse email
                   </label>
                   <div className="relative">
-                    <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: CITADELLE_COLORS.textMuted }} />
+                    <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }} />
                     <input
                       type="email"
                       value={email}
@@ -114,9 +114,9 @@ export default function CitadelleForgotPassword() {
                       autoFocus
                       className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none"
                       style={{
-                        background: "rgba(255,255,255,0.05)",
-                        border: `1px solid ${CITADELLE_COLORS.border}`,
-                        color: CITADELLE_COLORS.white
+                        background: "rgba(255,255,255,0.07)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: "white"
                       }}
                       data-testid="forgot-email-input"
                     />
@@ -136,7 +136,7 @@ export default function CitadelleForgotPassword() {
                 </button>
               </form>
 
-              <p className="text-center text-sm mt-6" style={{ color: CITADELLE_COLORS.textMuted }}>
+              <p className="text-center text-sm mt-6" style={{ color: "rgba(255,255,255,0.4)" }}>
                 <Link
                   to="/citadelle/connexion"
                   className="inline-flex items-center gap-1 font-medium transition-colors"

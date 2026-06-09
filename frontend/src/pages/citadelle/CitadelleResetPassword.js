@@ -77,7 +77,7 @@ export default function CitadelleResetPassword() {
 
         <div
           className="rounded-2xl p-8"
-          style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,164,92,0.2)", backdropFilter: "blur(12px)" }}
           data-testid="reset-password-card"
         >
           {success ? (
@@ -90,7 +90,7 @@ export default function CitadelleResetPassword() {
               <h1 className="text-xl font-bold mb-2" style={{ color: CITADELLE_COLORS.white }}>
                 Mot de passe modifié !
               </h1>
-              <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
+              <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
                 Votre mot de passe a été réinitialisé avec succès. Redirection vers la connexion dans 3 secondes...
               </p>
             </div>
@@ -101,7 +101,7 @@ export default function CitadelleResetPassword() {
                 <h1 className="text-xl font-bold mb-1" style={{ color: CITADELLE_COLORS.white }}>
                   Nouveau mot de passe
                 </h1>
-                <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
                   Choisissez un mot de passe sécurisé pour votre compte Citadelle.
                 </p>
               </div>
@@ -129,9 +129,9 @@ export default function CitadelleResetPassword() {
                       autoFocus
                       className="w-full px-4 py-3 pr-11 rounded-xl text-sm outline-none"
                       style={{
-                        background: "rgba(255,255,255,0.05)",
-                        border: `1px solid ${CITADELLE_COLORS.border}`,
-                        color: CITADELLE_COLORS.white
+                        background: "rgba(255,255,255,0.07)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: "white"
                       }}
                       data-testid="reset-new-password-input"
                     />
@@ -139,12 +139,12 @@ export default function CitadelleResetPassword() {
                       type="button"
                       onClick={() => setShowPw(p => !p)}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2"
-                      style={{ color: CITADELLE_COLORS.textMuted }}
+                      style={{ color: "rgba(255,255,255,0.4)" }}
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
-                  <p className="text-xs mt-1.5" style={{ color: CITADELLE_COLORS.textMuted }}>
+                  <p className="text-xs mt-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>
                     Doit contenir : 8 caractères min, 1 majuscule, 1 minuscule, 1 chiffre
                   </p>
                 </div>
@@ -161,9 +161,9 @@ export default function CitadelleResetPassword() {
                     placeholder="Répétez votre mot de passe"
                     className="w-full px-4 py-3 rounded-xl text-sm outline-none"
                     style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: `1px solid ${CITADELLE_COLORS.border}`,
-                      color: CITADELLE_COLORS.white
+                      background: "rgba(255,255,255,0.07)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      color: "white"
                     }}
                     data-testid="reset-confirm-password-input"
                   />
