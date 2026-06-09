@@ -136,21 +136,21 @@ export default function CitadelleMyListings() {
                         <Eye size={15} />
                       </Link>
                     )}
+                    {["draft", "rejected", "active", "pending"].includes(listing.status) && (
+                      <Link to={`/citadelle/espace-membre/mes-annonces/${listing.id}/modifier`}
+                        className="p-2 rounded-lg transition-all hover:scale-110"
+                        style={{ background: CITADELLE_COLORS.bg, color: CITADELLE_COLORS.blue }}
+                        title="Modifier">
+                        <Edit2 size={15} />
+                      </Link>
+                    )}
                     {["draft", "rejected"].includes(listing.status) && (
-                      <>
-                        <Link to={`/citadelle/espace-membre/mes-annonces/${listing.id}/modifier`}
-                          className="p-2 rounded-lg transition-all hover:scale-110"
-                          style={{ background: CITADELLE_COLORS.bg, color: CITADELLE_COLORS.blue }}
-                          title="Modifier">
-                          <Edit2 size={15} />
-                        </Link>
-                        <button onClick={() => handleDelete(listing.id)} disabled={deletingId === listing.id}
-                          className="p-2 rounded-lg transition-all hover:scale-110 disabled:opacity-50"
-                          style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626" }}
-                          title="Supprimer">
-                          <Trash2 size={15} />
-                        </button>
-                      </>
+                      <button onClick={() => handleDelete(listing.id)} disabled={deletingId === listing.id}
+                        className="p-2 rounded-lg transition-all hover:scale-110 disabled:opacity-50"
+                        style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626" }}
+                        title="Supprimer">
+                        <Trash2 size={15} />
+                      </button>
                     )}
                   </div>
                 </div>

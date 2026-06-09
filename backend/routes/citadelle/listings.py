@@ -341,21 +341,19 @@ async def update_listing(
     data: ListingUpdate,
     current_user: dict = Depends(require_citadelle_user)
 ):
-    """Modifie une annonce — uniquement par son propriétaire, si non active"""
+    """Modifie une annonce — uniquement par son propriétaire"""
     listing = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
     if not listing:
         raise HTTPException(status_code=404, detail="Annonce introuvable")
     if listing["seller_id"] != current_user.get("sub") and current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Vous n'êtes pas propriétaire de cette annonce")
-    if listing["status"] == "active":
-        raise HTTPException(status_code=400, detail="Une annonce active ne peut pas être modifiée directement. Contactez le support.")
 
     updates = {k: v for k, v in data.model_dump(exclude_none=True).items()}
     if not updates:
         return listing
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
-    # Si modification d'une annonce rejetée → repasse en pending
-    if listing["status"] == "rejected":
+    # Toute modification repasse l'annonce en pending pour re-validation admin
+    if listing["status"] in ("active", "rejected"):
         updates["status"] = "pending"
         updates["rejection_reason"] = None
 
