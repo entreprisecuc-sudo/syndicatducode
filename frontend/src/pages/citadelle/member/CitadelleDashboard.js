@@ -20,12 +20,12 @@ export default function CitadelleDashboard() {
   }
 
   const menuItems = [
-    { icon: Plus, label: "Publier une annonce", desc: "Mettez votre actif en vente", href: "/citadelle/espace-membre/mes-annonces/creer", badge: "Bientôt" },
-    { icon: FileText, label: "Mes annonces", desc: "Gérez vos annonces actives", href: "/citadelle/espace-membre/mes-annonces", badge: "Bientôt" },
-    { icon: ArrowLeftRight, label: "Mes transactions", desc: "Suivez vos achats et ventes", href: "/citadelle/espace-membre/mes-transactions", badge: "Bientôt" },
-    { icon: MessageSquare, label: "Mes messages", desc: "Échangez avec acheteurs et vendeurs", href: "/citadelle/espace-membre/mes-messages", badge: "Bientôt" },
-    { icon: TrendingUp, label: "Mes services", desc: "Demandes d'évaluation et d'audit", href: "/citadelle/espace-membre/mes-services", badge: "Bientôt" },
-    { icon: User, label: "Mon profil", desc: "Modifier mes informations", href: "/citadelle/espace-membre/profil", badge: "Bientôt" },
+    { icon: Plus,          label: "Publier une annonce", desc: "Mettez votre actif en vente",      href: "/citadelle/espace-membre/mes-annonces/creer", active: true },
+    { icon: FileText,      label: "Mes annonces",         desc: "Gérez vos annonces actives",       href: "/citadelle/espace-membre/mes-annonces",        active: true },
+    { icon: ArrowLeftRight,label: "Mes transactions",     desc: "Suivez vos achats et ventes",      href: "/citadelle/espace-membre/mes-transactions",    active: false, badge: "Bientôt" },
+    { icon: MessageSquare, label: "Mes messages",         desc: "Échangez avec acheteurs et vendeurs", href: "/citadelle/espace-membre/mes-messages",     active: false, badge: "Bientôt" },
+    { icon: TrendingUp,    label: "Mes services",         desc: "Demandes d'évaluation et d'audit", href: "/citadelle/espace-membre/mes-services",        active: false, badge: "Bientôt" },
+    { icon: User,          label: "Mon profil",           desc: "Modifier mes informations",        href: "/citadelle/espace-membre/profil",              active: true },
   ];
 
   return (
@@ -75,27 +75,41 @@ export default function CitadelleDashboard() {
 
           {/* Menu */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {menuItems.map(({ icon: Icon, label, desc, href, badge }) => (
-              <div
-                key={label}
-                className="p-5 rounded-2xl relative opacity-70"
-                style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}
-                data-testid={`citadelle-member-${label.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                {badge && (
-                  <span className="absolute top-3 right-3 text-xs px-2 py-0.5 rounded-full font-semibold"
-                    style={{ background: "rgba(201,164,92,0.12)", color: CITADELLE_COLORS.gold }}>
-                    {badge}
-                  </span>
-                )}
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                  style={{ background: "rgba(15,39,71,0.07)" }}>
-                  <Icon size={20} style={{ color: CITADELLE_COLORS.blue }} />
+            {menuItems.map(({ icon: Icon, label, desc, href, active, badge }) => {
+              const CardContent = (
+                <div
+                  key={label}
+                  className="p-5 rounded-2xl relative transition-all"
+                  style={{
+                    background: "white",
+                    border: `1px solid ${active ? "rgba(201,164,92,0.3)" : CITADELLE_COLORS.border}`,
+                    opacity: active ? 1 : 0.65,
+                    cursor: active ? "pointer" : "default"
+                  }}
+                  data-testid={`citadelle-member-${label.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  {badge && (
+                    <span className="absolute top-3 right-3 text-xs px-2 py-0.5 rounded-full font-semibold"
+                      style={{ background: "rgba(201,164,92,0.12)", color: CITADELLE_COLORS.gold }}>
+                      {badge}
+                    </span>
+                  )}
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                    style={{ background: active ? "rgba(201,164,92,0.1)" : "rgba(15,39,71,0.07)" }}>
+                    <Icon size={20} style={{ color: active ? CITADELLE_COLORS.gold : CITADELLE_COLORS.blue }} />
+                  </div>
+                  <p className="font-semibold text-sm mb-1" style={{ color: CITADELLE_COLORS.blue }}>{label}</p>
+                  <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>{desc}</p>
                 </div>
-                <p className="font-semibold text-sm mb-1" style={{ color: CITADELLE_COLORS.blue }}>{label}</p>
-                <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>{desc}</p>
-              </div>
-            ))}
+              );
+              return active ? (
+                <Link key={label} to={href} className="block hover:scale-[1.02] transition-transform">
+                  {CardContent}
+                </Link>
+              ) : (
+                <div key={label}>{CardContent}</div>
+              );
+            })}
           </div>
         </div>
       </div>

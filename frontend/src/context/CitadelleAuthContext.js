@@ -46,10 +46,16 @@ export const CitadelleAuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (updatedData) => {
+    const merged = { ...user, ...updatedData };
+    localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(merged));
+    setUser(merged);
+  };
+
   const isAuthenticated = !!token && !!user;
 
   return (
-    <CitadelleAuthContext.Provider value={{ user, token, isAuthenticated, loading, login, logout }}>
+    <CitadelleAuthContext.Provider value={{ user, token, isAuthenticated, loading, login, logout, updateUser }}>
       {children}
     </CitadelleAuthContext.Provider>
   );

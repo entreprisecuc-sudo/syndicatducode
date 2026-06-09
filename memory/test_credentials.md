@@ -19,6 +19,8 @@
 - **Role** : citadelle_user
 - **Platform** : citadelle
 - **URL** : /citadelle
+- **URL Profil** : /citadelle/espace-membre/profil
+- **URL Mot de passe oublié** : /citadelle/mot-de-passe-oublie
 
 > Note : Les comptes Syndicat sont visibles via TEST_ACCOUNTS dans constants.js (DEV_MODE actif volontairement).
 > Le compte Citadelle est isolé (platform: "citadelle") — ne peut pas se connecter sur le Syndicat.

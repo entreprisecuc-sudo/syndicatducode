@@ -425,3 +425,79 @@ async def citadelle_reset_password(data: ResetPasswordRequest):
 
     logger.info(f"[Citadelle] Mot de passe réinitialisé pour user_id: {valid_reset['user_id']}")
     return {"message": "Mot de passe modifié avec succès. Vous pouvez maintenant vous connecter."}
+
+
+@router.patch("/profile", status_code=status.HTTP_200_OK)
+async def citadelle_update_profile(request: Request):
+    """
+    Mise à jour du profil — utilisateur Citadelle connecté.
+    Permet de modifier :
+    - Prénom et/ou nom
+    - Mot de passe (avec vérification de l'actuel)
+    """
+    payload = await request.json()
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token manquant")
+
+    token = auth_header.split(" ")[1]
+    try:
+        decoded = decode_access_token(token)
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
+
+    user = await db.users.find_one(
+        {"id": decoded["sub"], "platform": "citadelle"},
+        {"_id": 0}
+    )
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable")
+
+    updates = {}
+    now = datetime.now(timezone.utc).isoformat()
+
+    # Mise à jour prénom / nom
+    first_name = payload.get("first_name", "").strip()
+    last_name = payload.get("last_name", "").strip()
+    if first_name and len(first_name) >= 2:
+        updates["first_name"] = first_name
+    if last_name and len(last_name) >= 2:
+        updates["last_name"] = last_name
+
+    # Changement de mot de passe (optionnel)
+    current_password = payload.get("current_password", "")
+    new_password = payload.get("new_password", "")
+    if new_password:
+        if not current_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Le mot de passe actuel est requis pour en définir un nouveau"
+            )
+        if not verify_password(current_password, user["password_hash"]):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Mot de passe actuel incorrect"
+            )
+        if len(new_password) < 8:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Le nouveau mot de passe doit contenir au moins 8 caractères"
+            )
+        import re as _re
+        if not _re.search(r'[A-Z]', new_password) or not _re.search(r'[a-z]', new_password) or not _re.search(r'\d', new_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre"
+            )
+        updates["password_hash"] = hash_password(new_password)
+
+    if not updates:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Aucune modification fournie")
+
+    updates["updated_at"] = now
+    await db.users.update_one({"id": user["id"], "platform": "citadelle"}, {"$set": updates})
+
+    # Retourner l'utilisateur mis à jour (sans le hash)
+    updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
+    logger.info(f"[Citadelle] Profil mis à jour pour: {user['email']}")
+    return {"message": "Profil mis à jour avec succès", "user": updated}

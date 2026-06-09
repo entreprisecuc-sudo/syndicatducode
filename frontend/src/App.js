@@ -85,6 +85,7 @@ import CitadelleListingDetail from "@/pages/citadelle/CitadelleListingDetail";
 import CitadelleMyListings from "@/pages/citadelle/member/CitadelleMyListings";
 import CitadelleCreateListing from "@/pages/citadelle/member/CitadelleCreateListing";
 import CitadelleEditListing from "@/pages/citadelle/member/CitadelleEditListing";
+import CitadelleProfile from "@/pages/citadelle/member/CitadelleProfile";
 import AdminCitadelleListings from "@/pages/admin/AdminCitadelleListings";
 
 // Pages partagées (tous les membres)
@@ -318,6 +319,7 @@ function App() {
               <Route path="/citadelle/espace-membre/mes-annonces/creer" element={<CitadelleCreateListing />} />
               <Route path="/citadelle/espace-membre/mes-annonces/:id/modifier" element={<CitadelleEditListing />} />
               <Route path="/citadelle/espace-membre/mes-annonces" element={<CitadelleMyListings />} />
+              <Route path="/citadelle/espace-membre/profil" element={<CitadelleProfile />} />
               <Route path="/citadelle/espace-membre" element={<CitadelleDashboard />} />
               <Route path="/citadelle/espace-membre/*" element={<CitadelleDashboard />} />
 
