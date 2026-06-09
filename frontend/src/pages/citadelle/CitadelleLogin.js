@@ -123,6 +123,17 @@ export default function CitadelleLogin() {
               </div>
             </div>
 
+            {/* Lien mot de passe oublié */}
+            <div className="text-right">
+              <Link
+                to="/citadelle/mot-de-passe-oublie"
+                className="text-xs transition-colors hover:opacity-80"
+                style={{ color: CITADELLE_COLORS.gold }}
+              >
+                Mot de passe oublié ?
+              </Link>
+            </div>
+
             {/* Bouton connexion */}
             <button
               type="submit"

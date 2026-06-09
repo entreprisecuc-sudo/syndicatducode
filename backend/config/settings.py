@@ -34,6 +34,11 @@ CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*').split(',')
 # URL du frontend (pour les liens dans les emails)
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://syndicatducode.fr')
 
+# La Citadelle Numérique — URL et email expéditeur dédié
+# Quand le SMTP lacitadellenumerique.fr sera actif, renseigner CITADELLE_FROM_EMAIL dans .env
+CITADELLE_URL = os.environ.get('CITADELLE_URL', 'https://lacitadellenumerique.fr')
+CITADELLE_FROM_EMAIL = os.environ.get('CITADELLE_FROM_EMAIL', SMTP_USER)
+
 # Rôles utilisateur
 class UserRole:
     NONE = None  # Pas encore de rôle choisi

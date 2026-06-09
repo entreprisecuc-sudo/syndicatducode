@@ -12,7 +12,9 @@ from config.settings import (
     SMTP_PORT,
     SMTP_USER,
     SMTP_PASSWORD,
-    FRONTEND_URL
+    FRONTEND_URL,
+    CITADELLE_URL,
+    CITADELLE_FROM_EMAIL
 )
 
 logger = logging.getLogger(__name__)
@@ -301,8 +303,61 @@ Pour toute question, contactez-nous à : contact@syndicatducode.fr
         return False
 
 
-def send_backup_notification_email(
-    to_email: str,
+def send_citadelle_reset_password_email(to_email: str, reset_token: str) -> bool:
+    """
+    Envoie un email de réinitialisation de mot de passe avec le branding Citadelle.
+    Utilise CITADELLE_FROM_EMAIL comme expéditeur (configurable séparément du Syndicat).
+
+    Args:
+        to_email: Email du destinataire
+        reset_token: Token de réinitialisation (brut)
+
+    Returns:
+        True si l'envoi a réussi
+    """
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = to_email
+        msg['Subject'] = "Réinitialisation de votre mot de passe — La Citadelle Numérique"
+
+        reset_link = f"{CITADELLE_URL}/citadelle/reinitialiser-mot-de-passe?token={reset_token}"
+
+        body = f"""
+Bonjour,
+
+Vous avez demandé la réinitialisation de votre mot de passe sur La Citadelle Numérique.
+
+Cliquez sur le lien suivant pour définir un nouveau mot de passe :
+
+{reset_link}
+
+⚠️ Ce lien est valable pendant 1 heure et ne peut être utilisé qu'une seule fois.
+
+Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+La Citadelle Numérique
+Marketplace française d'actifs numériques
+{CITADELLE_URL}
+        """
+
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+
+        logger.info(f"[Citadelle] Email de réinitialisation envoyé à {to_email}")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Citadelle] Erreur envoi email de réinitialisation: {e}")
+        return False
+
+
+def send_backup_notification_email(    to_email: str,
     filename: str,
     drive_url: str,
     drive_enabled: bool,

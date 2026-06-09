@@ -74,6 +74,8 @@ import AdminCitadelle from "@/pages/admin/AdminCitadelle";
 import CitadelleHome from "@/pages/citadelle/CitadelleHome";
 import CitadelleLogin from "@/pages/citadelle/CitadelleLogin";
 import CitadelleRegister from "@/pages/citadelle/CitadelleRegister";
+import CitadelleForgotPassword from "@/pages/citadelle/CitadelleForgotPassword";
+import CitadelleResetPassword from "@/pages/citadelle/CitadelleResetPassword";
 import CitadelleDashboard from "@/pages/citadelle/member/CitadelleDashboard";
 import { CitadelleAuthProvider } from "@/context/CitadelleAuthContext";
 
@@ -307,6 +309,8 @@ function App() {
               <Route path="/citadelle" element={<CitadelleHome />} />
               <Route path="/citadelle/connexion" element={<CitadelleLogin />} />
               <Route path="/citadelle/inscription" element={<CitadelleRegister />} />
+              <Route path="/citadelle/mot-de-passe-oublie" element={<CitadelleForgotPassword />} />
+              <Route path="/citadelle/reinitialiser-mot-de-passe" element={<CitadelleResetPassword />} />
               <Route path="/citadelle/annonces" element={<CitadelleListings />} />
               <Route path="/citadelle/annonces/:slug" element={<CitadelleListingDetail />} />
 

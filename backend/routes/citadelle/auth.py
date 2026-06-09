@@ -1,15 +1,18 @@
 """
 Routes d'authentification — La Citadelle Numérique
-Inscription et connexion INDÉPENDANTS du Syndicat du Code
+Inscription, connexion, reset mot de passe INDÉPENDANTS du Syndicat du Code
 platform: "citadelle" — isolation stricte
 """
 
 from fastapi import APIRouter, HTTPException, status, Request
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import logging
 import re
+import uuid
+import hashlib
+import secrets
 
 from services.auth_service import (
     hash_password,
@@ -18,6 +21,7 @@ from services.auth_service import (
     decode_access_token,
     generate_user_id
 )
+from services.email_service import send_citadelle_reset_password_email
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +62,26 @@ class CitadelleLogin(BaseModel):
     password: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    """Demande de réinitialisation de mot de passe"""
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    """Réinitialisation du mot de passe avec le token"""
+    token: str
+    new_password: str = Field(..., min_length=8)
+
+    def validate_password(self):
+        p = self.new_password
+        if not re.search(r'[A-Z]', p):
+            raise ValueError("Le mot de passe doit contenir au moins une majuscule")
+        if not re.search(r'[a-z]', p):
+            raise ValueError("Le mot de passe doit contenir au moins une minuscule")
+        if not re.search(r'\d', p):
+            raise ValueError("Le mot de passe doit contenir au moins un chiffre")
+
+
 class CitadelleUserResponse(BaseModel):
     """Réponse utilisateur Citadelle (sans données sensibles)"""
     id: str
@@ -78,6 +102,96 @@ class CitadelleTokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: CitadelleUserResponse
+
+
+# ============================================
+# HELPERS — BRUTE FORCE & RESET TOKEN
+# ============================================
+
+async def _check_brute_force(ip: str) -> None:
+    """
+    Vérifie si l'IP est bloquée.
+    Réutilise les collections login_attempts et blocked_ips du Syndicat.
+    La config brute_force_config est partagée (1 seule config pour les 2 plateformes).
+    """
+    config = await db.brute_force_config.find_one({}, {"_id": 0})
+    if not config:
+        config = {"max_attempts": 5, "block_duration_minutes": 15, "window_minutes": 5, "is_active": True}
+
+    if not config.get("is_active", True):
+        return
+
+    now = datetime.now(timezone.utc)
+
+    blocked = await db.blocked_ips.find_one({"ip": ip}, {"_id": 0})
+    if blocked:
+        blocked_until = datetime.fromisoformat(blocked["blocked_until"])
+        if blocked_until > now:
+            remaining = max(1, int((blocked_until - now).total_seconds() / 60) + 1)
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Trop de tentatives de connexion. Réessayez dans {remaining} minute(s)."
+            )
+        else:
+            await db.blocked_ips.delete_one({"ip": ip})
+
+    window_start = (now - timedelta(minutes=config["window_minutes"])).isoformat()
+    count = await db.login_attempts.count_documents({
+        "ip": ip,
+        "timestamp": {"$gte": window_start}
+    })
+
+    if count >= config["max_attempts"]:
+        block_duration = config["block_duration_minutes"]
+        blocked_until = (now + timedelta(minutes=block_duration)).isoformat()
+        await db.blocked_ips.update_one(
+            {"ip": ip},
+            {"$set": {
+                "ip": ip,
+                "blocked_at": now.isoformat(),
+                "blocked_until": blocked_until,
+                "attempts_count": count,
+                "platform": "citadelle"
+            }},
+            upsert=True
+        )
+        logger.warning(f"[Citadelle] IP bloquée pour brute force: {ip} ({count} tentatives)")
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Trop de tentatives de connexion. IP bloquée pour {block_duration} minute(s)."
+        )
+
+
+async def _log_failed_attempt(ip: str, email: str) -> None:
+    """Enregistre une tentative de connexion échouée (collection partagée)"""
+    now = datetime.now(timezone.utc)
+    await db.login_attempts.insert_one({
+        "ip": ip,
+        "email": email,
+        "timestamp": now.isoformat(),
+        "created_at": now,
+        "platform": "citadelle"
+    })
+
+
+def _generate_reset_token() -> tuple[str, str]:
+    """Génère un token sécurisé et son hash SHA-256. Retourne (token_brut, token_hash)."""
+    raw = secrets.token_urlsafe(48)
+    hashed = hashlib.sha256(raw.encode()).hexdigest()
+    return raw, hashed
+
+
+def _verify_reset_token(raw_token: str, token_hash: str) -> bool:
+    """Vérifie un token brut contre son hash stocké."""
+    return hashlib.sha256(raw_token.encode()).hexdigest() == token_hash
+
+
+def _is_token_expired(expires_at: str) -> bool:
+    """Vérifie si un token est expiré."""
+    expiry = datetime.fromisoformat(expires_at)
+    if expiry.tzinfo is None:
+        expiry = expiry.replace(tzinfo=timezone.utc)
+    return expiry < datetime.now(timezone.utc)
 
 
 # ============================================
@@ -145,21 +259,21 @@ async def citadelle_login(credentials: CitadelleLogin, request: Request):
     """
     Connexion sur La Citadelle Numérique.
     N'authentifie QUE les utilisateurs avec platform='citadelle'.
-    Un utilisateur Syndicat ne peut pas se connecter ici.
+    Protégé contre le brute force (rate limiting par IP).
     """
+    ip = request.client.host if request.client else "unknown"
+
+    # Protection anti-brute force
+    await _check_brute_force(ip)
+
     # Rechercher l'utilisateur par email ET platform citadelle uniquement
     user = await db.users.find_one(
         {"email": credentials.email.lower(), "platform": "citadelle"},
         {"_id": 0}
     )
 
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email ou mot de passe incorrect"
-        )
-
-    if not verify_password(credentials.password, user["password_hash"]):
+    if not user or not verify_password(credentials.password, user["password_hash"]):
+        await _log_failed_attempt(ip, credentials.email.lower())
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou mot de passe incorrect"
@@ -224,3 +338,90 @@ async def citadelle_me(request: Request):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable")
 
     return user
+
+
+@router.post("/forgot-password", status_code=status.HTTP_200_OK)
+async def citadelle_forgot_password(data: ForgotPasswordRequest):
+    """
+    Demande de réinitialisation de mot de passe pour un compte Citadelle.
+    - Cherche uniquement dans platform='citadelle'
+    - Ne révèle pas si l'email existe (sécurité)
+    - Envoie un email avec le branding La Citadelle Numérique
+    """
+    response_message = "Si un compte Citadelle existe avec cet email, un lien de réinitialisation a été envoyé."
+
+    user = await db.users.find_one(
+        {"email": data.email.lower(), "platform": "citadelle"},
+        {"_id": 0, "id": 1, "email": 1}
+    )
+
+    if user:
+        raw_token, token_hash = _generate_reset_token()
+        now = datetime.now(timezone.utc)
+        expires_at = (now + timedelta(hours=1)).isoformat()
+
+        await db.password_resets.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": user["id"],
+            "token_hash": token_hash,
+            "created_at": now.isoformat(),
+            "expires_at": expires_at,
+            "used": False,
+            "platform": "citadelle"
+        })
+
+        send_citadelle_reset_password_email(user["email"], raw_token)
+        logger.info(f"[Citadelle] Token de réinitialisation généré pour: {user['email']}")
+
+    return {"message": response_message}
+
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+async def citadelle_reset_password(data: ResetPasswordRequest):
+    """
+    Réinitialise le mot de passe avec le token reçu par email.
+    - Token valide 1 heure, à usage unique
+    - Vérifie que le token appartient à un compte Citadelle
+    """
+    try:
+        data.validate_password()
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    # Récupérer les tokens Citadelle non utilisés
+    reset_tokens = await db.password_resets.find(
+        {"used": False, "platform": "citadelle"},
+        {"_id": 0}
+    ).to_list(100)
+
+    valid_reset = None
+    for reset in reset_tokens:
+        if _verify_reset_token(data.token, reset["token_hash"]):
+            valid_reset = reset
+            break
+
+    if not valid_reset:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Lien de réinitialisation invalide ou déjà utilisé"
+        )
+
+    if _is_token_expired(valid_reset["expires_at"]):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Le lien de réinitialisation a expiré. Veuillez en demander un nouveau."
+        )
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.users.update_one(
+        {"id": valid_reset["user_id"], "platform": "citadelle"},
+        {"$set": {"password_hash": hash_password(data.new_password), "updated_at": now}}
+    )
+
+    await db.password_resets.update_one(
+        {"id": valid_reset["id"]},
+        {"$set": {"used": True, "used_at": now}}
+    )
+
+    logger.info(f"[Citadelle] Mot de passe réinitialisé pour user_id: {valid_reset['user_id']}")
+    return {"message": "Mot de passe modifié avec succès. Vous pouvez maintenant vous connecter."}
