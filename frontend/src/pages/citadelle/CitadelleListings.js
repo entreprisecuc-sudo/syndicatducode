@@ -78,7 +78,7 @@ export default function CitadelleListings() {
   };
 
   return (
-    <CitadelleLayout>
+    <CitadelleLayout pageTitle="Annonces">
       {/* Header */}
       <div className="py-10 px-4 md:px-6" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
         <div className="max-w-7xl mx-auto">

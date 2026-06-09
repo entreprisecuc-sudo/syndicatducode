@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { CITADELLE_CONFIG, CITADELLE_NAV_LINKS, CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 
 // ── Navigation ───────────────────────────────────────────────────────────────
 
@@ -273,14 +274,18 @@ const CitadelleFooter = () => (
 
 // ── Layout principal ──────────────────────────────────────────────────────────
 
-const CitadelleLayout = ({ children }) => (
-  <div style={{ fontFamily: "'Inter', sans-serif", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-    <CitadelleNav />
-    <main style={{ flex: 1 }}>
-      {children}
-    </main>
-    <CitadelleFooter />
-  </div>
-);
+const CitadelleLayout = ({ children, pageTitle }) => {
+  useCitadellePageMeta(pageTitle);
+
+  return (
+    <div style={{ fontFamily: "'Inter', sans-serif", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <CitadelleNav />
+      <main style={{ flex: 1 }}>
+        {children}
+      </main>
+      <CitadelleFooter />
+    </div>
+  );
+};
 
 export default CitadelleLayout;

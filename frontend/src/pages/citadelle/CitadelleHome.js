@@ -391,7 +391,7 @@ const CTASection = () => (
 
 export default function CitadelleHome() {
   return (
-    <CitadelleLayout>
+    <CitadelleLayout pageTitle="Accueil">
       <HeroSection />
       <CategoriesSection />
       <HowItWorksSection />

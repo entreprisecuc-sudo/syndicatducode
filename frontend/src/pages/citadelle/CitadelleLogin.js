@@ -9,6 +9,7 @@ import { Shield, Eye, EyeOff, LogIn, AlertCircle } from "lucide-react";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
+import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 
 export default function CitadelleLogin() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -17,7 +18,7 @@ export default function CitadelleLogin() {
   const [error, setError] = useState("");
   const { login } = useCitadelleAuth();
   const navigate = useNavigate();
-
+  useCitadellePageMeta("Connexion");
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     setError("");

@@ -9,6 +9,7 @@ import { Shield, Eye, EyeOff, UserPlus, AlertCircle, CheckCircle } from "lucide-
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
+import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 
 export default function CitadelleRegister() {
   const [form, setForm] = useState({ first_name: "", last_name: "", email: "", password: "", confirm: "" });
@@ -18,6 +19,7 @@ export default function CitadelleRegister() {
   const [success, setSuccess] = useState(false);
   const { login } = useCitadelleAuth();
   const navigate = useNavigate();
+  useCitadellePageMeta("Inscription");
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
