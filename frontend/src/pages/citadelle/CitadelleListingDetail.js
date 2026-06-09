@@ -6,12 +6,11 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, BarChart2,
-  Calendar, ShieldCheck, Star, ArrowLeft, Eye, Share2, Lock
+  Calendar, ShieldCheck, Star, ArrowLeft, Eye, Share2, Lock, FileText, Download
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
-import { CITADELLE_COLORS } from "@/config/citadelleConstants";
-import { getListingImageUrl } from "@/config/citadelleConstants";
+import { CITADELLE_COLORS, getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@/config/citadelleConstants";
 
 const TYPE_CONFIG = {
   website:        { label: "Site internet",    icon: Globe },
@@ -64,9 +63,11 @@ export default function CitadelleListingDetail() {
   );
 
   const { label: typeLabel, icon: TypeIcon } = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
-  const images = listing.images?.filter(Boolean).length
-    ? listing.images.filter(Boolean)
-    : [null];
+  const allFiles = listing.images?.filter(Boolean) || [];
+  const images = allFiles.filter(f => isImageFile(f));
+  const documents = allFiles.filter(f => isDocumentFile(f));
+  // Si pas d'images, on affiche le placeholder
+  const displayImages = images.length > 0 ? images : [null];
 
   return (
     <CitadelleLayout>
@@ -85,22 +86,46 @@ export default function CitadelleListingDetail() {
           <div className="lg:col-span-2 space-y-6">
             {/* Image principale */}
             <div className="rounded-2xl overflow-hidden" style={{ height: "320px", background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
-              {images[activeImg] ? (
-                <img src={getListingImageUrl(images[activeImg])} alt={listing.title} className="w-full h-full object-cover" onError={e => e.target.style.display="none"} />
+              {displayImages[activeImg] ? (
+                <img src={getListingImageUrl(displayImages[activeImg])} alt={listing.title} className="w-full h-full object-cover" onError={e => e.target.style.display="none"} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <span className="text-6xl">🏰</span>
                 </div>
               )}
             </div>
-            {images.length > 1 && (
+            {displayImages.length > 1 && (
               <div className="flex gap-2">
-                {images.map((img, i) => (
+                {displayImages.map((img, i) => (
                   <button key={i} onClick={() => setActiveImg(i)} className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 transition-all"
                     style={{ border: i === activeImg ? `2px solid ${CITADELLE_COLORS.gold}` : `2px solid ${CITADELLE_COLORS.border}` }}>
                     {img ? <img src={getListingImageUrl(img)} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-lg">🏰</div>}
                   </button>
                 ))}
+              </div>
+            )}
+
+            {/* Documents joints */}
+            {documents.length > 0 && (
+              <div className="p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                <h2 className="font-bold mb-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Documents joints</h2>
+                <div className="space-y-2">
+                  {documents.map((doc, i) => (
+                    <a key={i} href={getListingImageUrl(doc)} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 rounded-xl transition-all hover:opacity-80"
+                      style={{ background: "rgba(201,164,92,0.06)", border: `1px solid rgba(201,164,92,0.15)` }}
+                      data-testid={`listing-document-${i}`}>
+                      <FileText size={20} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0 }} />
+                      <span className="flex-1 text-sm font-medium truncate" style={{ color: CITADELLE_COLORS.blue }}>
+                        {doc.split("/").pop()}
+                      </span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ background: "rgba(15,39,71,0.06)", color: CITADELLE_COLORS.textMuted }}>
+                        {getFileLabel(doc)}
+                      </span>
+                      <Download size={16} style={{ color: CITADELLE_COLORS.textMuted, flexShrink: 0 }} />
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
 

@@ -11,14 +11,18 @@
  */
 
 import { useState, useRef } from "react";
-import { Upload, Link2, X, Image as ImageIcon, Loader } from "lucide-react";
+import { Upload, Link2, X, Image as ImageIcon, Loader, FileText } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
-import { CITADELLE_COLORS, getListingImageUrl } from "@/config/citadelleConstants";
+import { CITADELLE_COLORS, getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
 
-const MAX_IMAGES   = 5;
+const MAX_FILES    = 5;
 const MAX_SIZE_MB  = 10;
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
-const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"];
+const ALLOWED_TYPES = [
+  "image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml",
+  "application/pdf", "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+];
+const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".pdf", ".doc", ".docx"];
 /**
  * Un slot image unique : toggle URL / Upload
  */
@@ -41,7 +45,7 @@ function ImageSlot({ index, value, onUpdate, inputStyle }) {
 
     // Validation côté client
     if (!ALLOWED_TYPES.includes(file.type)) {
-      setUploadError("Format non supporté. Utilisez JPEG, PNG, WebP ou GIF.");
+      setUploadError("Format non supporté. Utilisez JPEG, PNG, WebP, GIF, PDF, DOC ou DOCX.");
       return;
     }
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
@@ -108,26 +112,32 @@ function ImageSlot({ index, value, onUpdate, inputStyle }) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,application/pdf,.doc,.docx"
         className="hidden"
         onChange={handleFileChange}
         data-testid={`image-file-input-${index}`}
       />
 
-      {/* Prévisualisation si image présente */}
+      {/* Prévisualisation si fichier présent */}
       {value && (
         <div className="flex items-center gap-3 mb-1.5 p-2 rounded-xl"
           style={{ background: "rgba(201,164,92,0.06)", border: `1px solid rgba(201,164,92,0.2)` }}>
           <div className="w-12 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center">
-            <img
-              src={getListingImageUrl(value)}
-              alt={`Aperçu ${index + 1}`}
-              className="w-full h-full object-cover"
-              onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
-            />
-            <span className="hidden items-center justify-center w-full h-full">
-              <ImageIcon size={14} style={{ color: CITADELLE_COLORS.textMuted }} />
-            </span>
+            {isImageFile(value) ? (
+              <>
+                <img
+                  src={getListingImageUrl(value)}
+                  alt={`Aperçu ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+                />
+                <span className="hidden items-center justify-center w-full h-full">
+                  <ImageIcon size={14} style={{ color: CITADELLE_COLORS.textMuted }} />
+                </span>
+              </>
+            ) : (
+              <FileText size={18} style={{ color: CITADELLE_COLORS.gold }} />
+            )}
           </div>
           <span className="flex-1 text-xs truncate" style={{ color: CITADELLE_COLORS.textMuted }}>
             {value.split("/").pop()}
@@ -175,7 +185,7 @@ function ImageSlot({ index, value, onUpdate, inputStyle }) {
  */
 export function CitadelleImageUpload({ images, onChange, inputStyle, labelStyle }) {
   // S'assurer qu'on a toujours 5 slots
-  const slots = [...images, "", "", "", "", ""].slice(0, MAX_IMAGES);
+  const slots = [...images, "", "", "", "", ""].slice(0, MAX_FILES);
 
   const handleUpdate = (index, value) => {
     const updated = [...slots];
@@ -187,10 +197,10 @@ export function CitadelleImageUpload({ images, onChange, inputStyle, labelStyle 
     <div>
       <div className="flex items-center justify-between mb-2">
         <label className="block text-sm font-semibold" style={labelStyle}>
-          Captures d'écran
+          Fichiers joints
         </label>
         <span className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-          {slots.filter(Boolean).length}/{MAX_IMAGES} — JPEG, PNG, WebP, GIF, SVG · max {MAX_SIZE_MB} Mo
+          {slots.filter(Boolean).length}/{MAX_FILES} — Images, PDF, DOC · max {MAX_SIZE_MB} Mo
         </span>
       </div>
 

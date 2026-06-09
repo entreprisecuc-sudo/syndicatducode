@@ -56,7 +56,7 @@ export const CITADELLE_NAV_LINKS = [
 ];
 
 /**
- * Résout l'URL complète d'une image d'annonce.
+ * Résout l'URL complète d'une image/fichier d'annonce.
  * - Chemins relatifs /uploads/* → préfixés avec REACT_APP_BACKEND_URL
  * - URLs externes http(s):// → retournées telles quelles
  * - null/undefined → null
@@ -66,4 +66,36 @@ export const getListingImageUrl = (path) => {
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
   if (path.startsWith("/")) return `${process.env.REACT_APP_BACKEND_URL}${path}`;
   return path;
+};
+
+// Extensions reconnues comme images
+const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"];
+// Extensions reconnues comme documents
+const DOCUMENT_EXTENSIONS = [".pdf", ".doc", ".docx"];
+
+/**
+ * Détermine si un chemin/URL pointe vers une image
+ */
+export const isImageFile = (path) => {
+  if (!path) return false;
+  const ext = path.split("?")[0].split(".").pop()?.toLowerCase();
+  return IMAGE_EXTENSIONS.includes(`.${ext}`);
+};
+
+/**
+ * Détermine si un chemin/URL pointe vers un document
+ */
+export const isDocumentFile = (path) => {
+  if (!path) return false;
+  const ext = path.split("?")[0].split(".").pop()?.toLowerCase();
+  return DOCUMENT_EXTENSIONS.includes(`.${ext}`);
+};
+
+/**
+ * Retourne un label lisible pour l'extension du fichier
+ */
+export const getFileLabel = (path) => {
+  if (!path) return "Fichier";
+  const ext = path.split("?")[0].split(".").pop()?.toUpperCase();
+  return ext || "Fichier";
 };

@@ -28,8 +28,11 @@ db = None
 CITADELLE_UPLOADS_DIR = Path("/app/backend/uploads/citadelle")
 CITADELLE_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Types d'images autorisés et taille max (5 Mo)
+# Types de fichiers autorisés (images + documents) et taille max (10 Mo)
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"}
+ALLOWED_DOC_TYPES = {"application/pdf", "application/msword",
+                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+ALLOWED_FILE_TYPES = ALLOWED_IMAGE_TYPES | ALLOWED_DOC_TYPES
 MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024  # 10 Mo
 
 def set_database(database):
@@ -71,10 +74,10 @@ async def upload_listing_image(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token manquant")
 
     # Validation type de fichier
-    if file.content_type not in ALLOWED_IMAGE_TYPES:
+    if file.content_type not in ALLOWED_FILE_TYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Type de fichier non autorisé. Formats acceptés : JPEG, PNG, WebP, GIF, SVG"
+            detail="Type de fichier non autorisé. Formats acceptés : JPEG, PNG, WebP, GIF, SVG, PDF, DOC, DOCX"
         )
 
     # Lecture et validation taille
@@ -86,9 +89,12 @@ async def upload_listing_image(
         )
 
     # Génération du nom de fichier unique
-    ext_map = {".jpg": ".jpg", ".jpeg": ".jpg", ".png": ".png", ".webp": ".webp", ".gif": ".gif", ".svg": ".svg"}
+    ext_map = {
+        ".jpg": ".jpg", ".jpeg": ".jpg", ".png": ".png", ".webp": ".webp",
+        ".gif": ".gif", ".svg": ".svg", ".pdf": ".pdf", ".doc": ".doc", ".docx": ".docx"
+    }
     raw_ext = Path(file.filename).suffix.lower() if file.filename else ".jpg"
-    ext = ext_map.get(raw_ext, ".jpg")
+    ext = ext_map.get(raw_ext, raw_ext or ".bin")
     filename = f"listing_{uuid.uuid4().hex}{ext}"
     file_path = CITADELLE_UPLOADS_DIR / filename
 
