@@ -89,10 +89,10 @@ function MarkdownToolbar({ contentRef, value, onChange }) {
 
   return (
     <div className="flex flex-wrap gap-0.5 px-3 py-1.5 flex-shrink-0"
-      style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(0,0,0,0.15)" }}>
+      style={{ borderBottom: "1px solid #E2E8F0", background: "#F1F4F8" }}>
       {TOOLBAR_ACTIONS.map((action, i) => {
         if (action.type === "sep") {
-          return <div key={i} className="w-px mx-1 self-stretch" style={{ background: "rgba(255,255,255,0.1)" }} />;
+          return <div key={i} className="w-px mx-1 self-stretch" style={{ background: "#E2E8F0" }} />;
         }
         return (
           <button
@@ -100,8 +100,8 @@ function MarkdownToolbar({ contentRef, value, onChange }) {
             type="button"
             title={action.title}
             onClick={() => insert(action.before, action.after)}
-            className="px-2 py-1 rounded text-xs transition-all hover:bg-white/10 select-none"
-            style={{ color: "rgba(255,255,255,0.7)", minWidth: 28, ...action.style }}
+            className="px-2 py-1 rounded text-xs transition-all select-none hover:bg-white hover:shadow-sm"
+            style={{ color: "#475569", minWidth: 28, ...action.style }}
           >
             {action.label}
           </button>
@@ -364,15 +364,15 @@ export default function AdminCitadelleBlog() {
         )}
       </div>
 
-      {/* ── Panneau d'édition plein écran ── */}
+      {/* ── Panneau d'édition plein écran — thème clair ── */}
       {editPanel && (
-        <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#0d1829" }}>
+        <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#F7F8FA" }}>
 
-          {/* Barre d'outils */}
+          {/* Barre supérieure */}
           <div className="flex items-center justify-between px-5 py-2.5 flex-shrink-0"
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.35)" }}>
-            <h3 className="font-bold text-sm text-white truncate max-w-xs">
-              {editPanel === "new" ? "Nouvel article" : `Modifier · ${editPanel.title?.slice(0, 35)}...`}
+            style={{ borderBottom: "1px solid #E2E8F0", background: "#FFFFFF" }}>
+            <h3 className="font-bold text-sm truncate max-w-xs" style={{ color: "#0F2747" }}>
+              {editPanel === "new" ? "Nouvel article" : `Modifier · ${editPanel.title?.slice(0, 40)}`}
             </h3>
             <div className="flex items-center gap-2">
               <button onClick={handleSave} disabled={saving}
@@ -385,7 +385,8 @@ export default function AdminCitadelleBlog() {
                 }
               </button>
               <button onClick={() => setEditPanel(null)}
-                className="p-1.5 rounded-lg text-white/50 hover:text-white transition-colors">
+                className="p-1.5 rounded-lg transition-colors hover:bg-gray-100"
+                style={{ color: "#94A3B8" }}>
                 <X size={18} />
               </button>
             </div>
@@ -393,67 +394,67 @@ export default function AdminCitadelleBlog() {
 
           {error && (
             <div className="mx-5 mt-2 p-2.5 rounded-lg text-xs flex-shrink-0"
-              style={{ background: "rgba(220,38,38,0.12)", color: "#EF4444" }}>
+              style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}>
               {error}
             </div>
           )}
 
-          {/* Corps du panneau */}
+          {/* Corps */}
           <div className="flex flex-1 overflow-hidden">
 
             {/* ── Sidebar ─────────────────────────────────────────── */}
             <div className="w-72 flex-shrink-0 overflow-y-auto"
-              style={{ borderRight: "1px solid rgba(255,255,255,0.07)", background: "rgba(0,0,0,0.25)" }}>
+              style={{ borderRight: "1px solid #E2E8F0", background: "#FFFFFF" }}>
               <div className="p-4 space-y-4">
 
                 {/* Titre */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 opacity-50 uppercase tracking-wider">Titre *</label>
+                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: "#94A3B8" }}>Titre *</label>
                   <input value={form.title}
                     onChange={e => setField("title", e.target.value)}
                     placeholder="Titre de l'article..." maxLength={200}
                     className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                    style={{ background: "#F8FAFC", border: "1px solid #CBD5E1", color: "#0F2747" }}
                     data-testid="blog-input-title" />
                 </div>
 
                 {/* Extrait */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 opacity-50 uppercase tracking-wider">Extrait</label>
+                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: "#94A3B8" }}>Extrait</label>
                   <textarea value={form.excerpt}
                     onChange={e => setField("excerpt", e.target.value)}
                     rows={3} placeholder="Résumé affiché sur la liste..." maxLength={500}
                     className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-none"
-                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                    style={{ background: "#F8FAFC", border: "1px solid #CBD5E1", color: "#0F2747" }}
                     data-testid="blog-input-excerpt" />
                 </div>
 
                 {/* Catégorie + Auteur */}
                 <div className="grid grid-cols-1 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5 opacity-50 uppercase tracking-wider">Catégorie</label>
+                    <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: "#94A3B8" }}>Catégorie</label>
                     <select value={form.category} onChange={e => setField("category", e.target.value)}
                       className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                      style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                      style={{ background: "#F8FAFC", border: "1px solid #CBD5E1", color: "#0F2747" }}
                       data-testid="blog-input-category">
                       {BLOG_CATEGORIES.map(c => (
-                        <option key={c.slug} value={c.slug} style={{ background: "#1a2b45" }}>{c.label}</option>
+                        <option key={c.slug} value={c.slug}>{c.label}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5 opacity-50 uppercase tracking-wider">Auteur</label>
+                    <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: "#94A3B8" }}>Auteur</label>
                     <input value={form.author_name} onChange={e => setField("author_name", e.target.value)}
                       maxLength={100}
                       className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                      style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                      style={{ background: "#F8FAFC", border: "1px solid #CBD5E1", color: "#0F2747" }}
                       data-testid="blog-input-author" />
                   </div>
                 </div>
 
                 {/* Image de couverture */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 opacity-50 uppercase tracking-wider">
+                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: "#94A3B8" }}>
                     Miniature · couverture
                   </label>
                   {form.cover_image_url ? (
@@ -462,19 +463,19 @@ export default function AdminCitadelleBlog() {
                         className="w-full h-32 object-cover rounded-lg" />
                       <button onClick={() => setField("cover_image_url", "")}
                         className="absolute top-1.5 right-1.5 p-1 rounded-full"
-                        style={{ background: "rgba(0,0,0,0.7)" }}>
+                        style={{ background: "rgba(0,0,0,0.55)" }}>
                         <X size={11} className="text-white" />
                       </button>
-                      <div className="mt-1 text-xs opacity-40 text-center">Ratio conseillé : 1200×630</div>
+                      <div className="mt-1 text-xs text-center" style={{ color: "#94A3B8" }}>Ratio conseillé : 1200×630</div>
                     </div>
                   ) : (
-                    <div className="mb-1 p-2 rounded-lg text-xs text-center opacity-40"
-                      style={{ border: "1px dashed rgba(255,100,100,0.3)", color: "#F87171" }}>
+                    <div className="mb-1.5 p-2 rounded-lg text-xs text-center"
+                      style={{ border: "1px dashed #FECACA", color: "#EF4444", background: "#FFF5F5" }}>
                       Aucune image — impact SEO réduit
                     </div>
                   )}
-                  <label className="flex items-center justify-center gap-2 w-full py-2 rounded-lg cursor-pointer text-xs font-medium"
-                    style={{ border: "1px dashed rgba(201,164,92,0.35)", color: "rgba(201,164,92,0.8)" }}>
+                  <label className="flex items-center justify-center gap-2 w-full py-2 rounded-lg cursor-pointer text-xs font-medium transition-colors hover:bg-amber-50"
+                    style={{ border: "1px dashed #C9A45C", color: "#C9A45C" }}>
                     {uploadingCover
                       ? <><div className="w-3 h-3 rounded-full border border-transparent animate-spin" style={{ borderTopColor: "#C9A45C" }} />Téléversement...</>
                       : <><ImagePlus size={13} />{form.cover_image_url ? "Remplacer" : "Choisir une image"}</>
@@ -487,36 +488,37 @@ export default function AdminCitadelleBlog() {
 
                 {/* Lien partenaire */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 opacity-50 uppercase tracking-wider">Lien partenaire</label>
+                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: "#94A3B8" }}>Lien partenaire</label>
                   <input value={form.partner_link} onChange={e => setField("partner_link", e.target.value)}
                     placeholder="https://..." maxLength={500}
                     className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                    style={{ background: "#F8FAFC", border: "1px solid #CBD5E1", color: "#0F2747" }}
                     data-testid="blog-input-partner-link" />
                 </div>
 
                 {/* Publication */}
                 <div>
-                  <label className="block text-xs font-semibold mb-2 opacity-50 uppercase tracking-wider">Publication</label>
-                  <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold mb-2 uppercase tracking-wider" style={{ color: "#94A3B8" }}>Publication</label>
+                  <div className="space-y-1">
                     {[
                       { value: "draft", label: "Brouillon", icon: "○" },
                       { value: "now", label: "Publier maintenant", icon: "●" },
                       { value: "scheduled", label: "Planifier", icon: <Clock size={11} /> },
                     ].map(opt => (
-                      <label key={opt.value} className="flex items-center gap-2.5 cursor-pointer py-1.5 px-2 rounded-lg transition-colors"
+                      <label key={opt.value}
+                        className="flex items-center gap-2.5 cursor-pointer py-1.5 px-2.5 rounded-lg transition-colors"
                         style={{
-                          background: publishMode === opt.value ? "rgba(201,164,92,0.1)" : "transparent",
-                          border: `1px solid ${publishMode === opt.value ? "rgba(201,164,92,0.3)" : "transparent"}`,
+                          background: publishMode === opt.value ? "rgba(201,164,92,0.08)" : "transparent",
+                          border: `1px solid ${publishMode === opt.value ? "rgba(201,164,92,0.35)" : "transparent"}`,
                         }}>
                         <input type="radio" name="publishMode" value={opt.value}
                           checked={publishMode === opt.value}
-                          onChange={() => setPublishMode(opt.value)}
-                          className="hidden" />
-                        <span className="text-xs" style={{ color: publishMode === opt.value ? "#C9A45C" : "rgba(255,255,255,0.4)" }}>
+                          onChange={() => setPublishMode(opt.value)} className="hidden" />
+                        <span className="text-xs" style={{ color: publishMode === opt.value ? "#C9A45C" : "#94A3B8" }}>
                           {opt.icon}
                         </span>
-                        <span className="text-sm" style={{ color: publishMode === opt.value ? "white" : "rgba(255,255,255,0.6)" }}>
+                        <span className="text-sm font-medium"
+                          style={{ color: publishMode === opt.value ? "#0F2747" : "#64748B" }}>
                           {opt.label}
                         </span>
                       </label>
@@ -527,73 +529,76 @@ export default function AdminCitadelleBlog() {
                       <input type="datetime-local" value={form.scheduled_at}
                         onChange={e => setField("scheduled_at", e.target.value)}
                         className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                        style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(201,164,92,0.3)", color: "white" }}
+                        style={{ background: "#F8FAFC", border: "1px solid #C9A45C", color: "#0F2747" }}
                         data-testid="blog-input-scheduled" />
                     </div>
                   )}
                 </div>
 
                 {/* SEO — panneau collapsible */}
-                <div>
+                <div style={{ borderTop: "1px solid #F1F5F9", paddingTop: "1rem" }}>
                   <button onClick={() => setSeoOpen(o => !o)}
-                    className="flex items-center justify-between w-full py-1.5 text-xs font-semibold opacity-50 uppercase tracking-wider hover:opacity-80 transition-opacity">
-                    <span className="flex items-center gap-1.5"><Search size={11} /> SEO</span>
+                    className="flex items-center justify-between w-full py-1 text-xs font-semibold uppercase tracking-wider transition-opacity hover:opacity-70"
+                    style={{ color: "#64748B" }}>
+                    <span className="flex items-center gap-1.5"><Search size={11} /> SEO & référencement</span>
                     {seoOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                   </button>
 
                   {seoOpen && (
-                    <div className="space-y-3 mt-2 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div className="space-y-3 mt-3">
                       <div>
-                        <label className="block text-xs mb-1 opacity-50">Slug URL</label>
+                        <label className="block text-xs mb-1" style={{ color: "#94A3B8" }}>Slug URL</label>
                         <input value={form.seo_slug}
                           onChange={e => setField("seo_slug", e.target.value)}
-                          placeholder={form.title ? form.title.toLowerCase().replace(/\s+/g, "-").slice(0, 40) : "slug-personnalise"}
+                          placeholder="slug-personnalise"
                           maxLength={200}
                           className="w-full px-3 py-2 rounded-lg text-xs outline-none font-mono"
-                          style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)" }}
+                          style={{ background: "#F8FAFC", border: "1px solid #CBD5E1", color: "#475569" }}
                           data-testid="blog-input-seo-slug" />
                         {form.seo_slug && (
-                          <p className="mt-1 text-xs opacity-30 truncate">/citadelle/blog/{form.seo_slug}</p>
+                          <p className="mt-1 text-xs truncate" style={{ color: "#C9A45C" }}>/citadelle/blog/{form.seo_slug}</p>
                         )}
                       </div>
                       <div>
                         <div className="flex justify-between items-center mb-1">
-                          <label className="text-xs opacity-50">Titre SEO</label>
-                          <span className="text-xs opacity-30">{(form.seo_title || form.title).length}/60</span>
+                          <label className="text-xs" style={{ color: "#94A3B8" }}>Titre SEO</label>
+                          <span className="text-xs" style={{ color: "#CBD5E1" }}>{(form.seo_title || form.title).length}/60</span>
                         </div>
                         <input value={form.seo_title}
                           onChange={e => setField("seo_title", e.target.value)}
                           placeholder={form.title || "Titre SEO..."}
                           maxLength={200}
                           className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                          style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                          style={{ background: "#F8FAFC", border: "1px solid #CBD5E1", color: "#0F2747" }}
                           data-testid="blog-input-seo-title" />
                       </div>
                       <div>
                         <div className="flex justify-between items-center mb-1">
-                          <label className="text-xs opacity-50">Description SEO</label>
-                          <span className="text-xs" style={{ color: (form.seo_description || form.excerpt).length > 155 ? "#EF4444" : "rgba(255,255,255,0.25)" }}>
+                          <label className="text-xs" style={{ color: "#94A3B8" }}>Description SEO</label>
+                          <span className="text-xs" style={{
+                            color: (form.seo_description || form.excerpt).length > 155 ? "#DC2626" : "#CBD5E1"
+                          }}>
                             {(form.seo_description || form.excerpt).length}/160
                           </span>
                         </div>
                         <textarea value={form.seo_description}
                           onChange={e => setField("seo_description", e.target.value)}
-                          placeholder={form.excerpt || "Description SEO (max 160 car.)..."}
+                          placeholder={form.excerpt || "Description pour Google (160 car. max)..."}
                           maxLength={300} rows={3}
                           className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-none"
-                          style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                          style={{ background: "#F8FAFC", border: "1px solid #CBD5E1", color: "#0F2747" }}
                           data-testid="blog-input-seo-description" />
                       </div>
 
                       {/* Aperçu Google */}
-                      <div className="p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                        <p className="text-xs mb-1 opacity-30">Aperçu Google</p>
-                        <p className="text-xs font-semibold" style={{ color: "#8AB4F8" }}>
+                      <div className="p-3 rounded-xl" style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+                        <p className="text-xs mb-1.5 font-semibold" style={{ color: "#94A3B8" }}>Aperçu Google</p>
+                        <p className="text-sm font-medium" style={{ color: "#1a73e8" }}>
                           {(form.seo_title || form.title || "Titre de l'article").slice(0, 60)}
                         </p>
-                        <p className="text-xs mt-0.5 opacity-40">citadelle-numerique.fr › blog</p>
-                        <p className="text-xs mt-1 leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
-                          {(form.seo_description || form.excerpt || "Ajoutez une description SEO pour améliorer votre référencement.").slice(0, 155)}
+                        <p className="text-xs mt-0.5" style={{ color: "#0B8043" }}>citadelle-numerique.fr › blog</p>
+                        <p className="text-xs mt-1 leading-relaxed" style={{ color: "#4D5156" }}>
+                          {(form.seo_description || form.excerpt || "Ajoutez une description pour améliorer votre référencement.").slice(0, 155)}
                           {(form.seo_description || form.excerpt || "").length > 155 ? "..." : ""}
                         </p>
                       </div>
@@ -605,7 +610,8 @@ export default function AdminCitadelleBlog() {
             </div>
 
             {/* ── Éditeur + Aperçu split view ─────────────────────── */}
-            <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "#0c1628" }}>
+            <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "#F7F8FA" }}>
+
               {/* Toolbar Markdown */}
               <MarkdownToolbar
                 contentRef={contentRef}
@@ -618,20 +624,20 @@ export default function AdminCitadelleBlog() {
 
                 {/* Éditeur */}
                 <div className="flex-1 flex flex-col overflow-hidden"
-                  style={{ borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+                  style={{ borderRight: "1px solid #E2E8F0" }}>
                   <div className="px-4 py-1.5 text-xs font-semibold tracking-wider uppercase flex-shrink-0"
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", color: "rgba(201,164,92,0.6)", background: "rgba(0,0,0,0.25)" }}>
+                    style={{ borderBottom: "1px solid #EEF2F7", background: "#F1F4F8", color: "#94A3B8" }}>
                     Markdown
                   </div>
                   <textarea
                     ref={contentRef}
                     value={form.content_md}
                     onChange={e => setField("content_md", e.target.value)}
-                    placeholder={"# Titre de l'article\n\nCommencez à rédiger...\n\n## Section\n\nTexte avec **gras**, *italique*\n\n- Point 1\n- Point 2\n\n> Citation"}
+                    placeholder={"# Titre de l'article\n\nCommencez à rédiger...\n\n## Section\n\nTexte avec **gras**, *italique*\n\n- Point 1\n- Point 2\n\n> Citation mise en valeur"}
                     className="flex-1 p-5 text-sm font-mono outline-none resize-none"
                     style={{
-                      background: "#0c1628",
-                      color: "rgba(210,230,255,0.88)",
+                      background: "#FFFFFF",
+                      color: "#334155",
                       lineHeight: "1.8",
                       caretColor: "#C9A45C",
                     }}
@@ -640,16 +646,16 @@ export default function AdminCitadelleBlog() {
                 </div>
 
                 {/* Aperçu */}
-                <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "#101e32" }}>
+                <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "#F9FAFB" }}>
                   <div className="px-4 py-1.5 text-xs font-semibold tracking-wider uppercase flex-shrink-0"
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", color: "rgba(201,164,92,0.6)", background: "rgba(0,0,0,0.25)" }}>
+                    style={{ borderBottom: "1px solid #EEF2F7", background: "#F1F4F8", color: "#94A3B8" }}>
                     Aperçu
                   </div>
-                  <div className="flex-1 overflow-y-auto p-6 blog-content blog-content--dark"
+                  <div className="flex-1 overflow-y-auto p-6 blog-content"
                     data-testid="blog-content-preview">
                     {form.content_md
                       ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{form.content_md}</ReactMarkdown>
-                      : <p className="text-sm italic" style={{ color: "rgba(255,255,255,0.18)" }}>L'aperçu s'affiche ici en temps réel...</p>
+                      : <p className="text-sm italic" style={{ color: "#CBD5E1" }}>L'aperçu s'affiche ici en temps réel...</p>
                     }
                   </div>
                 </div>
