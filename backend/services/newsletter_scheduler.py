@@ -19,6 +19,7 @@ scheduler = AsyncIOScheduler()
 _db = None
 
 NEWSLETTER_JOB_ID = "citadelle_newsletter_digest"
+BLOG_SCHEDULER_JOB_ID = "citadelle_blog_scheduled_publish"
 
 LISTING_TYPE_LABELS = {
     "website": "Site internet",
@@ -60,6 +61,32 @@ async def get_or_create_config() -> dict:
 
 
 # ── Logique d'envoi ────────────────────────────────────────────────────────────
+
+
+async def publish_scheduled_posts():
+    """
+    Job horaire — Publie automatiquement les articles planifiés arrivés à échéance.
+    Vérifie les articles avec scheduled_at <= maintenant et is_published == False.
+    """
+    if _db is None:
+        return
+    now = datetime.now(timezone.utc).isoformat()
+    result = await _db.citadelle_blog_posts.update_many(
+        {
+            "is_published": False,
+            "scheduled_at": {"$ne": None, "$lte": now},
+        },
+        {
+            "$set": {
+                "is_published": True,
+                "published_at": now,
+                "updated_at": now,
+                "scheduled_at": None,
+            }
+        }
+    )
+    if result.modified_count > 0:
+        logger.info(f"[Blog Scheduler] {result.modified_count} article(s) publié(s) automatiquement.")
 
 
 async def check_unanswered_conversations():
@@ -365,8 +392,16 @@ async def init_newsletter_scheduler():
         replace_existing=True,
     )
 
+    # ── Job 3 : Publication automatique des articles planifiés (toutes les heures) ─
+    scheduler.add_job(
+        publish_scheduled_posts,
+        CronTrigger(minute=5),  # À :05 de chaque heure
+        id=BLOG_SCHEDULER_JOB_ID,
+        replace_existing=True,
+    )
+
     scheduler.start()
     logger.info(
         f"[Scheduler] Démarré — Newsletter: jour={config.get('day_of_week', 4)}, heure={config.get('hour', 16)}h | "
-        f"Relances conversations: toutes les heures."
+        f"Relances conversations: toutes les heures | Blog planifié: toutes les heures."
     )

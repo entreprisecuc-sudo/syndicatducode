@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowLeft, Calendar, User, ExternalLink, BookOpen } from "lucide-react";
+import { ArrowLeft, Calendar, User, ExternalLink, BookOpen, Eye } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, BLOG_CATEGORIES, getListingImageUrl } from "@/config/citadelleConstants";
@@ -16,6 +16,36 @@ const formatDate = (iso) => {
   if (!iso) return "";
   return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 };
+
+// Injection des balises meta SEO (nettoyées au démontage du composant)
+function useSeoMeta(post) {
+  useEffect(() => {
+    if (!post) return;
+    const title = post.seo_title || post.title;
+    const desc = post.seo_description || post.excerpt || "";
+    document.title = `${title} — La Citadelle Numérique`;
+
+    const setMeta = (name, content) => {
+      let el = document.querySelector(`meta[name="${name}"]`);
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.setAttribute("content", content);
+    };
+    const setOg = (prop, content) => {
+      let el = document.querySelector(`meta[property="${prop}"]`);
+      if (!el) { el = document.createElement("meta"); el.setAttribute("property", prop); document.head.appendChild(el); }
+      el.setAttribute("content", content);
+    };
+
+    setMeta("description", desc);
+    setOg("og:title", title);
+    setOg("og:description", desc);
+    if (post.cover_image_url) setOg("og:image", getListingImageUrl(post.cover_image_url));
+
+    return () => {
+      document.title = "La Citadelle Numérique";
+    };
+  }, [post]);
+}
 
 export default function CitadelleBlogPost() {
   const { slug } = useParams();
@@ -33,6 +63,8 @@ export default function CitadelleBlogPost() {
       })
       .finally(() => setLoading(false));
   }, [slug]);
+
+  useSeoMeta(post);
 
   if (loading) {
     return (
@@ -116,6 +148,11 @@ export default function CitadelleBlogPost() {
               style={{ color: CITADELLE_COLORS.gold }}>
               <ExternalLink size={13} /> Article partenaire
             </a>
+          )}
+          {post.view_count > 0 && (
+            <span className="flex items-center gap-1.5 text-sm ml-auto" style={{ color: CITADELLE_COLORS.textMuted }}>
+              <Eye size={13} /> {post.view_count} lecture{post.view_count > 1 ? "s" : ""}
+            </span>
           )}
         </div>
 

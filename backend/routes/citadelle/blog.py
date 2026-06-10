@@ -1,6 +1,7 @@
 """
 Routes blog — La Citadelle Numérique
 CMS d'articles : lecture publique + gestion admin (CRUD Markdown)
+Fonctionnalités : stats de vues, planification, SEO, slug personnalisé
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Query
@@ -42,9 +43,9 @@ def _slugify(text: str) -> str:
     return text or "article"
 
 
-async def _unique_slug(title: str, exclude_id: str = None) -> str:
+async def _unique_slug(raw: str, exclude_id: str = None) -> str:
     """Génère un slug unique en ajoutant un suffixe numérique si nécessaire"""
-    base = _slugify(title)
+    base = _slugify(raw)
     slug = base
     n = 1
     while True:
@@ -75,6 +76,10 @@ class BlogPostCreate(BaseModel):
     partner_link: Optional[str] = Field(None, max_length=500)
     cover_image_url: Optional[str] = Field(None, max_length=500)
     is_published: bool = False
+    scheduled_at: Optional[str] = None       # ISO datetime pour publication planifiée
+    seo_title: Optional[str] = Field(None, max_length=200)
+    seo_description: Optional[str] = Field(None, max_length=300)
+    seo_slug: Optional[str] = Field(None, max_length=200)  # Slug URL personnalisé
 
 
 class BlogPostUpdate(BaseModel):
@@ -86,6 +91,10 @@ class BlogPostUpdate(BaseModel):
     partner_link: Optional[str] = Field(None, max_length=500)
     cover_image_url: Optional[str] = Field(None, max_length=500)
     is_published: Optional[bool] = None
+    scheduled_at: Optional[str] = None
+    seo_title: Optional[str] = Field(None, max_length=200)
+    seo_description: Optional[str] = Field(None, max_length=300)
+    seo_slug: Optional[str] = Field(None, max_length=200)
 
 
 # ── Routes publiques ───────────────────────────────────────────────────────────
@@ -108,11 +117,17 @@ async def list_posts(
     return {"posts": posts, "total": total}
 
 
-@router.get("/blog/{slug}", summary="Lecture d'un article publié")
+@router.get("/blog/{slug}", summary="Lecture d'un article publié — incrémente les vues")
 async def get_post(slug: str):
-    """Retourne un article publié par son slug"""
-    post = await db.citadelle_blog_posts.find_one(
-        {"slug": slug, "is_published": True}, {"_id": 0}
+    """
+    Retourne un article publié par son slug.
+    Incrémente atomiquement le compteur de vues (view_count).
+    """
+    post = await db.citadelle_blog_posts.find_one_and_update(
+        {"slug": slug, "is_published": True},
+        {"$inc": {"view_count": 1}},
+        projection={"_id": 0},
+        return_document=True,
     )
     if not post:
         raise HTTPException(status_code=404, detail="Article introuvable")
@@ -123,7 +138,7 @@ async def get_post(slug: str):
 
 @router.get("/admin/blog", summary="Admin — Tous les articles")
 async def admin_list_posts(current_user: dict = Depends(require_admin)):
-    """Admin : liste tous les articles (publiés et brouillons), sans content_md pour la liste"""
+    """Admin : liste tous les articles (publiés, planifiés, brouillons), sans content_md"""
     cursor = db.citadelle_blog_posts.find(
         {}, {"_id": 0, "content_md": 0}
     ).sort("created_at", -1)
@@ -150,7 +165,17 @@ async def admin_create_post(
 ):
     """Admin : crée un nouvel article de blog"""
     now = datetime.now(timezone.utc).isoformat()
-    slug = await _unique_slug(data.title)
+
+    # Slug : personnalisé > généré depuis le titre
+    raw_slug = data.seo_slug if data.seo_slug else data.title
+    slug = await _unique_slug(raw_slug)
+
+    # Si scheduled_at est défini, l'article n'est pas publié immédiatement
+    is_published = data.is_published
+    scheduled_at = data.scheduled_at
+    if scheduled_at:
+        is_published = False  # La planification prend le dessus
+
     post = {
         "id": str(uuid.uuid4()),
         "slug": slug,
@@ -161,8 +186,12 @@ async def admin_create_post(
         "author_name": data.author_name,
         "partner_link": data.partner_link,
         "cover_image_url": data.cover_image_url,
-        "is_published": data.is_published,
-        "published_at": now if data.is_published else None,
+        "is_published": is_published,
+        "scheduled_at": scheduled_at,
+        "published_at": now if is_published else None,
+        "seo_title": data.seo_title,
+        "seo_description": data.seo_description,
+        "view_count": 0,
         "created_at": now,
         "updated_at": now,
     }
@@ -187,13 +216,20 @@ async def admin_update_post(
     if not updates:
         return post
 
-    # Régénérer le slug si le titre change
-    if "title" in updates:
+    # Slug personnalisé ou régénéré depuis le titre
+    if "seo_slug" in updates and updates["seo_slug"]:
+        updates["slug"] = await _unique_slug(updates["seo_slug"], exclude_id=post_id)
+    elif "title" in updates:
         updates["slug"] = await _unique_slug(updates["title"], exclude_id=post_id)
 
-    # Enregistrer published_at lors de la première publication
+    # Planification : si scheduled_at est renseigné, dépublier
+    if "scheduled_at" in updates and updates["scheduled_at"]:
+        updates["is_published"] = False
+
+    # Enregistrer published_at lors de la première publication manuelle
     if updates.get("is_published") is True and not post.get("published_at"):
         updates["published_at"] = datetime.now(timezone.utc).isoformat()
+        updates["scheduled_at"] = None  # Effacer la planification si on publie manuellement
 
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
     await db.citadelle_blog_posts.update_one({"id": post_id}, {"$set": updates})
