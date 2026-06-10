@@ -4,10 +4,11 @@ Inscription, connexion, reset mot de passe INDÉPENDANTS du Syndicat du Code
 platform: "citadelle" — isolation stricte
 """
 
-from fastapi import APIRouter, HTTPException, status, Request
+from fastapi import APIRouter, HTTPException, status, Request, UploadFile, File, Depends
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime, timezone, timedelta
+from pathlib import Path as FilePath
 import logging
 import re
 import uuid
@@ -515,6 +516,8 @@ class BillingUpdate(BaseModel):
     bic: Optional[str] = Field(None, max_length=11)
     bank_name: Optional[str] = Field(None, max_length=100)
     account_holder: Optional[str] = Field(None, max_length=100)
+    # Adresse personnelle
+    address: Optional[str] = Field(None, max_length=500)
     # Professionnel
     is_professional: Optional[bool] = None
     company_name: Optional[str] = Field(None, max_length=200)
@@ -570,6 +573,10 @@ async def citadelle_update_billing(
     billing["updated_at"] = now
     updates["billing"] = billing
 
+    # Adresse personnelle
+    if data.address is not None:
+        updates["address"] = data.address.strip()
+
     # Statut professionnel
     professional = user.get("professional", {})
     if data.is_professional is not None:
@@ -618,7 +625,7 @@ async def citadelle_get_billing(request: Request):
 
     user = await db.users.find_one(
         {"id": decoded["sub"], "platform": "citadelle"},
-        {"_id": 0, "billing": 1, "professional": 1}
+        {"_id": 0, "billing": 1, "professional": 1, "address": 1, "documents": 1}
     )
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable")
@@ -626,4 +633,99 @@ async def citadelle_get_billing(request: Request):
     return {
         "billing": user.get("billing", {}),
         "professional": user.get("professional", {}),
+        "address": user.get("address", ""),
+        "documents": user.get("documents", {}),
     }
+
+
+# ── Upload de documents sécurisés ──────────────────────────────────────────────
+
+ALLOWED_DOC_TYPES = {"application/pdf", "image/jpeg", "image/png", "image/webp"}
+MAX_DOC_SIZE = 10 * 1024 * 1024  # 10 Mo
+DOCS_DIR = FilePath(__file__).resolve().parent.parent.parent / "uploads" / "citadelle" / "documents"
+DOCS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+@router.post("/profile/document/{doc_type}", status_code=status.HTTP_200_OK)
+async def upload_document(
+    doc_type: str,
+    request: Request,
+    file: UploadFile = File(...)
+):
+    """
+    Upload d'un document sécurisé (carte d'identité, KBIS, RIB).
+    doc_type: 'identity' | 'kbis' | 'rib'
+    Formats acceptés : PDF, JPEG, PNG, WebP — max 10 Mo
+    """
+    if doc_type not in ("identity", "kbis", "rib"):
+        raise HTTPException(status_code=400, detail="Type de document invalide. Valeurs acceptées : identity, kbis, rib")
+
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token manquant")
+    token = auth_header.split(" ")[1]
+    try:
+        decoded = decode_access_token(token)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Token invalide")
+
+    user = await db.users.find_one({"id": decoded["sub"], "platform": "citadelle"}, {"_id": 0, "id": 1, "email": 1})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+
+    if file.content_type not in ALLOWED_DOC_TYPES:
+        raise HTTPException(status_code=400, detail="Format non autorisé. Acceptés : PDF, JPEG, PNG, WebP")
+
+    content = await file.read()
+    if len(content) > MAX_DOC_SIZE:
+        raise HTTPException(status_code=400, detail="Fichier trop volumineux (max 10 Mo)")
+
+    ext_map = {".jpg": ".jpg", ".jpeg": ".jpg", ".png": ".png", ".webp": ".webp", ".pdf": ".pdf"}
+    raw_ext = FilePath(file.filename).suffix.lower() if file.filename else ".pdf"
+    ext = ext_map.get(raw_ext, raw_ext or ".pdf")
+
+    filename = f"doc_{doc_type}_{user['id'][:8]}_{uuid.uuid4().hex[:8]}{ext}"
+    filepath = DOCS_DIR / filename
+    filepath.write_bytes(content)
+
+    doc_url = f"/uploads/citadelle/documents/{filename}"
+    now = datetime.now(timezone.utc).isoformat()
+
+    await db.users.update_one(
+        {"id": user["id"], "platform": "citadelle"},
+        {"$set": {
+            f"documents.{doc_type}": {"url": doc_url, "filename": file.filename, "uploaded_at": now},
+            "updated_at": now
+        }}
+    )
+
+    logger.info(f"[Citadelle] Document '{doc_type}' uploadé par {user['email']}: {filename}")
+    return {"url": doc_url, "filename": filename, "type": doc_type}
+
+
+# ── Route admin : détail utilisateur Citadelle ─────────────────────────────────
+
+from middleware.auth import get_current_user
+
+async def _require_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs")
+    return current_user
+
+
+@router.get("/admin/users/{user_id}", status_code=200)
+async def admin_get_citadelle_user(
+    user_id: str,
+    current_user: dict = Depends(_require_admin)
+):
+    """
+    Admin : détail complet d'un utilisateur Citadelle
+    (infos personnelles, bancaires, professionnelles, documents)
+    """
+    user = await db.users.find_one(
+        {"id": user_id, "platform": "citadelle"},
+        {"_id": 0, "password_hash": 0}
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur Citadelle introuvable")
+    return user

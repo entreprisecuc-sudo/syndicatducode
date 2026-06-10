@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   User, Lock, Save, CheckCircle, AlertCircle,
   Eye, EyeOff, ChevronLeft, Calendar, Mail, Shield,
-  Building, Landmark, CreditCard
+  Building, Landmark, CreditCard, Upload
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
@@ -227,16 +227,22 @@ function TabInfos({ user, updateUser, inputStyle, labelStyle }) {
 // ── Onglet Coordonnées bancaires ──────────────────────────────────────────────
 
 function TabBanking({ inputStyle, labelStyle }) {
-  const [form, setForm] = useState({ iban: "", bic: "", bank_name: "", account_holder: "" });
+  const [form, setForm] = useState({ iban: "", bic: "", bank_name: "", account_holder: "", address: "" });
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [docs, setDocs] = useState({});
+  const [uploading, setUploading] = useState("");
 
   useEffect(() => {
     citadelleApi.get("/auth/profile/billing").then(res => {
       const b = res.data.billing || {};
-      setForm({ iban: b.iban || "", bic: b.bic || "", bank_name: b.bank_name || "", account_holder: b.account_holder || "" });
+      setForm({
+        iban: b.iban || "", bic: b.bic || "", bank_name: b.bank_name || "",
+        account_holder: b.account_holder || "", address: res.data.address || ""
+      });
+      setDocs(res.data.documents || {});
       setLoaded(true);
     }).catch(() => setLoaded(true));
   }, []);
@@ -247,13 +253,28 @@ function TabBanking({ inputStyle, labelStyle }) {
     setSaving(true); setError(""); setSuccess(false);
     try {
       await citadelleApi.patch("/auth/profile/billing", {
-        iban: form.iban, bic: form.bic, bank_name: form.bank_name, account_holder: form.account_holder
+        iban: form.iban, bic: form.bic, bank_name: form.bank_name,
+        account_holder: form.account_holder, address: form.address
       });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError(err.response?.data?.detail || "Erreur lors de la sauvegarde");
     } finally { setSaving(false); }
+  };
+
+  const uploadDoc = async (type, file) => {
+    setUploading(type);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await citadelleApi.post(`/auth/profile/document/${type}`, fd, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      setDocs(prev => ({ ...prev, [type]: { url: res.data.url, filename: file.name, uploaded_at: new Date().toISOString() } }));
+    } catch (err) {
+      setError(err.response?.data?.detail || "Erreur lors de l'upload");
+    } finally { setUploading(""); }
   };
 
   if (!loaded) return <div className="py-8 text-center"><div className="w-6 h-6 rounded-full border-2 animate-spin mx-auto" style={{ borderColor: CITADELLE_COLORS.border, borderTopColor: CITADELLE_COLORS.gold }} /></div>;
@@ -311,6 +332,21 @@ function TabBanking({ inputStyle, labelStyle }) {
         </div>
       </div>
 
+      <div>
+        <label className="block text-sm font-medium mb-2" style={labelStyle}>Adresse personnelle</label>
+        <textarea value={form.address} onChange={e => { setForm(p => ({ ...p, address: e.target.value })); setError(""); }}
+          placeholder="Adresse complète (rue, code postal, ville)" rows={2}
+          className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
+          style={inputStyle} data-testid="billing-address" />
+      </div>
+
+      {/* Upload documents */}
+      <div className="pt-3 space-y-3" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}` }}>
+        <h3 className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.white }}>Documents justificatifs</h3>
+        <DocumentUpload label="Carte d'identité" type="identity" docs={docs} uploading={uploading} onUpload={uploadDoc} />
+        <DocumentUpload label="RIB (document bancaire)" type="rib" docs={docs} uploading={uploading} onUpload={uploadDoc} />
+      </div>
+
       <button onClick={handleSave} disabled={saving}
         className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm disabled:opacity-60 transition-all hover:scale-[1.02]"
         style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
@@ -324,6 +360,42 @@ function TabBanking({ inputStyle, labelStyle }) {
   );
 }
 
+// ── Composant upload document réutilisable ────────────────────────────────────
+
+function DocumentUpload({ label, type, docs, uploading, onUpload }) {
+  const doc = docs[type];
+  const inputId = `doc-upload-${type}`;
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+      <CreditCard size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0 }} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium" style={{ color: CITADELLE_COLORS.white }}>{label}</p>
+        {doc ? (
+          <p className="text-xs truncate" style={{ color: "#22C55E" }}>
+            {doc.filename || "Document uploadé"} — {new Date(doc.uploaded_at).toLocaleDateString("fr-FR")}
+          </p>
+        ) : (
+          <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>PDF, JPEG, PNG — max 10 Mo</p>
+        )}
+      </div>
+      <label htmlFor={inputId}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all hover:scale-105"
+        style={{ background: doc ? "rgba(34,197,94,0.1)" : "rgba(201,164,92,0.1)", color: doc ? "#22C55E" : CITADELLE_COLORS.gold }}>
+        {uploading === type ? (
+          <div className="w-3 h-3 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.gold }} />
+        ) : doc ? (
+          <><CheckCircle size={12} /> Modifier</>
+        ) : (
+          <><Upload size={12} /> Charger</>
+        )}
+      </label>
+      <input id={inputId} type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp"
+        onChange={e => { if (e.target.files?.[0]) onUpload(type, e.target.files[0]); e.target.value = ""; }}
+        data-testid={`doc-upload-${type}`} />
+    </div>
+  );
+}
+
 // ── Onglet Statut professionnel ───────────────────────────────────────────────
 
 function TabProfessional({ inputStyle, labelStyle }) {
@@ -332,6 +404,8 @@ function TabProfessional({ inputStyle, labelStyle }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [docs, setDocs] = useState({});
+  const [uploading, setUploading] = useState("");
 
   useEffect(() => {
     citadelleApi.get("/auth/profile/billing").then(res => {
@@ -341,9 +415,24 @@ function TabProfessional({ inputStyle, labelStyle }) {
         company_name: p.company_name || "", siren: p.siren || "", siret: p.siret || "",
         vat_number: p.vat_number || "", company_address: p.company_address || ""
       });
+      setDocs(res.data.documents || {});
       setLoaded(true);
     }).catch(() => setLoaded(true));
   }, []);
+
+  const uploadDoc = async (type, file) => {
+    setUploading(type);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await citadelleApi.post(`/auth/profile/document/${type}`, fd, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      setDocs(prev => ({ ...prev, [type]: { url: res.data.url, filename: file.name, uploaded_at: new Date().toISOString() } }));
+    } catch (err) {
+      setError(err.response?.data?.detail || "Erreur lors de l'upload");
+    } finally { setUploading(""); }
+  };
 
   const handleSave = async () => {
     if (form.is_professional && !form.company_name.trim()) { setError("La raison sociale est requise pour les professionnels"); return; }
@@ -438,6 +527,11 @@ function TabProfessional({ inputStyle, labelStyle }) {
               placeholder="Adresse complète de votre entreprise" rows={2}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
               style={inputStyle} data-testid="pro-address" />
+          </div>
+
+          {/* Upload KBIS */}
+          <div className="pt-2">
+            <DocumentUpload label="Extrait KBIS" type="kbis" docs={docs} uploading={uploading} onUpload={uploadDoc} />
           </div>
         </div>
       )}
