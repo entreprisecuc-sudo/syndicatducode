@@ -605,7 +605,7 @@ export default function AdminCitadelleBlog() {
             </div>
 
             {/* ── Éditeur + Aperçu split view ─────────────────────── */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "#0c1628" }}>
               {/* Toolbar Markdown */}
               <MarkdownToolbar
                 contentRef={contentRef}
@@ -618,38 +618,38 @@ export default function AdminCitadelleBlog() {
 
                 {/* Éditeur */}
                 <div className="flex-1 flex flex-col overflow-hidden"
-                  style={{ borderRight: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="px-4 py-1.5 text-xs opacity-30 flex-shrink-0"
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  style={{ borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+                  <div className="px-4 py-1.5 text-xs font-semibold tracking-wider uppercase flex-shrink-0"
+                    style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", color: "rgba(201,164,92,0.6)", background: "rgba(0,0,0,0.25)" }}>
                     Markdown
                   </div>
                   <textarea
                     ref={contentRef}
                     value={form.content_md}
                     onChange={e => setField("content_md", e.target.value)}
-                    placeholder={"# Titre de l'article\n\nCommencez à rédiger votre contenu...\n\n## Section\n\nTexte avec **gras**, *italique*, [liens](https://...) et listes :\n\n- Point 1\n- Point 2\n\n> Citation mise en valeur"}
-                    className="flex-1 p-4 text-sm font-mono outline-none resize-none"
+                    placeholder={"# Titre de l'article\n\nCommencez à rédiger...\n\n## Section\n\nTexte avec **gras**, *italique*\n\n- Point 1\n- Point 2\n\n> Citation"}
+                    className="flex-1 p-5 text-sm font-mono outline-none resize-none"
                     style={{
-                      background: "transparent",
-                      color: "rgba(255,255,255,0.82)",
-                      lineHeight: "1.75",
-                      tabSize: 2,
+                      background: "#0c1628",
+                      color: "rgba(210,230,255,0.88)",
+                      lineHeight: "1.8",
+                      caretColor: "#C9A45C",
                     }}
                     data-testid="blog-content-editor"
                   />
                 </div>
 
                 {/* Aperçu */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                  <div className="px-4 py-1.5 text-xs opacity-30 flex-shrink-0"
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "#101e32" }}>
+                  <div className="px-4 py-1.5 text-xs font-semibold tracking-wider uppercase flex-shrink-0"
+                    style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", color: "rgba(201,164,92,0.6)", background: "rgba(0,0,0,0.25)" }}>
                     Aperçu
                   </div>
                   <div className="flex-1 overflow-y-auto p-6 blog-content blog-content--dark"
                     data-testid="blog-content-preview">
                     {form.content_md
                       ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{form.content_md}</ReactMarkdown>
-                      : <p className="opacity-20 text-sm italic">L'aperçu s'affiche ici...</p>
+                      : <p className="text-sm italic" style={{ color: "rgba(255,255,255,0.18)" }}>L'aperçu s'affiche ici en temps réel...</p>
                     }
                   </div>
                 </div>
