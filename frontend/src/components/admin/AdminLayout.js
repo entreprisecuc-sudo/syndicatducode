@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, Users, BarChart3, 
-  FileText, History, Shield, Home, Rocket, Megaphone, Bell, 
+  FileText, History, Shield, Home, Rocket, Megaphone, Bell, BookOpen,
   CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare, Database, Globe, ArrowLeftRight, Star
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -151,6 +151,12 @@ const ADMIN_MENU_SECTIONS = [
         label: "Newsletter",
         icon: Bell,
         description: "Alertes annonces, abonnés et configuration du scheduler"
+      },
+      {
+        path: "/syndicat-admin/citadelle/blog",
+        label: "Blog",
+        icon: BookOpen,
+        description: "Rédiger et gérer les articles du blog Citadelle"
       }
     ]
   }

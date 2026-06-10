@@ -247,9 +247,9 @@ export default function AdminCitadelleBlog() {
 
           {/* Barre d'outils */}
           <div className="flex items-center justify-between px-5 py-3 flex-shrink-0"
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-            <h3 className="font-bold text-base">
-              {editPanel === "new" ? "Nouvel article" : "Modifier l'article"}
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", background: "rgba(0,0,0,0.3)" }}>
+            <h3 className="font-bold text-base text-white">
+              {editPanel === "new" ? "Nouvel article" : `Modifier : ${editPanel.title?.slice(0, 40)}...`}
             </h3>
             <div className="flex items-center gap-2">
               <button
@@ -293,7 +293,7 @@ export default function AdminCitadelleBlog() {
 
             {/* Sidebar métadonnées */}
             <div className="w-64 flex-shrink-0 p-4 space-y-4 overflow-y-auto"
-              style={{ borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+              style={{ borderRight: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.2)" }}>
 
               <div>
                 <label className="block text-xs font-medium mb-1 opacity-60">Titre *</label>
@@ -302,7 +302,7 @@ export default function AdminCitadelleBlog() {
                   onChange={e => setField("title", e.target.value)}
                   placeholder="Mon article..." maxLength={200}
                   className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}
                   data-testid="blog-input-title"
                 />
               </div>
@@ -314,7 +314,7 @@ export default function AdminCitadelleBlog() {
                   onChange={e => setField("excerpt", e.target.value)}
                   rows={3} placeholder="Résumé affiché sur la liste..." maxLength={500}
                   className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}
                   data-testid="blog-input-excerpt"
                 />
               </div>
@@ -325,10 +325,10 @@ export default function AdminCitadelleBlog() {
                   value={form.category}
                   onChange={e => setField("category", e.target.value)}
                   className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}
                   data-testid="blog-input-category">
                   {BLOG_CATEGORIES.map(c => (
-                    <option key={c.slug} value={c.slug}>{c.label}</option>
+                    <option key={c.slug} value={c.slug} style={{ background: "#1e293b", color: "white" }}>{c.label}</option>
                   ))}
                 </select>
               </div>
@@ -340,7 +340,7 @@ export default function AdminCitadelleBlog() {
                   onChange={e => setField("author_name", e.target.value)}
                   maxLength={100}
                   className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}
                   data-testid="blog-input-author"
                 />
               </div>
@@ -352,7 +352,7 @@ export default function AdminCitadelleBlog() {
                   onChange={e => setField("partner_link", e.target.value)}
                   placeholder="https://..." maxLength={500}
                   className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}
                   data-testid="blog-input-partner-link"
                 />
               </div>
