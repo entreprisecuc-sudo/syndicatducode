@@ -38,6 +38,8 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://syndicatducode.fr')
 # Quand le SMTP lacitadellenumerique.fr sera actif, renseigner CITADELLE_FROM_EMAIL dans .env
 CITADELLE_URL = os.environ.get('CITADELLE_URL', 'https://lacitadellenumerique.fr')
 CITADELLE_FROM_EMAIL = os.environ.get('CITADELLE_FROM_EMAIL', SMTP_USER)
+# Email destinataire des notifications admin Citadelle (par défaut = expéditeur Citadelle)
+CITADELLE_ADMIN_EMAIL = os.environ.get('CITADELLE_ADMIN_EMAIL', CITADELLE_FROM_EMAIL)
 
 # URL publique du backend (utilisée dans les emails pour les images d'annonces)
 # En production : identique à CITADELLE_URL (K8s route /api/* vers le backend)

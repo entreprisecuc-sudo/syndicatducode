@@ -32,6 +32,14 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Catalogue paramétrable admin (CRUD)
 - Page publique /citadelle/services
 - Types : Payant, Gratuit, Partenaire, Sur devis
+- **Paiement direct (Stripe mocké) : TERMINÉ 10/06/2026**
+  - Route `POST /api/citadelle/services/{id}/buy` — checkout mocké (succès immédiat)
+  - Collection `citadelle_service_orders` avec statuts : en_attente, en_cours, termine, annule
+  - Modale de checkout côté public (nom, email, message + confirmation)
+  - Écran de succès avec référence de commande
+  - Emails : confirmation client + notification admin (branding HTML Citadelle)
+  - Admin : onglet "Commandes" avec filtres statut + sélecteur de statut inline
+  - `GET /api/citadelle/admin/services/orders` + `PATCH /api/citadelle/admin/services/orders/{id}`
 
 ### ✅ Newsletter / Alertes Annonces (TERMINÉ 10/06/2026)
 - Formulaire d'inscription public sur la page d'accueil Citadelle
@@ -92,6 +100,9 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 | GET /api/citadelle/messages-unread-count | Compteur non lus |
 | GET /api/citadelle/services | Services publics |
 | CRUD /api/citadelle/admin/services | Admin: gérer services |
+| POST /api/citadelle/services/{id}/buy | Acheter un service (paiement mocké) |
+|| GET /api/citadelle/admin/services/orders | Admin: liste commandes de services |
+|| PATCH /api/citadelle/admin/services/orders/{id} | Admin: mettre à jour une commande |
 | POST /api/citadelle/newsletter/subscribe | Inscription publique newsletter |
 | POST /api/citadelle/newsletter/subscribe-member | Auto-inscription membre connecté |
 | GET /api/citadelle/newsletter/unsubscribe/{token} | Désinscription via lien email |
