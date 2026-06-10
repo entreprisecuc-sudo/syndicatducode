@@ -537,3 +537,56 @@ Le Syndicat du Code
     except Exception as e:
         logger.error("Erreur envoi email de backup : %s", e)
         return False
+
+
+def send_citadelle_credentials_email(to_email: str, listing_title: str, credentials_data: str, amount: float) -> bool:
+    """
+    Envoie les accès de l'actif numérique à l'acheteur par email sécurisé.
+    Déclenché par l'admin après vérification.
+    """
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = to_email
+        msg['Subject'] = f"Vos accès sécurisés — {listing_title} — La Citadelle Numérique"
+
+        body = f"""Bonjour,
+
+La vente de l'actif « {listing_title} » a été finalisée avec succès.
+
+Montant de la transaction : {amount:,.0f} €
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  VOS ACCÈS SÉCURISÉS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{credentials_data}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IMPORTANT :
+- Conservez ces informations en lieu sûr.
+- Modifiez les mots de passe dès que possible.
+- Ne partagez jamais ces accès avec des tiers.
+
+Ces accès sont également disponibles dans votre espace membre sur La Citadelle Numérique.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+La Citadelle Numérique
+Marketplace française d'actifs numériques
+{CITADELLE_URL}
+"""
+
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+
+        logger.info(f"[Citadelle] Email accès sécurisés envoyé à {to_email} pour « {listing_title} »")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Citadelle] Erreur envoi email accès: {e}")
+        return False

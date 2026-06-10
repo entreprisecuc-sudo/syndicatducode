@@ -11,6 +11,7 @@ import uuid
 import logging
 
 from middleware.auth import get_current_user
+from services.email_service import send_citadelle_credentials_email
 
 logger = logging.getLogger(__name__)
 
@@ -621,5 +622,14 @@ async def admin_transmit_credentials(
             "Les accès ont été transmis de manière sécurisée à l'acheteur par l'administrateur."
         )}}
     )
+
+    # Envoi email sécurisé à l'acheteur
+    send_citadelle_credentials_email(
+        to_email=tx["buyer_email"],
+        listing_title=tx.get("listing_title", "Actif numérique"),
+        credentials_data=tx["credentials"]["data"],
+        amount=tx.get("payment_amount", 0)
+    )
+
     logger.info(f"[Citadelle Admin] Accès transmis à l'acheteur: {transaction_id} par {current_user.get('email')}")
-    return {"message": "Accès transmis à l'acheteur avec succès"}
+    return {"message": "Accès transmis à l'acheteur avec succès. Email envoyé."}
