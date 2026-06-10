@@ -287,7 +287,7 @@ app.add_middleware(
 async def startup_event():
     """Initialisation au démarrage"""
     # Créer les index pour la collection users
-    await db.users.create_index("email", unique=True)
+    await db.users.create_index([("email", 1), ("platform", 1)], unique=True, name="email_platform_unique")
     await db.users.create_index("id", unique=True)
     await db.password_resets.create_index("user_id")
     await db.password_resets.create_index("expires_at")

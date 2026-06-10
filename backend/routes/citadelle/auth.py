@@ -203,7 +203,7 @@ async def citadelle_register(user_data: CitadelleRegister):
     """
     Inscription sur La Citadelle Numérique.
     Crée un compte INDÉPENDANT avec platform='citadelle'.
-    L'email doit être unique dans toute la base (Syndicat + Citadelle).
+    L'email doit être unique au sein de la plateforme Citadelle.
     """
     # Validation mot de passe
     try:
@@ -211,8 +211,11 @@ async def citadelle_register(user_data: CitadelleRegister):
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-    # Vérifier unicité email (globale — un email = un seul compte sur toutes les plateformes)
-    existing = await db.users.find_one({"email": user_data.email.lower()}, {"_id": 0, "email": 1})
+    # Vérifier unicité email sur la plateforme Citadelle uniquement
+    existing = await db.users.find_one(
+        {"email": user_data.email.lower(), "platform": "citadelle"},
+        {"_id": 0, "email": 1}
+    )
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

@@ -22,5 +22,20 @@
 - **URL Profil** : /citadelle/espace-membre/profil
 - **URL Mot de passe oublié** : /citadelle/mot-de-passe-oublie
 
+## Compte La Citadelle (becamarnaud — vendeur test)
+- **Email** : becamarnaud@yahoo.fr
+- **Mot de passe** : 1234
+- **Platform** : citadelle
+
+## Compte La Citadelle (joerke — acheteur test)
+- **Email** : joerke.b.direction@gmail.com
+- **Mot de passe** : Test1234
+- **Platform** : citadelle
+
+## Compte Admin Syndicat (joerke)
+- **Email** : joerke.b.direction@gmail.com
+- **Mot de passe** : 1234
+- **URL Admin** : /syndicat-admin
+
 > Note : Les comptes Syndicat sont visibles via TEST_ACCOUNTS dans constants.js (DEV_MODE actif volontairement).
 > Le compte Citadelle est isolé (platform: "citadelle") — ne peut pas se connecter sur le Syndicat.

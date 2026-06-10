@@ -123,8 +123,8 @@ async def register(user_data: UserRegister):
     - Mot de passe sécurisé (8 chars min, majuscule, minuscule, chiffre)
     - Compte créé sans rôle (à choisir à la première connexion)
     """
-    # Vérifier si l'email existe déjà
-    existing_user = await db.users.find_one({"email": user_data.email.lower()})
+    # Vérifier si l'email existe déjà sur la plateforme Syndicat
+    existing_user = await db.users.find_one({"email": user_data.email.lower(), "platform": "syndicat"})
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -140,6 +140,7 @@ async def register(user_data: UserRegister):
         "email": user_data.email.lower(),
         "password_hash": hash_password(user_data.password),
         "role": None,  # Pas de rôle initial
+        "platform": "syndicat",
         "status": UserStatus.PENDING,
         "created_at": now,
         "updated_at": now,
@@ -177,8 +178,8 @@ async def login(credentials: UserLogin, request: Request):
     # Vérification anti-brute force
     await _check_brute_force(ip)
 
-    # Rechercher l'utilisateur
-    user = await db.users.find_one({"email": credentials.email.lower()})
+    # Rechercher l'utilisateur sur la plateforme Syndicat
+    user = await db.users.find_one({"email": credentials.email.lower(), "platform": "syndicat"})
 
     if not user:
         await _log_failed_attempt(ip, credentials.email.lower())
@@ -313,7 +314,7 @@ async def forgot_password(data: ForgotPassword):
     - Pour des raisons de sécurité, on ne révèle pas si l'email existe
     """
     # Rechercher l'utilisateur (mais ne pas révéler s'il existe)
-    user = await db.users.find_one({"email": data.email.lower()})
+    user = await db.users.find_one({"email": data.email.lower(), "platform": "syndicat"})
     
     # Message générique dans tous les cas
     response_message = "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé."
