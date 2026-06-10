@@ -9,9 +9,10 @@ from typing import Optional, List
 from datetime import datetime, timezone
 import uuid
 import logging
+import asyncio
 
 from middleware.auth import get_current_user
-from services.email_service import send_citadelle_credentials_email
+from services.email_service import send_citadelle_credentials_email, send_new_offer_notification_email
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +169,29 @@ async def create_offer(
     await db.citadelle_transactions.insert_one(transaction)
     del transaction["_id"]
     logger.info(f"[Citadelle] Offre créée: {transaction['id']} sur {listing['title']} par {current_user.get('email')}")
+
+    # Notifier le vendeur par email (fire and forget)
+    seller_email = listing.get("seller_email", "")
+    if seller_email:
+        tx_id = transaction["id"]
+        tx_amount = data.amount
+        tx_message = data.message
+        tx_listing_title = listing["title"]
+        buyer_email = current_user.get("email", "")
+
+        async def _notify_seller_offer():
+            send_new_offer_notification_email(
+                seller_email=seller_email,
+                listing_title=tx_listing_title,
+                offer_amount=tx_amount,
+                buyer_email=buyer_email,
+                offer_message_preview=tx_message,
+                transaction_id=tx_id,
+            )
+        asyncio.create_task(_notify_seller_offer())
+    else:
+        logger.warning(f"[Citadelle] Seller email manquant pour la transaction {transaction['id']}")
+
     return transaction
 
 

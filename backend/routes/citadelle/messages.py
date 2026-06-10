@@ -9,8 +9,10 @@ from typing import Optional
 from datetime import datetime, timezone
 import uuid
 import logging
+import asyncio
 
 from middleware.auth import get_current_user
+from services.email_service import send_new_message_notification_email
 
 logger = logging.getLogger(__name__)
 
@@ -100,9 +102,32 @@ async def send_message(
             "last_read": {sender_id: now},
             "created_at": now,
             "updated_at": now,
+            # Champs de suivi des notifications email
+            "seller_notified_at": None,
+            "reminder_sent_at": None,
         }
         await db.citadelle_conversations.insert_one(conversation)
         logger.info(f"[Citadelle] Conversation créée: {conv_id} — {current_user.get('email')} → {listing.get('seller_email')}")
+
+        # Notifier le vendeur par email (premier message — fire and forget)
+        seller_email = listing.get("seller_email", "")
+        if seller_email:
+            async def _notify_seller():
+                success = send_new_message_notification_email(
+                    seller_email=seller_email,
+                    listing_title=listing["title"],
+                    buyer_email=current_user.get("email", ""),
+                    message_preview=data.content,
+                    conversation_id=conv_id,
+                )
+                if success:
+                    await db.citadelle_conversations.update_one(
+                        {"id": conv_id},
+                        {"$set": {"seller_notified_at": datetime.now(timezone.utc).isoformat()}}
+                    )
+            asyncio.create_task(_notify_seller())
+        else:
+            logger.warning(f"[Citadelle] Seller email manquant pour la conversation {conv_id}")
 
     return {"conversation_id": conv_id, "message": msg}
 
@@ -135,6 +160,15 @@ async def reply_message(
         {"id": conversation_id},
         {"$push": {"messages": msg}, "$set": {"updated_at": now, f"last_read.{user_id}": now}}
     )
+
+    # Si c'est le vendeur qui répond → désactiver toute future relance automatique
+    # (une seule relance 24h par conversation est possible)
+    if user_id == conv.get("seller_id") and conv.get("reminder_sent_at") is None:
+        await db.citadelle_conversations.update_one(
+            {"id": conversation_id},
+            {"$set": {"reminder_sent_at": now}},
+        )
+
     return msg
 
 

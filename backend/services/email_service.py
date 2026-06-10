@@ -896,3 +896,333 @@ def send_newsletter_digest_email(
     except Exception as e:
         logger.error(f"[Newsletter] Erreur envoi à {to_email} : {e}")
         return False
+
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NOTIFICATIONS VENDEUR — Messages et Offres
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _build_notification_base(title: str, subtitle: str, badge_color: str, body_html: str, cta_url: str, cta_label: str) -> str:
+    """
+    Construit le squelette HTML commun à toutes les notifications vendeur.
+    Design Citadelle : bleu marine #0F2747 / or #C9A45C.
+    """
+    return f"""<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>{title} — La Citadelle Numérique</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F0F4F8;font-family:Arial,Helvetica,sans-serif;">
+
+  <table cellpadding="0" cellspacing="0" width="100%" style="background-color:#F0F4F8;padding:32px 16px;">
+    <tr><td align="center">
+
+      <table cellpadding="0" cellspacing="0" width="560"
+             style="max-width:560px;width:100%;background:#FFFFFF;
+                    border-radius:16px;overflow:hidden;
+                    box-shadow:0 4px 32px rgba(15,39,71,0.12);">
+
+        <!-- EN-TÊTE -->
+        <tr>
+          <td style="background:#0F2747;padding:32px 40px;text-align:center;">
+            <table cellpadding="0" cellspacing="0" align="center" style="margin-bottom:16px;">
+              <tr><td width="40" height="4" style="background:{badge_color};border-radius:2px;"></td></tr>
+            </table>
+            <p style="color:{badge_color};font-size:11px;font-weight:700;
+                       text-transform:uppercase;letter-spacing:1.5px;margin:0 0 10px 0;">
+              La Citadelle Num&#233;rique
+            </p>
+            <h1 style="color:#FFFFFF;font-size:20px;font-weight:700;margin:0;
+                        font-family:Georgia,'Times New Roman',serif;line-height:1.3;">
+              {title}
+            </h1>
+            <p style="color:rgba(255,255,255,0.5);font-size:13px;margin:8px 0 0 0;">
+              {subtitle}
+            </p>
+          </td>
+        </tr>
+
+        <!-- CORPS -->
+        <tr>
+          <td style="padding:32px 40px;">
+            {body_html}
+          </td>
+        </tr>
+
+        <!-- BOUTON CTA -->
+        <tr>
+          <td style="padding:0 40px 32px 40px;text-align:center;">
+            <a href="{cta_url}"
+               style="display:inline-block;padding:14px 36px;background:#0F2747;
+                      color:#FFFFFF;text-decoration:none;border-radius:8px;
+                      font-size:14px;font-weight:700;letter-spacing:0.3px;">
+              {cta_label} &#8594;
+            </a>
+          </td>
+        </tr>
+
+        <!-- PIED DE PAGE -->
+        <tr>
+          <td style="background:#081729;padding:20px 40px;text-align:center;">
+            <p style="color:rgba(255,255,255,0.35);font-size:11px;margin:0;">
+              La Citadelle Num&#233;rique · Marketplace fran&#231;aise d&apos;actifs num&#233;riques
+            </p>
+          </td>
+        </tr>
+
+      </table>
+
+    </td></tr>
+  </table>
+
+</body>
+</html>"""
+
+
+def send_new_message_notification_email(
+    seller_email: str,
+    listing_title: str,
+    buyer_email: str,
+    message_preview: str,
+    conversation_id: str,
+) -> bool:
+    """
+    Notifie le vendeur qu'un acheteur lui a envoyé son premier message
+    sur l'une de ses annonces.
+
+    Args:
+        seller_email: Email du vendeur destinataire
+        listing_title: Titre de l'annonce concernée
+        buyer_email: Email de l'acheteur qui a écrit
+        message_preview: Début du message (tronqué à 200 chars)
+        conversation_id: ID de la conversation (pour le lien CTA)
+    """
+    try:
+        preview = (message_preview[:200] + "…") if len(message_preview) > 200 else message_preview
+        conversation_url = f"{CITADELLE_URL}/citadelle/espace-membre/messages/{conversation_id}"
+
+        body_html = f"""
+        <p style="color:#1A2A3A;font-size:15px;line-height:1.6;margin:0 0 20px 0;">
+          Un acheteur vous a envoy&#233; un message concernant votre annonce&#160;:
+        </p>
+
+        <!-- Titre annonce -->
+        <div style="background:#F7F9FC;border-left:4px solid #C9A45C;
+                    border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:20px;">
+          <p style="color:#C9A45C;font-size:11px;font-weight:700;
+                     text-transform:uppercase;letter-spacing:0.8px;margin:0 0 4px 0;">Annonce</p>
+          <p style="color:#0F2747;font-size:15px;font-weight:700;margin:0;">{listing_title}</p>
+        </div>
+
+        <!-- Expéditeur + message -->
+        <div style="background:#F7F9FC;border-radius:10px;padding:16px 18px;margin-bottom:24px;">
+          <p style="color:#5F6672;font-size:12px;margin:0 0 8px 0;">
+            <strong style="color:#0F2747;">{buyer_email}</strong> vous &#233;crit&#160;:
+          </p>
+          <p style="color:#374151;font-size:14px;line-height:1.6;margin:0;font-style:italic;">
+            &#8220;{preview}&#8221;
+          </p>
+        </div>
+
+        <p style="color:#5F6672;font-size:13px;line-height:1.6;margin:0;">
+          R&#233;pondez rapidement pour ne pas laisser cet acheteur potentiel sans nouvelles.
+        </p>"""
+
+        html = _build_notification_base(
+            title="Nouveau message re&#231;u",
+            subtitle=f"Concernant : {listing_title}",
+            badge_color="#C9A45C",
+            body_html=body_html,
+            cta_url=conversation_url,
+            cta_label="R&#233;pondre maintenant",
+        )
+
+        msg = MIMEMultipart("alternative")
+        msg["From"] = CITADELLE_FROM_EMAIL
+        msg["To"] = seller_email
+        msg["Subject"] = f"[Citadelle] Nouveau message sur votre annonce : {listing_title}"
+
+        msg.attach(MIMEText(html, "html", "utf-8"))
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+
+        logger.info(f"[Notif] Email nouveau message envoyé à {seller_email} pour annonce '{listing_title}'")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Notif] Erreur envoi notification message à {seller_email} : {e}")
+        return False
+
+
+def send_new_offer_notification_email(
+    seller_email: str,
+    listing_title: str,
+    offer_amount: float,
+    buyer_email: str,
+    offer_message_preview: str,
+    transaction_id: str,
+) -> bool:
+    """
+    Notifie le vendeur qu'il vient de recevoir une offre d'achat.
+
+    Args:
+        seller_email: Email du vendeur
+        listing_title: Titre de l'annonce
+        offer_amount: Montant de l'offre en euros
+        buyer_email: Email de l'acheteur
+        offer_message_preview: Message joint à l'offre (tronqué à 200 chars)
+        transaction_id: ID de la transaction pour le lien CTA
+    """
+    try:
+        preview = (offer_message_preview[:200] + "…") if len(offer_message_preview) > 200 else offer_message_preview
+        transaction_url = f"{CITADELLE_URL}/citadelle/espace-membre/transactions/{transaction_id}"
+        amount_str = f"{offer_amount:,.0f}".replace(",", "\u202f")
+
+        body_html = f"""
+        <p style="color:#1A2A3A;font-size:15px;line-height:1.6;margin:0 0 20px 0;">
+          Vous avez re&#231;u une offre d&apos;achat sur votre annonce&#160;:
+        </p>
+
+        <!-- Titre annonce -->
+        <div style="background:#F7F9FC;border-left:4px solid #C9A45C;
+                    border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:20px;">
+          <p style="color:#C9A45C;font-size:11px;font-weight:700;
+                     text-transform:uppercase;letter-spacing:0.8px;margin:0 0 4px 0;">Annonce</p>
+          <p style="color:#0F2747;font-size:15px;font-weight:700;margin:0;">{listing_title}</p>
+        </div>
+
+        <!-- Montant mis en valeur -->
+        <div style="background:#0F2747;border-radius:12px;padding:20px 24px;
+                    text-align:center;margin-bottom:20px;">
+          <p style="color:rgba(255,255,255,0.6);font-size:12px;
+                     text-transform:uppercase;letter-spacing:1px;margin:0 0 6px 0;">
+            Montant propos&#233;
+          </p>
+          <p style="color:#C9A45C;font-size:36px;font-weight:800;margin:0;
+                     font-family:Georgia,'Times New Roman',serif;">
+            {amount_str}&nbsp;&#8364;
+          </p>
+          <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:8px 0 0 0;">
+            par <strong style="color:rgba(255,255,255,0.8);">{buyer_email}</strong>
+          </p>
+        </div>
+
+        <!-- Message de l'offre -->
+        {f'''<div style="background:#F7F9FC;border-radius:10px;padding:16px 18px;margin-bottom:20px;">
+          <p style="color:#5F6672;font-size:12px;margin:0 0 8px 0;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Message joint à l&apos;offre</p>
+          <p style="color:#374151;font-size:14px;line-height:1.6;margin:0;font-style:italic;">
+            &#8220;{preview}&#8221;
+          </p>
+        </div>''' if preview else ''}
+
+        <p style="color:#5F6672;font-size:13px;line-height:1.6;margin:0;">
+          Acceptez, refusez ou faites une contre-offre directement depuis votre espace membre.
+        </p>"""
+
+        html = _build_notification_base(
+            title="Nouvelle offre re&#231;ue",
+            subtitle=f"Sur : {listing_title}",
+            badge_color="#22C55E",
+            body_html=body_html,
+            cta_url=transaction_url,
+            cta_label="Voir l&#8217;offre",
+        )
+
+        msg = MIMEMultipart("alternative")
+        msg["From"] = CITADELLE_FROM_EMAIL
+        msg["To"] = seller_email
+        msg["Subject"] = f"[Citadelle] Nouvelle offre de {amount_str} € sur : {listing_title}"
+
+        msg.attach(MIMEText(html, "html", "utf-8"))
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+
+        logger.info(f"[Notif] Email nouvelle offre envoyé à {seller_email} — {amount_str} € sur '{listing_title}'")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Notif] Erreur envoi notification offre à {seller_email} : {e}")
+        return False
+
+
+def send_conversation_reminder_email(
+    seller_email: str,
+    listing_title: str,
+    buyer_email: str,
+    conversation_id: str,
+    hours_since: int,
+) -> bool:
+    """
+    Relance le vendeur 24h après un message non répondu.
+    N'est envoyé qu'UNE SEULE FOIS par conversation dormante.
+
+    Args:
+        seller_email: Email du vendeur
+        listing_title: Titre de l'annonce
+        buyer_email: Email de l'acheteur en attente
+        conversation_id: ID de la conversation
+        hours_since: Nombre d'heures écoulées depuis le dernier message acheteur
+    """
+    try:
+        conversation_url = f"{CITADELLE_URL}/citadelle/espace-membre/messages/{conversation_id}"
+        hours_label = f"{hours_since} heure{'s' if hours_since > 1 else ''}"
+
+        body_html = f"""
+        <p style="color:#1A2A3A;font-size:15px;line-height:1.6;margin:0 0 20px 0;">
+          Un acheteur attend votre r&#233;ponse depuis plus de
+          <strong>{hours_label}</strong> sur votre annonce&#160;:
+        </p>
+
+        <!-- Titre annonce -->
+        <div style="background:#FEF9EC;border-left:4px solid #F59E0B;
+                    border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:20px;">
+          <p style="color:#F59E0B;font-size:11px;font-weight:700;
+                     text-transform:uppercase;letter-spacing:0.8px;margin:0 0 4px 0;">
+            &#9888;&#xFE0F; Relance · {hours_label} sans r&#233;ponse
+          </p>
+          <p style="color:#0F2747;font-size:15px;font-weight:700;margin:0;">{listing_title}</p>
+        </div>
+
+        <!-- Info acheteur -->
+        <div style="background:#F7F9FC;border-radius:10px;padding:16px 18px;margin-bottom:24px;">
+          <p style="color:#5F6672;font-size:13px;margin:0;">
+            L&apos;acheteur <strong style="color:#0F2747;">{buyer_email}</strong>
+            attend toujours votre r&#233;ponse. Ne laissez pas cette opportunit&#233; passer&#160;!
+          </p>
+        </div>
+
+        <p style="color:#5F6672;font-size:12px;line-height:1.6;margin:0;">
+          Ceci est une relance unique. Vous ne recevrez pas d&apos;autres rappels
+          pour cette conversation.
+        </p>"""
+
+        html = _build_notification_base(
+            title="Message en attente de r&#233;ponse",
+            subtitle=f"Relance — {listing_title}",
+            badge_color="#F59E0B",
+            body_html=body_html,
+            cta_url=conversation_url,
+            cta_label="R&#233;pondre maintenant",
+        )
+
+        msg = MIMEMultipart("alternative")
+        msg["From"] = CITADELLE_FROM_EMAIL
+        msg["To"] = seller_email
+        msg["Subject"] = f"[Citadelle] Rappel : un message attend votre réponse — {listing_title}"
+
+        msg.attach(MIMEText(html, "html", "utf-8"))
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+
+        logger.info(f"[Notif] Email relance 24h envoyé à {seller_email} pour conv {conversation_id}")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Notif] Erreur envoi relance à {seller_email} : {e}")
+        return False

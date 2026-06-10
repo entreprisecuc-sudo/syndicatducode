@@ -60,6 +60,101 @@ async def get_or_create_config() -> dict:
 
 # ── Logique d'envoi ────────────────────────────────────────────────────────────
 
+
+async def check_unanswered_conversations():
+    """
+    Job horaire — Détecte les conversations où le vendeur n'a pas répondu depuis 24h.
+    Envoie UNE SEULE relance par conversation dormante, jamais deux fois.
+    """
+    if _db is None:
+        logger.error("[Relances] DB non initialisée, check annulé.")
+        return
+
+    from services.email_service import send_conversation_reminder_email
+
+    now = datetime.now(timezone.utc)
+    threshold_24h = now - timedelta(hours=24)
+
+    # Conversations notifiées initialement mais sans relance encore envoyée
+    cursor = _db.citadelle_conversations.find(
+        {
+            "seller_notified_at": {"$ne": None},
+            "reminder_sent_at": None,
+        },
+        {"_id": 0, "id": 1, "seller_email": 1, "buyer_email": 1, "listing_title": 1,
+         "seller_id": 1, "buyer_id": 1, "messages": 1},
+    )
+    conversations = await cursor.to_list(1000)
+
+    if not conversations:
+        logger.debug("[Relances] Aucune conversation éligible à la relance.")
+        return
+
+    reminders_sent = 0
+
+    for conv in conversations:
+        messages = conv.get("messages", [])
+        if not messages:
+            continue
+
+        # Dernier message de la conversation
+        last_msg = messages[-1]
+        last_sender_id = last_msg.get("sender_id")
+        last_sent_at_str = last_msg.get("sent_at")
+
+        if not last_sent_at_str:
+            continue
+
+        # Analyser si c'est un message de l'acheteur (pas du vendeur, pas du système)
+        seller_id = conv.get("seller_id")
+        if last_sender_id == seller_id or last_sender_id == "system":
+            # Vendeur a déjà répondu ou dernier message est système → pas de relance
+            continue
+
+        # Convertir la date du dernier message
+        try:
+            last_sent_dt = datetime.fromisoformat(last_sent_at_str.replace("Z", "+00:00"))
+        except (ValueError, AttributeError):
+            continue
+
+        # Vérifier si plus de 24h sans réponse du vendeur
+        if last_sent_dt > threshold_24h:
+            continue  # Moins de 24h, pas encore le moment
+
+        # Calculer le nombre d'heures écoulées
+        hours_since = int((now - last_sent_dt).total_seconds() / 3600)
+
+        # Envoyer la relance
+        seller_email = conv.get("seller_email", "")
+        if not seller_email:
+            logger.warning(f"[Relances] seller_email manquant pour conversation {conv['id']}")
+            continue
+
+        success = send_conversation_reminder_email(
+            seller_email=seller_email,
+            listing_title=conv.get("listing_title", "Votre annonce"),
+            buyer_email=conv.get("buyer_email", ""),
+            conversation_id=conv["id"],
+            hours_since=hours_since,
+        )
+
+        if success:
+            # Marquer comme relancé → ne jamais renvoyer
+            await _db.citadelle_conversations.update_one(
+                {"id": conv["id"]},
+                {"$set": {"reminder_sent_at": now.isoformat()}},
+            )
+            reminders_sent += 1
+            logger.info(
+                f"[Relances] Relance envoyée à {seller_email} "
+                f"pour conversation {conv['id']} ({hours_since}h sans réponse)."
+            )
+
+    if reminders_sent > 0:
+        logger.info(f"[Relances] {reminders_sent} relance(s) envoyée(s) ce cycle.")
+
+
+
 async def run_newsletter_digest():
     """
     Fonction principale exécutée par le scheduler.
@@ -207,15 +302,16 @@ def reschedule_newsletter_job(day_of_week: int, hour: int):
 async def init_newsletter_scheduler():
     """
     Initialise le scheduler au démarrage de l'application.
-    Charge la config depuis MongoDB et démarre le job planifié.
+    Charge la config depuis MongoDB et démarre les jobs planifiés.
     """
     if _db is None:
         logger.error("[Newsletter] DB non disponible, scheduler non démarré.")
         return
 
+    # ── Job 1 : Digest newsletter ─────────────────────────────────────────────
     config = await get_or_create_config()
 
-    trigger = CronTrigger(
+    trigger_newsletter = CronTrigger(
         day_of_week=config.get("day_of_week", 4),
         hour=config.get("hour", 16),
         minute=0,
@@ -223,14 +319,21 @@ async def init_newsletter_scheduler():
 
     scheduler.add_job(
         run_newsletter_digest,
-        trigger=trigger,
+        trigger=trigger_newsletter,
         id=NEWSLETTER_JOB_ID,
+        replace_existing=True,
+    )
+
+    # ── Job 2 : Relance conversations non répondues (toutes les heures) ───────
+    scheduler.add_job(
+        check_unanswered_conversations,
+        CronTrigger(minute=0),  # Toutes les heures pile
+        id="citadelle_conversation_reminders",
         replace_existing=True,
     )
 
     scheduler.start()
     logger.info(
-        f"[Newsletter] Scheduler démarré → "
-        f"jour={config.get('day_of_week', 4)}, heure={config.get('hour', 16)}h, "
-        f"fréquence={config.get('frequency', 'weekly')}."
+        f"[Scheduler] Démarré — Newsletter: jour={config.get('day_of_week', 4)}, heure={config.get('hour', 16)}h | "
+        f"Relances conversations: toutes les heures."
     )

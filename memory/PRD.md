@@ -41,6 +41,14 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Scheduler APScheduler : vendredi 16h par défaut, entièrement configurable
 - Admin : stats abonnés, liste, config (fréquence, jour, heure, nb annonces), envoi immédiat, prévisualisation HTML
 
+### ✅ Notifications email vendeurs (TERMINÉ 10/06/2026)
+- **Nouveau message** : email au vendeur dès le 1er message d'une conversation
+- **Nouvelle offre** : email au vendeur lors de chaque offre d'achat reçue
+- **Relance 24h** : cron horaire APScheduler → une seule relance si vendeur n'a pas répondu en 24h
+- Pas de doublon : `seller_notified_at` + `reminder_sent_at` sur la conversation
+- Si vendeur répond → `reminder_sent_at` marqué pour bloquer toute future relance
+- Templates HTML visuels (bleu Citadelle / or / vert offre / orange relance)
+
 ### Phase D — Avis, Blog (À FAIRE)
 ### Phase E — Statistiques & SEO (À FAIRE)
 
@@ -93,6 +101,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 | citadelle_services | Catalogue services admin |
 | citadelle_newsletter_subscriptions | Abonnés newsletter (email, user_id, token désinscription) |
 | citadelle_newsletter_config | Config scheduler (fréquence, jour, heure, max_listings) |
+| citadelle_conversations | Messagerie pré-vente (+ seller_notified_at, reminder_sent_at) |
 
 ---
 
