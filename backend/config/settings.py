@@ -40,6 +40,9 @@ CITADELLE_URL = os.environ.get('CITADELLE_URL', 'https://lacitadellenumerique.fr
 CITADELLE_FROM_EMAIL = os.environ.get('CITADELLE_FROM_EMAIL', SMTP_USER)
 # Email destinataire des notifications admin Citadelle (par défaut = expéditeur Citadelle)
 CITADELLE_ADMIN_EMAIL = os.environ.get('CITADELLE_ADMIN_EMAIL', CITADELLE_FROM_EMAIL)
+# Credentials SMTP dédiés La Citadelle Numérique (serveur Hostinger partagé, compte séparé)
+CITADELLE_SMTP_USER = os.environ.get('CITADELLE_SMTP_USER', CITADELLE_FROM_EMAIL)
+CITADELLE_SMTP_PASSWORD = os.environ.get('CITADELLE_SMTP_PASSWORD', SMTP_PASSWORD)
 
 # URL publique du backend (utilisée dans les emails pour les images d'annonces)
 # En production : identique à CITADELLE_URL (K8s route /api/* vers le backend)

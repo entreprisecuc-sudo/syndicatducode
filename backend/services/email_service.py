@@ -15,10 +15,29 @@ from config.settings import (
     FRONTEND_URL,
     CITADELLE_URL,
     CITADELLE_FROM_EMAIL,
+    CITADELLE_SMTP_USER,
+    CITADELLE_SMTP_PASSWORD,
     BACKEND_PUBLIC_URL,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _envoyer_email(msg: MIMEMultipart) -> None:
+    """
+    Envoie un email via le bon compte SMTP selon l'expéditeur du message.
+    - expéditeur == CITADELLE_FROM_EMAIL → credentials lagarde@lacitadellenumerique.fr
+    - sinon → credentials Syndicat du Code (atelier@syndicatducode.fr)
+    Le serveur SMTP est commun (Hostinger), seuls les credentials diffèrent.
+    """
+    from_email = msg.get("From", "")
+    if from_email == CITADELLE_FROM_EMAIL:
+        user, password = CITADELLE_SMTP_USER, CITADELLE_SMTP_PASSWORD
+    else:
+        user, password = SMTP_USER, SMTP_PASSWORD
+    with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+        server.login(user, password)
+        server.send_message(msg)
 
 
 def send_reset_password_email(to_email: str, reset_token: str) -> bool:
@@ -61,9 +80,7 @@ Le Syndicat du Code
         
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
         
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
         
         logger.info(f"Email de réinitialisation envoyé à {to_email}")
         return True
@@ -108,9 +125,7 @@ Le Syndicat du Code
         
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
         
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
         
         logger.info(f"Email de bienvenue envoyé à {to_email}")
         return True
@@ -163,9 +178,7 @@ Le Syndicat du Code
         
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
         
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
         
         logger.info(f"Email de suspension envoyé à {to_email}")
         return True
@@ -208,9 +221,7 @@ Le Syndicat du Code
         
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
         
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
         
         logger.info(f"Email de réactivation envoyé à {to_email}")
         return True
@@ -292,9 +303,7 @@ Pour toute question, contactez-nous à : contact@syndicatducode.fr
         
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
         
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
         
         logger.info(f"Email de décision candidature envoyé à {to_email} (acceptée: {is_accepted})")
         return True
@@ -346,9 +355,7 @@ Marketplace française d'actifs numériques
 
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
 
         logger.info(f"[Citadelle] Email de réinitialisation envoyé à {to_email}")
         return True
@@ -395,9 +402,7 @@ Marketplace française d'actifs numériques
         """
 
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
 
         logger.info(f"[Citadelle] Email validation envoyé à {to_email} pour annonce: {listing_title[:40]}")
         return True
@@ -449,9 +454,7 @@ Marketplace française d'actifs numériques
         """
 
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
 
         logger.info(f"[Citadelle] Email refus annonce envoyé à {to_email}: {listing_title[:40]}")
         return True
@@ -528,9 +531,7 @@ Le Syndicat du Code
 
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
 
         logger.info("Email de notification de backup envoyé à %s", to_email)
         return True
@@ -581,9 +582,7 @@ Marketplace française d'actifs numériques
 
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
 
         logger.info(f"[Citadelle] Email accès sécurisés envoyé à {to_email} pour « {listing_title} »")
         return True
@@ -911,9 +910,7 @@ def send_newsletter_digest_email(
 
         msg.attach(MIMEText(html_content, "html", "utf-8"))
 
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
 
         logger.info(f"[Newsletter] Email digest envoyé à {to_email}")
         return True
@@ -1071,9 +1068,7 @@ def send_new_message_notification_email(
         msg["Subject"] = f"[Citadelle] Nouveau message sur votre annonce : {listing_title}"
 
         msg.attach(MIMEText(html, "html", "utf-8"))
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
 
         logger.info(f"[Notif] Email nouveau message envoyé à {seller_email} pour annonce '{listing_title}'")
         return True
@@ -1163,9 +1158,7 @@ def send_new_offer_notification_email(
         msg["Subject"] = f"[Citadelle] Nouvelle offre de {amount_str} € sur : {listing_title}"
 
         msg.attach(MIMEText(html, "html", "utf-8"))
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
 
         logger.info(f"[Notif] Email nouvelle offre envoyé à {seller_email} — {amount_str} € sur '{listing_title}'")
         return True
@@ -1241,9 +1234,7 @@ def send_conversation_reminder_email(
         msg["Subject"] = f"[Citadelle] Rappel : un message attend votre réponse — {listing_title}"
 
         msg.attach(MIMEText(html, "html", "utf-8"))
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
 
         logger.info(f"[Notif] Email relance 24h envoyé à {seller_email} pour conv {conversation_id}")
         return True
@@ -1324,9 +1315,7 @@ def send_service_order_confirmation_email(
         msg["Subject"] = f"[Citadelle] Confirmation de commande — {service_title}"
 
         msg.attach(MIMEText(html, "html", "utf-8"))
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
 
         logger.info(f"[Citadelle] Email confirmation commande envoyé à {to_email} — réf. {ref}")
         return True
@@ -1411,9 +1400,7 @@ def send_service_order_admin_notification_email(
         msg["Subject"] = f"[Citadelle Admin] Nouvelle commande — {service_title} — {amount_str} €"
 
         msg.attach(MIMEText(html, "html", "utf-8"))
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+        _envoyer_email(msg)
 
         logger.info(f"[Citadelle] Email notification admin nouvelle commande — réf. {ref}")
         return True
