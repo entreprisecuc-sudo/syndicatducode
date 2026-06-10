@@ -3,15 +3,31 @@
  * Sera enrichi en Phase B avec la gestion des annonces
  */
 
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Shield, Plus, MessageSquare, ArrowLeftRight, FileText, User, LogOut, TrendingUp } from "lucide-react";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
+import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 
 export default function CitadelleDashboard() {
   const { user, logout, isAuthenticated } = useCitadelleAuth();
   const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const fetchUnread = async () => {
+      try {
+        const res = await citadelleApi.get("/messages-unread-count");
+        setUnreadCount(res.data.unread || 0);
+      } catch { /* silence */ }
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 10000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   // Redirection si non connecté
   if (!isAuthenticated) {
@@ -23,7 +39,7 @@ export default function CitadelleDashboard() {
     { icon: Plus,          label: "Publier une annonce", desc: "Mettez votre actif en vente",      href: "/citadelle/espace-membre/mes-annonces/creer", active: true },
     { icon: FileText,      label: "Mes annonces",         desc: "Gérez vos annonces actives",       href: "/citadelle/espace-membre/mes-annonces",        active: true },
     { icon: ArrowLeftRight,label: "Mes transactions",     desc: "Suivez vos achats et ventes",      href: "/citadelle/espace-membre/transactions",    active: true },
-    { icon: MessageSquare, label: "Mes messages",         desc: "Échangez avec acheteurs et vendeurs", href: "/citadelle/espace-membre/messages",     active: true },
+    { icon: MessageSquare, label: "Mes messages",         desc: "Échangez avec acheteurs et vendeurs", href: "/citadelle/espace-membre/messages",     active: true, unread: unreadCount },
     { icon: TrendingUp,    label: "Mes services",         desc: "Demandes d'évaluation et d'audit", href: "/citadelle/espace-membre/mes-services",        active: false, badge: "Bientôt" },
     { icon: User,          label: "Mon profil",           desc: "Modifier mes informations",        href: "/citadelle/espace-membre/profil",              active: true },
   ];
@@ -75,7 +91,7 @@ export default function CitadelleDashboard() {
 
           {/* Menu */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {menuItems.map(({ icon: Icon, label, desc, href, active, badge }) => {
+            {menuItems.map(({ icon: Icon, label, desc, href, active, badge, unread }) => {
               const CardContent = (
                 <div
                   key={label}
@@ -92,6 +108,13 @@ export default function CitadelleDashboard() {
                     <span className="absolute top-3 right-3 text-xs px-2 py-0.5 rounded-full font-semibold"
                       style={{ background: "rgba(201,164,92,0.12)", color: CITADELLE_COLORS.gold }}>
                       {badge}
+                    </span>
+                  )}
+                  {unread > 0 && (
+                    <span className="absolute top-3 right-3 min-w-5 h-5 flex items-center justify-center text-xs px-1.5 rounded-full font-bold text-white"
+                      style={{ background: "#DC2626" }}
+                      data-testid="unread-badge">
+                      {unread}
                     </span>
                   )}
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"

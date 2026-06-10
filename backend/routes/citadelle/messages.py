@@ -81,7 +81,7 @@ async def send_message(
         # Ajouter le message à la conversation existante
         await db.citadelle_conversations.update_one(
             {"id": conv["id"]},
-            {"$push": {"messages": msg}, "$set": {"updated_at": now}}
+            {"$push": {"messages": msg}, "$set": {"updated_at": now, f"last_read.{sender_id}": now}}
         )
         conv_id = conv["id"]
     else:
@@ -97,6 +97,7 @@ async def send_message(
             "seller_id": listing["seller_id"],
             "seller_email": listing.get("seller_email", ""),
             "messages": [msg],
+            "last_read": {sender_id: now},
             "created_at": now,
             "updated_at": now,
         }
@@ -132,7 +133,7 @@ async def reply_message(
 
     await db.citadelle_conversations.update_one(
         {"id": conversation_id},
-        {"$push": {"messages": msg}, "$set": {"updated_at": now}}
+        {"$push": {"messages": msg}, "$set": {"updated_at": now, f"last_read.{user_id}": now}}
     )
     return msg
 
@@ -172,4 +173,34 @@ async def get_conversation(
     if conv["buyer_id"] != user_id and conv["seller_id"] != user_id:
         raise HTTPException(status_code=403, detail="Accès non autorisé")
 
+    # Marquer comme lu automatiquement à l'ouverture
+    now = datetime.now(timezone.utc).isoformat()
+    await db.citadelle_conversations.update_one(
+        {"id": conversation_id},
+        {"$set": {f"last_read.{user_id}": now}}
+    )
+
     return conv
+
+
+@router.get("/messages-unread-count", summary="Nombre de messages non lus")
+async def unread_count(
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """Retourne le nombre total de conversations avec des messages non lus"""
+    user_id = current_user.get("sub")
+    cursor = db.citadelle_conversations.find(
+        {"$or": [{"buyer_id": user_id}, {"seller_id": user_id}]},
+        {"_id": 0, "messages": 1, "last_read": 1}
+    )
+    conversations = await cursor.to_list(200)
+
+    total_unread = 0
+    for conv in conversations:
+        user_last_read = conv.get("last_read", {}).get(user_id, "1970-01-01T00:00:00")
+        for msg in conv.get("messages", []):
+            if msg["sender_id"] != user_id and msg["sent_at"] > user_last_read:
+                total_unread += 1
+                break  # 1 conversation non lue = +1 (pas le nb de messages)
+
+    return {"unread": total_unread}
