@@ -95,6 +95,9 @@ import AdminCitadelleListings from "@/pages/admin/AdminCitadelleListings";
 import AdminCitadelleTransactions from "@/pages/admin/AdminCitadelleTransactions";
 import AdminCitadelleServices from "@/pages/admin/AdminCitadelleServices";
 import AdminCitadelleNewsletter from "@/pages/admin/AdminCitadelleNewsletter";
+import CitadelleBlog from "@/pages/citadelle/CitadelleBlog";
+import CitadelleBlogPost from "@/pages/citadelle/CitadelleBlogPost";
+import AdminCitadelleBlog from "@/pages/admin/AdminCitadelleBlog";
 
 // Pages partagées (tous les membres)
 import MemberPartners from "@/pages/shared/MemberPartners";
@@ -323,6 +326,8 @@ function App() {
               <Route path="/citadelle/annonces" element={<CitadelleListings />} />
               <Route path="/citadelle/annonces/:slug" element={<CitadelleListingDetail />} />
               <Route path="/citadelle/services" element={<CitadelleServices />} />
+              <Route path="/citadelle/blog" element={<CitadelleBlog />} />
+              <Route path="/citadelle/blog/:slug" element={<CitadelleBlogPost />} />
 
               {/* Citadelle — Espace membre (routes spécifiques avant le wildcard) */}
               <Route path="/citadelle/espace-membre/mes-annonces/creer" element={<CitadelleCreateListing />} />
@@ -356,6 +361,10 @@ function App() {
               <Route
                 path="/syndicat-admin/citadelle/newsletter"
                 element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleNewsletter /></RoleRoute>}
+              />
+              <Route
+                path="/syndicat-admin/citadelle/blog"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleBlog /></RoleRoute>}
               />
 
               {/* ============================================ */}

@@ -36,7 +36,7 @@ export default function AdminCitadelle() {
     { icon: Users, label: "Utilisateurs", desc: "Membres inscrits sur La Citadelle", status: "Actif", count: null, href: null },
     { icon: Cloud, label: "Services", desc: "Catalogue des services complémentaires", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/services" },
     { icon: Bell, label: "Newsletter", desc: "Alertes annonces & gestion des abonnés", status: "Actif", count: null, href: "/syndicat-admin/citadelle/newsletter" },
-    { icon: Monitor, label: "Blog", desc: "Articles et publications", status: "Phase D", count: 0, href: null },
+    { icon: Monitor, label: "Blog", desc: "Articles et publications", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/blog" },
     { icon: Settings, label: "Paramètres", desc: "Configuration de la plateforme", status: "Phase A", count: null, href: null },
   ];
 

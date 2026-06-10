@@ -47,6 +47,15 @@ export const CITADELLE_SERVICES = [
   { slug: "audit", label: "Audit avant vente", icon: "FileSearch", description: "Rapport technique complet pour rassurer les acheteurs", price: "Sur devis" },
 ];
 
+// Catégories du blog — centralisées ici pour usage public et admin
+export const BLOG_CATEGORIES = [
+  { slug: "actualites", label: "Actualités" },
+  { slug: "conseils",   label: "Conseils" },
+  { slug: "tutoriels",  label: "Tutoriels" },
+  { slug: "marche",     label: "Marché" },
+  { slug: "juridique",  label: "Juridique" },
+];
+
 // Navigation principale
 export const CITADELLE_NAV_LINKS = [
   { href: "/citadelle/annonces", label: "Annonces" },

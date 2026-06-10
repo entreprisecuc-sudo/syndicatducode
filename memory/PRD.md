@@ -53,7 +53,17 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Si vendeur répond → `reminder_sent_at` marqué pour bloquer toute future relance
 - Templates HTML visuels (bleu Citadelle / or / vert offre / orange relance)
 
-### Phase D — Avis, Blog (À FAIRE)
+### ✅ Blog Citadelle (TERMINÉ 10/06/2026)
+- Interface publique : liste d'articles avec filtres par catégorie, page de lecture Markdown
+- Gestion admin : éditeur Markdown plein écran + prévisualisation en temps réel (bascule)
+- **Image de couverture** : upload depuis l'interface admin, affichée en carte liste + hero article
+- Catégories : Actualités, Conseils, Tutoriels, Marché, Juridique
+- Slug auto-généré depuis le titre (unicité garantie)
+- Auteur, date de publication, lien partenaire
+- Styles CSS blog-content (clair) + blog-content--dark (admin)
+- `BLOG_CATEGORIES` centralisées dans `citadelleConstants.js` (DRY)
+
+### Phase D — Avis (À FAIRE)
 ### Phase E — Statistiques & SEO (À FAIRE)
 
 ---
@@ -91,6 +101,13 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 | PATCH /api/citadelle/admin/newsletter/config | Admin: modifier config + reprogrammer |
 | POST /api/citadelle/admin/newsletter/send-now | Admin: envoi immédiat |
 | GET /api/citadelle/admin/newsletter/preview | Admin: prévisualisation HTML email |
+| GET /api/citadelle/blog | Liste publique articles publiés (filtres catégorie, pagination) |
+| GET /api/citadelle/blog/{slug} | Lecture d'un article par slug |
+| GET /api/citadelle/admin/blog | Admin: tous les articles |
+| GET /api/citadelle/admin/blog/{id} | Admin: détail complet (avec content_md) |
+| POST /api/citadelle/admin/blog | Admin: créer un article |
+| PATCH /api/citadelle/admin/blog/{id} | Admin: modifier un article |
+| DELETE /api/citadelle/admin/blog/{id} | Admin: supprimer un article |
 
 ---
 
@@ -106,6 +123,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 | citadelle_newsletter_subscriptions | Abonnés newsletter (email, user_id, token désinscription) |
 | citadelle_newsletter_config | Config scheduler (fréquence, jour, heure, max_listings) |
 | citadelle_conversations | Messagerie pré-vente (+ seller_notified_at, reminder_sent_at) |
+| citadelle_blog_posts | Articles blog (id, slug, title, excerpt, content_md, category, author_name, partner_link, is_published, published_at) |
 
 ---
 
