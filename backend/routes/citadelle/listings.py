@@ -501,3 +501,18 @@ async def admin_feature_listing(
     )
     action = "mise en avant" if new_value else "retirée de la mise en avant"
     return {"message": f"Annonce {action}", "is_featured": new_value}
+
+
+@router.delete("/admin/listings/{listing_id}", summary="Admin — Supprimer une annonce")
+async def admin_delete_listing(
+    listing_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """Admin : supprime une annonce quel que soit son statut"""
+    listing = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+
+    await db.citadelle_listings.delete_one({"id": listing_id})
+    logger.info(f"[Citadelle Admin] Annonce supprimée: {listing['title']} (par {current_user.get('email')})")
+    return {"message": "Annonce supprimée avec succès"}

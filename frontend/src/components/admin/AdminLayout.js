@@ -130,7 +130,7 @@ const ADMIN_MENU_SECTIONS = [
       },
       {
         path: "/syndicat-admin/citadelle/annonces",
-        label: "Annonces",
+        label: "Annonces Citadelle",
         icon: Globe,
         description: "Valider, rejeter et mettre en avant les annonces soumises"
       }

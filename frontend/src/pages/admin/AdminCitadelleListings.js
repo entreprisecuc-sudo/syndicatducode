@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Star, Eye, Clock, Filter, AlertCircle } from "lucide-react";
+import { CheckCircle, XCircle, Star, Eye, Clock, Filter, AlertCircle, Trash2 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
 import { getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
@@ -33,6 +33,7 @@ export default function AdminCitadelleListings() {
   const [activeTab, setActiveTab] = useState("pending");
   const [rejectModal, setRejectModal] = useState(null); // { id, title }
   const [rejectReason, setRejectReason] = useState("");
+  const [deleteModal, setDeleteModal] = useState(null); // { id, title }
   const [actionLoading, setActionLoading] = useState(null);
 
   useEffect(() => {
@@ -90,6 +91,20 @@ export default function AdminCitadelleListings() {
       await fetchListings();
     } catch (err) {
       alert("Erreur mise en avant");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const deleteListing = async () => {
+    if (!deleteModal) return;
+    setActionLoading(deleteModal.id + "_delete");
+    try {
+      await api.delete(`/citadelle/admin/listings/${deleteModal.id}`);
+      setDeleteModal(null);
+      await fetchListings();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Erreur lors de la suppression");
     } finally {
       setActionLoading(null);
     }
@@ -211,6 +226,15 @@ export default function AdminCitadelleListings() {
                         </button>
                       </>
                     )}
+                    {/* Supprimer — disponible pour tous les statuts */}
+                    <button onClick={() => setDeleteModal({ id: listing.id, title: listing.title })}
+                      disabled={actionLoading === listing.id + "_delete"}
+                      className="p-2 rounded-lg transition-all hover:scale-110 opacity-50 hover:opacity-100"
+                      style={{ color: "#DC2626" }}
+                      title="Supprimer l'annonce"
+                      data-testid={`admin-delete-${listing.id}`}>
+                      <Trash2 size={15} />
+                    </button>
                   </div>
                 </div>
               );
@@ -238,6 +262,31 @@ export default function AdminCitadelleListings() {
                 style={{ background: "rgba(220,38,38,0.15)", color: "#DC2626" }}
                 data-testid="admin-reject-confirm">
                 Confirmer le rejet
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal suppression */}
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
+          <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "var(--admin-bg, #1a1a2e)", border: "1px solid rgba(220,38,38,0.3)" }}>
+            <h3 className="font-bold mb-2">Supprimer l'annonce</h3>
+            <p className="text-sm opacity-60 mb-4 truncate">{deleteModal.title}</p>
+            <p className="text-sm mb-4" style={{ color: "#DC2626" }}>
+              Cette action est irréversible. L'annonce sera définitivement supprimée.
+            </p>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => setDeleteModal(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+                Annuler
+              </button>
+              <button onClick={deleteListing} disabled={actionLoading !== null}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
+                style={{ background: "rgba(220,38,38,0.15)", color: "#DC2626" }}
+                data-testid="admin-delete-confirm">
+                Supprimer définitivement
               </button>
             </div>
           </div>
