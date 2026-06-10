@@ -43,7 +43,21 @@ export default function CitadelleTransactionDetail() {
   const messagesEndRef = useRef(null);
 
   useEffect(() => { fetchTransaction(); }, [id]);
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [tx?.messages]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [tx?.messages?.length]);
+
+  // Polling toutes les 3 secondes pour conversation fluide
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await citadelleApi.get(`/transactions/${id}`);
+        setTx(prev => {
+          if (!prev || res.data.messages?.length !== prev.messages?.length || res.data.status !== prev.status) return res.data;
+          return prev;
+        });
+      } catch { /* silence */ }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [id]);
 
   const fetchTransaction = async () => {
     setLoading(true);
