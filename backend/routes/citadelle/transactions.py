@@ -145,6 +145,7 @@ async def create_offer(
         "payment_id": None,
         "payment_amount": None,
         "credentials": None,
+        "credentials_transmitted": False,
         "messages": [
             system_message(f"Offre de {data.amount:,.0f} € envoyée par l'acheteur."),
             {
@@ -201,12 +202,11 @@ async def get_transaction(
     if not (is_buyer or is_seller or is_admin):
         raise HTTPException(status_code=403, detail="Accès non autorisé")
 
-    # Les credentials ne sont visibles que par l'admin et le vendeur (avant completion)
-    # Après completion, l'acheteur voit les credentials
+    # Les credentials ne sont visibles par l'acheteur que si l'admin les a transmises
     if tx.get("credentials"):
-        if is_buyer and tx["status"] != "completed":
+        if is_buyer and not tx.get("credentials_transmitted"):
             tx["credentials"] = {"submitted": True, "data": None}
-        elif not (is_seller or is_admin):
+        elif not (is_buyer or is_seller or is_admin):
             tx["credentials"] = None
 
     return tx
@@ -588,3 +588,38 @@ async def admin_open_dispute(
         }, "$push": {"messages": system_message(f"Litige ouvert par l'administrateur : {data.reason}")}}
     )
     return {"message": "Litige ouvert"}
+
+
+@router.post("/admin/transactions/{transaction_id}/transmit", summary="Admin — Transmettre les accès à l'acheteur")
+async def admin_transmit_credentials(
+    transaction_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Admin : transmet les accès vérifiés à l'acheteur.
+    Les credentials deviennent visibles pour l'acheteur uniquement après cette action.
+    """
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx["status"] != "completed":
+        raise HTTPException(status_code=400, detail="La vente doit être finalisée avant la transmission des accès")
+    if not tx.get("credentials", {}).get("data"):
+        raise HTTPException(status_code=400, detail="Aucun accès à transmettre")
+    if tx.get("credentials_transmitted"):
+        raise HTTPException(status_code=400, detail="Les accès ont déjà été transmis à l'acheteur")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {
+            "credentials_transmitted": True,
+            "credentials_transmitted_at": now,
+            "credentials_transmitted_by": current_user.get("email"),
+            "updated_at": now
+        }, "$push": {"messages": system_message(
+            "Les accès ont été transmis de manière sécurisée à l'acheteur par l'administrateur."
+        )}}
+    )
+    logger.info(f"[Citadelle Admin] Accès transmis à l'acheteur: {transaction_id} par {current_user.get('email')}")
+    return {"message": "Accès transmis à l'acheteur avec succès"}

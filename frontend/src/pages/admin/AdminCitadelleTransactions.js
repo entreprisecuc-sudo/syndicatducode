@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Shield, CheckCircle, XCircle, Eye, AlertTriangle, Clock,
-  CreditCard, Filter, ChevronRight
+  CreditCard, Filter, ChevronRight, Send, Lock
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
@@ -172,6 +172,11 @@ export default function AdminCitadelleTransactions() {
                         <CheckCircle size={12} /> Vérifié le {new Date(selectedTx.credentials.verified_at).toLocaleDateString("fr-FR")}
                       </p>
                     )}
+                    {selectedTx.credentials_transmitted && (
+                      <p className="text-xs mt-1 flex items-center gap-1" style={{ color: "#C9A45C" }}>
+                        <Send size={12} /> Accès transmis à l'acheteur le {new Date(selectedTx.credentials_transmitted_at).toLocaleDateString("fr-FR")}
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -197,6 +202,15 @@ export default function AdminCitadelleTransactions() {
                       style={{ background: "#C9A45C", color: "#081729" }}
                       data-testid="admin-complete-btn">
                       <CreditCard size={14} /> Finaliser la vente (libérer les fonds)
+                    </button>
+                  )}
+                  {/* Transmettre les accès à l'acheteur */}
+                  {selectedTx.status === "completed" && !selectedTx.credentials_transmitted && selectedTx.credentials?.data && (
+                    <button onClick={() => doAction("transmit")} disabled={actionLoading}
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold disabled:opacity-60"
+                      style={{ background: "linear-gradient(135deg, #C9A45C 0%, #D9BB7A 100%)", color: "#081729" }}
+                      data-testid="admin-transmit-btn">
+                      <Lock size={14} /> Transmettre les accès à l'acheteur
                     </button>
                   )}
                   {!["completed", "cancelled", "offer_refused"].includes(selectedTx.status) && (

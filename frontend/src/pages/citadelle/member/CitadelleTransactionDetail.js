@@ -239,22 +239,39 @@ export default function CitadelleTransactionDetail() {
               <div>
                 <p className="text-sm font-semibold" style={{ color: "#22C55E" }}>Vente finalisée</p>
                 <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  {isBuyer ? "Les accès sont disponibles ci-dessous." : "Les fonds ont été libérés."}
+                  {isBuyer
+                    ? (tx.credentials_transmitted
+                      ? "Les accès vous ont été transmis de manière sécurisée."
+                      : "Les fonds sont en séquestre. L'administrateur va vous transmettre les accès sous peu.")
+                    : "Les fonds ont été libérés."}
                 </p>
               </div>
             </div>
           )}
 
-          {/* Acheteur : voir les credentials après completion */}
+          {/* Acheteur : voir les credentials transmis par l'admin */}
           {isBuyer && tx.status === "completed" && tx.credentials?.data && (
             <div className="p-4 rounded-xl" style={{ background: CITADELLE_COLORS.night, border: "1px solid rgba(201,164,92,0.3)" }}>
               <div className="flex items-center gap-2 mb-3">
                 <Lock size={15} style={{ color: CITADELLE_COLORS.gold }} />
-                <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.gold }}>Accès de votre actif numérique</span>
+                <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.gold }}>Accès sécurisés de votre actif numérique</span>
               </div>
               <pre className="text-sm whitespace-pre-wrap p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", color: CITADELLE_COLORS.white }}>
                 {tx.credentials.data}
               </pre>
+              <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Transmis par l'administrateur — Conservez ces informations en lieu sûr.
+              </p>
+            </div>
+          )}
+
+          {/* Acheteur : en attente de transmission */}
+          {isBuyer && tx.status === "completed" && !tx.credentials?.data && (
+            <div className="p-4 rounded-xl flex items-start gap-3" style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)" }}>
+              <Clock size={16} style={{ color: "#F59E0B", flexShrink: 0, marginTop: 2 }} />
+              <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
+                L'administrateur prépare la transmission sécurisée de vos accès.
+              </p>
             </div>
           )}
         </div>
