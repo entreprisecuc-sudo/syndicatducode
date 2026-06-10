@@ -33,6 +33,10 @@ export default function CitadelleListingDetail() {
   const [offerMessage, setOfferMessage] = useState("");
   const [offerLoading, setOfferLoading] = useState(false);
   const [offerError, setOfferError] = useState("");
+  const [contactModal, setContactModal] = useState(false);
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactError, setContactError] = useState("");
 
   useEffect(() => {
     fetchListing();
@@ -194,12 +198,20 @@ export default function CitadelleListingDetail() {
               {/* CTA — Faire une offre */}
               <div className="space-y-2 mt-5">
                 {isAuthenticated && user?.id !== listing.seller_id ? (
-                  <button onClick={() => setOfferModal(true)}
-                    className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"
-                    style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
-                    data-testid="btn-make-offer">
-                    Faire une offre
-                  </button>
+                  <>
+                    <button onClick={() => setOfferModal(true)}
+                      className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"
+                      style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                      data-testid="btn-make-offer">
+                      Faire une offre
+                    </button>
+                    <button onClick={() => setContactModal(true)}
+                      className="w-full py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.02]"
+                      style={{ border: `1px solid ${CITADELLE_COLORS.blue}`, color: CITADELLE_COLORS.blue }}
+                      data-testid="btn-contact-seller">
+                      Contacter le vendeur
+                    </button>
+                  </>
                 ) : !isAuthenticated ? (
                   <Link to="/citadelle/connexion"
                     className="block w-full py-3 rounded-xl font-bold text-sm text-center transition-all hover:scale-[1.02]"
@@ -306,6 +318,64 @@ export default function CitadelleListingDetail() {
                   <div className="w-4 h-4 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
                 ) : (
                   <><Send size={14} /> Envoyer l'offre</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal — Contacter le vendeur */}
+      {contactModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)" }}>
+          <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+            <h3 className="font-bold text-lg mb-1" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+              Contacter le vendeur
+            </h3>
+            <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
+              Posez vos questions avant de faire une offre.
+            </p>
+
+            {contactError && (
+              <div className="flex items-center gap-2 p-3 rounded-xl text-xs mb-3" style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626" }}>
+                <AlertCircle size={13} /> {contactError}
+              </div>
+            )}
+
+            <textarea value={contactMessage} onChange={e => setContactMessage(e.target.value)} rows={4}
+              placeholder="Bonjour, j'aurais quelques questions sur votre annonce..."
+              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none resize-none"
+              style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
+              data-testid="contact-message" />
+
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => { setContactModal(false); setContactError(""); }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium"
+                style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
+                Annuler
+              </button>
+              <button onClick={async () => {
+                setContactError("");
+                if (!contactMessage || contactMessage.trim().length < 1) { setContactError("Veuillez saisir un message"); return; }
+                setContactLoading(true);
+                try {
+                  const res = await citadelleApi.post("/messages/send", {
+                    listing_id: listing.id,
+                    content: contactMessage.trim()
+                  });
+                  setContactModal(false);
+                  setContactMessage("");
+                  navigate(`/citadelle/espace-membre/messages/${res.data.conversation_id}`);
+                } catch (err) {
+                  setContactError(err.response?.data?.detail || "Erreur lors de l'envoi");
+                } finally { setContactLoading(false); }
+              }} disabled={contactLoading || !contactMessage.trim()}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60"
+                style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                data-testid="contact-submit">
+                {contactLoading ? (
+                  <div className="w-4 h-4 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
+                ) : (
+                  <><Send size={14} /> Envoyer</>
                 )}
               </button>
             </div>
