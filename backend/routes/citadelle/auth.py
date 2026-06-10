@@ -504,3 +504,126 @@ async def citadelle_update_profile(request: Request):
     updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
     logger.info(f"[Citadelle] Profil mis à jour pour: {user['email']}")
     return {"message": "Profil mis à jour avec succès", "user": updated}
+
+
+# ── Coordonnées bancaires & statut professionnel ───────────────────────────────
+
+class BillingUpdate(BaseModel):
+    """Mise à jour des coordonnées bancaires et statut professionnel"""
+    # Bancaire
+    iban: Optional[str] = Field(None, max_length=34)
+    bic: Optional[str] = Field(None, max_length=11)
+    bank_name: Optional[str] = Field(None, max_length=100)
+    account_holder: Optional[str] = Field(None, max_length=100)
+    # Professionnel
+    is_professional: Optional[bool] = None
+    company_name: Optional[str] = Field(None, max_length=200)
+    siren: Optional[str] = Field(None, max_length=9)
+    siret: Optional[str] = Field(None, max_length=14)
+    vat_number: Optional[str] = Field(None, max_length=20)
+    company_address: Optional[str] = Field(None, max_length=500)
+
+
+@router.patch("/profile/billing", status_code=status.HTTP_200_OK)
+async def citadelle_update_billing(
+    data: BillingUpdate,
+    request: Request
+):
+    """
+    Mise à jour des coordonnées bancaires et du statut professionnel.
+    Données sensibles — accessibles uniquement par le propriétaire et l'admin.
+    """
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token manquant")
+
+    token = auth_header.split(" ")[1]
+    try:
+        decoded = decode_access_token(token)
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
+
+    user = await db.users.find_one(
+        {"id": decoded["sub"], "platform": "citadelle"},
+        {"_id": 0}
+    )
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable")
+
+    now = datetime.now(timezone.utc).isoformat()
+    updates = {}
+
+    # Coordonnées bancaires
+    billing = user.get("billing", {})
+    if data.iban is not None:
+        # Validation IBAN basique (longueur FR = 27 caractères)
+        clean_iban = data.iban.replace(" ", "").upper()
+        if clean_iban and len(clean_iban) < 15:
+            raise HTTPException(status_code=400, detail="IBAN invalide — minimum 15 caractères")
+        billing["iban"] = clean_iban
+    if data.bic is not None:
+        billing["bic"] = data.bic.strip().upper()
+    if data.bank_name is not None:
+        billing["bank_name"] = data.bank_name.strip()
+    if data.account_holder is not None:
+        billing["account_holder"] = data.account_holder.strip()
+    billing["updated_at"] = now
+    updates["billing"] = billing
+
+    # Statut professionnel
+    professional = user.get("professional", {})
+    if data.is_professional is not None:
+        professional["is_professional"] = data.is_professional
+    if data.company_name is not None:
+        professional["company_name"] = data.company_name.strip()
+    if data.siren is not None:
+        clean_siren = data.siren.replace(" ", "")
+        if clean_siren and len(clean_siren) != 9:
+            raise HTTPException(status_code=400, detail="Le SIREN doit contenir exactement 9 chiffres")
+        professional["siren"] = clean_siren
+    if data.siret is not None:
+        clean_siret = data.siret.replace(" ", "")
+        if clean_siret and len(clean_siret) != 14:
+            raise HTTPException(status_code=400, detail="Le SIRET doit contenir exactement 14 chiffres")
+        professional["siret"] = clean_siret
+    if data.vat_number is not None:
+        professional["vat_number"] = data.vat_number.strip().upper()
+    if data.company_address is not None:
+        professional["company_address"] = data.company_address.strip()
+    professional["updated_at"] = now
+    updates["professional"] = professional
+
+    updates["updated_at"] = now
+    await db.users.update_one({"id": user["id"], "platform": "citadelle"}, {"$set": updates})
+
+    logger.info(f"[Citadelle] Infos bancaires/pro mises à jour pour: {user['email']}")
+    return {"message": "Informations mises à jour avec succès"}
+
+
+@router.get("/profile/billing", status_code=status.HTTP_200_OK)
+async def citadelle_get_billing(request: Request):
+    """
+    Récupère les coordonnées bancaires et le statut professionnel.
+    Données sensibles — accessibles uniquement par le propriétaire.
+    """
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token manquant")
+
+    token = auth_header.split(" ")[1]
+    try:
+        decoded = decode_access_token(token)
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
+
+    user = await db.users.find_one(
+        {"id": decoded["sub"], "platform": "citadelle"},
+        {"_id": 0, "billing": 1, "professional": 1}
+    )
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable")
+
+    return {
+        "billing": user.get("billing", {}),
+        "professional": user.get("professional", {}),
+    }

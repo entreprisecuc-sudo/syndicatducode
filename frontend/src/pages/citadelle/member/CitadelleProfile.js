@@ -7,7 +7,8 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   User, Lock, Save, CheckCircle, AlertCircle,
-  Eye, EyeOff, ChevronLeft, Calendar, Mail, Shield
+  Eye, EyeOff, ChevronLeft, Calendar, Mail, Shield,
+  Building, Landmark, CreditCard
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
@@ -19,6 +20,8 @@ import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 
 const TABS = [
   { id: "infos",    label: "Informations",    icon: User },
+  { id: "banking",  label: "Coordonnées bancaires", icon: Landmark },
+  { id: "pro",      label: "Statut",          icon: Building },
   { id: "password", label: "Mot de passe",    icon: Lock },
 ];
 
@@ -124,10 +127,10 @@ export default function CitadelleProfile() {
           {/* Contenu onglet */}
           <div className="rounded-2xl p-6"
             style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
-            {activeTab === "infos"
-              ? <TabInfos user={user} updateUser={updateUser} inputStyle={inputStyle} labelStyle={labelStyle} />
-              : <TabPassword inputStyle={inputStyle} labelStyle={labelStyle} />
-            }
+            {activeTab === "infos" && <TabInfos user={user} updateUser={updateUser} inputStyle={inputStyle} labelStyle={labelStyle} />}
+            {activeTab === "banking" && <TabBanking inputStyle={inputStyle} labelStyle={labelStyle} />}
+            {activeTab === "pro" && <TabProfessional inputStyle={inputStyle} labelStyle={labelStyle} />}
+            {activeTab === "password" && <TabPassword inputStyle={inputStyle} labelStyle={labelStyle} />}
           </div>
 
         </div>
@@ -212,6 +215,237 @@ function TabInfos({ user, updateUser, inputStyle, labelStyle }) {
         className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm disabled:opacity-60 transition-all hover:scale-[1.02]"
         style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
         data-testid="profile-save-infos-btn">
+        {saving
+          ? <div className="w-5 h-5 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
+          : <><Save size={15} /> Enregistrer</>
+        }
+      </button>
+    </div>
+  );
+}
+
+// ── Onglet Coordonnées bancaires ──────────────────────────────────────────────
+
+function TabBanking({ inputStyle, labelStyle }) {
+  const [form, setForm] = useState({ iban: "", bic: "", bank_name: "", account_holder: "" });
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    citadelleApi.get("/auth/profile/billing").then(res => {
+      const b = res.data.billing || {};
+      setForm({ iban: b.iban || "", bic: b.bic || "", bank_name: b.bank_name || "", account_holder: b.account_holder || "" });
+      setLoaded(true);
+    }).catch(() => setLoaded(true));
+  }, []);
+
+  const handleSave = async () => {
+    if (!form.account_holder.trim()) { setError("Le titulaire du compte est requis"); return; }
+    if (!form.iban.trim()) { setError("L'IBAN est requis"); return; }
+    setSaving(true); setError(""); setSuccess(false);
+    try {
+      await citadelleApi.patch("/auth/profile/billing", {
+        iban: form.iban, bic: form.bic, bank_name: form.bank_name, account_holder: form.account_holder
+      });
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(err.response?.data?.detail || "Erreur lors de la sauvegarde");
+    } finally { setSaving(false); }
+  };
+
+  if (!loaded) return <div className="py-8 text-center"><div className="w-6 h-6 rounded-full border-2 animate-spin mx-auto" style={{ borderColor: CITADELLE_COLORS.border, borderTopColor: CITADELLE_COLORS.gold }} /></div>;
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="font-bold text-base" style={{ color: CITADELLE_COLORS.white }}>Coordonnées bancaires</h2>
+        <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
+          Nécessaires pour recevoir vos paiements. Ces données sont stockées de manière sécurisée.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-2 p-3 rounded-xl text-xs" style={{ background: "rgba(201,164,92,0.06)", border: "1px solid rgba(201,164,92,0.15)", color: CITADELLE_COLORS.gold }}>
+        <Shield size={13} /> Vos données bancaires sont chiffrées et accessibles uniquement par vous et l'administrateur.
+      </div>
+
+      {success && (
+        <div className="flex items-center gap-2 p-3 rounded-xl text-sm" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", color: "#22C55E" }}>
+          <CheckCircle size={15} /> Coordonnées bancaires enregistrées
+        </div>
+      )}
+      {error && (
+        <div className="flex items-center gap-2 p-3 rounded-xl text-sm" style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>
+          <AlertCircle size={15} /> {error}
+        </div>
+      )}
+
+      <div>
+        <label className="block text-sm font-medium mb-2" style={labelStyle}>Titulaire du compte *</label>
+        <input value={form.account_holder} onChange={e => { setForm(p => ({ ...p, account_holder: e.target.value })); setError(""); }}
+          placeholder="Prénom Nom ou Raison sociale" className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+          style={inputStyle} data-testid="billing-holder" />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2" style={labelStyle}>IBAN *</label>
+        <input value={form.iban} onChange={e => { setForm(p => ({ ...p, iban: e.target.value.toUpperCase() })); setError(""); }}
+          placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" className="w-full px-4 py-3 rounded-xl text-sm outline-none font-mono tracking-wider"
+          style={inputStyle} data-testid="billing-iban" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-2" style={labelStyle}>BIC / SWIFT</label>
+          <input value={form.bic} onChange={e => { setForm(p => ({ ...p, bic: e.target.value.toUpperCase() })); setError(""); }}
+            placeholder="BNPAFRPP" className="w-full px-4 py-3 rounded-xl text-sm outline-none font-mono"
+            style={inputStyle} data-testid="billing-bic" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2" style={labelStyle}>Banque</label>
+          <input value={form.bank_name} onChange={e => { setForm(p => ({ ...p, bank_name: e.target.value })); setError(""); }}
+            placeholder="Nom de votre banque" className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+            style={inputStyle} data-testid="billing-bank" />
+        </div>
+      </div>
+
+      <button onClick={handleSave} disabled={saving}
+        className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm disabled:opacity-60 transition-all hover:scale-[1.02]"
+        style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+        data-testid="billing-save-btn">
+        {saving
+          ? <div className="w-5 h-5 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
+          : <><Save size={15} /> Enregistrer</>
+        }
+      </button>
+    </div>
+  );
+}
+
+// ── Onglet Statut professionnel ───────────────────────────────────────────────
+
+function TabProfessional({ inputStyle, labelStyle }) {
+  const [form, setForm] = useState({ is_professional: false, company_name: "", siren: "", siret: "", vat_number: "", company_address: "" });
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    citadelleApi.get("/auth/profile/billing").then(res => {
+      const p = res.data.professional || {};
+      setForm({
+        is_professional: p.is_professional || false,
+        company_name: p.company_name || "", siren: p.siren || "", siret: p.siret || "",
+        vat_number: p.vat_number || "", company_address: p.company_address || ""
+      });
+      setLoaded(true);
+    }).catch(() => setLoaded(true));
+  }, []);
+
+  const handleSave = async () => {
+    if (form.is_professional && !form.company_name.trim()) { setError("La raison sociale est requise pour les professionnels"); return; }
+    if (form.is_professional && !form.siren.trim()) { setError("Le SIREN est requis pour les professionnels"); return; }
+    setSaving(true); setError(""); setSuccess(false);
+    try {
+      await citadelleApi.patch("/auth/profile/billing", {
+        is_professional: form.is_professional,
+        company_name: form.company_name, siren: form.siren, siret: form.siret,
+        vat_number: form.vat_number, company_address: form.company_address
+      });
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(err.response?.data?.detail || "Erreur lors de la sauvegarde");
+    } finally { setSaving(false); }
+  };
+
+  if (!loaded) return <div className="py-8 text-center"><div className="w-6 h-6 rounded-full border-2 animate-spin mx-auto" style={{ borderColor: CITADELLE_COLORS.border, borderTopColor: CITADELLE_COLORS.gold }} /></div>;
+
+  return (
+    <div className="space-y-5">
+      <h2 className="font-bold text-base" style={{ color: CITADELLE_COLORS.white }}>Statut professionnel</h2>
+
+      {success && (
+        <div className="flex items-center gap-2 p-3 rounded-xl text-sm" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", color: "#22C55E" }}>
+          <CheckCircle size={15} /> Informations enregistrées
+        </div>
+      )}
+      {error && (
+        <div className="flex items-center gap-2 p-3 rounded-xl text-sm" style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>
+          <AlertCircle size={15} /> {error}
+        </div>
+      )}
+
+      {/* Toggle Pro / Particulier */}
+      <div className="flex gap-3">
+        {[
+          { val: false, label: "Particulier", desc: "Vente occasionnelle" },
+          { val: true, label: "Professionnel", desc: "Entreprise / Auto-entrepreneur" }
+        ].map(opt => (
+          <button key={String(opt.val)} onClick={() => { setForm(p => ({ ...p, is_professional: opt.val })); setError(""); }}
+            className="flex-1 p-4 rounded-xl text-left transition-all"
+            style={{
+              background: form.is_professional === opt.val ? "rgba(201,164,92,0.1)" : "rgba(255,255,255,0.02)",
+              border: form.is_professional === opt.val ? "1px solid rgba(201,164,92,0.4)" : `1px solid ${CITADELLE_COLORS.border}`
+            }}
+            data-testid={`pro-toggle-${opt.val}`}>
+            <p className="text-sm font-semibold" style={{ color: form.is_professional === opt.val ? CITADELLE_COLORS.gold : CITADELLE_COLORS.white }}>
+              {opt.label}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>{opt.desc}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* Champs pro */}
+      {form.is_professional && (
+        <div className="space-y-4 pt-2">
+          <div>
+            <label className="block text-sm font-medium mb-2" style={labelStyle}>Raison sociale *</label>
+            <input value={form.company_name} onChange={e => { setForm(p => ({ ...p, company_name: e.target.value })); setError(""); }}
+              placeholder="Nom de votre entreprise" className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+              style={inputStyle} data-testid="pro-company" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2" style={labelStyle}>SIREN *</label>
+              <input value={form.siren} onChange={e => { setForm(p => ({ ...p, siren: e.target.value.replace(/\D/g, "").slice(0, 9) })); setError(""); }}
+                placeholder="9 chiffres" maxLength={9} className="w-full px-4 py-3 rounded-xl text-sm outline-none font-mono"
+                style={inputStyle} data-testid="pro-siren" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2" style={labelStyle}>SIRET</label>
+              <input value={form.siret} onChange={e => { setForm(p => ({ ...p, siret: e.target.value.replace(/\D/g, "").slice(0, 14) })); setError(""); }}
+                placeholder="14 chiffres" maxLength={14} className="w-full px-4 py-3 rounded-xl text-sm outline-none font-mono"
+                style={inputStyle} data-testid="pro-siret" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2" style={labelStyle}>N° TVA intracommunautaire</label>
+            <input value={form.vat_number} onChange={e => { setForm(p => ({ ...p, vat_number: e.target.value.toUpperCase() })); setError(""); }}
+              placeholder="FR XX XXXXXXXXX" className="w-full px-4 py-3 rounded-xl text-sm outline-none font-mono"
+              style={inputStyle} data-testid="pro-vat" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2" style={labelStyle}>Adresse du siège</label>
+            <textarea value={form.company_address} onChange={e => { setForm(p => ({ ...p, company_address: e.target.value })); setError(""); }}
+              placeholder="Adresse complète de votre entreprise" rows={2}
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
+              style={inputStyle} data-testid="pro-address" />
+          </div>
+        </div>
+      )}
+
+      <button onClick={handleSave} disabled={saving}
+        className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm disabled:opacity-60 transition-all hover:scale-[1.02]"
+        style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+        data-testid="pro-save-btn">
         {saving
           ? <div className="w-5 h-5 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
           : <><Save size={15} /> Enregistrer</>
