@@ -37,9 +37,13 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Formulaire d'inscription public sur la page d'accueil Citadelle
 - Auto-inscription silencieuse des membres connectés
 - Désinscription via lien dans l'email (RGPD)
-- Email digest HTML visuel hebdomadaire (titre, type, prix, image, lien)
+- Email digest HTML visuel (titre, type, prix, image, lien, pixel tracker)
 - Scheduler APScheduler : vendredi 16h par défaut, entièrement configurable
-- Admin : stats abonnés, liste, config (fréquence, jour, heure, nb annonces), envoi immédiat, prévisualisation HTML
+- Admin : stats abonnés, liste, config (fréquence, jour, heure, nb annonces), envoi immédiat
+- **Aperçu intégré** de l'email directement dans la page admin (iframe live)
+- **Historique** des envois avec stats : délivrés, ouvertures (pixel), clics (redirect tracker)
+- Visualisation d'un ancien email depuis l'historique (modal iframe)
+- Tracking pixel 1×1 + redirecteur de clics (routes publiques `/newsletter/pixel/` et `/newsletter/click/`)
 
 ### ✅ Notifications email vendeurs (TERMINÉ 10/06/2026)
 - **Nouveau message** : email au vendeur dès le 1er message d'une conversation

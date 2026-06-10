@@ -633,14 +633,27 @@ def _get_listing_image_url_for_email(listing: dict) -> str | None:
     return f"{BACKEND_PUBLIC_URL}/{path.lstrip('/')}"
 
 
-def _build_listing_row(listing: dict) -> str:
-    """Génère les lignes HTML (table rows) pour une annonce dans l'email."""
+def _build_listing_row(listing: dict, history_id: str = None) -> str:
+    """Génère les lignes HTML (table rows) pour une annonce dans l'email.
+
+    Args:
+        listing: Données de l'annonce
+        history_id: Si fourni, les liens sont wrappés via le tracker de clics
+    """
     type_label = _LISTING_TYPE_LABELS.get(listing.get("type", ""), "Actif numérique")
     price = listing.get("price")
     price_str = f"{price:,.0f}&nbsp;€".replace(",", "\u202f") if price else "Prix sur demande"
     title = listing.get("title", "")
     slug = listing.get("slug") or listing.get("id", "")
     listing_url = f"{CITADELLE_URL}/citadelle/annonces/{slug}"
+
+    # Wrapper de clic si tracking activé
+    if history_id:
+        from urllib.parse import quote
+        tracked_url = f"{BACKEND_PUBLIC_URL}/api/citadelle/newsletter/click/{history_id}?url={quote(listing_url, safe='')}"
+    else:
+        tracked_url = listing_url
+
     image_url = _get_listing_image_url_for_email(listing)
     short_desc = (listing.get("short_description") or "")[:120]
     if len(listing.get("short_description") or "") > 120:
@@ -681,7 +694,7 @@ def _build_listing_row(listing: dict) -> str:
                               line-height:1.3;">{title}</h3>
                   {desc_row}
                   <p style="margin:0 0 12px 0;font-size:18px;color:#0F2747;font-weight:800;">{price_str}</p>
-                  <a href="{listing_url}"
+                  <a href="{tracked_url}"
                      style="display:inline-block;padding:8px 20px;background:#C9A45C;
                             color:#081729;text-decoration:none;border-radius:6px;
                             font-size:12px;font-weight:700;">Voir l'annonce &#8594;</a>
@@ -697,6 +710,7 @@ def build_newsletter_html(
     unsubscribe_token: str,
     period_days: int,
     is_preview: bool = False,
+    history_id: str = None,
 ) -> str:
     """
     Construit le HTML complet de l'email newsletter.
@@ -706,6 +720,7 @@ def build_newsletter_html(
         unsubscribe_token: Token unique de désinscription de l'abonné
         period_days: Nombre de jours couverts (7, 14 ou 30)
         is_preview: Si True, le lien de désinscription est remplacé par un message admin
+        history_id: Si fourni, active le tracking pixel + liens de clic
 
     Returns:
         Chaîne HTML complète de l'email
@@ -714,11 +729,10 @@ def build_newsletter_html(
     count_label = "1 nouvelle annonce" if count == 1 else f"{count} nouvelles annonces"
     period_label = _PERIOD_LABELS.get(period_days, f"Derniers {period_days} jours")
 
-    # Lignes des annonces
+    # Lignes des annonces (avec tracking si history_id fourni)
     listing_rows = ""
     for i, listing in enumerate(listings):
-        listing_rows += _build_listing_row(listing)
-        # Séparateur entre annonces (sauf après la dernière)
+        listing_rows += _build_listing_row(listing, history_id=history_id)
         if i < len(listings) - 1:
             listing_rows += """
         <tr>
@@ -742,6 +756,15 @@ def build_newsletter_html(
             "Vous recevez cet email car vous êtes abonné aux alertes annonces<br>"
             f'de La Citadelle Numérique. <a href="{unsubscribe_url}" '
             'style="color:#C9A45C;text-decoration:underline;">Se désinscrire</a></p>'
+        )
+
+    # Pixel de tracking (invisible, inséré juste avant </body> si history_id fourni)
+    tracking_pixel = ""
+    if history_id and not is_preview:
+        pixel_url = f"{BACKEND_PUBLIC_URL}/api/citadelle/newsletter/pixel/{history_id}"
+        tracking_pixel = (
+            f'<img src="{pixel_url}" width="1" height="1" alt="" '
+            f'style="display:none;visibility:hidden;width:1px;height:1px;" />'
         )
 
     return f"""<!DOCTYPE html>
@@ -847,6 +870,8 @@ def build_newsletter_html(
   </table>
   <!-- Fin wrapper -->
 
+  {tracking_pixel}
+
 </body>
 </html>"""
 
@@ -856,6 +881,7 @@ def send_newsletter_digest_email(
     listings: list,
     unsubscribe_token: str,
     period_days: int,
+    history_id: str = None,
 ) -> bool:
     """
     Envoie l'email digest newsletter à un abonné.
@@ -865,9 +891,7 @@ def send_newsletter_digest_email(
         listings: Liste des annonces à inclure
         unsubscribe_token: Token unique de désinscription
         period_days: Nombre de jours couverts (pour le libellé de période)
-
-    Returns:
-        True si l'envoi a réussi, False sinon
+        history_id: Si fourni, active le tracking ouverture/clic dans l'email
     """
     try:
         html_content = build_newsletter_html(
@@ -875,6 +899,7 @@ def send_newsletter_digest_email(
             unsubscribe_token=unsubscribe_token,
             period_days=period_days,
             is_preview=False,
+            history_id=history_id,
         )
 
         msg = MIMEMultipart("alternative")

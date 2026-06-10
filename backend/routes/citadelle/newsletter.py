@@ -7,11 +7,12 @@ import uuid
 import secrets
 import logging
 
-from fastapi import APIRouter, HTTPException, Depends
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi.responses import HTMLResponse, Response, RedirectResponse
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime, timezone
+from urllib.parse import unquote
 
 from middleware.auth import get_current_user
 from services.newsletter_scheduler import (
@@ -307,9 +308,9 @@ async def admin_update_config(
 
 @router.post("/admin/newsletter/send-now", summary="Admin — Envoi immédiat")
 async def admin_send_now(current_user: dict = Depends(require_admin)):
-    """Admin : déclenche l'envoi immédiat du digest sans respecter la fréquence."""
+    """Admin : déclenche l'envoi immédiat du digest sans respecter la fréquence ni le filtre de date."""
     import asyncio
-    asyncio.create_task(run_newsletter_digest())
+    asyncio.create_task(run_newsletter_digest(force=True))
     return {"message": "Envoi du digest déclenché. Les emails partiront dans quelques instants."}
 
 
@@ -339,6 +340,92 @@ async def admin_preview_email(current_user: dict = Depends(require_admin)):
         listings=listings,
         unsubscribe_token="PREVIEW",
         period_days=7,
+        is_preview=True,
+    )
+    return HTMLResponse(content=html)
+
+
+# ── Tracking (routes publiques, sans auth) ─────────────────────────────────────
+
+# Pixel GIF transparent 1x1 (binaire constant)
+_TRACKING_PIXEL_GIF = bytes([
+    0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00,
+    0x01, 0x00, 0x80, 0x00, 0x00, 0xff, 0xff, 0xff,
+    0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44,
+    0x01, 0x00, 0x3b,
+])
+
+
+@router.get("/newsletter/pixel/{history_id}", summary="Tracking — Pixel d'ouverture")
+async def track_open(history_id: str):
+    """
+    Pixel de tracking 1×1. Incrémente le compteur d'ouvertures d'une newsletter.
+    Route publique — accessible depuis les clients email.
+    """
+    await db.citadelle_newsletter_history.update_one(
+        {"id": history_id}, {"$inc": {"opens": 1}}
+    )
+    return Response(
+        content=_TRACKING_PIXEL_GIF,
+        media_type="image/gif",
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate, private",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
+
+
+@router.get("/newsletter/click/{history_id}", summary="Tracking — Redirecteur de clic")
+async def track_click(history_id: str, url: str = Query(default="")):
+    """
+    Redirecteur de clic. Incrémente le compteur de clics puis redirige vers l'URL cible.
+    Route publique — accessible depuis les clients email.
+    """
+    await db.citadelle_newsletter_history.update_one(
+        {"id": history_id}, {"$inc": {"clicks": 1}}
+    )
+    target_url = unquote(url) if url else f"/citadelle/annonces"
+    return RedirectResponse(url=target_url, status_code=302)
+
+
+# ── Historique admin ───────────────────────────────────────────────────────────
+
+@router.get("/admin/newsletter/history", summary="Admin — Historique des envois")
+async def admin_get_history(current_user: dict = Depends(require_admin)):
+    """Admin : retourne la liste des newsletters envoyées avec leurs statistiques."""
+    history = await db.citadelle_newsletter_history.find(
+        {},
+        {
+            "_id": 0,
+            "listings_snapshot": 0,  # Exclu du listing pour alléger la réponse
+        },
+    ).sort("sent_at", -1).to_list(200)
+    return {"history": history}
+
+
+@router.get(
+    "/admin/newsletter/history/{history_id}/preview",
+    summary="Admin — Prévisualisation d'un ancien envoi",
+)
+async def admin_history_preview(
+    history_id: str,
+    current_user: dict = Depends(require_admin),
+):
+    """Admin : reconstitue et retourne le HTML d'une newsletter précédemment envoyée."""
+    record = await db.citadelle_newsletter_history.find_one(
+        {"id": history_id}, {"_id": 0}
+    )
+    if not record:
+        raise HTTPException(status_code=404, detail="Historique introuvable.")
+
+    listings = record.get("listings_snapshot", [])
+    html = build_newsletter_html(
+        listings=listings,
+        unsubscribe_token="PREVIEW",
+        period_days=record.get("period_days", 7),
         is_preview=True,
     )
     return HTMLResponse(content=html)

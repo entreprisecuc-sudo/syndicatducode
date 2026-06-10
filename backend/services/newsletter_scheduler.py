@@ -5,6 +5,7 @@ Gestion de l'envoi automatique du digest d'annonces via APScheduler
 
 import logging
 import asyncio
+import uuid
 from datetime import datetime, timezone, timedelta
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -155,10 +156,14 @@ async def check_unanswered_conversations():
 
 
 
-async def run_newsletter_digest():
+async def run_newsletter_digest(force: bool = False):
     """
     Fonction principale exécutée par le scheduler.
     Récupère les nouvelles annonces et les envoie à tous les abonnés actifs.
+
+    Args:
+        force: Si True (envoi admin manuel), contourne le filtre de date des annonces
+               et la vérification de fréquence. Envoie les dernières annonces actives.
     """
     if _db is None:
         logger.error("[Newsletter] Base de données non initialisée, envoi annulé.")
@@ -166,49 +171,53 @@ async def run_newsletter_digest():
 
     config = await get_or_create_config()
 
-    if not config.get("is_active"):
+    if not config.get("is_active") and not force:
         logger.info("[Newsletter] Envoi désactivé dans la configuration.")
         return
 
-    # Vérification de la fréquence (évite les envois trop rapprochés)
-    last_run = config.get("last_run_at")
-    if last_run:
-        last_run_dt = datetime.fromisoformat(last_run.replace("Z", "+00:00"))
-        days_since = (datetime.now(timezone.utc) - last_run_dt).days
-        min_days = {"weekly": 6, "biweekly": 13, "monthly": 27}.get(
-            config.get("frequency", "weekly"), 6
-        )
-        if days_since < min_days:
-            logger.info(
-                f"[Newsletter] Fréquence non atteinte : {days_since} jour(s) depuis le dernier envoi "
-                f"(minimum {min_days}). Envoi ignoré."
+    # Vérification de la fréquence (ignorée en mode force)
+    if not force:
+        last_run = config.get("last_run_at")
+        if last_run:
+            last_run_dt = datetime.fromisoformat(last_run.replace("Z", "+00:00"))
+            days_since = (datetime.now(timezone.utc) - last_run_dt).days
+            min_days = {"weekly": 6, "biweekly": 13, "monthly": 27}.get(
+                config.get("frequency", "weekly"), 6
             )
-            return
+            if days_since < min_days:
+                logger.info(
+                    f"[Newsletter] Fréquence non atteinte : {days_since} jour(s) depuis le dernier envoi "
+                    f"(minimum {min_days}). Envoi ignoré."
+                )
+                return
 
     # Période de recherche des annonces
     freq = config.get("frequency", "weekly")
     days_back = {"weekly": 7, "biweekly": 14, "monthly": 30}.get(freq, 7)
-    since_dt = datetime.now(timezone.utc) - timedelta(days=days_back)
-
     max_listings = config.get("max_listings", 10)
 
-    # Récupération des annonces publiées dans la période
-    cursor = _db.citadelle_listings.find(
-        {
-            "status": "active",
-            "published_at": {"$gte": since_dt.isoformat()},
-        },
-        {
-            "_id": 0,
-            "id": 1,
-            "title": 1,
-            "type": 1,
-            "price": 1,
-            "images": 1,
-            "slug": 1,
-            "short_description": 1,
-        },
-    ).sort("published_at", -1).limit(max_listings)
+    # Requête des annonces : filtre par date si automatique, dernières actives si forcé
+    if force:
+        cursor = _db.citadelle_listings.find(
+            {"status": "active"},
+            {
+                "_id": 0, "id": 1, "title": 1, "type": 1, "price": 1,
+                "images": 1, "slug": 1, "short_description": 1,
+            },
+        ).sort("published_at", -1).limit(max_listings)
+        logger.info(f"[Newsletter] Envoi forcé (admin) — {max_listings} dernières annonces actives.")
+    else:
+        since_dt = datetime.now(timezone.utc) - timedelta(days=days_back)
+        cursor = _db.citadelle_listings.find(
+            {
+                "status": "active",
+                "published_at": {"$gte": since_dt.isoformat()},
+            },
+            {
+                "_id": 0, "id": 1, "title": 1, "type": 1, "price": 1,
+                "images": 1, "slug": 1, "short_description": 1,
+            },
+        ).sort("published_at", -1).limit(max_listings)
 
     listings = await cursor.to_list(max_listings)
 
@@ -236,9 +245,28 @@ async def run_newsletter_digest():
     # Import local pour éviter les imports circulaires au chargement du module
     from services.email_service import send_newsletter_digest_email
 
+    # ── Création du record d'historique ───────────────────────────────────────
+    history_id = str(uuid.uuid4())
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    history_record = {
+        "id": history_id,
+        "sent_at": now_iso,
+        "period_days": days_back,
+        "frequency": freq,
+        "listings_count": len(listings),
+        "listings_snapshot": listings,  # Stocké pour reconstituer l'aperçu
+        "total_sent": len(subscribers),
+        "total_delivered": 0,
+        "total_failed": 0,
+        "opens": 0,
+        "clicks": 0,
+    }
+    await _db.citadelle_newsletter_history.insert_one(history_record)
+    logger.info(f"[Newsletter] Historique créé : {history_id}")
+
     sent = 0
     errors = 0
-    now_iso = datetime.now(timezone.utc).isoformat()
 
     for subscriber in subscribers:
         success = send_newsletter_digest_email(
@@ -246,6 +274,7 @@ async def run_newsletter_digest():
             listings=listings,
             unsubscribe_token=subscriber["unsubscribe_token"],
             period_days=days_back,
+            history_id=history_id,
         )
 
         if success:
@@ -269,10 +298,14 @@ async def run_newsletter_digest():
         if sent % 50 == 0 and sent > 0:
             await asyncio.sleep(1)
 
-    # Mise à jour du dernier envoi
+    # Mise à jour du dernier envoi + finalisation historique
     await _db.citadelle_newsletter_config.update_one(
         {"id": "main"},
         {"$set": {"last_run_at": now_iso}},
+    )
+    await _db.citadelle_newsletter_history.update_one(
+        {"id": history_id},
+        {"$set": {"total_delivered": sent, "total_failed": errors}},
     )
 
     logger.info(f"[Newsletter] Envoi terminé : {sent} succès, {errors} erreur(s).")
