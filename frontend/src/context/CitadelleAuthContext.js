@@ -37,6 +37,13 @@ export const CitadelleAuthProvider = ({ children }) => {
     localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(userData));
     setToken(accessToken);
     setUser(userData);
+
+    // Auto-inscription silencieuse à la newsletter (fire and forget — n'impacte pas la connexion)
+    citadelleApi.post(
+      "/newsletter/subscribe-member",
+      {},
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    ).catch(() => {}); // Silencieux en cas d'erreur
   };
 
   const logout = () => {

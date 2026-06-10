@@ -327,10 +327,23 @@ async def startup_event():
     await db.citadelle_listings.create_index([("title", "text"), ("description", "text")])
     await db.citadelle_transactions.create_index([("seller_id", 1), ("status", 1)])
     await db.citadelle_transactions.create_index([("buyer_id", 1), ("status", 1)])
+    # Index pour la newsletter
+    await db.citadelle_newsletter_subscriptions.create_index("email", unique=True)
+    await db.citadelle_newsletter_subscriptions.create_index("unsubscribe_token", unique=True, sparse=True)
+    await db.citadelle_newsletter_subscriptions.create_index("is_active")
+    await db.citadelle_newsletter_config.create_index("id", unique=True)
     logger.info("Indexes créés pour toutes les collections")
+
+    # Démarrage du scheduler newsletter
+    from services.newsletter_scheduler import init_newsletter_scheduler
+    await init_newsletter_scheduler()
+    logger.info("Scheduler newsletter démarré")
 
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    """Fermeture de la connexion MongoDB"""
+    """Fermeture de la connexion MongoDB et arrêt du scheduler"""
+    from services.newsletter_scheduler import scheduler
+    if scheduler.running:
+        scheduler.shutdown(wait=False)
     client.close()

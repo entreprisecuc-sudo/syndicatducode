@@ -39,6 +39,11 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://syndicatducode.fr')
 CITADELLE_URL = os.environ.get('CITADELLE_URL', 'https://lacitadellenumerique.fr')
 CITADELLE_FROM_EMAIL = os.environ.get('CITADELLE_FROM_EMAIL', SMTP_USER)
 
+# URL publique du backend (utilisée dans les emails pour les images d'annonces)
+# En production : identique à CITADELLE_URL (K8s route /api/* vers le backend)
+# En preview : renseigner BACKEND_PUBLIC_URL dans .env avec l'URL Kubernetes du pod
+BACKEND_PUBLIC_URL = os.environ.get('BACKEND_PUBLIC_URL', CITADELLE_URL)
+
 # Rôles utilisateur
 class UserRole:
     NONE = None  # Pas encore de rôle choisi

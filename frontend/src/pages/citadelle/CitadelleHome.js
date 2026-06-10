@@ -12,6 +12,7 @@ import {
   ShieldCheck, ArrowRightLeft, FileSearch, ChevronRight
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
+import NewsletterSection from "@/components/citadelle/NewsletterSection";
 import { CITADELLE_COLORS, CITADELLE_CATEGORIES, CITADELLE_SERVICES, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 
 // ── Icônes par slug ───────────────────────────────────────────────────────────
@@ -396,6 +397,7 @@ export default function CitadelleHome() {
       <CategoriesSection />
       <HowItWorksSection />
       <ServicesSection />
+      <NewsletterSection />
       <CTASection />
     </CitadelleLayout>
   );

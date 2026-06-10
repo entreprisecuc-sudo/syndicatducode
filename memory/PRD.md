@@ -33,6 +33,14 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Page publique /citadelle/services
 - Types : Payant, Gratuit, Partenaire, Sur devis
 
+### ✅ Newsletter / Alertes Annonces (TERMINÉ 10/06/2026)
+- Formulaire d'inscription public sur la page d'accueil Citadelle
+- Auto-inscription silencieuse des membres connectés
+- Désinscription via lien dans l'email (RGPD)
+- Email digest HTML visuel hebdomadaire (titre, type, prix, image, lien)
+- Scheduler APScheduler : vendredi 16h par défaut, entièrement configurable
+- Admin : stats abonnés, liste, config (fréquence, jour, heure, nb annonces), envoi immédiat, prévisualisation HTML
+
 ### Phase D — Avis, Blog (À FAIRE)
 ### Phase E — Statistiques & SEO (À FAIRE)
 
@@ -62,6 +70,15 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 | GET /api/citadelle/messages-unread-count | Compteur non lus |
 | GET /api/citadelle/services | Services publics |
 | CRUD /api/citadelle/admin/services | Admin: gérer services |
+| POST /api/citadelle/newsletter/subscribe | Inscription publique newsletter |
+| POST /api/citadelle/newsletter/subscribe-member | Auto-inscription membre connecté |
+| GET /api/citadelle/newsletter/unsubscribe/{token} | Désinscription via lien email |
+| GET /api/citadelle/admin/newsletter/subscribers | Admin: liste abonnés + stats |
+| DELETE /api/citadelle/admin/newsletter/subscribers/{id} | Admin: supprimer abonné |
+| GET /api/citadelle/admin/newsletter/config | Admin: lire config scheduler |
+| PATCH /api/citadelle/admin/newsletter/config | Admin: modifier config + reprogrammer |
+| POST /api/citadelle/admin/newsletter/send-now | Admin: envoi immédiat |
+| GET /api/citadelle/admin/newsletter/preview | Admin: prévisualisation HTML email |
 
 ---
 
@@ -74,6 +91,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 | citadelle_transactions | Transactions (offres, paiements, accès) |
 | citadelle_conversations | Messagerie pré-vente |
 | citadelle_services | Catalogue services admin |
+| citadelle_newsletter_subscriptions | Abonnés newsletter (email, user_id, token désinscription) |
+| citadelle_newsletter_config | Config scheduler (fréquence, jour, heure, max_listings) |
 
 ---
 
@@ -81,6 +100,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Stripe MOCKED** — En attente des clés API
 - **CITADELLE_FROM_EMAIL** → `atelier@syndicatducode.fr` (temporaire)
 - **CITADELLE_URL** → `https://lacitadellenumerique.fr` (pas encore déployé)
+- **BACKEND_PUBLIC_URL** → URL publique du backend pour les images d'annonces dans les emails (configurable dans .env)
 - **Uploads** accessibles via `/api/uploads/` (fix K8s)
+- **APScheduler** — Scheduler newsletter démarré au boot du backend, config rechargée depuis MongoDB
 
 *Mise à jour : 10/06/2026*

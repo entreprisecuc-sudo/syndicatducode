@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Shield, Globe, ShoppingCart, Cloud, Monitor, Users, Settings, ExternalLink } from "lucide-react";
+import { Shield, Globe, ShoppingCart, Cloud, Monitor, Users, Settings, ExternalLink, Bell } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
 
@@ -32,9 +32,10 @@ export default function AdminCitadelle() {
 
   const modules = [
     { icon: Globe, label: "Annonces", desc: "Gérer et valider les annonces de vente", status: "Phase B", count: 0, href: "/syndicat-admin/citadelle/annonces" },
-    { icon: ShoppingCart, label: "Transactions", desc: "Suivre les transactions en cours", status: "Phase C", count: 0, href: null },
+    { icon: ShoppingCart, label: "Transactions", desc: "Suivre les transactions en cours", status: "Phase C", count: 0, href: "/syndicat-admin/citadelle/transactions" },
     { icon: Users, label: "Utilisateurs", desc: "Membres inscrits sur La Citadelle", status: "Actif", count: null, href: null },
-    { icon: Cloud, label: "Services", desc: "Demandes de services (éval., audit, migration)", status: "Phase D", count: 0, href: null },
+    { icon: Cloud, label: "Services", desc: "Catalogue des services complémentaires", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/services" },
+    { icon: Bell, label: "Newsletter", desc: "Alertes annonces & gestion des abonnés", status: "Actif", count: null, href: "/syndicat-admin/citadelle/newsletter" },
     { icon: Monitor, label: "Blog", desc: "Articles et publications", status: "Phase D", count: 0, href: null },
     { icon: Settings, label: "Paramètres", desc: "Configuration de la plateforme", status: "Phase A", count: null, href: null },
   ];
@@ -89,7 +90,7 @@ export default function AdminCitadelle() {
           <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 opacity-50">Modules disponibles</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {modules.map(({ icon: Icon, label, desc, status, count, href }) => {
-              const isActive = status === "Actif" || status === "Phase A" || status === "Phase B";
+              const isActive = status === "Actif" || status === "Phase A" || status === "Phase B" || status === "Phase C";
               const cardContent = (
                 <div
                   key={label}

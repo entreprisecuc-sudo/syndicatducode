@@ -145,6 +145,12 @@ const ADMIN_MENU_SECTIONS = [
         label: "Services",
         icon: Star,
         description: "Gérer le catalogue de services complémentaires"
+      },
+      {
+        path: "/syndicat-admin/citadelle/newsletter",
+        label: "Newsletter",
+        icon: Bell,
+        description: "Alertes annonces, abonnés et configuration du scheduler"
       }
     ]
   }
