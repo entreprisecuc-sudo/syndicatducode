@@ -86,7 +86,10 @@ import CitadelleMyListings from "@/pages/citadelle/member/CitadelleMyListings";
 import CitadelleCreateListing from "@/pages/citadelle/member/CitadelleCreateListing";
 import CitadelleEditListing from "@/pages/citadelle/member/CitadelleEditListing";
 import CitadelleProfile from "@/pages/citadelle/member/CitadelleProfile";
+import CitadelleMyTransactions from "@/pages/citadelle/member/CitadelleMyTransactions";
+import CitadelleTransactionDetail from "@/pages/citadelle/member/CitadelleTransactionDetail";
 import AdminCitadelleListings from "@/pages/admin/AdminCitadelleListings";
+import AdminCitadelleTransactions from "@/pages/admin/AdminCitadelleTransactions";
 
 // Pages partagées (tous les membres)
 import MemberPartners from "@/pages/shared/MemberPartners";
@@ -319,6 +322,8 @@ function App() {
               <Route path="/citadelle/espace-membre/mes-annonces/creer" element={<CitadelleCreateListing />} />
               <Route path="/citadelle/espace-membre/mes-annonces/:id/modifier" element={<CitadelleEditListing />} />
               <Route path="/citadelle/espace-membre/mes-annonces" element={<CitadelleMyListings />} />
+              <Route path="/citadelle/espace-membre/transactions/:id" element={<CitadelleTransactionDetail />} />
+              <Route path="/citadelle/espace-membre/transactions" element={<CitadelleMyTransactions />} />
               <Route path="/citadelle/espace-membre/profil" element={<CitadelleProfile />} />
               <Route path="/citadelle/espace-membre" element={<CitadelleDashboard />} />
               <Route path="/citadelle/espace-membre/*" element={<CitadelleDashboard />} />
@@ -331,6 +336,10 @@ function App() {
               <Route
                 path="/syndicat-admin/citadelle/annonces"
                 element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleListings /></RoleRoute>}
+              />
+              <Route
+                path="/syndicat-admin/citadelle/transactions"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleTransactions /></RoleRoute>}
               />
 
               {/* ============================================ */}
