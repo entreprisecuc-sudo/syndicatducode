@@ -72,6 +72,7 @@ import AdminCitadelle from "@/pages/admin/AdminCitadelle";
 
 // Pages La Citadelle Numérique — Socle
 import CitadelleHome from "@/pages/citadelle/CitadelleHome";
+import CitadelleServices from "@/pages/citadelle/CitadelleServices";
 import CitadelleLogin from "@/pages/citadelle/CitadelleLogin";
 import CitadelleRegister from "@/pages/citadelle/CitadelleRegister";
 import CitadelleForgotPassword from "@/pages/citadelle/CitadelleForgotPassword";
@@ -92,6 +93,7 @@ import CitadelleMyMessages from "@/pages/citadelle/member/CitadelleMyMessages";
 import CitadelleConversationDetail from "@/pages/citadelle/member/CitadelleConversationDetail";
 import AdminCitadelleListings from "@/pages/admin/AdminCitadelleListings";
 import AdminCitadelleTransactions from "@/pages/admin/AdminCitadelleTransactions";
+import AdminCitadelleServices from "@/pages/admin/AdminCitadelleServices";
 
 // Pages partagées (tous les membres)
 import MemberPartners from "@/pages/shared/MemberPartners";
@@ -319,6 +321,7 @@ function App() {
               <Route path="/citadelle/reinitialiser-mot-de-passe" element={<CitadelleResetPassword />} />
               <Route path="/citadelle/annonces" element={<CitadelleListings />} />
               <Route path="/citadelle/annonces/:slug" element={<CitadelleListingDetail />} />
+              <Route path="/citadelle/services" element={<CitadelleServices />} />
 
               {/* Citadelle — Espace membre (routes spécifiques avant le wildcard) */}
               <Route path="/citadelle/espace-membre/mes-annonces/creer" element={<CitadelleCreateListing />} />
@@ -344,6 +347,10 @@ function App() {
               <Route
                 path="/syndicat-admin/citadelle/transactions"
                 element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleTransactions /></RoleRoute>}
+              />
+              <Route
+                path="/syndicat-admin/citadelle/services"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleServices /></RoleRoute>}
               />
 
               {/* ============================================ */}

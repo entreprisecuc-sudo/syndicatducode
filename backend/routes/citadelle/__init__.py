@@ -8,12 +8,14 @@ from routes.citadelle.auth import router as citadelle_auth_router, set_database 
 from routes.citadelle.listings import router as citadelle_listings_router, set_database as set_citadelle_listings_db
 from routes.citadelle.transactions import router as citadelle_transactions_router, set_database as set_citadelle_transactions_db
 from routes.citadelle.messages import router as citadelle_messages_router, set_database as set_citadelle_messages_db
+from routes.citadelle.services import router as citadelle_services_router, set_database as set_citadelle_services_db
 
 router = APIRouter(prefix="/citadelle", tags=["La Citadelle Numérique"])
 router.include_router(citadelle_auth_router)
 router.include_router(citadelle_listings_router)
 router.include_router(citadelle_transactions_router)
 router.include_router(citadelle_messages_router)
+router.include_router(citadelle_services_router)
 
 _db = None
 
@@ -24,3 +26,4 @@ def set_database(database):
     set_citadelle_listings_db(database)
     set_citadelle_transactions_db(database)
     set_citadelle_messages_db(database)
+    set_citadelle_services_db(database)

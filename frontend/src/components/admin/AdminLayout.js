@@ -9,7 +9,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, Users, BarChart3, 
   FileText, History, Shield, Home, Rocket, Megaphone, Bell, 
-  CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare, Database, Globe, ArrowLeftRight
+  CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare, Database, Globe, ArrowLeftRight, Star
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminTheme } from "@/context/AdminThemeContext";
@@ -139,6 +139,12 @@ const ADMIN_MENU_SECTIONS = [
         label: "Transactions",
         icon: ArrowLeftRight,
         description: "Vérifier les accès, finaliser les ventes, gérer les litiges"
+      },
+      {
+        path: "/syndicat-admin/citadelle/services",
+        label: "Services",
+        icon: Star,
+        description: "Gérer le catalogue de services complémentaires"
       }
     ]
   }
