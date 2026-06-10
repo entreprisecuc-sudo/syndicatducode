@@ -23,6 +23,22 @@ def set_database(database):
     db = database
 
 
+# ── Helpers d'authentification ─────────────────────────────────────────────────
+
+async def require_citadelle_user(current_user: dict = Depends(get_current_user)) -> dict:
+    """Vérifie que l'utilisateur est un membre Citadelle (ou admin)"""
+    if current_user.get("platform") != "citadelle" and current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Accès réservé aux membres Citadelle")
+    return current_user
+
+
+async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    """Vérifie que l'utilisateur est administrateur"""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs")
+    return current_user
+
+
 # ── Modèles ────────────────────────────────────────────────────────────────────
 
 class ServiceCreate(BaseModel):
@@ -58,14 +74,6 @@ class ServiceUpdate(BaseModel):
     display_order: Optional[int] = None
 
 
-# ── Helpers ────────────────────────────────────────────────────────────────────
-
-async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs")
-    return current_user
-
-
 # ── Routes publiques ───────────────────────────────────────────────────────────
 
 @router.get("/services", summary="Liste des services actifs")
@@ -76,6 +84,19 @@ async def list_services():
     ).sort("display_order", 1)
     services = await cursor.to_list(50)
     return {"services": services}
+
+
+@router.get("/services/my-orders", summary="Mes commandes de services (utilisateur connecté)")
+async def my_service_orders(current_user: dict = Depends(require_citadelle_user)):
+    """
+    Retourne les commandes de service liées à l'email de l'utilisateur connecté.
+    Accessible aux membres Citadelle authentifiés uniquement.
+    """
+    cursor = db.citadelle_service_orders.find(
+        {"client_email": current_user["email"]}, {"_id": 0}
+    ).sort("created_at", -1)
+    orders = await cursor.to_list(50)
+    return {"orders": orders}
 
 
 # ── Routes admin ───────────────────────────────────────────────────────────────

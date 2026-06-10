@@ -90,6 +90,7 @@ import CitadelleProfile from "@/pages/citadelle/member/CitadelleProfile";
 import CitadelleMyTransactions from "@/pages/citadelle/member/CitadelleMyTransactions";
 import CitadelleTransactionDetail from "@/pages/citadelle/member/CitadelleTransactionDetail";
 import CitadelleMyMessages from "@/pages/citadelle/member/CitadelleMyMessages";
+import CitadelleMyServices from "@/pages/citadelle/member/CitadelleMyServices";
 import CitadelleConversationDetail from "@/pages/citadelle/member/CitadelleConversationDetail";
 import AdminCitadelleListings from "@/pages/admin/AdminCitadelleListings";
 import AdminCitadelleTransactions from "@/pages/admin/AdminCitadelleTransactions";
@@ -337,6 +338,7 @@ function App() {
               <Route path="/citadelle/espace-membre/transactions" element={<CitadelleMyTransactions />} />
               <Route path="/citadelle/espace-membre/messages/:id" element={<CitadelleConversationDetail />} />
               <Route path="/citadelle/espace-membre/messages" element={<CitadelleMyMessages />} />
+              <Route path="/citadelle/espace-membre/mes-services" element={<CitadelleMyServices />} />
               <Route path="/citadelle/espace-membre/profil" element={<CitadelleProfile />} />
               <Route path="/citadelle/espace-membre" element={<CitadelleDashboard />} />
               <Route path="/citadelle/espace-membre/*" element={<CitadelleDashboard />} />
