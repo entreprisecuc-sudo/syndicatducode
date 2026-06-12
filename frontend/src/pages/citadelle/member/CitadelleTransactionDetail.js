@@ -534,7 +534,7 @@ export default function CitadelleTransactionDetail() {
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-80"
                   style={{ background: "rgba(220,38,38,0.08)", color: "#DC2626", border: "1px solid rgba(220,38,38,0.2)" }}
                   data-testid="btn-seller-cancel">
-                  <Ban size={14} /> Annuler la vente — Panneau de facturation
+                  <Ban size={14} /> Annuler la vente
                 </button>
               </div>
             )}
