@@ -84,7 +84,8 @@ class DisputeMessageCreate(BaseModel):
     content: str = Field(min_length=1, max_length=2000)
 
 class DisputeConfigUpdate(BaseModel):
-    tranches: List[dict]
+    tranches_acheteur: List[dict]
+    tranches_vendeur: List[dict]
     default_fee: float = Field(gt=0)
 
 
@@ -92,21 +93,29 @@ class DisputeConfigUpdate(BaseModel):
 
 DEFAULT_DISPUTE_CONFIG = {
     "id": "default",
-    "tranches": [
-        {"price_max": 999.99, "fee": 49.0,  "label": "Moins de 1 000 €"},
-        {"price_max": 4999.99, "fee": 99.0, "label": "De 1 000 € à 4 999 €"},
-        {"price_max": None,   "fee": 199.0, "label": "5 000 € et plus"},
+    "tranches_acheteur": [
+        {"price_max": 999.99,  "fee": 49.0,  "label": "Moins de 1 000 €"},
+        {"price_max": 4999.99, "fee": 99.0,  "label": "De 1 000 € à 4 999 €"},
+        {"price_max": None,    "fee": 199.0, "label": "5 000 € et plus"},
+    ],
+    "tranches_vendeur": [
+        {"price_max": 999.99,  "fee": 49.0,  "label": "Moins de 1 000 €"},
+        {"price_max": 4999.99, "fee": 99.0,  "label": "De 1 000 € à 4 999 €"},
+        {"price_max": None,    "fee": 199.0, "label": "5 000 € et plus"},
     ],
     "default_fee": 49.0,
 }
 
 
-async def get_dispute_fee(payment_amount: float) -> float:
-    """Calcule les frais d'annulation selon le montant et la configuration active"""
+async def get_dispute_fee(payment_amount: float, role: str = "buyer") -> float:
+    """Calcule les frais d'annulation selon le montant, le rôle (buyer/seller) et la config active"""
     config = await db.citadelle_dispute_config.find_one({"id": "default"}, {"_id": 0})
     if not config:
         config = DEFAULT_DISPUTE_CONFIG
-    for tranche in config.get("tranches", []):
+    # Utiliser la grille spécifique au rôle, avec fallback sur l'ancienne clé "tranches"
+    cle = "tranches_vendeur" if role == "seller" else "tranches_acheteur"
+    tranches = config.get(cle) or config.get("tranches", [])
+    for tranche in tranches:
         price_max = tranche.get("price_max")
         if price_max is None or payment_amount <= price_max:
             return float(tranche["fee"])
@@ -799,8 +808,11 @@ async def get_cancellation_fee_route(
         raise HTTPException(status_code=403, detail="Accès non autorisé")
 
     payment_amount = tx.get("payment_amount") or 0
-    frais = await get_dispute_fee(payment_amount)
     is_disputed = tx.get("status") == "disputed"
+
+    # Calcul des frais selon le rôle
+    role = "seller" if is_seller else "buyer"
+    frais = await get_dispute_fee(payment_amount, role=role)
 
     # Pour le vendeur en litige : annulation possible immédiatement
     if is_seller:
@@ -874,9 +886,7 @@ async def cancel_purchase(
         )
 
     payment_amount = tx.get("payment_amount") or 0
-    frais = await get_dispute_fee(payment_amount)
-    mock_fee_id = f"mock_fee_{uuid.uuid4().hex[:16]}"
-    now = datetime.now(timezone.utc).isoformat()
+    frais = await get_dispute_fee(payment_amount, role="buyer")
 
     await db.citadelle_transactions.update_one(
         {"id": transaction_id},
@@ -919,7 +929,7 @@ async def cancel_as_seller(
         raise HTTPException(status_code=400, detail="Cette action n'est disponible qu'en cas de litige ouvert")
 
     payment_amount = tx.get("payment_amount") or 0
-    frais = await get_dispute_fee(payment_amount)
+    frais = await get_dispute_fee(payment_amount, role="seller")
     refund_amount = max(0.0, payment_amount - frais)
     mock_fee_id = f"mock_fee_seller_{uuid.uuid4().hex[:16]}"
     now = datetime.now(timezone.utc).isoformat()
@@ -1133,10 +1143,11 @@ async def admin_update_dispute_config(
     data: DisputeConfigUpdate,
     current_user: dict = Depends(require_admin)
 ):
-    """Admin : modifie la configuration des frais d'annulation par tranches de prix"""
+    """Admin : modifie la configuration des frais d'annulation (acheteur et vendeur séparément)"""
     config = {
         "id": "default",
-        "tranches": data.tranches,
+        "tranches_acheteur": data.tranches_acheteur,
+        "tranches_vendeur": data.tranches_vendeur,
         "default_fee": data.default_fee,
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "updated_by": current_user.get("email"),

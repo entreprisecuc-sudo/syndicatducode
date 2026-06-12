@@ -107,7 +107,13 @@ export default function AdminCitadelleTransactions() {
     if (!disputeConfig) return;
     setConfigLoading(true);
     try {
-      await api.patch("/citadelle/admin/dispute-config", disputeConfig);
+      const payload = {
+        tranches_acheteur: disputeConfig.tranches_acheteur || disputeConfig.tranches || [],
+        tranches_vendeur: disputeConfig.tranches_vendeur || disputeConfig.tranches || [],
+        default_fee: disputeConfig.default_fee,
+      };
+      await api.patch("/citadelle/admin/dispute-config", payload);
+      setDisputeConfig({ ...disputeConfig, ...payload });
       alert("Configuration sauvegardée.");
     } catch { alert("Erreur lors de la sauvegarde."); }
     finally { setConfigLoading(false); }
@@ -156,47 +162,80 @@ export default function AdminCitadelleTransactions() {
         {/* Section config des frais d'annulation */}
         {showConfig && (
           <div className="p-5 rounded-xl" style={{ background: "var(--admin-bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--admin-border, rgba(255,255,255,0.1))" }}>
-            <h3 className="font-bold text-sm mb-4 flex items-center gap-2">
+            <h3 className="font-bold text-sm mb-1 flex items-center gap-2">
               <Scale size={14} style={{ color: "#C9A45C" }} /> Configuration des frais d'annulation
             </h3>
+            <p className="text-xs opacity-50 mb-4">Frais prélevés lors d'une annulation selon le montant de la transaction. Acheteur et vendeur ont des grilles séparées.</p>
             {configLoading ? (
               <div className="text-center py-4"><Clock size={20} className="animate-spin mx-auto opacity-30" /></div>
             ) : disputeConfig ? (
-              <div className="space-y-3">
-                <p className="text-xs opacity-50">Frais prélevés lors d'une annulation acheteur selon le montant de la transaction.</p>
-                {disputeConfig.tranches?.map((tranche, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <span className="text-xs flex-1" style={{ opacity: 0.7 }}>{tranche.label || `Tranche ${idx + 1}`}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs opacity-50">Frais :</span>
-                      <input
-                        type="number"
-                        value={tranche.fee}
-                        onChange={e => {
-                          const updated = [...disputeConfig.tranches];
-                          updated[idx] = { ...updated[idx], fee: parseFloat(e.target.value) };
-                          setDisputeConfig({ ...disputeConfig, tranches: updated });
-                        }}
-                        className="w-20 px-2 py-1.5 rounded-lg text-xs outline-none text-center"
-                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
-                      />
-                      <span className="text-xs opacity-50">€</span>
+              <div className="space-y-4">
+                {/* Deux colonnes : Acheteur et Vendeur */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Colonne Acheteur */}
+                  <div>
+                    <p className="text-xs font-bold mb-2" style={{ color: "#60A5FA" }}>Frais Acheteur</p>
+                    <div className="space-y-2">
+                      {(disputeConfig.tranches_acheteur || disputeConfig.tranches || []).map((tranche, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <span className="text-xs flex-1 truncate" style={{ opacity: 0.6 }}>{tranche.label}</span>
+                          <input
+                            type="number"
+                            value={tranche.fee}
+                            onChange={e => {
+                              const src = disputeConfig.tranches_acheteur || disputeConfig.tranches || [];
+                              const updated = [...src];
+                              updated[idx] = { ...updated[idx], fee: parseFloat(e.target.value) || 0 };
+                              setDisputeConfig({ ...disputeConfig, tranches_acheteur: updated });
+                            }}
+                            className="w-16 px-2 py-1.5 rounded-lg text-xs outline-none text-center"
+                            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(96,165,250,0.3)" }}
+                          />
+                          <span className="text-xs opacity-40">€</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
-                <div className="flex items-center gap-3 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-                  <span className="text-xs flex-1" style={{ opacity: 0.7 }}>Frais par défaut (fallback)</span>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      value={disputeConfig.default_fee}
-                      onChange={e => setDisputeConfig({ ...disputeConfig, default_fee: parseFloat(e.target.value) })}
-                      className="w-20 px-2 py-1.5 rounded-lg text-xs outline-none text-center"
-                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
-                    />
-                    <span className="text-xs opacity-50">€</span>
+
+                  {/* Colonne Vendeur */}
+                  <div>
+                    <p className="text-xs font-bold mb-2" style={{ color: "#F87171" }}>Frais Vendeur</p>
+                    <div className="space-y-2">
+                      {(disputeConfig.tranches_vendeur || disputeConfig.tranches || []).map((tranche, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <span className="text-xs flex-1 truncate" style={{ opacity: 0.6 }}>{tranche.label}</span>
+                          <input
+                            type="number"
+                            value={tranche.fee}
+                            onChange={e => {
+                              const src = disputeConfig.tranches_vendeur || disputeConfig.tranches || [];
+                              const updated = [...src];
+                              updated[idx] = { ...updated[idx], fee: parseFloat(e.target.value) || 0 };
+                              setDisputeConfig({ ...disputeConfig, tranches_vendeur: updated });
+                            }}
+                            className="w-16 px-2 py-1.5 rounded-lg text-xs outline-none text-center"
+                            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(248,113,113,0.3)" }}
+                          />
+                          <span className="text-xs opacity-40">€</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
+
+                {/* Frais par défaut */}
+                <div className="flex items-center gap-3 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                  <span className="text-xs flex-1" style={{ opacity: 0.6 }}>Frais par défaut (fallback)</span>
+                  <input
+                    type="number"
+                    value={disputeConfig.default_fee}
+                    onChange={e => setDisputeConfig({ ...disputeConfig, default_fee: parseFloat(e.target.value) || 0 })}
+                    className="w-16 px-2 py-1.5 rounded-lg text-xs outline-none text-center"
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  />
+                  <span className="text-xs opacity-40">€</span>
+                </div>
+
                 <button
                   onClick={saveDisputeConfig}
                   disabled={configLoading}
