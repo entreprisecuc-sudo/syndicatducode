@@ -55,6 +55,17 @@ export default function CitadelleTransactionDetail() {
 
   // État pour l'annulation vendeur en litige
   const [sellerCancelModal, setSellerCancelModal] = useState(false);
+  const [sellerCancelInfo, setSellerCancelInfo] = useState(null);
+  const [sellerCancelInfoLoading, setSellerCancelInfoLoading] = useState(false);
+
+  const fetchSellerCancelInfo = async () => {
+    setSellerCancelInfoLoading(true);
+    try {
+      const res = await citadelleApi.get(`/transactions/${id}/cancellation-fee`);
+      setSellerCancelInfo(res.data);
+    } catch { setSellerCancelInfo(null); }
+    finally { setSellerCancelInfoLoading(false); }
+  };
 
   useEffect(() => { fetchTransaction(); }, [id]);
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [tx?.messages?.length]);
@@ -519,11 +530,11 @@ export default function CitadelleTransactionDetail() {
             {isSeller && (
               <div className="px-4 pb-4 pt-2" style={{ background: "rgba(220,38,38,0.03)" }}>
                 <button
-                  onClick={() => setSellerCancelModal(true)}
+                  onClick={() => { fetchSellerCancelInfo(); setSellerCancelModal(true); }}
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-80"
                   style={{ background: "rgba(220,38,38,0.08)", color: "#DC2626", border: "1px solid rgba(220,38,38,0.2)" }}
                   data-testid="btn-seller-cancel">
-                  <Ban size={14} /> Annuler la vente — Rembourser l'acheteur
+                  <Ban size={14} /> Annuler la vente — Panneau de facturation
                 </button>
               </div>
             )}
@@ -547,49 +558,60 @@ export default function CitadelleTransactionDetail() {
               </div>
 
               {/* Corps */}
-              <div className="px-6 py-5 space-y-4">
-                {/* Récapitulatif transaction */}
-                <div className="p-4 rounded-xl" style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
-                  <p className="text-xs font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>Récapitulatif de la transaction</p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span style={{ color: CITADELLE_COLORS.textMuted }}>Annonce</span>
-                      <span className="font-medium truncate ml-4 text-right" style={{ color: CITADELLE_COLORS.blue, maxWidth: "180px" }}>{tx.listing_title}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span style={{ color: CITADELLE_COLORS.textMuted }}>Montant en séquestre</span>
-                      <span className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{finalAmount?.toLocaleString("fr-FR")} €</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span style={{ color: CITADELLE_COLORS.textMuted }}>Acheteur</span>
-                      <span style={{ color: CITADELLE_COLORS.textMuted }}>{tx.buyer_email}</span>
+              {sellerCancelInfoLoading ? (
+                <div className="px-6 py-10 flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: CITADELLE_COLORS.border, borderTopColor: CITADELLE_COLORS.gold }} />
+                  <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>Calcul des frais en cours...</p>
+                </div>
+              ) : (
+                <div className="px-6 py-5 space-y-4">
+                  {/* Récapitulatif transaction */}
+                  <div className="p-4 rounded-xl" style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                    <p className="text-xs font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>Récapitulatif de la transaction</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Annonce</span>
+                        <span className="font-medium truncate ml-4 text-right" style={{ color: CITADELLE_COLORS.blue, maxWidth: "180px" }}>{tx.listing_title}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Montant en séquestre</span>
+                        <span className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{finalAmount?.toLocaleString("fr-FR")} €</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Acheteur</span>
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>{tx.buyer_email}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Conséquences financières */}
-                <div className="p-4 rounded-xl" style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.2)" }}>
-                  <p className="text-xs font-bold mb-3" style={{ color: "#22C55E" }}>Conséquences financières</p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span style={{ color: CITADELLE_COLORS.textMuted }}>Remboursement acheteur</span>
-                      <span className="font-black" style={{ color: "#22C55E" }}>{finalAmount?.toLocaleString("fr-FR")} €</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span style={{ color: CITADELLE_COLORS.textMuted }}>Frais pour le vendeur</span>
-                      <span className="font-medium" style={{ color: CITADELLE_COLORS.textMuted }}>0 €</span>
+                  {/* Facturation des frais de service */}
+                  <div className="p-4 rounded-xl" style={{ background: "rgba(220,38,38,0.04)", border: "1px solid rgba(220,38,38,0.2)" }}>
+                    <p className="text-xs font-bold mb-3" style={{ color: "#DC2626" }}>Frais de service d'annulation</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Frais de service (à votre charge)</span>
+                        <span className="font-black" style={{ color: "#DC2626" }}>
+                          {(sellerCancelInfo?.cancellation_fee ?? 49).toLocaleString("fr-FR")} €
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm pt-1.5" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}` }}>
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Remboursement acheteur</span>
+                        <span className="font-bold" style={{ color: "#22C55E" }}>
+                          {(sellerCancelInfo?.refund_amount ?? (finalAmount - 49))?.toLocaleString("fr-FR")} €
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Avertissement */}
-                <div className="p-3 rounded-xl flex items-start gap-2.5" style={{ background: "rgba(220,38,38,0.05)", border: "1px solid rgba(220,38,38,0.15)" }}>
-                  <AlertTriangle size={14} style={{ color: "#DC2626", flexShrink: 0, marginTop: 1 }} />
-                  <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    Cette action est <strong>définitive et irréversible</strong>. L'acheteur sera remboursé intégralement et l'annonce remise en vente.
-                  </p>
+                  {/* Avertissement */}
+                  <div className="p-3 rounded-xl flex items-start gap-2.5" style={{ background: "rgba(220,38,38,0.05)", border: "1px solid rgba(220,38,38,0.15)" }}>
+                    <AlertTriangle size={14} style={{ color: "#DC2626", flexShrink: 0, marginTop: 1 }} />
+                    <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
+                      Cette action est <strong>définitive et irréversible</strong>. Les frais de service seront collectés et l'acheteur sera remboursé du reste. L'annonce sera remise en vente.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Actions */}
               <div className="px-6 pb-6 flex gap-3">
@@ -604,11 +626,11 @@ export default function CitadelleTransactionDetail() {
                     await doAction("cancel-as-seller");
                     setSellerCancelModal(false);
                   }}
-                  disabled={actionLoading}
+                  disabled={actionLoading || sellerCancelInfoLoading}
                   className="flex-1 py-3 rounded-xl text-sm font-bold disabled:opacity-60 transition-all"
                   style={{ background: "#DC2626", color: "white" }}
                   data-testid="seller-cancel-confirm-btn">
-                  Confirmer l'annulation
+                  Confirmer et payer les frais
                 </button>
               </div>
             </div>

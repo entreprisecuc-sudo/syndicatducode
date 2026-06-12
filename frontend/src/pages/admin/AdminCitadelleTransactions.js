@@ -369,6 +369,42 @@ export default function AdminCitadelleTransactions() {
                       </button>
                     </div>
                   )}
+
+                  {/* Frais d'annulation — transactions annulées avec frais */}
+                  {selectedTx.status === "cancelled" && selectedTx.cancellation_fee > 0 && (
+                    <div className="space-y-2 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                      <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: "#C9A45C" }}>
+                        <CreditCard size={12} /> Frais de service d'annulation
+                      </p>
+                      <div className="p-3 rounded-xl" style={{ background: "rgba(201,164,92,0.08)", border: "1px solid rgba(201,164,92,0.2)" }}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span style={{ opacity: 0.6 }}>Montant des frais</span>
+                          <span className="font-bold" style={{ color: "#C9A45C" }}>{selectedTx.cancellation_fee?.toLocaleString("fr-FR")} €</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span style={{ opacity: 0.6 }}>Statut</span>
+                          <span className={`font-bold text-xs px-2 py-0.5 rounded-full ${selectedTx.cancellation_fee_paid ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+                            {selectedTx.cancellation_fee_paid ? "Réglés" : "En attente"}
+                          </span>
+                        </div>
+                        {selectedTx.cancellation_fee_paid_at && (
+                          <p className="text-xs mt-1" style={{ opacity: 0.5 }}>
+                            Confirmé le {new Date(selectedTx.cancellation_fee_paid_at).toLocaleDateString("fr-FR")}
+                          </p>
+                        )}
+                      </div>
+                      {!selectedTx.cancellation_fee_paid && (
+                        <button
+                          onClick={() => { if (window.confirm(`Confirmer la réception des frais de ${selectedTx.cancellation_fee} € ?`)) doAction("mark-fee-paid"); }}
+                          disabled={actionLoading}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
+                          style={{ background: "rgba(201,164,92,0.2)", color: "#C9A45C" }}
+                          data-testid="admin-mark-fee-paid-btn">
+                          <CheckCircle size={14} /> Marquer les frais comme réglés
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Chat Litige — visible uniquement si litige ouvert */}

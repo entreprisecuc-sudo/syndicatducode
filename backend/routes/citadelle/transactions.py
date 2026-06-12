@@ -776,39 +776,65 @@ async def open_dispute(
     return {"message": "Litige ouvert. La Garde va examiner votre dossier."}
 
 
-@router.get("/transactions/{transaction_id}/cancellation-fee", summary="Acheteur — Consulter les frais d'annulation")
+@router.get("/transactions/{transaction_id}/cancellation-fee", summary="Consulter les frais d'annulation")
 async def get_cancellation_fee_route(
     transaction_id: str,
     current_user: dict = Depends(require_citadelle_user)
 ):
-    """Acheteur : consulte les frais d'annulation et vérifie si l'annulation est possible"""
+    """
+    Acheteur ou Vendeur : consulte les frais d'annulation et vérifie si l'annulation est possible.
+    - Acheteur en litige : délai 7 jours depuis la date d'ouverture du litige (disputed_at)
+    - Acheteur hors litige : délai 7 jours depuis le paiement (paid_at)
+    - Vendeur en litige : peut annuler immédiatement, frais applicables
+    """
     tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction introuvable")
-    if tx["buyer_id"] != current_user.get("sub"):
+
+    user_id = current_user.get("sub")
+    is_buyer = tx["buyer_id"] == user_id
+    is_seller = tx["seller_id"] == user_id
+
+    if not (is_buyer or is_seller):
         raise HTTPException(status_code=403, detail="Accès non autorisé")
 
     payment_amount = tx.get("payment_amount") or 0
     frais = await get_dispute_fee(payment_amount)
+    is_disputed = tx.get("status") == "disputed"
 
-    paid_at = tx.get("paid_at")
+    # Pour le vendeur en litige : annulation possible immédiatement
+    if is_seller:
+        peut_annuler = is_disputed
+        return {
+            "role": "seller",
+            "cancellation_fee": frais,
+            "payment_amount": payment_amount,
+            "refund_amount": max(0.0, payment_amount - frais),
+            "peut_annuler": peut_annuler,
+            "jours_restants": 0,
+        }
+
+    # Pour l'acheteur : délai 7 jours depuis disputed_at (litige) ou paid_at (hors litige)
+    date_reference = tx.get("disputed_at") if is_disputed else tx.get("paid_at")
     jours_ecoules = None
     peut_annuler = False
     jours_restants = 7
 
-    if paid_at:
-        paid_dt = datetime.fromisoformat(paid_at.replace("Z", "+00:00"))
-        jours_ecoules = (datetime.now(timezone.utc) - paid_dt).days
+    if date_reference:
+        ref_dt = datetime.fromisoformat(date_reference.replace("Z", "+00:00"))
+        jours_ecoules = (datetime.now(timezone.utc) - ref_dt).days
         peut_annuler = jours_ecoules >= 7
         jours_restants = max(0, 7 - jours_ecoules)
 
     return {
+        "role": "buyer",
         "cancellation_fee": frais,
         "payment_amount": payment_amount,
         "refund_amount": max(0.0, payment_amount - frais),
-        "jours_depuis_paiement": jours_ecoules,
+        "jours_depuis_reference": jours_ecoules,
         "peut_annuler": peut_annuler,
         "jours_restants": jours_restants,
+        "date_reference": "litige" if is_disputed else "paiement",
     }
 
 
@@ -831,16 +857,20 @@ async def cancel_purchase(
     if tx["status"] not in statuts_annulation:
         raise HTTPException(status_code=400, detail="Annulation impossible à ce stade de la transaction")
 
-    paid_at = tx.get("paid_at")
-    if not paid_at:
-        raise HTTPException(status_code=400, detail="Date de paiement introuvable")
+    # Délai de 7 jours : depuis disputed_at si en litige, sinon depuis paid_at
+    is_disputed = tx["status"] == "disputed"
+    date_reference = tx.get("disputed_at") if is_disputed else tx.get("paid_at")
+    label_reference = "la création du litige" if is_disputed else "le paiement"
 
-    paid_dt = datetime.fromisoformat(paid_at.replace("Z", "+00:00"))
-    jours_ecoules = (datetime.now(timezone.utc) - paid_dt).days
+    if not date_reference:
+        raise HTTPException(status_code=400, detail="Date de référence introuvable pour calculer le délai")
+
+    ref_dt = datetime.fromisoformat(date_reference.replace("Z", "+00:00"))
+    jours_ecoules = (datetime.now(timezone.utc) - ref_dt).days
     if jours_ecoules < 7:
         raise HTTPException(
             status_code=400,
-            detail=f"L'annulation n'est disponible qu'après 7 jours ({7 - jours_ecoules} jour(s) restant(s))"
+            detail=f"L'annulation n'est disponible que 7 jours après {label_reference} ({7 - jours_ecoules} jour(s) restant(s))"
         )
 
     payment_amount = tx.get("payment_amount") or 0
@@ -855,6 +885,7 @@ async def cancel_purchase(
             "cancelled_at": now,
             "cancellation_fee": frais,
             "cancellation_fee_payment_id": mock_fee_id,
+            "cancellation_fee_paid": False,
             "updated_at": now,
         }, "$push": {"messages": system_message(
             f"Achat annulé par l'acheteur. Frais d'annulation : {frais:,.0f} € (MOCKED). "
@@ -876,8 +907,8 @@ async def cancel_as_seller(
 ):
     """
     Vendeur : annule la vente lors d'un litige.
-    Les fonds sont intégralement restitués à l'acheteur (MOCKED).
-    L'annonce est remise en statut actif.
+    Des frais de service sont prélevés au vendeur (MOCKED, configurables par l'admin).
+    Le montant restant est restitué à l'acheteur. L'annonce est remise en statut actif.
     """
     tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
     if not tx:
@@ -888,6 +919,9 @@ async def cancel_as_seller(
         raise HTTPException(status_code=400, detail="Cette action n'est disponible qu'en cas de litige ouvert")
 
     payment_amount = tx.get("payment_amount") or 0
+    frais = await get_dispute_fee(payment_amount)
+    refund_amount = max(0.0, payment_amount - frais)
+    mock_fee_id = f"mock_fee_seller_{uuid.uuid4().hex[:16]}"
     now = datetime.now(timezone.utc).isoformat()
 
     await db.citadelle_transactions.update_one(
@@ -896,10 +930,14 @@ async def cancel_as_seller(
             "status": "cancelled",
             "cancelled_at": now,
             "cancelled_by_seller": True,
+            "cancellation_fee": frais,
+            "cancellation_fee_payment_id": mock_fee_id,
+            "cancellation_fee_paid": False,
             "updated_at": now,
         }, "$push": {"messages": system_message(
             f"Vente annulée par le vendeur. "
-            f"Remboursement intégral de {payment_amount:,.0f} € à l'acheteur en cours (MOCKED)."
+            f"Frais de service : {frais:,.0f} € (MOCKED). "
+            f"Remboursement acheteur : {refund_amount:,.0f} €."
         )}}
     )
 
@@ -910,10 +948,11 @@ async def cancel_as_seller(
             {"$set": {"status": "active", "updated_at": now}}
         )
 
-    logger.info(f"[Citadelle] Vente annulée par le vendeur: {transaction_id} — Remboursement: {payment_amount} €")
+    logger.info(f"[Citadelle] Vente annulée par le vendeur: {transaction_id} — Frais: {frais} € — Remboursement: {refund_amount} €")
     return {
-        "message": f"Vente annulée. Remboursement de {payment_amount:,.0f} € à l'acheteur (MOCKED).",
-        "refund_amount": payment_amount,
+        "message": f"Vente annulée. Frais de service {frais:,.0f} € prélevés. Remboursement de {refund_amount:,.0f} € à l'acheteur (MOCKED).",
+        "cancellation_fee": frais,
+        "refund_amount": refund_amount,
     }
 
 
@@ -1042,6 +1081,38 @@ async def admin_cancel_transaction(
 
     logger.info(f"[Citadelle Admin] Vente annulée: {transaction_id} par {current_user.get('email')}")
     return {"message": "Vente annulée. Fonds restitués à l'acheteur (MOCKED)."}
+
+
+@router.post("/admin/transactions/{transaction_id}/mark-fee-paid", summary="Admin — Marquer les frais d'annulation comme réglés")
+async def admin_mark_fee_paid(
+    transaction_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """Admin : confirme la réception des frais d'annulation (une fois le paiement physique/Stripe vérifié)"""
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx.get("status") != "cancelled":
+        raise HTTPException(status_code=400, detail="Cette action ne s'applique qu'aux transactions annulées")
+    if not tx.get("cancellation_fee"):
+        raise HTTPException(status_code=400, detail="Aucun frais d'annulation enregistré sur cette transaction")
+    if tx.get("cancellation_fee_paid"):
+        raise HTTPException(status_code=400, detail="Les frais ont déjà été marqués comme réglés")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {
+            "cancellation_fee_paid": True,
+            "cancellation_fee_paid_at": now,
+            "cancellation_fee_paid_by": current_user.get("email"),
+            "updated_at": now,
+        }, "$push": {"messages": system_message(
+            f"Frais d'annulation de {tx['cancellation_fee']:,.0f} € confirmés comme réglés par l'administrateur."
+        )}}
+    )
+    logger.info(f"[Citadelle Admin] Frais annulation confirmés: {transaction_id} par {current_user.get('email')}")
+    return {"message": f"Frais de {tx['cancellation_fee']:,.0f} € marqués comme réglés."}
 
 
 # ── Config des frais d'annulation ─────────────────────────────────────────────
