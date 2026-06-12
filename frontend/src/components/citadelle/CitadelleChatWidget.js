@@ -12,7 +12,8 @@ import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 
 // Statuts de transaction avec une conversation active
 const STATUTS_ACTIFS = [
-  "offer_sent", "offer_counter", "payment_pending", "payment_done",
+  "offer_sent", "offer_accepted", "offer_countered",
+  "payment_pending", "payment_done",
   "credentials_submitted", "admin_verified", "disputed",
 ];
 
