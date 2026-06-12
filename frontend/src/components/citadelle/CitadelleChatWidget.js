@@ -60,17 +60,31 @@ export default function CitadelleChatWidget() {
   const messagesEndRef = useRef(null);
   const prevMsgCount = useRef(0);
   const isFirstLoad = useRef(true);
+  // AudioContext créé au premier clic (obligatoire pour les navigateurs modernes)
+  const audioCtxRef = useRef(null);
 
-  // ── Son médiéval (cloches de château) via Web Audio API ──────────────────
-  const playMedievalSound = () => {
+  // ── Initialise l'AudioContext lors d'une interaction utilisateur ──────────
+  const initAudio = () => {
+    if (!audioCtxRef.current) {
+      try {
+        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      } catch { /* non supporté */ }
+    }
+  };
+
+  // ── Son médiéval : accord de cloches de château (Do–Sol–Do) ──────────────
+  const playMedievalSound = async () => {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      // Accord médiéval : quinte Do–Sol avec harmoniques
+      const ctx = audioCtxRef.current;
+      if (!ctx) return;
+      if (ctx.state === "suspended") await ctx.resume();
+
       const notes = [
-        { freq: 523.25, delay: 0,    vol: 0.18 },  // Do5
-        { freq: 783.99, delay: 0.06, vol: 0.14 },  // Sol5
-        { freq: 1046.5, delay: 0.12, vol: 0.08 },  // Do6
+        { freq: 523.25, delay: 0,    vol: 0.15 },  // Do5
+        { freq: 783.99, delay: 0.07, vol: 0.12 },  // Sol5
+        { freq: 1046.5, delay: 0.14, vol: 0.07 },  // Do6
       ];
+
       notes.forEach(({ freq, delay, vol }) => {
         const osc  = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -79,12 +93,25 @@ export default function CitadelleChatWidget() {
         osc.type = "sine";
         osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
         gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 1.8);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 1.6);
         osc.start(ctx.currentTime + delay);
-        osc.stop(ctx.currentTime + delay + 1.8);
+        osc.stop(ctx.currentTime + delay + 1.6);
       });
-    } catch { /* Web Audio non supporté, silence */ }
+    } catch { /* silence */ }
   };
+
+  // ── Déclencher le son pour chaque nouveau message reçu ───────────────────
+  useEffect(() => {
+    const nonSystem = messages.filter(m => !m.is_system);
+    if (!isFirstLoad.current && nonSystem.length > prevMsgCount.current) {
+      const dernierMsg = nonSystem[nonSystem.length - 1];
+      if (dernierMsg && !dernierMsg.is_mine) {
+        playMedievalSound();
+      }
+    }
+    prevMsgCount.current = nonSystem.length;
+    if (nonSystem.length > 0) isFirstLoad.current = false;
+  }, [messages]);
 
   // Charger les transactions actives (polling 5s)
   useEffect(() => {
@@ -110,8 +137,7 @@ export default function CitadelleChatWidget() {
   useEffect(() => {
     if (!selectedTx) return;
     prevMsgCount.current = 0;
-    isFirstLoad.current = true;
-    const load = async () => {
+    isFirstLoad.current = true;    const load = async () => {
       try {
         const resTx = await citadelleApi.get(`/transactions/${selectedTx.id}`);
         const tx = resTx.data;
@@ -127,20 +153,7 @@ export default function CitadelleChatWidget() {
         }
 
         setDisputeMessages(dMsgs);
-        const newMsgs = buildMessages(tx, dMsgs, user?.email);
-        setMessages(prev => {
-          // Jouer le son uniquement pour les nouveaux messages reçus (pas la 1ère charge)
-          const incoming = newMsgs.filter(m => !m.is_system);
-          const prevCount = prevMsgCount.current;
-          if (!isFirstLoad.current && incoming.length > prevCount) {
-            // Vérifier que le dernier message n'est pas de l'utilisateur actuel
-            const lastNew = incoming[incoming.length - 1];
-            if (!lastNew.is_mine) playMedievalSound();
-          }
-          prevMsgCount.current = incoming.length;
-          isFirstLoad.current = false;
-          return newMsgs;
-        });
+        setMessages(buildMessages(tx, dMsgs, user?.email));
       } catch { /* silence */ }
     };
     load();
@@ -176,7 +189,7 @@ export default function CitadelleChatWidget() {
     <>
       {/* ── Bulle flottante ── */}
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => { initAudio(); setOpen(!open); }}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-200 hover:scale-110"
         style={{ background: CITADELLE_COLORS.night, border: `2px solid ${CITADELLE_COLORS.gold}` }}
         data-testid="chat-widget-btn"
