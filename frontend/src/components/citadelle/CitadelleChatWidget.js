@@ -58,6 +58,33 @@ export default function CitadelleChatWidget() {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
+  const prevMsgCount = useRef(0);
+  const isFirstLoad = useRef(true);
+
+  // ── Son médiéval (cloches de château) via Web Audio API ──────────────────
+  const playMedievalSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // Accord médiéval : quinte Do–Sol avec harmoniques
+      const notes = [
+        { freq: 523.25, delay: 0,    vol: 0.18 },  // Do5
+        { freq: 783.99, delay: 0.06, vol: 0.14 },  // Sol5
+        { freq: 1046.5, delay: 0.12, vol: 0.08 },  // Do6
+      ];
+      notes.forEach(({ freq, delay, vol }) => {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+        gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 1.8);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + 1.8);
+      });
+    } catch { /* Web Audio non supporté, silence */ }
+  };
 
   // Charger les transactions actives (polling 5s)
   useEffect(() => {
@@ -82,6 +109,8 @@ export default function CitadelleChatWidget() {
   // Charger les messages de la transaction sélectionnée (polling 3s)
   useEffect(() => {
     if (!selectedTx) return;
+    prevMsgCount.current = 0;
+    isFirstLoad.current = true;
     const load = async () => {
       try {
         const resTx = await citadelleApi.get(`/transactions/${selectedTx.id}`);
@@ -98,7 +127,20 @@ export default function CitadelleChatWidget() {
         }
 
         setDisputeMessages(dMsgs);
-        setMessages(buildMessages(tx, dMsgs, user?.email));
+        const newMsgs = buildMessages(tx, dMsgs, user?.email);
+        setMessages(prev => {
+          // Jouer le son uniquement pour les nouveaux messages reçus (pas la 1ère charge)
+          const incoming = newMsgs.filter(m => !m.is_system);
+          const prevCount = prevMsgCount.current;
+          if (!isFirstLoad.current && incoming.length > prevCount) {
+            // Vérifier que le dernier message n'est pas de l'utilisateur actuel
+            const lastNew = incoming[incoming.length - 1];
+            if (!lastNew.is_mine) playMedievalSound();
+          }
+          prevMsgCount.current = incoming.length;
+          isFirstLoad.current = false;
+          return newMsgs;
+        });
       } catch { /* silence */ }
     };
     load();
