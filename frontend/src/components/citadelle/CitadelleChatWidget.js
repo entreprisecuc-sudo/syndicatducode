@@ -306,9 +306,9 @@ export default function CitadelleChatWidget() {
     try { return new Set(JSON.parse(localStorage.getItem("citadelle_closed_bubbles") || "[]")); }
     catch { return new Set(); }
   });
+  const [panelOpen, setPanelOpen] = useState(false);
   const audioCtxRef = useRef(null);
 
-  // Initialiser l'AudioContext au premier clic (obligatoire navigateurs modernes)
   const initAudio = () => {
     if (!audioCtxRef.current) {
       try { audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -316,7 +316,6 @@ export default function CitadelleChatWidget() {
     }
   };
 
-  // Charger les transactions actives (polling 8s)
   useEffect(() => {
     if (!user) return;
     const load = async () => {
@@ -341,13 +340,25 @@ export default function CitadelleChatWidget() {
     });
   };
 
+  const reopenBubble = (txId) => {
+    setClosedBubbles(prev => {
+      const next = new Set(prev);
+      next.delete(txId);
+      try { localStorage.setItem("citadelle_closed_bubbles", JSON.stringify([...next])); }
+      catch { /* silence */ }
+      return next;
+    });
+    setPanelOpen(false);
+  };
+
   if (!user) return null;
 
-  // Conversations visibles (non fermées)
   const visibleTx = transactions.filter(tx => !closedBubbles.has(tx.id));
+  const hiddenTx  = transactions.filter(tx =>  closedBubbles.has(tx.id));
 
   return (
     <>
+      {/* Bulles colorées par conversation */}
       {visibleTx.map((tx, i) => (
         <ChatBubble
           key={tx.id}
@@ -361,15 +372,68 @@ export default function CitadelleChatWidget() {
         />
       ))}
 
-      {/* Bulle principale (accès rapide à toutes les convs) */}
+      {/* Panneau liste — visible depuis la bulle principale */}
+      {panelOpen && (
+        <div
+          className="fixed z-50 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+          style={{ bottom: "88px", right: "24px", width: "280px", background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}
+        >
+          <div className="px-4 py-3 flex items-center gap-2" style={{ background: CITADELLE_COLORS.night }}>
+            <p className="flex-1 text-xs font-bold text-white">Mes conversations</p>
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#22C55E" }} />
+          </div>
+          <div className="overflow-y-auto" style={{ maxHeight: "300px" }}>
+            {transactions.length === 0 ? (
+              <p className="text-xs text-center py-6" style={{ color: CITADELLE_COLORS.textMuted }}>Aucune conversation active.</p>
+            ) : transactions.map((tx, i) => {
+              const isClosed = closedBubbles.has(tx.id);
+              return (
+                <div key={tx.id} className="px-4 py-3 flex items-center gap-3"
+                  style={{ borderBottom: `1px solid ${CITADELLE_COLORS.border}` }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                    style={{ background: BUBBLE_PALETTE[i % BUBBLE_PALETTE.length] }}>
+                    {(tx.listing_title || "?").split(" ").slice(0,2).map(w => w[0]?.toUpperCase()).join("")}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate" style={{ color: CITADELLE_COLORS.blue }}>{tx.listing_title}</p>
+                    <p className="text-xs" style={{ color: tx.status === "disputed" ? "#DC2626" : CITADELLE_COLORS.textMuted }}>
+                      {tx.status === "disputed" ? "Litige en cours" : "En cours"}
+                    </p>
+                  </div>
+                  {isClosed ? (
+                    <button onClick={() => reopenBubble(tx.id)}
+                      className="text-xs px-2 py-1 rounded-lg font-medium flex-shrink-0"
+                      style={{ background: CITADELLE_COLORS.bg, color: CITADELLE_COLORS.blue, border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                      Ouvrir
+                    </button>
+                  ) : (
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: "#22C55E" }} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Bulle principale noire/dorée */}
       <button
-        onClick={initAudio}
+        onClick={() => { initAudio(); setPanelOpen(!panelOpen); }}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-200 hover:scale-110"
         style={{ background: CITADELLE_COLORS.night, border: `2px solid ${CITADELLE_COLORS.gold}` }}
         data-testid="chat-widget-btn"
         title="Mes conversations"
       >
-        <MessageCircle size={20} style={{ color: CITADELLE_COLORS.gold }} />
+        {hiddenTx.length > 0 && !panelOpen && (
+          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center font-bold"
+            style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night, fontSize: "9px" }}>
+            {hiddenTx.length}
+          </span>
+        )}
+        {panelOpen
+          ? <X size={20} style={{ color: CITADELLE_COLORS.gold }} />
+          : <MessageCircle size={20} style={{ color: CITADELLE_COLORS.gold }} />
+        }
       </button>
     </>
   );
