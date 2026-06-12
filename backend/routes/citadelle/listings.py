@@ -188,7 +188,7 @@ async def list_listings(
     limit: int = Query(12, ge=1, le=50)
 ):
     """Liste des annonces actives — accessible sans authentification"""
-    filters = {"status": "active"}
+    filters = {"status": {"$in": ["active", "sold"]}}
 
     if type and type in LISTING_TYPES:
         filters["type"] = type
@@ -260,7 +260,7 @@ async def my_listings(current_user: dict = Depends(require_citadelle_user)):
 async def get_listing(slug: str):
     """Détail d'une annonce active — URL preview masquée"""
     listing = await db.citadelle_listings.find_one(
-        {"slug": slug, "status": "active"},
+        {"slug": slug, "status": {"$in": ["active", "sold"]}},
         {"_id": 0, "url_preview": 0}
     )
     if not listing:

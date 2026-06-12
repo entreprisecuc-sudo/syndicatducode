@@ -197,7 +197,20 @@ export default function CitadelleListingDetail() {
 
               {/* CTA — Faire une offre */}
               <div className="space-y-2 mt-5">
-                {isAuthenticated && user?.id !== listing.seller_id ? (
+                {listing.status === "sold" ? (
+                  <div className="p-4 rounded-xl text-center"
+                    style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)" }}>
+                    <p className="text-sm font-bold" style={{ color: "#DC2626" }}>Site vendu</p>
+                    <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
+                      Ce site a trouvé son acquéreur.
+                    </p>
+                    <Link to="/citadelle/annonces"
+                      className="inline-block mt-3 px-4 py-2 rounded-lg text-xs font-semibold transition-all hover:scale-105"
+                      style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
+                      Voir les autres annonces
+                    </Link>
+                  </div>
+                ) : isAuthenticated && user?.id !== listing.seller_id ? (
                   <>
                     <button onClick={() => setOfferModal(true)}
                       className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"

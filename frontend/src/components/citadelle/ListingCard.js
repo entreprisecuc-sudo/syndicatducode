@@ -20,41 +20,78 @@ const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000
 
 export default function ListingCard({ listing }) {
   const { label: typeLabel, icon: TypeIcon } = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
-  // Ne retenir que les images pour l'aperçu de la carte
   const firstImage = listing.images?.filter(Boolean).find(img => isImageFile(img));
   const mainImage = firstImage ? getListingImageUrl(firstImage) : PLACEHOLDER_IMG;
+  const isSold = listing.status === "sold";
+
+  // Wrapper conditionnel : div non cliquable si vendu, Link sinon
+  const Wrapper = isSold
+    ? ({ children }) => (
+        <div
+          className="block rounded-2xl overflow-hidden"
+          style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, boxShadow: "0 2px 8px rgba(15,39,71,0.05)", cursor: "default" }}
+          data-testid={`listing-card-${listing.slug}`}
+        >{children}</div>
+      )
+    : ({ children }) => (
+        <Link
+          to={`/citadelle/annonces/${listing.slug}`}
+          className="group block rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-1"
+          style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, boxShadow: "0 2px 8px rgba(15,39,71,0.05)" }}
+          data-testid={`listing-card-${listing.slug}`}
+        >{children}</Link>
+      );
 
   return (
-    <Link
-      to={`/citadelle/annonces/${listing.slug}`}
-      className="group block rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-1"
-      style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, boxShadow: "0 2px 8px rgba(15,39,71,0.05)" }}
-      data-testid={`listing-card-${listing.slug}`}
-    >
+    <Wrapper>
       {/* Image */}
       <div className="relative overflow-hidden" style={{ height: "160px" }}>
         <img
           src={mainImage}
           alt={listing.title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className={`w-full h-full object-cover transition-transform duration-300 ${!isSold ? "group-hover:scale-105" : ""}`}
+          style={{ filter: isSold ? "grayscale(40%)" : "none" }}
           onError={e => { e.target.src = PLACEHOLDER_IMG; }}
         />
-        {/* Badges overlay */}
-        <div className="absolute top-3 left-3 flex gap-2">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
-            style={{ background: CITADELLE_COLORS.night, color: CITADELLE_COLORS.gold }}>
-            <TypeIcon size={11} />
-            {typeLabel}
-          </span>
-          {listing.is_featured && (
+        {/* Bandeau VENDU diagonal */}
+        {isSold && (
+          <div className="absolute inset-0 flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.4)" }}>
+            <div style={{
+              background: "#DC2626",
+              color: "white",
+              fontSize: "18px",
+              fontWeight: "900",
+              letterSpacing: "6px",
+              padding: "10px 32px",
+              transform: "rotate(-12deg)",
+              boxShadow: "0 4px 24px rgba(220,38,38,0.6)",
+              fontFamily: "'Montserrat', sans-serif",
+              border: "2px solid rgba(255,255,255,0.3)",
+              textTransform: "uppercase",
+            }}>
+              VENDU
+            </div>
+          </div>
+        )}
+        {/* Badges overlay (masqués si vendu) */}
+        {!isSold && (
+          <div className="absolute top-3 left-3 flex gap-2">
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
-              style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-              <Star size={11} />
-              Recommandé
+              style={{ background: CITADELLE_COLORS.night, color: CITADELLE_COLORS.gold }}>
+              <TypeIcon size={11} />
+              {typeLabel}
             </span>
-          )}
-        </div>
-        {listing.is_verified && (
+            {listing.is_featured && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
+                style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
+                <Star size={11} />
+                Recommandé
+              </span>
+            )}
+          </div>
+        )}
+        {!isSold && listing.is_verified && (
           <div className="absolute top-3 right-3">
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
               style={{ background: "#22C55E", color: "white" }}>
@@ -66,7 +103,7 @@ export default function ListingCard({ listing }) {
       </div>
 
       {/* Contenu */}
-      <div className="p-4">
+      <div className="p-4" style={{ opacity: isSold ? 0.65 : 1 }}>
         <h3 className="font-bold text-sm mb-2 line-clamp-2 leading-snug" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
           {listing.title}
         </h3>
@@ -79,7 +116,7 @@ export default function ListingCard({ listing }) {
           <span className="text-xl font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
             {listing.price?.toLocaleString("fr-FR")} €
           </span>
-          {listing.price_negotiable && (
+          {listing.price_negotiable && !isSold && (
             <span className="ml-2 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>Négociable</span>
           )}
         </div>
@@ -111,11 +148,15 @@ export default function ListingCard({ listing }) {
           <span className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
             {listing.published_at ? new Date(listing.published_at).toLocaleDateString("fr-FR") : "Récent"}
           </span>
-          <span className="text-xs font-semibold transition-colors group-hover:underline" style={{ color: CITADELLE_COLORS.gold }}>
-            Voir l'annonce →
-          </span>
+          {isSold ? (
+            <span className="text-xs font-bold" style={{ color: "#DC2626" }}>Vendu</span>
+          ) : (
+            <span className="text-xs font-semibold transition-colors group-hover:underline" style={{ color: CITADELLE_COLORS.gold }}>
+              Voir l'annonce →
+            </span>
+          )}
         </div>
       </div>
-    </Link>
+    </Wrapper>
   );
 }

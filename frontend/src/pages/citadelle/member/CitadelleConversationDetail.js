@@ -112,46 +112,83 @@ export default function CitadelleConversationDetail() {
             <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>Conversation</span>
             <span className="text-xs ml-auto" style={{ color: CITADELLE_COLORS.textMuted }}>{conv.messages?.length || 0} messages</span>
           </div>
+
+          {/* Bannière conversation bloquée */}
+          {conv.is_blocked && (
+            <div className="px-4 py-3 flex items-start gap-2.5"
+              style={{ background: "rgba(220,38,38,0.05)", borderBottom: `1px solid rgba(220,38,38,0.15)` }}>
+              <span style={{ color: "#DC2626", flexShrink: 0, marginTop: 1 }}>⛔</span>
+              <p className="text-xs leading-relaxed" style={{ color: "#B91C1C" }}>
+                Cette conversation est fermée — ce site a été vendu. Merci de votre intérêt.
+              </p>
+            </div>
+          )}
+
           <div className="p-4 space-y-3 min-h-64 max-h-[28rem] overflow-y-auto" style={{ background: "white" }}>
             {conv.messages?.map(msg => (
-              <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}>
-                <div className="max-w-xs">
-                  <p className="text-xs mb-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    {msg.sender_email === user?.email ? "Vous" : msg.sender_email}
-                  </p>
-                  <div className="px-3 py-2 rounded-xl text-sm" style={{
-                    background: msg.sender_id === user?.id ? CITADELLE_COLORS.blue : CITADELLE_COLORS.bg,
-                    color: msg.sender_id === user?.id ? "white" : CITADELLE_COLORS.blue
-                  }}>
+              msg.is_system ? (
+                /* Message système — annonce vendue */
+                <div key={msg.id} className="flex justify-center">
+                  <div className="px-4 py-3 rounded-xl text-xs text-center max-w-sm leading-relaxed"
+                    style={{ background: "rgba(220,38,38,0.06)", color: "#B91C1C", border: "1px solid rgba(220,38,38,0.15)" }}>
                     {msg.content}
                   </div>
-                  <p className="text-xs mt-0.5 text-right" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    {new Date(msg.sent_at).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
-                  </p>
                 </div>
-              </div>
+              ) : (
+                /* Message normal */
+                <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}>
+                  <div className="max-w-xs">
+                    <p className="text-xs mb-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
+                      {msg.sender_email === user?.email ? "Vous" : msg.sender_email}
+                    </p>
+                    <div className="px-3 py-2 rounded-xl text-sm" style={{
+                      background: msg.sender_id === user?.id ? CITADELLE_COLORS.blue : CITADELLE_COLORS.bg,
+                      color: msg.sender_id === user?.id ? "white" : CITADELLE_COLORS.blue
+                    }}>
+                      {msg.content}
+                    </div>
+                    <p className="text-xs mt-0.5 text-right" style={{ color: CITADELLE_COLORS.textMuted }}>
+                      {new Date(msg.sent_at).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                </div>
+              )
             ))}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Zone de saisie */}
-          <div className="px-4 py-3 flex gap-2" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}`, background: CITADELLE_COLORS.bg }}>
-            <input
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && sendMessage()}
-              placeholder="Votre message..."
-              className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
-              style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
-              data-testid="message-input"
-            />
-            <button onClick={sendMessage} disabled={sending || !message.trim()}
-              className="px-4 py-2.5 rounded-xl disabled:opacity-40 transition-all"
-              style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
-              data-testid="send-message-btn">
-              <Send size={16} />
-            </button>
-          </div>
+          {/* Zone de saisie — désactivée si conversation bloquée */}
+          {conv.is_blocked ? (
+            <div className="px-4 py-4 text-center"
+              style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}`, background: CITADELLE_COLORS.bg }}>
+              <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
+                Les échanges sont fermés pour cette annonce.
+              </p>
+              <Link to="/citadelle/annonces"
+                className="inline-block mt-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all hover:scale-105"
+                style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
+                Voir les autres annonces
+              </Link>
+            </div>
+          ) : (
+            <div className="px-4 py-3 flex gap-2" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}`, background: CITADELLE_COLORS.bg }}>
+              <input
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && sendMessage()}
+                placeholder="Votre message..."
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
+                style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
+                data-testid="message-input"
+              />
+              <button onClick={sendMessage} disabled={sending || !message.trim()}
+                className="px-4 py-2.5 rounded-xl disabled:opacity-40 transition-all"
+                style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                data-testid="send-message-btn">
+                <Send size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </CitadelleLayout>

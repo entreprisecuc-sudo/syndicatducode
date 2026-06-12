@@ -147,6 +147,13 @@ async def reply_message(
     if conv["buyer_id"] != user_id and conv["seller_id"] != user_id:
         raise HTTPException(status_code=403, detail="Accès non autorisé")
 
+    # Bloquer l'envoi si la conversation est fermée (annonce vendue)
+    if conv.get("is_blocked"):
+        raise HTTPException(
+            status_code=400,
+            detail="Cette conversation est fermée. Ce site a été vendu."
+        )
+
     now = datetime.now(timezone.utc).isoformat()
     msg = {
         "id": str(uuid.uuid4()),

@@ -388,6 +388,51 @@ async def pay_transaction(
         )}}
     )
     logger.info(f"[Citadelle] Paiement MOCKED: {transaction_id} — {tx['payment_amount']} €")
+
+    # ── Passer l'annonce en "sold" dès le paiement ────────────────────────────
+    await db.citadelle_listings.update_one(
+        {"id": tx["listing_id"]},
+        {"$set": {"status": "sold", "updated_at": now}}
+    )
+
+    # ── Bloquer les autres conversations actives sur la même annonce ──────────
+    # Message envoyé aux acheteurs non retenus
+    MSG_ANNONCE_VENDUE = (
+        "Le vendeur vient d'accepter une offre. Malheureusement, ce site n'est plus en vente. "
+        "Mais pas de panique, je vous invite à regarder les autres annonces pour trouver la perle rare."
+    )
+    other_convs = await db.citadelle_conversations.find(
+        {
+            "listing_id": tx["listing_id"],
+            "id": {"$ne": tx.get("conversation_id", "")},
+            "is_blocked": {"$ne": True}
+        },
+        {"_id": 0}
+    ).to_list(100)
+
+    for conv in other_convs:
+        sys_msg = {
+            "id": str(uuid.uuid4()),
+            "sender_id": "system",
+            "sender_email": "system",
+            "content": MSG_ANNONCE_VENDUE,
+            "is_system": True,
+            "sent_at": now,
+            "created_at": now,
+        }
+        await db.citadelle_conversations.update_one(
+            {"id": conv["id"]},
+            {
+                "$push": {"messages": sys_msg},
+                "$set": {"is_blocked": True, "updated_at": now}
+            }
+        )
+
+    if other_convs:
+        logger.info(
+            f"[Citadelle] Annonce {tx['listing_id']} vendue — {len(other_convs)} conversation(s) bloquée(s)"
+        )
+
     return {"message": "Paiement effectué (MOCKED)", "payment_id": mock_payment_id}
 
 
