@@ -8,10 +8,17 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MessageCircle, X, Send, Shield, ChevronLeft } from "lucide-react";
+import { MessageCircle, X, Send, Shield, ChevronLeft, Trash2 } from "lucide-react";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+
+// Clé localStorage pour les conversations masquées
+const MASQUEES_KEY = "citadelle_conv_masquees";
+
+// { "txId_mode": { sent_at: "..." } }
+const chargerMasquees  = () => { try { return JSON.parse(localStorage.getItem(MASQUEES_KEY) || "{}"); } catch { return {}; } };
+const sauvegarderMasquees = (m) => localStorage.setItem(MASQUEES_KEY, JSON.stringify(m));
 
 // Statuts de transaction avec une conversation active
 const STATUTS_ACTIFS = [
@@ -237,6 +244,7 @@ function VueChat({ tx, mode, onRetour, user, audioCtxRef }) {
 export default function CitadelleChatWidget() {
   const { user } = useCitadelleAuth();
   const [transactions, setTransactions] = useState([]);
+  const [masquees, setMasquees] = useState(chargerMasquees);
   const [panelOuvert, setPanelOuvert] = useState(false);
   // { tx, mode } — mode = "normal" | "litige"
   const [selection, setSelection] = useState(null);
@@ -250,6 +258,7 @@ export default function CitadelleChatWidget() {
   };
 
   // Chargement des transactions actives (polling 8s)
+  // + vérification réapparition des conversations masquées si nouveau message
   useEffect(() => {
     if (!user) return;
     const charger = async () => {
@@ -259,6 +268,26 @@ export default function CitadelleChatWidget() {
           tx => STATUTS_ACTIFS.includes(tx.status)
         );
         setTransactions(actives);
+
+        // Vérifier si un nouveau message est arrivé pour une conversation masquée
+        setMasquees(precedentes => {
+          const mises_a_jour = { ...precedentes };
+          let modifie = false;
+          for (const cle of Object.keys(mises_a_jour)) {
+            const [txId, mode] = cle.split(/_(.+)/); // split sur le premier "_"
+            const tx = actives.find(t => t.id === txId);
+            if (!tx) continue;
+            const sentAt = mode === "litige"
+              ? tx.last_dispute_message?.sent_at || ""
+              : tx.last_message?.sent_at || "";
+            if (sentAt !== mises_a_jour[cle].sent_at) {
+              delete mises_a_jour[cle];
+              modifie = true;
+            }
+          }
+          if (modifie) { sauvegarderMasquees(mises_a_jour); return mises_a_jour; }
+          return precedentes;
+        });
       } catch { /* silence */ }
     };
     charger();
@@ -266,19 +295,31 @@ export default function CitadelleChatWidget() {
     return () => clearInterval(intervalle);
   }, [user]);
 
+  // Masquer une conversation (icône corbeille)
+  const masquerConversation = (tx, mode, e) => {
+    e.stopPropagation();
+    const cle = `${tx.id}_${mode}`;
+    const sentAt = mode === "litige"
+      ? tx.last_dispute_message?.sent_at || ""
+      : tx.last_message?.sent_at || "";
+    const mises_a_jour = { ...masquees, [cle]: { sent_at: sentAt } };
+    setMasquees(mises_a_jour);
+    sauvegarderMasquees(mises_a_jour);
+  };
+
   // Génère la liste des items : 1 item normal + 1 item litige (si vendeur + litige)
+  // Filtrer les conversations masquées
   const itemsListe = transactions.flatMap(tx => {
     const items = [{ tx, mode: "normal" }];
-    // Ajouter la conversation litige si l'utilisateur est vendeur
     if (tx.status === "disputed" && tx.last_dispute_message !== null && tx.last_dispute_message !== undefined) {
       items.push({ tx, mode: "litige" });
     }
     return items;
-  });
+  }).filter(({ tx, mode }) => !masquees[`${tx.id}_${mode}`]);
 
-  const ouvrirPanel = () => { initAudio(); setPanelOuvert(true); };
-  const fermerPanel = () => { setPanelOuvert(false); setSelection(null); };
-  const ouvrirChat  = (tx, mode) => setSelection({ tx, mode });
+  const ouvrirPanel  = () => { initAudio(); setPanelOuvert(true); };
+  const fermerPanel  = () => { setPanelOuvert(false); setSelection(null); };
+  const ouvrirChat   = (tx, mode) => setSelection({ tx, mode });
   const revenirListe = () => setSelection(null);
 
   if (!user) return null;
@@ -329,7 +370,7 @@ export default function CitadelleChatWidget() {
                     <button
                       key={`${tx.id}_${mode}`}
                       onClick={() => ouvrirChat(tx, mode)}
-                      className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
+                      className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left group"
                       style={{ borderBottom: `1px solid ${CITADELLE_COLORS.border}` }}
                       data-testid={`chat-conversation-${tx.id}-${mode}`}
                     >
@@ -345,6 +386,16 @@ export default function CitadelleChatWidget() {
                           {apercu}
                         </p>
                       </div>
+                      {/* Icône corbeille — visible au survol */}
+                      <button
+                        onClick={(e) => masquerConversation(tx, mode, e)}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg transition-opacity flex-shrink-0"
+                        style={{ color: CITADELLE_COLORS.textMuted }}
+                        title="Masquer cette conversation"
+                        data-testid={`chat-masquer-${tx.id}-${mode}`}
+                      >
+                        <Trash2 size={13} />
+                      </button>
                     </button>
                   );
                 })}
