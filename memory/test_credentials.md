@@ -6,11 +6,11 @@
 
 ## Compte Vendeur
 - Email : becamarnaud@yahoo.fr
-- Mot de passe : 1234
+- Mot de passe : Test1234 (réinitialisé le 12/06/2026)
 
 ## Comptes Acheteur
 - Email : joseph.frequelin@gmail.com
-- Mot de passe : Test1234
+- Mot de passe : Test1234 (réinitialisé le 12/06/2026)
 
 - Email : joerke.b.direction@gmail.com
 - Mot de passe : Test1234
