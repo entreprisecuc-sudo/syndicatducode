@@ -253,20 +253,19 @@ export default function CitadelleChatWidget() {
       setTimeout(() => { try { ctx.close(); } catch {} }, 2000);
     } catch { /* non supporté */ }
   }, []);
-      notes.forEach(({ freq, delai, vol }) => {
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + delai);
-        gain.gain.setValueAtTime(vol, ctx.currentTime + delai);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delai + 1.6);
-        osc.start(ctx.currentTime + delai);
-        osc.stop(ctx.currentTime + delai + 1.6);
-      });
-    } catch { /* non supporté */ }
-  }, [audioCtxRef]);
+
+  // Déverrouillage audio au premier clic utilisateur (politique Autoplay navigateurs)
+  useEffect(() => {
+    const debloquer = () => {
+      sonAutorise.current = true;
+      document.removeEventListener("click", debloquer);
+    };
+    document.addEventListener("click", debloquer);
+    return () => document.removeEventListener("click", debloquer);
+  }, []);
+
+  // Alias utilisé lors de l'ouverture du panneau (premier clic = déverrouillage audio)
+  const initAudio = () => { sonAutorise.current = true; };
 
   // Chargement des transactions actives (polling 5s)
   // + détection nouveaux messages pour le son (même panneau fermé)
