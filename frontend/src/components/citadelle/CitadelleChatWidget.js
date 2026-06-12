@@ -30,7 +30,7 @@ const STATUTS_ACTIFS = [
 // ── Vue chat ──────────────────────────────────────────────────────────────────
 // mode "normal"  → messages normaux vendeur/acheteur
 // mode "litige"  → messages de litige La Garde (vendeur uniquement)
-function VueChat({ tx, mode, onRetour, user, audioCtxRef }) {
+function VueChat({ tx, mode, onRetour, user, jouerSon }) {
   const estLitige = mode === "litige";
   const couleur = estLitige ? "#DC2626" : "#1D4ED8";
 
@@ -40,32 +40,6 @@ function VueChat({ tx, mode, onRetour, user, audioCtxRef }) {
   const finMessagesRef = useRef(null);
   const nbPrecedent = useRef(0);
   const premierChargement = useRef(true);
-
-  // Son médiéval sur nouveau message reçu
-  const jouerSon = useCallback(async () => {
-    try {
-      const ctx = audioCtxRef.current;
-      if (!ctx) return;
-      if (ctx.state === "suspended") await ctx.resume();
-      const notes = [
-        { freq: 523.25, delai: 0,    vol: 0.15 },
-        { freq: 783.99, delai: 0.07, vol: 0.12 },
-        { freq: 1046.5, delai: 0.14, vol: 0.07 },
-      ];
-      notes.forEach(({ freq, delai, vol }) => {
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + delai);
-        gain.gain.setValueAtTime(vol, ctx.currentTime + delai);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delai + 1.6);
-        osc.start(ctx.currentTime + delai);
-        osc.stop(ctx.currentTime + delai + 1.6);
-      });
-    } catch { /* non supporté */ }
-  }, [audioCtxRef]);
 
   // Chargement + polling 3 secondes
   useEffect(() => {
@@ -105,7 +79,6 @@ function VueChat({ tx, mode, onRetour, user, audioCtxRef }) {
     const intervalle = setInterval(charger, 3000);
     return () => clearInterval(intervalle);
   }, [tx.id, mode, user, estLitige, jouerSon]);
-
   // Scroll automatique vers le dernier message
   useEffect(() => {
     finMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -249,6 +222,8 @@ export default function CitadelleChatWidget() {
   // { tx, mode } — mode = "normal" | "litige"
   const [selection, setSelection] = useState(null);
   const audioCtxRef = useRef(null);
+  // Mémorise les sent_at des derniers messages pour détecter les nouveaux
+  const sentAtPrecedents = useRef({});
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
@@ -257,10 +232,39 @@ export default function CitadelleChatWidget() {
     }
   };
 
-  // Chargement des transactions actives (polling 8s)
+  // Son médiéval — utilisé par le polling global ET par VueChat
+  const jouerSon = useCallback(async () => {
+    try {
+      const ctx = audioCtxRef.current;
+      if (!ctx) return;
+      if (ctx.state === "suspended") await ctx.resume();
+      const notes = [
+        { freq: 523.25, delai: 0,    vol: 0.15 },
+        { freq: 783.99, delai: 0.07, vol: 0.12 },
+        { freq: 1046.5, delai: 0.14, vol: 0.07 },
+      ];
+      notes.forEach(({ freq, delai, vol }) => {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + delai);
+        gain.gain.setValueAtTime(vol, ctx.currentTime + delai);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delai + 1.6);
+        osc.start(ctx.currentTime + delai);
+        osc.stop(ctx.currentTime + delai + 1.6);
+      });
+    } catch { /* non supporté */ }
+  }, [audioCtxRef]);
+
+  // Chargement des transactions actives (polling 5s)
+  // + détection nouveaux messages pour le son (même panneau fermé)
   // + vérification réapparition des conversations masquées si nouveau message
   useEffect(() => {
     if (!user) return;
+    const premierAppel = { valeur: true };
+
     const charger = async () => {
       try {
         const res = await citadelleApi.get("/transactions/my");
@@ -269,12 +273,42 @@ export default function CitadelleChatWidget() {
         );
         setTransactions(actives);
 
-        // Vérifier si un nouveau message est arrivé pour une conversation masquée
+        // Détection nouveaux messages entrants → son médiéval
+        if (!premierAppel.valeur) {
+          for (const tx of actives) {
+            // Message normal
+            const cle = `${tx.id}_normal`;
+            const sentAt = tx.last_message?.sent_at || "";
+            const precedent = sentAtPrecedents.current[cle] || "";
+            if (sentAt && sentAt !== precedent && tx.last_message?.sender_id !== user?.id) {
+              jouerSon();
+              break; // Un seul son par cycle
+            }
+            // Message litige
+            const cleLitige = `${tx.id}_litige`;
+            const sentAtLitige = tx.last_dispute_message?.sent_at || "";
+            const precedentLitige = sentAtPrecedents.current[cleLitige] || "";
+            if (sentAtLitige && sentAtLitige !== precedentLitige
+                && tx.last_dispute_message?.sender_role === "admin") {
+              jouerSon();
+              break;
+            }
+          }
+        }
+        premierAppel.valeur = false;
+
+        // Mémoriser les sent_at actuels
+        for (const tx of actives) {
+          sentAtPrecedents.current[`${tx.id}_normal`]  = tx.last_message?.sent_at || "";
+          sentAtPrecedents.current[`${tx.id}_litige`]  = tx.last_dispute_message?.sent_at || "";
+        }
+
+        // Vérifier réapparition des conversations masquées si nouveau message
         setMasquees(precedentes => {
           const mises_a_jour = { ...precedentes };
           let modifie = false;
           for (const cle of Object.keys(mises_a_jour)) {
-            const [txId, mode] = cle.split(/_(.+)/); // split sur le premier "_"
+            const [txId, mode] = cle.split(/_(.+)/);
             const tx = actives.find(t => t.id === txId);
             if (!tx) continue;
             const sentAt = mode === "litige"
@@ -290,10 +324,11 @@ export default function CitadelleChatWidget() {
         });
       } catch { /* silence */ }
     };
+
     charger();
-    const intervalle = setInterval(charger, 8000);
+    const intervalle = setInterval(charger, 5000);
     return () => clearInterval(intervalle);
-  }, [user]);
+  }, [user, jouerSon]);
 
   // Masquer une conversation (icône corbeille)
   const masquerConversation = (tx, mode, e) => {
@@ -337,7 +372,7 @@ export default function CitadelleChatWidget() {
               mode={selection.mode}
               onRetour={revenirListe}
               user={user}
-              audioCtxRef={audioCtxRef}
+              jouerSon={jouerSon}
             />
           ) : (
             <>
