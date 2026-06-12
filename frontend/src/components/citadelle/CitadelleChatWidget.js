@@ -1,7 +1,10 @@
 /**
  * Widget de chat flottant — La Citadelle Numérique
- * Une seule bulle principale avec liste de conversations et vue chat intégrée.
- * Rouge : La Garde (litige) | Bleu : conversation standard
+ * Une bulle principale → liste des conversations → vue chat.
+ *
+ * Chaque transaction peut générer deux conversations dans la liste :
+ *  - mode "normal"  → échanges vendeur/acheteur (bleu)
+ *  - mode "litige"  → chat La Garde (rouge), visible vendeur uniquement
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -17,23 +20,21 @@ const STATUTS_ACTIFS = [
   "credentials_submitted", "admin_verified", "disputed",
 ];
 
-// Couleur d'une transaction : rouge si litige, bleu sinon
-const couleurTx = (tx) => tx.status === "disputed" ? "#DC2626" : "#1D4ED8";
+// ── Vue chat ──────────────────────────────────────────────────────────────────
+// mode "normal"  → messages normaux vendeur/acheteur
+// mode "litige"  → messages de litige La Garde (vendeur uniquement)
+function VueChat({ tx, mode, onRetour, user, audioCtxRef }) {
+  const estLitige = mode === "litige";
+  const couleur = estLitige ? "#DC2626" : "#1D4ED8";
 
-// ── Vue chat d'une conversation sélectionnée ──────────────────────────────────
-// Affiche dans un flux chronologique :
-// - messages normaux vendeur/acheteur (bleus)
-// - messages de La Garde / litige (rouges) — visible vendeur et admin uniquement
-function VueChat({ tx, onRetour, user, audioCtxRef }) {
-  const couleur = couleurTx(tx);
-  const [tousMessages, setTousMessages] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [saisie, setSaisie] = useState("");
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const finMessagesRef = useRef(null);
   const nbPrecedent = useRef(0);
   const premierChargement = useRef(true);
 
-  // Son médiéval sur nouveau message reçu (contexte AudioContext partagé)
+  // Son médiéval sur nouveau message reçu
   const jouerSon = useCallback(async () => {
     try {
       const ctx = audioCtxRef.current;
@@ -56,107 +57,73 @@ function VueChat({ tx, onRetour, user, audioCtxRef }) {
         osc.start(ctx.currentTime + delai);
         osc.stop(ctx.currentTime + delai + 1.6);
       });
-    } catch { /* silence */ }
+    } catch { /* non supporté */ }
   }, [audioCtxRef]);
 
-  // Fusionne et trie les messages normaux + litige par date
-  const fusionnerMessages = useCallback((msgsNormaux, msgsLitige) => {
-    const normaux = (msgsNormaux || []).map(m => ({
-      id: m.id,
-      contenu: m.content,
-      type: m.type, // "message", "system", "admin"
-      sender_id: m.sender_id,
-      sent_at: m.sent_at,
-      origine: "normal",
-    }));
-    const litige = (msgsLitige || []).map(m => ({
-      id: m.id,
-      contenu: m.content,
-      type: "litige",
-      sender_role: m.sender_role,
-      sender_id: m.sender_id,
-      sent_at: m.sent_at,
-      origine: "litige",
-    }));
-    return [...normaux, ...litige].sort(
-      (a, b) => new Date(a.sent_at) - new Date(b.sent_at)
-    );
-  }, []);
-
-  // Chargement + polling des messages toutes les 3 secondes
+  // Chargement + polling 3 secondes
   useEffect(() => {
     nbPrecedent.current = 0;
     premierChargement.current = true;
+    setMessages([]);
 
     const charger = async () => {
       try {
-        const res = await citadelleApi.get(`/transactions/${tx.id}`);
-        const donnees = res.data;
-        const msgsNormaux = donnees.messages || [];
-
-        // Messages de litige : vendeur et admin uniquement
-        let msgsLitige = [];
-        const estVendeur = donnees.seller_id === user?.id;
-        const estAdmin = user?.role === "admin";
-        if ((estVendeur || estAdmin) && donnees.status === "disputed") {
-          try {
-            const rd = await citadelleApi.get(`/transactions/${tx.id}/dispute-messages`);
-            msgsLitige = rd.data.dispute_messages || [];
-          } catch { /* acheteur : pas d'accès */ }
+        let msgs = [];
+        if (estLitige) {
+          // Messages du chat litige
+          const res = await citadelleApi.get(`/transactions/${tx.id}/dispute-messages`);
+          msgs = res.data.dispute_messages || [];
+        } else {
+          // Messages normaux vendeur/acheteur
+          const res = await citadelleApi.get(`/transactions/${tx.id}`);
+          msgs = (res.data.messages || []).filter(m => m.type !== "system");
         }
-
-        const fusion = fusionnerMessages(msgsNormaux, msgsLitige);
-        const visibles = fusion.filter(m => m.type !== "system");
 
         // Son sur nouveau message entrant
-        if (!premierChargement.current && visibles.length > nbPrecedent.current) {
-          const dernier = visibles[visibles.length - 1];
-          const estMonMsg = dernier?.sender_id === user?.id
-            || (dernier?.origine === "litige" && dernier?.sender_role !== "admin" && !estAdmin);
+        if (!premierChargement.current && msgs.length > nbPrecedent.current) {
+          const dernier = msgs[msgs.length - 1];
+          const estMonMsg = estLitige
+            ? dernier?.sender_role !== "admin"
+            : dernier?.sender_id === user?.id;
           if (dernier && !estMonMsg) jouerSon();
         }
-        nbPrecedent.current = visibles.length;
-        if (visibles.length > 0) premierChargement.current = false;
+        nbPrecedent.current = msgs.length;
+        if (msgs.length > 0) premierChargement.current = false;
 
-        setTousMessages(fusion);
+        setMessages(msgs);
       } catch { /* silence */ }
     };
 
     charger();
     const intervalle = setInterval(charger, 3000);
     return () => clearInterval(intervalle);
-  }, [tx.id, user, jouerSon, fusionnerMessages]);
+  }, [tx.id, mode, user, estLitige, jouerSon]);
 
   // Scroll automatique vers le dernier message
   useEffect(() => {
     finMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [tousMessages.length]);
+  }, [messages.length]);
 
   const envoyerMessage = async () => {
     if (!saisie.trim() || envoiEnCours) return;
     setEnvoiEnCours(true);
     try {
-      await citadelleApi.post(`/transactions/${tx.id}/message`, { content: saisie.trim() });
+      const endpoint = estLitige
+        ? `/transactions/${tx.id}/dispute-messages`
+        : `/transactions/${tx.id}/message`;
+      await citadelleApi.post(endpoint, { content: saisie.trim() });
       setSaisie("");
     } catch { /* silence */ }
     finally { setEnvoiEnCours(false); }
   };
 
-  const messagesVisibles = tousMessages.filter(m => m.type !== "system");
-
   return (
     <>
-      {/* Header avec bouton retour */}
-      <div
-        className="px-3 py-2.5 flex items-center gap-2 flex-shrink-0"
-        style={{ background: couleur }}
-      >
-        <button
-          onClick={onRetour}
-          className="p-0.5 rounded-lg flex-shrink-0"
-          style={{ color: "rgba(255,255,255,0.85)" }}
-          title="Retour à la liste"
-        >
+      {/* Header */}
+      <div className="px-3 py-2.5 flex items-center gap-2 flex-shrink-0"
+        style={{ background: couleur }}>
+        <button onClick={onRetour} className="p-0.5 rounded-lg flex-shrink-0"
+          style={{ color: "rgba(255,255,255,0.85)" }} title="Retour">
           <ChevronLeft size={16} />
         </button>
         <div className="flex-1 min-w-0">
@@ -164,32 +131,52 @@ function VueChat({ tx, onRetour, user, audioCtxRef }) {
             {tx.listing_title || "Transaction"}
           </p>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>
-            {tx.status === "disputed" ? "Litige en cours" : "En cours"}
+            {estLitige ? "La Garde — Confidentiel" : "Conversation"}
           </p>
         </div>
       </div>
 
-      {/* Zone des messages */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
-        {messagesVisibles.length === 0 && (
+        {messages.length === 0 && (
           <p className="text-xs text-center pt-8" style={{ color: CITADELLE_COLORS.textMuted }}>
             Démarrez la conversation...
           </p>
         )}
 
-        {tousMessages.map((msg, i) => {
-          // Séparateur système
-          if (msg.type === "system") return (
-            <div key={msg.id || i} className="flex justify-center">
-              <span className="text-xs px-2 py-0.5 rounded-full"
-                style={{ background: CITADELLE_COLORS.bg, color: CITADELLE_COLORS.textMuted }}>
-                {msg.contenu}
-              </span>
-            </div>
-          );
+        {messages.map((msg, i) => {
+          // ── Chat litige ──
+          if (estLitige) {
+            const estAdmin = msg.sender_role === "admin";
+            if (estAdmin) return (
+              <div key={msg.id || i} className="flex justify-start">
+                <div className="max-w-[82%]">
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <Shield size={9} style={{ color: "#DC2626" }} />
+                    <p className="text-xs font-bold" style={{ color: "#DC2626" }}>La Garde</p>
+                  </div>
+                  <div className="px-3 py-1.5 rounded-2xl rounded-tl-sm text-sm"
+                    style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626", border: "1px solid rgba(220,38,38,0.15)" }}>
+                    {msg.content}
+                  </div>
+                </div>
+              </div>
+            );
+            return (
+              <div key={msg.id || i} className="flex justify-end">
+                <div className="px-3 py-1.5 rounded-2xl rounded-tr-sm text-sm max-w-[82%] text-white"
+                  style={{ background: "#DC2626" }}>
+                  {msg.content}
+                </div>
+              </div>
+            );
+          }
 
-          // Message de La Garde (litige, côté admin)
-          if (msg.origine === "litige" && msg.sender_role === "admin") return (
+          // ── Chat normal ──
+          const estMoi = msg.sender_id === user?.id;
+          const estAdmin = msg.type === "admin";
+
+          if (estAdmin) return (
             <div key={msg.id || i} className="flex justify-start">
               <div className="max-w-[82%]">
                 <div className="flex items-center gap-1 mb-0.5">
@@ -198,54 +185,26 @@ function VueChat({ tx, onRetour, user, audioCtxRef }) {
                 </div>
                 <div className="px-3 py-1.5 rounded-2xl rounded-tl-sm text-sm"
                   style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626", border: "1px solid rgba(220,38,38,0.15)" }}>
-                  {msg.contenu}
+                  {msg.content}
                 </div>
               </div>
             </div>
           );
 
-          // Message du litige côté vendeur (ma réponse à La Garde)
-          if (msg.origine === "litige") return (
-            <div key={msg.id || i} className="flex justify-end">
-              <div className="px-3 py-1.5 rounded-2xl rounded-tr-sm text-sm max-w-[82%]"
-                style={{ background: "rgba(220,38,38,0.15)", color: "#DC2626" }}>
-                {msg.contenu}
-              </div>
-            </div>
-          );
-
-          // Message de l'admin dans la conversation normale
-          if (msg.type === "admin") return (
-            <div key={msg.id || i} className="flex justify-start">
-              <div className="max-w-[82%]">
-                <div className="flex items-center gap-1 mb-0.5">
-                  <Shield size={9} style={{ color: "#DC2626" }} />
-                  <p className="text-xs font-bold" style={{ color: "#DC2626" }}>La Garde</p>
-                </div>
-                <div className="px-3 py-1.5 rounded-2xl rounded-tl-sm text-sm"
-                  style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626", border: "1px solid rgba(220,38,38,0.15)" }}>
-                  {msg.contenu}
-                </div>
-              </div>
-            </div>
-          );
-
-          // Mon message (normal)
-          if (msg.sender_id === user?.id) return (
+          if (estMoi) return (
             <div key={msg.id || i} className="flex justify-end">
               <div className="px-3 py-1.5 rounded-2xl rounded-tr-sm text-sm max-w-[82%] text-white"
                 style={{ background: "#1D4ED8" }}>
-                {msg.contenu}
+                {msg.content}
               </div>
             </div>
           );
 
-          // Message de l'autre partie (normal)
           return (
             <div key={msg.id || i} className="flex justify-start">
               <div className="px-3 py-1.5 rounded-2xl rounded-tl-sm text-sm max-w-[82%]"
                 style={{ background: CITADELLE_COLORS.bg, color: CITADELLE_COLORS.blue, border: `1px solid ${CITADELLE_COLORS.border}` }}>
-                {msg.contenu}
+                {msg.content}
               </div>
             </div>
           );
@@ -253,7 +212,7 @@ function VueChat({ tx, onRetour, user, audioCtxRef }) {
         <div ref={finMessagesRef} />
       </div>
 
-      {/* Zone de saisie */}
+      {/* Saisie */}
       <div className="px-3 py-2.5 flex gap-2 flex-shrink-0"
         style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}` }}>
         <input
@@ -279,19 +238,18 @@ export default function CitadelleChatWidget() {
   const { user } = useCitadelleAuth();
   const [transactions, setTransactions] = useState([]);
   const [panelOuvert, setPanelOuvert] = useState(false);
-  const [txSelectionnee, setTxSelectionnee] = useState(null);
+  // { tx, mode } — mode = "normal" | "litige"
+  const [selection, setSelection] = useState(null);
   const audioCtxRef = useRef(null);
 
-  // Initialisation de l'AudioContext (requiert un geste utilisateur)
   const initAudio = () => {
     if (!audioCtxRef.current) {
-      try {
-        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      } catch { /* non supporté */ }
+      try { audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch { /* non supporté */ }
     }
   };
 
-  // Chargement des transactions actives avec polling toutes les 8 secondes
+  // Chargement des transactions actives (polling 8s)
   useEffect(() => {
     if (!user) return;
     const charger = async () => {
@@ -308,106 +266,83 @@ export default function CitadelleChatWidget() {
     return () => clearInterval(intervalle);
   }, [user]);
 
-  const ouvrirPanel = () => {
-    initAudio();
-    setPanelOuvert(true);
-  };
+  // Génère la liste des items : 1 item normal + 1 item litige (si vendeur + litige)
+  const itemsListe = transactions.flatMap(tx => {
+    const items = [{ tx, mode: "normal" }];
+    // Ajouter la conversation litige si l'utilisateur est vendeur
+    if (tx.status === "disputed" && tx.last_dispute_message !== null && tx.last_dispute_message !== undefined) {
+      items.push({ tx, mode: "litige" });
+    }
+    return items;
+  });
 
-  const fermerPanel = () => {
-    setPanelOuvert(false);
-    setTxSelectionnee(null);
-  };
-
-  const ouvrirChat = (tx) => setTxSelectionnee(tx);
-  const revenirListe = () => setTxSelectionnee(null);
+  const ouvrirPanel = () => { initAudio(); setPanelOuvert(true); };
+  const fermerPanel = () => { setPanelOuvert(false); setSelection(null); };
+  const ouvrirChat  = (tx, mode) => setSelection({ tx, mode });
+  const revenirListe = () => setSelection(null);
 
   if (!user) return null;
 
   return (
     <>
-      {/* ── Panneau principal (liste ou chat) ── */}
+      {/* ── Panneau ── */}
       {panelOuvert && (
-        <div
-          className="fixed z-50 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
-          style={{
-            bottom: "178px",
-            right: "24px",
-            width: "300px",
-            height: "400px",
-            background: "white",
-            border: `1px solid ${CITADELLE_COLORS.border}`,
-          }}
-        >
-          {txSelectionnee ? (
-            // ── Vue chat de la conversation sélectionnée ──
+        <div className="fixed z-50 rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+          style={{ bottom: "178px", right: "24px", width: "300px", height: "420px", background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+
+          {selection ? (
             <VueChat
-              tx={txSelectionnee}
+              tx={selection.tx}
+              mode={selection.mode}
               onRetour={revenirListe}
               user={user}
               audioCtxRef={audioCtxRef}
             />
           ) : (
-            // ── Vue liste des conversations ──
             <>
-              <div
-                className="px-4 py-3 flex items-center gap-2 flex-shrink-0"
-                style={{ background: CITADELLE_COLORS.night }}
-              >
+              {/* Header liste */}
+              <div className="px-4 py-3 flex items-center gap-2 flex-shrink-0"
+                style={{ background: CITADELLE_COLORS.night }}>
                 <p className="flex-1 text-xs font-bold text-white">Mes conversations</p>
-                <div
-                  className="w-2 h-2 rounded-full animate-pulse"
-                  style={{ background: "#22C55E" }}
-                />
+                <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#22C55E" }} />
               </div>
+
+              {/* Liste */}
               <div className="overflow-y-auto flex-1">
-                {transactions.length === 0 ? (
-                  <p
-                    className="text-xs text-center py-8"
-                    style={{ color: CITADELLE_COLORS.textMuted }}
-                  >
+                {itemsListe.length === 0 ? (
+                  <p className="text-xs text-center py-8" style={{ color: CITADELLE_COLORS.textMuted }}>
                     Aucune conversation active.
                   </p>
-                ) : transactions.map((tx) => {
-                  const couleur = couleurTx(tx);
+                ) : itemsListe.map(({ tx, mode }) => {
+                  const estLitige = mode === "litige";
+                  const couleur = estLitige ? "#DC2626" : "#1D4ED8";
                   const initiales = (tx.listing_title || "?")
-                    .split(" ")
-                    .slice(0, 2)
-                    .map(w => w[0]?.toUpperCase())
-                    .join("");
+                    .split(" ").slice(0, 2).map(w => w[0]?.toUpperCase()).join("");
+                  const apercu = estLitige
+                    ? (tx.last_dispute_message?.sender_role === "admin" ? "La Garde : " : "Vous : ")
+                      + (tx.last_dispute_message?.content || "")
+                    : tx.last_message
+                      ? (tx.last_message.sender_id === user?.id ? "Vous : " : "") + tx.last_message.content
+                      : "En cours";
+
                   return (
                     <button
-                      key={tx.id}
-                      onClick={() => ouvrirChat(tx)}
+                      key={`${tx.id}_${mode}`}
+                      onClick={() => ouvrirChat(tx, mode)}
                       className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
                       style={{ borderBottom: `1px solid ${CITADELLE_COLORS.border}` }}
-                      data-testid={`chat-conversation-${tx.id}`}
+                      data-testid={`chat-conversation-${tx.id}-${mode}`}
                     >
-                      <div
-                        className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                        style={{ background: couleur }}
-                      >
-                        {initiales || <MessageCircle size={14} />}
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                        style={{ background: couleur }}>
+                        {estLitige ? <Shield size={14} /> : (initiales || <MessageCircle size={14} />)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p
-                          className="text-xs font-semibold truncate"
-                          style={{ color: CITADELLE_COLORS.blue }}
-                        >
+                        <p className="text-xs font-semibold truncate" style={{ color: CITADELLE_COLORS.blue }}>
                           {tx.listing_title || "Transaction"}
                         </p>
-                        <p
-                          className="text-xs truncate"
-                          style={{
-                            color: tx.status === "disputed"
-                              ? "#DC2626"
-                              : CITADELLE_COLORS.textMuted,
-                          }}
-                        >
-                          {tx.last_message
-                            ? (tx.last_message.sender_id === user?.id ? "Vous : " : "")
-                              + tx.last_message.content
-                            : (tx.status === "disputed" ? "Litige — La Garde" : "En cours")
-                          }
+                        <p className="text-xs truncate" style={{ color: estLitige ? "#DC2626" : CITADELLE_COLORS.textMuted }}>
+                          {apercu}
                         </p>
                       </div>
                     </button>
@@ -423,26 +358,14 @@ export default function CitadelleChatWidget() {
       <button
         onClick={panelOuvert ? fermerPanel : ouvrirPanel}
         className="fixed z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-200 hover:scale-110"
-        style={{
-          bottom: "100px",
-          right: "24px",
-          background: CITADELLE_COLORS.night,
-          border: `2px solid ${CITADELLE_COLORS.gold}`,
-        }}
+        style={{ bottom: "100px", right: "24px", background: CITADELLE_COLORS.night, border: `2px solid ${CITADELLE_COLORS.gold}` }}
         data-testid="chat-widget-btn"
         title="Mes conversations"
       >
-        {/* Badge : nombre de conversations actives */}
-        {transactions.length > 0 && !panelOuvert && (
-          <span
-            className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center font-bold"
-            style={{
-              background: CITADELLE_COLORS.gold,
-              color: CITADELLE_COLORS.night,
-              fontSize: "10px",
-            }}
-          >
-            {transactions.length}
+        {itemsListe.length > 0 && !panelOuvert && (
+          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center font-bold"
+            style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night, fontSize: "10px" }}>
+            {itemsListe.length}
           </span>
         )}
         {panelOuvert

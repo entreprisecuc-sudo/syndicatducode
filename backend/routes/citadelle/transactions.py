@@ -246,10 +246,11 @@ async def my_transactions(
     current_user: dict = Depends(require_citadelle_user)
 ):
     """Liste les transactions où l'utilisateur est acheteur ou vendeur.
-    Retourne le dernier message non-système de chaque transaction dans 'last_message'.
+    Retourne :
+    - last_message : dernier message normal (vendeur/acheteur)
+    - last_dispute_message : dernier message de litige (vendeur uniquement)
     """
     user_id = current_user.get("sub")
-    # On charge les messages pour extraire le dernier, puis on les supprime de la réponse
     cursor = db.citadelle_transactions.find(
         {"$or": [{"buyer_id": user_id}, {"seller_id": user_id}]},
         {"_id": 0, "credentials": 0}
@@ -258,7 +259,6 @@ async def my_transactions(
 
     for tx in transactions:
         msgs = tx.pop("messages", []) or []
-        # Dernier message non-système pour l'aperçu
         msgs_visibles = [m for m in msgs if m.get("type") not in ("system",)]
         dernier = msgs_visibles[-1] if msgs_visibles else None
         tx["last_message"] = {
@@ -266,6 +266,18 @@ async def my_transactions(
             "sender_id": dernier.get("sender_id", ""),
             "sent_at": dernier.get("sent_at", ""),
         } if dernier else None
+
+        # Dernier message de litige — visible uniquement pour le vendeur
+        dispute_msgs = tx.pop("dispute_messages", []) or []
+        if tx.get("seller_id") == user_id and dispute_msgs:
+            dernier_litige = dispute_msgs[-1]
+            tx["last_dispute_message"] = {
+                "content": dernier_litige.get("content", ""),
+                "sender_role": dernier_litige.get("sender_role", ""),
+                "sent_at": dernier_litige.get("sent_at", ""),
+            }
+        else:
+            tx["last_dispute_message"] = None
 
     return {"transactions": transactions}
 
