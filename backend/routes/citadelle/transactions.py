@@ -869,6 +869,54 @@ async def cancel_purchase(
     }
 
 
+@router.post("/transactions/{transaction_id}/cancel-as-seller", summary="Vendeur — Annuler la vente en litige")
+async def cancel_as_seller(
+    transaction_id: str,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """
+    Vendeur : annule la vente lors d'un litige.
+    Les fonds sont intégralement restitués à l'acheteur (MOCKED).
+    L'annonce est remise en statut actif.
+    """
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx["seller_id"] != current_user.get("sub"):
+        raise HTTPException(status_code=403, detail="Seul le vendeur peut utiliser cette action")
+    if tx["status"] != "disputed":
+        raise HTTPException(status_code=400, detail="Cette action n'est disponible qu'en cas de litige ouvert")
+
+    payment_amount = tx.get("payment_amount") or 0
+    now = datetime.now(timezone.utc).isoformat()
+
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {
+            "status": "cancelled",
+            "cancelled_at": now,
+            "cancelled_by_seller": True,
+            "updated_at": now,
+        }, "$push": {"messages": system_message(
+            f"Vente annulée par le vendeur. "
+            f"Remboursement intégral de {payment_amount:,.0f} € à l'acheteur en cours (MOCKED)."
+        )}}
+    )
+
+    # Remettre l'annonce en statut actif
+    if tx.get("listing_id"):
+        await db.citadelle_listings.update_one(
+            {"id": tx["listing_id"]},
+            {"$set": {"status": "active", "updated_at": now}}
+        )
+
+    logger.info(f"[Citadelle] Vente annulée par le vendeur: {transaction_id} — Remboursement: {payment_amount} €")
+    return {
+        "message": f"Vente annulée. Remboursement de {payment_amount:,.0f} € à l'acheteur (MOCKED).",
+        "refund_amount": payment_amount,
+    }
+
+
 # ── Chat Litige — Vendeur + Admin uniquement ──────────────────────────────────
 
 @router.get("/transactions/{transaction_id}/dispute-messages", summary="Chat litige — Lire les messages")

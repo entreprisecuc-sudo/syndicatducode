@@ -76,7 +76,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 
 ### ✅ Gestion des Litiges — Dispute Management (TERMINÉ 12/06/2026)
 - **Acheteur** : Bannière "Fonds bloqués — La Garde veille" (statuts séquestre), bouton "Ouvrir un litige" + modal, bouton "Annuler l'achat" + modal avec frais calculés dynamiquement (dès 7 jours)
-- **Vendeur + Admin** : Chat litige sécurisé (`dispute_messages[]` dans le doc transaction), invisible pour l'acheteur. Badge "La Garde" pour l'admin.
+- **Vendeur** : Chat litige confidentiel (Vendeur · La Garde), bouton "Annuler la vente" + panneau de facturation (remboursement intégral acheteur, 0 frais vendeur, confirmation définitive)
 - **Admin** : Bouton "Résoudre le litige" (retour `payment_done`), "Annuler la vente" (remboursement + annonce remise en `active`), config dynamique des frais par tranches de prix (`citadelle_dispute_config`)
 - Frais d'annulation : 49€ (< 1000€) / 99€ (1000-5000€) / 199€ (> 5000€) — MOCKED, configurable admin
 - Nouvelles routes : `open-dispute`, `cancel-purchase`, `cancellation-fee`, `dispute-messages` (GET/POST), `resolve-dispute`, `cancel-transaction`, `dispute-config` (GET/PATCH)
@@ -118,7 +118,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 || POST /api/citadelle/transactions/{id}/dispute-messages | Vendeur/Admin: envoyer message litige |
 || POST /api/citadelle/admin/transactions/{id}/resolve-dispute | Admin: résoudre litige |
 || POST /api/citadelle/admin/transactions/{id}/cancel-transaction | Admin: annuler vente + rembourser |
-|| GET /api/citadelle/admin/dispute-config | Admin: lire config frais d'annulation |
+|| POST /api/citadelle/transactions/{id}/cancel-as-seller | Vendeur: annuler la vente en litige (panneau facturation) |
 || PATCH /api/citadelle/admin/dispute-config | Admin: modifier config frais (tranches prix) |
 | POST /api/citadelle/newsletter/subscribe-member | Auto-inscription membre connecté |
 | GET /api/citadelle/newsletter/unsubscribe/{token} | Désinscription via lien email |
