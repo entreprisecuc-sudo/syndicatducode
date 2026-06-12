@@ -491,7 +491,7 @@ export default function CitadelleTransactionDetail() {
                         </span>
                       )}
                       <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                        {msg.sender_role === "admin" ? msg.sender_email : "Vous"}
+                        {msg.sender_role === "admin" ? "La Garde" : "Vous"}
                       </p>
                     </div>
                     <div className="px-3 py-2 rounded-xl text-sm" style={{

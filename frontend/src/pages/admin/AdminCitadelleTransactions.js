@@ -462,7 +462,7 @@ export default function AdminCitadelleTransactions() {
                               {msg.sender_role === "admin" && (
                                 <span className="text-xs px-1.5 py-0.5 rounded font-bold" style={{ background: "rgba(201,164,92,0.2)", color: "#C9A45C", fontSize: "10px" }}>La Garde</span>
                               )}
-                              <span className="text-xs opacity-40" style={{ fontSize: "10px" }}>{msg.sender_email}</span>
+                              <span className="text-xs opacity-40" style={{ fontSize: "10px" }}>{msg.sender_role === "admin" ? "La Garde" : msg.sender_email}</span>
                             </div>
                             <div className="px-3 py-2 rounded-lg text-xs" style={{
                               background: msg.sender_role === "admin" ? "rgba(201,164,92,0.15)" : "rgba(255,255,255,0.05)",
