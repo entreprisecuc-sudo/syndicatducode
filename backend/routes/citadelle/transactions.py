@@ -77,6 +77,41 @@ class AdminVerify(BaseModel):
 class DisputeCreate(BaseModel):
     reason: str = Field(min_length=10, max_length=2000)
 
+class DisputeOpen(BaseModel):
+    reason: str = Field(min_length=10, max_length=2000)
+
+class DisputeMessageCreate(BaseModel):
+    content: str = Field(min_length=1, max_length=2000)
+
+class DisputeConfigUpdate(BaseModel):
+    tranches: List[dict]
+    default_fee: float = Field(gt=0)
+
+
+# ── Configuration par défaut des frais d'annulation ──────────────────────────
+
+DEFAULT_DISPUTE_CONFIG = {
+    "id": "default",
+    "tranches": [
+        {"price_max": 999.99, "fee": 49.0,  "label": "Moins de 1 000 €"},
+        {"price_max": 4999.99, "fee": 99.0, "label": "De 1 000 € à 4 999 €"},
+        {"price_max": None,   "fee": 199.0, "label": "5 000 € et plus"},
+    ],
+    "default_fee": 49.0,
+}
+
+
+async def get_dispute_fee(payment_amount: float) -> float:
+    """Calcule les frais d'annulation selon le montant et la configuration active"""
+    config = await db.citadelle_dispute_config.find_one({"id": "default"}, {"_id": 0})
+    if not config:
+        config = DEFAULT_DISPUTE_CONFIG
+    for tranche in config.get("tranches", []):
+        price_max = tranche.get("price_max")
+        if price_max is None or payment_amount <= price_max:
+            return float(tranche["fee"])
+    return float(config.get("default_fee", 49.0))
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -162,8 +197,10 @@ async def create_offer(
         "created_at": now,
         "updated_at": now,
         "completed_at": None,
+        "paid_at": None,
         "disputed_at": None,
         "dispute_reason": None,
+        "dispute_messages": [],
     }
 
     await db.citadelle_transactions.insert_one(transaction)
@@ -381,6 +418,7 @@ async def pay_transaction(
         {"$set": {
             "status": "payment_done",
             "payment_id": mock_payment_id,
+            "paid_at": now,
             "updated_at": now
         }, "$push": {"messages": system_message(
             f"Paiement de {tx['payment_amount']:,.0f} € effectué. Fonds placés en séquestre. "
@@ -702,3 +740,291 @@ async def admin_transmit_credentials(
 
     logger.info(f"[Citadelle Admin] Accès transmis à l'acheteur: {transaction_id} par {current_user.get('email')}")
     return {"message": "Accès transmis à l'acheteur avec succès. Email envoyé."}
+
+
+
+# ── Routes Litige — Acheteur ──────────────────────────────────────────────────
+
+@router.post("/transactions/{transaction_id}/open-dispute", summary="Acheteur — Ouvrir un litige")
+async def open_dispute(
+    transaction_id: str,
+    data: DisputeOpen,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """Acheteur : ouvre un litige sur une transaction en cours après le paiement"""
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx["buyer_id"] != current_user.get("sub"):
+        raise HTTPException(status_code=403, detail="Seul l'acheteur peut ouvrir un litige")
+
+    statuts_autorisés = ["payment_done", "credentials_submitted", "admin_verified"]
+    if tx["status"] not in statuts_autorisés:
+        raise HTTPException(status_code=400, detail="Un litige ne peut être ouvert qu'après le paiement")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {
+            "status": "disputed",
+            "disputed_at": now,
+            "dispute_reason": data.reason,
+            "updated_at": now,
+        }, "$push": {"messages": system_message(f"Litige ouvert par l'acheteur : {data.reason}")}}
+    )
+    logger.info(f"[Citadelle] Litige ouvert par l'acheteur: {transaction_id}")
+    return {"message": "Litige ouvert. La Garde va examiner votre dossier."}
+
+
+@router.get("/transactions/{transaction_id}/cancellation-fee", summary="Acheteur — Consulter les frais d'annulation")
+async def get_cancellation_fee_route(
+    transaction_id: str,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """Acheteur : consulte les frais d'annulation et vérifie si l'annulation est possible"""
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx["buyer_id"] != current_user.get("sub"):
+        raise HTTPException(status_code=403, detail="Accès non autorisé")
+
+    payment_amount = tx.get("payment_amount") or 0
+    frais = await get_dispute_fee(payment_amount)
+
+    paid_at = tx.get("paid_at")
+    jours_ecoules = None
+    peut_annuler = False
+    jours_restants = 7
+
+    if paid_at:
+        paid_dt = datetime.fromisoformat(paid_at.replace("Z", "+00:00"))
+        jours_ecoules = (datetime.now(timezone.utc) - paid_dt).days
+        peut_annuler = jours_ecoules >= 7
+        jours_restants = max(0, 7 - jours_ecoules)
+
+    return {
+        "cancellation_fee": frais,
+        "payment_amount": payment_amount,
+        "refund_amount": max(0.0, payment_amount - frais),
+        "jours_depuis_paiement": jours_ecoules,
+        "peut_annuler": peut_annuler,
+        "jours_restants": jours_restants,
+    }
+
+
+@router.post("/transactions/{transaction_id}/cancel-purchase", summary="Acheteur — Annuler l'achat")
+async def cancel_purchase(
+    transaction_id: str,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """
+    Acheteur : annule son achat après 7 jours depuis le paiement.
+    Des frais d'annulation sont prélevés (MOCKED). Le reste est restitué.
+    """
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx["buyer_id"] != current_user.get("sub"):
+        raise HTTPException(status_code=403, detail="Seul l'acheteur peut annuler l'achat")
+
+    statuts_annulation = ["payment_done", "credentials_submitted", "admin_verified", "disputed"]
+    if tx["status"] not in statuts_annulation:
+        raise HTTPException(status_code=400, detail="Annulation impossible à ce stade de la transaction")
+
+    paid_at = tx.get("paid_at")
+    if not paid_at:
+        raise HTTPException(status_code=400, detail="Date de paiement introuvable")
+
+    paid_dt = datetime.fromisoformat(paid_at.replace("Z", "+00:00"))
+    jours_ecoules = (datetime.now(timezone.utc) - paid_dt).days
+    if jours_ecoules < 7:
+        raise HTTPException(
+            status_code=400,
+            detail=f"L'annulation n'est disponible qu'après 7 jours ({7 - jours_ecoules} jour(s) restant(s))"
+        )
+
+    payment_amount = tx.get("payment_amount") or 0
+    frais = await get_dispute_fee(payment_amount)
+    mock_fee_id = f"mock_fee_{uuid.uuid4().hex[:16]}"
+    now = datetime.now(timezone.utc).isoformat()
+
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {
+            "status": "cancelled",
+            "cancelled_at": now,
+            "cancellation_fee": frais,
+            "cancellation_fee_payment_id": mock_fee_id,
+            "updated_at": now,
+        }, "$push": {"messages": system_message(
+            f"Achat annulé par l'acheteur. Frais d'annulation : {frais:,.0f} € (MOCKED). "
+            f"Remboursement de {max(0.0, payment_amount - frais):,.0f} € en cours."
+        )}}
+    )
+    logger.info(f"[Citadelle] Annulation achat par acheteur: {transaction_id} — Frais: {frais} €")
+    return {
+        "message": f"Achat annulé. Frais de {frais:,.0f} € prélevés.",
+        "cancellation_fee": frais,
+        "refund_amount": max(0.0, payment_amount - frais),
+    }
+
+
+# ── Chat Litige — Vendeur + Admin uniquement ──────────────────────────────────
+
+@router.get("/transactions/{transaction_id}/dispute-messages", summary="Chat litige — Lire les messages")
+async def get_dispute_messages(
+    transaction_id: str,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """Vendeur ou Admin uniquement : récupère les messages du chat litige (invisible pour l'acheteur)"""
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+
+    user_id = current_user.get("sub")
+    is_admin = current_user.get("role") == "admin"
+    is_seller = tx["seller_id"] == user_id
+
+    if not (is_seller or is_admin):
+        raise HTTPException(status_code=403, detail="Accès réservé au vendeur et à l'administrateur")
+
+    return {"dispute_messages": tx.get("dispute_messages", [])}
+
+
+@router.post("/transactions/{transaction_id}/dispute-messages", summary="Chat litige — Envoyer un message")
+async def send_dispute_message(
+    transaction_id: str,
+    data: DisputeMessageCreate,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """Vendeur ou Admin uniquement : envoie un message dans le chat litige"""
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+
+    user_id = current_user.get("sub")
+    is_admin = current_user.get("role") == "admin"
+    is_seller = tx["seller_id"] == user_id
+
+    if not (is_seller or is_admin):
+        raise HTTPException(status_code=403, detail="Accès réservé au vendeur et à l'administrateur")
+
+    if tx["status"] != "disputed":
+        raise HTTPException(status_code=400, detail="Le chat litige n'est actif qu'en cas de litige ouvert")
+
+    msg = {
+        "id": str(uuid.uuid4()),
+        "sender_id": "admin" if is_admin else user_id,
+        "sender_email": current_user.get("email"),
+        "sender_role": "admin" if is_admin else "seller",
+        "content": data.content,
+        "sent_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$push": {"dispute_messages": msg}, "$set": {"updated_at": msg["sent_at"]}}
+    )
+    return msg
+
+
+# ── Routes Admin — Gestion des litiges ───────────────────────────────────────
+
+@router.post("/admin/transactions/{transaction_id}/resolve-dispute", summary="Admin — Résoudre le litige")
+async def admin_resolve_dispute(
+    transaction_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """Admin : résout le litige en reprenant le cours normal (retour au statut payment_done)"""
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx["status"] != "disputed":
+        raise HTTPException(status_code=400, detail="La transaction n'est pas en litige")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {
+            "status": "payment_done",
+            "dispute_resolved_at": now,
+            "updated_at": now,
+        }, "$push": {"messages": system_message(
+            "Litige résolu par l'administrateur. La transaction reprend son cours normal."
+        )}}
+    )
+    logger.info(f"[Citadelle Admin] Litige résolu: {transaction_id} par {current_user.get('email')}")
+    return {"message": "Litige résolu. La transaction reprend son cours normal."}
+
+
+@router.post("/admin/transactions/{transaction_id}/cancel-transaction", summary="Admin — Annuler la vente")
+async def admin_cancel_transaction(
+    transaction_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """Admin : annule la vente et restitue les fonds à l'acheteur (MOCKED)"""
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx["status"] in ("completed", "cancelled", "offer_refused"):
+        raise HTTPException(status_code=400, detail="Impossible d'annuler cette transaction")
+
+    now = datetime.now(timezone.utc).isoformat()
+    payment_amount = tx.get("payment_amount") or 0
+
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {
+            "status": "cancelled",
+            "cancelled_at": now,
+            "cancelled_by_admin": True,
+            "updated_at": now,
+        }, "$push": {"messages": system_message(
+            f"Vente annulée par l'administrateur. "
+            f"Remboursement de {payment_amount:,.0f} € à l'acheteur en cours (MOCKED)."
+        )}}
+    )
+
+    # Remettre l'annonce active si elle était passée en "sold"
+    if tx.get("listing_id"):
+        await db.citadelle_listings.update_one(
+            {"id": tx["listing_id"]},
+            {"$set": {"status": "active", "updated_at": now}}
+        )
+
+    logger.info(f"[Citadelle Admin] Vente annulée: {transaction_id} par {current_user.get('email')}")
+    return {"message": "Vente annulée. Fonds restitués à l'acheteur (MOCKED)."}
+
+
+# ── Config des frais d'annulation ─────────────────────────────────────────────
+
+@router.get("/admin/dispute-config", summary="Admin — Lire la config des frais d'annulation")
+async def admin_get_dispute_config(
+    current_user: dict = Depends(require_admin)
+):
+    """Admin : lit la configuration des frais d'annulation par tranches de prix"""
+    config = await db.citadelle_dispute_config.find_one({"id": "default"}, {"_id": 0})
+    if not config:
+        return DEFAULT_DISPUTE_CONFIG
+    return config
+
+
+@router.patch("/admin/dispute-config", summary="Admin — Modifier la config des frais d'annulation")
+async def admin_update_dispute_config(
+    data: DisputeConfigUpdate,
+    current_user: dict = Depends(require_admin)
+):
+    """Admin : modifie la configuration des frais d'annulation par tranches de prix"""
+    config = {
+        "id": "default",
+        "tranches": data.tranches,
+        "default_fee": data.default_fee,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_by": current_user.get("email"),
+    }
+    await db.citadelle_dispute_config.update_one(
+        {"id": "default"},
+        {"$set": config},
+        upsert=True
+    )
+    return config

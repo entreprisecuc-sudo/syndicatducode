@@ -1,13 +1,13 @@
 /**
  * Administration des transactions — La Citadelle Numérique
- * Vérification des accès, finalisation des ventes, gestion des litiges
+ * Vérification des accès, finalisation des ventes, gestion des litiges, config frais
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   Shield, CheckCircle, XCircle, Eye, AlertTriangle, Clock,
-  CreditCard, Filter, ChevronRight, Send, Lock
+  CreditCard, ChevronRight, Send, Lock, Scale, Ban, Settings, RefreshCw
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
@@ -35,7 +35,19 @@ export default function AdminCitadelleTransactions() {
   const [actionLoading, setActionLoading] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
 
+  // États chat litige
+  const [disputeMessages, setDisputeMessages] = useState([]);
+  const [disputeMessage, setDisputeMessage] = useState("");
+  const [sendingDispute, setSendingDispute] = useState(false);
+  const disputeEndRef = useRef(null);
+
+  // États config frais
+  const [showConfig, setShowConfig] = useState(false);
+  const [disputeConfig, setDisputeConfig] = useState(null);
+  const [configLoading, setConfigLoading] = useState(false);
+
   useEffect(() => { fetchTransactions(); }, [activeTab]);
+  useEffect(() => { disputeEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [disputeMessages.length]);
 
   const fetchTransactions = async () => {
     setLoading(true);
@@ -50,11 +62,55 @@ export default function AdminCitadelleTransactions() {
 
   const openDetail = async (txId) => {
     setDetailLoading(true);
+    setDisputeMessages([]);
     try {
       const res = await api.get(`/citadelle/admin/transactions/${txId}`);
       setSelectedTx(res.data);
+      // Charger messages litige si applicable
+      if (res.data.status === "disputed") {
+        fetchDisputeMessages(txId);
+      }
     } catch { alert("Erreur chargement détail"); }
     finally { setDetailLoading(false); }
+  };
+
+  const fetchDisputeMessages = async (txId) => {
+    const id = txId || selectedTx?.id;
+    if (!id) return;
+    try {
+      const res = await api.get(`/citadelle/transactions/${id}/dispute-messages`);
+      setDisputeMessages(res.data.dispute_messages || []);
+    } catch { /* silence */ }
+  };
+
+  const sendDisputeMessage = async () => {
+    if (!disputeMessage.trim() || sendingDispute || !selectedTx) return;
+    setSendingDispute(true);
+    try {
+      await api.post(`/citadelle/transactions/${selectedTx.id}/dispute-messages`, { content: disputeMessage.trim() });
+      setDisputeMessage("");
+      await fetchDisputeMessages();
+    } catch { /* ignore */ }
+    finally { setSendingDispute(false); }
+  };
+
+  const fetchDisputeConfig = async () => {
+    setConfigLoading(true);
+    try {
+      const res = await api.get("/citadelle/admin/dispute-config");
+      setDisputeConfig(res.data);
+    } catch { setDisputeConfig(null); }
+    finally { setConfigLoading(false); }
+  };
+
+  const saveDisputeConfig = async () => {
+    if (!disputeConfig) return;
+    setConfigLoading(true);
+    try {
+      await api.patch("/citadelle/admin/dispute-config", disputeConfig);
+      alert("Configuration sauvegardée.");
+    } catch { alert("Erreur lors de la sauvegarde."); }
+    finally { setConfigLoading(false); }
   };
 
   const doAction = async (endpoint, body = null) => {
@@ -72,11 +128,12 @@ export default function AdminCitadelleTransactions() {
   };
 
   const TABS = [
-    { key: "credentials_submitted", label: "À vérifier", count: counts.credentials_submitted },
-    { key: "admin_verified", label: "À finaliser", count: counts.admin_verified },
-    { key: "payment_done", label: "En attente accès", count: counts.payment_done },
-    { key: "completed", label: "Finalisées", count: counts.completed },
-    { key: "all", label: "Toutes", count: null },
+    { key: "credentials_submitted", label: "À vérifier",      count: counts.credentials_submitted },
+    { key: "admin_verified",        label: "À finaliser",      count: counts.admin_verified },
+    { key: "payment_done",          label: "En attente accès", count: counts.payment_done },
+    { key: "disputed",              label: "Litiges",          count: counts.disputed },
+    { key: "completed",             label: "Finalisées",       count: counts.completed },
+    { key: "all",                   label: "Toutes",           count: null },
   ];
 
   return (
@@ -87,7 +144,73 @@ export default function AdminCitadelleTransactions() {
             <CreditCard size={18} style={{ color: "#C9A45C" }} />
           </div>
           <h1 className="text-xl font-bold">Transactions — La Citadelle Numérique</h1>
+          <button
+            onClick={() => { setShowConfig(!showConfig); if (!disputeConfig) fetchDisputeConfig(); }}
+            className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+            style={{ background: "var(--admin-bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--admin-border, rgba(255,255,255,0.1))" }}
+            data-testid="btn-dispute-config">
+            <Settings size={13} /> Frais d'annulation
+          </button>
         </div>
+
+        {/* Section config des frais d'annulation */}
+        {showConfig && (
+          <div className="p-5 rounded-xl" style={{ background: "var(--admin-bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--admin-border, rgba(255,255,255,0.1))" }}>
+            <h3 className="font-bold text-sm mb-4 flex items-center gap-2">
+              <Scale size={14} style={{ color: "#C9A45C" }} /> Configuration des frais d'annulation
+            </h3>
+            {configLoading ? (
+              <div className="text-center py-4"><Clock size={20} className="animate-spin mx-auto opacity-30" /></div>
+            ) : disputeConfig ? (
+              <div className="space-y-3">
+                <p className="text-xs opacity-50">Frais prélevés lors d'une annulation acheteur selon le montant de la transaction.</p>
+                {disputeConfig.tranches?.map((tranche, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <span className="text-xs flex-1" style={{ opacity: 0.7 }}>{tranche.label || `Tranche ${idx + 1}`}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs opacity-50">Frais :</span>
+                      <input
+                        type="number"
+                        value={tranche.fee}
+                        onChange={e => {
+                          const updated = [...disputeConfig.tranches];
+                          updated[idx] = { ...updated[idx], fee: parseFloat(e.target.value) };
+                          setDisputeConfig({ ...disputeConfig, tranches: updated });
+                        }}
+                        className="w-20 px-2 py-1.5 rounded-lg text-xs outline-none text-center"
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                      />
+                      <span className="text-xs opacity-50">€</span>
+                    </div>
+                  </div>
+                ))}
+                <div className="flex items-center gap-3 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                  <span className="text-xs flex-1" style={{ opacity: 0.7 }}>Frais par défaut (fallback)</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={disputeConfig.default_fee}
+                      onChange={e => setDisputeConfig({ ...disputeConfig, default_fee: parseFloat(e.target.value) })}
+                      className="w-20 px-2 py-1.5 rounded-lg text-xs outline-none text-center"
+                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                    />
+                    <span className="text-xs opacity-50">€</span>
+                  </div>
+                </div>
+                <button
+                  onClick={saveDisputeConfig}
+                  disabled={configLoading}
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold disabled:opacity-60"
+                  style={{ background: "#C9A45C", color: "#081729" }}
+                  data-testid="save-config-btn">
+                  <CheckCircle size={13} /> Sauvegarder la configuration
+                </button>
+              </div>
+            ) : (
+              <p className="text-xs opacity-50 text-center py-2">Impossible de charger la configuration.</p>
+            )}
+          </div>
+        )}
 
         {/* Onglets */}
         <div className="flex flex-wrap gap-2">
@@ -223,7 +346,79 @@ export default function AdminCitadelleTransactions() {
                       <AlertTriangle size={12} /> Ouvrir un litige
                     </button>
                   )}
+
+                  {/* Actions spécifiques au litige */}
+                  {selectedTx.status === "disputed" && (
+                    <div className="space-y-2 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                      <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: "#DC2626" }}>
+                        <Scale size={12} /> Résolution du litige
+                      </p>
+                      <button onClick={() => { if (window.confirm("Reprendre le cours normal de la transaction ?")) doAction("resolve-dispute"); }}
+                        disabled={actionLoading}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
+                        style={{ background: "rgba(34,197,94,0.15)", color: "#22C55E" }}
+                        data-testid="admin-resolve-dispute-btn">
+                        <RefreshCw size={14} /> Résoudre — Reprendre le cours normal
+                      </button>
+                      <button onClick={() => { if (window.confirm("Annuler définitivement la vente et rembourser l'acheteur ?")) doAction("cancel-transaction"); }}
+                        disabled={actionLoading}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
+                        style={{ background: "rgba(220,38,38,0.15)", color: "#DC2626" }}
+                        data-testid="admin-cancel-transaction-btn">
+                        <Ban size={14} /> Annuler la vente — Rembourser l'acheteur
+                      </button>
+                    </div>
+                  )}
                 </div>
+
+                {/* Chat Litige — visible uniquement si litige ouvert */}
+                {selectedTx.status === "disputed" && (
+                  <div className="pt-3" style={{ borderTop: "1px solid var(--admin-border, rgba(255,255,255,0.1))" }}>
+                    <p className="text-xs font-bold mb-2 flex items-center gap-1.5" style={{ color: "#DC2626" }}>
+                      <Scale size={12} /> Chat Litige (Vendeur · La Garde)
+                    </p>
+                    <div className="space-y-2 max-h-48 overflow-y-auto mb-2">
+                      {disputeMessages.length === 0 ? (
+                        <p className="text-xs opacity-40 text-center py-3">Aucun message dans le chat litige.</p>
+                      ) : disputeMessages.map(msg => (
+                        <div key={msg.id} className={`flex ${msg.sender_role === "admin" ? "justify-end" : "justify-start"}`}>
+                          <div className="max-w-[80%]">
+                            <div className="flex items-center gap-1 mb-0.5">
+                              {msg.sender_role === "admin" && (
+                                <span className="text-xs px-1.5 py-0.5 rounded font-bold" style={{ background: "rgba(201,164,92,0.2)", color: "#C9A45C", fontSize: "10px" }}>La Garde</span>
+                              )}
+                              <span className="text-xs opacity-40" style={{ fontSize: "10px" }}>{msg.sender_email}</span>
+                            </div>
+                            <div className="px-3 py-2 rounded-lg text-xs" style={{
+                              background: msg.sender_role === "admin" ? "rgba(201,164,92,0.15)" : "rgba(255,255,255,0.05)",
+                              border: "1px solid rgba(255,255,255,0.08)"
+                            }}>
+                              {msg.content}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={disputeEndRef} />
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        value={disputeMessage}
+                        onChange={e => setDisputeMessage(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && sendDisputeMessage()}
+                        placeholder="Message à La Garde / au vendeur..."
+                        className="flex-1 px-3 py-2 rounded-lg text-xs outline-none"
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                        data-testid="admin-dispute-message-input"
+                      />
+                      <button onClick={sendDisputeMessage} disabled={sendingDispute || !disputeMessage.trim()}
+                        className="px-3 py-2 rounded-lg disabled:opacity-40"
+                        style={{ background: "#DC2626", color: "white" }}
+                        data-testid="admin-dispute-send-btn">
+                        <Send size={13} />
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Messages récents */}
                 {selectedTx.messages?.length > 0 && (

@@ -74,6 +74,14 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 ### Phase D — Avis (À FAIRE)
 ### Phase E — Statistiques & SEO (À FAIRE)
 
+### ✅ Gestion des Litiges — Dispute Management (TERMINÉ 12/06/2026)
+- **Acheteur** : Bannière "Fonds bloqués — La Garde veille" (statuts séquestre), bouton "Ouvrir un litige" + modal, bouton "Annuler l'achat" + modal avec frais calculés dynamiquement (dès 7 jours)
+- **Vendeur + Admin** : Chat litige sécurisé (`dispute_messages[]` dans le doc transaction), invisible pour l'acheteur. Badge "La Garde" pour l'admin.
+- **Admin** : Bouton "Résoudre le litige" (retour `payment_done`), "Annuler la vente" (remboursement + annonce remise en `active`), config dynamique des frais par tranches de prix (`citadelle_dispute_config`)
+- Frais d'annulation : 49€ (< 1000€) / 99€ (1000-5000€) / 199€ (> 5000€) — MOCKED, configurable admin
+- Nouvelles routes : `open-dispute`, `cancel-purchase`, `cancellation-fee`, `dispute-messages` (GET/POST), `resolve-dispute`, `cancel-transaction`, `dispute-config` (GET/PATCH)
+- ⚠️ `paid_at` ajouté lors du paiement (transactions antérieures = `None` → annulation désactivée)
+
 ---
 
 ## Routes backend Citadelle
@@ -103,7 +111,15 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 | POST /api/citadelle/services/{id}/buy | Acheter un service (paiement mocké) |
 || GET /api/citadelle/admin/services/orders | Admin: liste commandes de services |
 || PATCH /api/citadelle/admin/services/orders/{id} | Admin: mettre à jour une commande |
-| POST /api/citadelle/newsletter/subscribe | Inscription publique newsletter |
+| POST /api/citadelle/transactions/{id}/open-dispute | Acheteur: ouvrir un litige |
+|| GET /api/citadelle/transactions/{id}/cancellation-fee | Acheteur: consulter frais d'annulation |
+|| POST /api/citadelle/transactions/{id}/cancel-purchase | Acheteur: annuler achat (frais mocké) |
+|| GET /api/citadelle/transactions/{id}/dispute-messages | Vendeur/Admin: lire messages litige |
+|| POST /api/citadelle/transactions/{id}/dispute-messages | Vendeur/Admin: envoyer message litige |
+|| POST /api/citadelle/admin/transactions/{id}/resolve-dispute | Admin: résoudre litige |
+|| POST /api/citadelle/admin/transactions/{id}/cancel-transaction | Admin: annuler vente + rembourser |
+|| GET /api/citadelle/admin/dispute-config | Admin: lire config frais d'annulation |
+|| PATCH /api/citadelle/admin/dispute-config | Admin: modifier config frais (tranches prix) |
 | POST /api/citadelle/newsletter/subscribe-member | Auto-inscription membre connecté |
 | GET /api/citadelle/newsletter/unsubscribe/{token} | Désinscription via lien email |
 | GET /api/citadelle/admin/newsletter/subscribers | Admin: liste abonnés + stats |
@@ -135,6 +151,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 | citadelle_newsletter_config | Config scheduler (fréquence, jour, heure, max_listings) |
 | citadelle_conversations | Messagerie pré-vente (+ seller_notified_at, reminder_sent_at) |
 | citadelle_blog_posts | Articles blog (id, slug, title, excerpt, content_md, category, author_name, partner_link, is_published, published_at) |
+| citadelle_dispute_config | Config frais d'annulation par tranches de prix (doc unique id="default") |
 
 ---
 
@@ -145,5 +162,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **BACKEND_PUBLIC_URL** → URL publique du backend pour les images d'annonces dans les emails (configurable dans .env)
 - **Uploads** accessibles via `/api/uploads/` (fix K8s)
 - **APScheduler** — Scheduler newsletter démarré au boot du backend, config rechargée depuis MongoDB
+- **paid_at** → Ajouté lors du paiement (12/06/2026). Transactions antérieures ont `paid_at: None` → annulation acheteur désactivée pour ces transactions.
+- ⚠️ Règle 17 : `transactions.py` ≈ 1030 lignes et `CitadelleTransactionDetail.js` ≈ 716 lignes. Découpage futur recommandé.
 
-*Mise à jour : 10/06/2026*
+*Mise à jour : 12/06/2026*
