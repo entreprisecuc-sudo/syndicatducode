@@ -52,7 +52,7 @@ const buildMessages = (tx, disputeMsgs, userEmail) => {
 };
 
 // ── Composant d'une bulle de chat ────────────────────────────────────────────
-function ChatBubble({ tx, color, positionIndex, onClose, user, audioCtxRef }) {
+function ChatBubble({ tx, color, positionIndex, onClose, user, audioCtxRef, initAudio }) {
   const [expanded, setExpanded] = useState(false);
   const [messages, setMessages] = useState([]);
   const [disputeMessages, setDisputeMessages] = useState([]);
@@ -286,7 +286,7 @@ function ChatBubble({ tx, color, positionIndex, onClose, user, audioCtxRef }) {
         </button>
 
         <button
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => { initAudio(); setExpanded(!expanded); }}
           className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 text-sm font-bold text-white select-none"
           style={{ background: color }}
           title={tx.listing_title}
@@ -357,7 +357,7 @@ export default function CitadelleChatWidget() {
           onClose={() => closeBubble(tx.id)}
           user={user}
           audioCtxRef={audioCtxRef}
-          onClick={initAudio}
+          initAudio={initAudio}
         />
       ))}
 
