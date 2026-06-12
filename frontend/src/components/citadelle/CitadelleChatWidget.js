@@ -225,31 +225,50 @@ export default function CitadelleChatWidget() {
   // Autorisé à jouer le son après la première interaction utilisateur
   const sonAutorise = useRef(false);
 
-  // Son médiéval — nouvel AudioContext à chaque appel (évite le problème "suspended")
+  // Son médiéval — arpège luth en Ré mineur (mode Dorien, timbre triangle)
+  // Ré4 → La4 → Ré5 → Fa5 : fanfare de château montante
   const jouerSon = useCallback(() => {
     if (!sonAutorise.current) return;
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
+
+      // Ré mineur arpeggé — timbre luth (triangle) + harmonique douce (sine)
       const notes = [
-        { freq: 523.25, delai: 0,    vol: 0.15 },
-        { freq: 783.99, delai: 0.07, vol: 0.12 },
-        { freq: 1046.5, delai: 0.14, vol: 0.07 },
+        { freq: 293.66, delai: 0,    vol: 0.22, dur: 1.4 }, // Ré4
+        { freq: 440.00, delai: 0.09, vol: 0.19, dur: 1.3 }, // La4
+        { freq: 587.33, delai: 0.18, vol: 0.15, dur: 1.2 }, // Ré5
+        { freq: 698.46, delai: 0.27, vol: 0.10, dur: 1.0 }, // Fa5
       ];
-      notes.forEach(({ freq, delai, vol }) => {
+
+      notes.forEach(({ freq, delai, vol, dur }) => {
+        // Oscillateur principal : onde triangle (luth/harpe)
         const osc  = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.type = "sine";
+        osc.type = "triangle";
         osc.frequency.setValueAtTime(freq, ctx.currentTime + delai);
         gain.gain.setValueAtTime(vol, ctx.currentTime + delai);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delai + 1.6);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delai + dur);
         osc.start(ctx.currentTime + delai);
-        osc.stop(ctx.currentTime + delai + 1.6);
+        osc.stop(ctx.currentTime + delai + dur);
+
+        // Harmonique légère (octave sup, sine, volume réduit) — donne la brillance médiévale
+        const oscH  = ctx.createOscillator();
+        const gainH = ctx.createGain();
+        oscH.connect(gainH);
+        gainH.connect(ctx.destination);
+        oscH.type = "sine";
+        oscH.frequency.setValueAtTime(freq * 2, ctx.currentTime + delai);
+        gainH.gain.setValueAtTime(vol * 0.3, ctx.currentTime + delai);
+        gainH.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delai + dur * 0.6);
+        oscH.start(ctx.currentTime + delai);
+        oscH.stop(ctx.currentTime + delai + dur * 0.6);
       });
-      // Fermer le contexte proprement après la durée des notes
+
+      // Fermer le contexte proprement après la dernière note
       setTimeout(() => { try { ctx.close(); } catch {} }, 2000);
     } catch { /* non supporté */ }
   }, []);
