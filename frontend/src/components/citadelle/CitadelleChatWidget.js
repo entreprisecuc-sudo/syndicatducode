@@ -358,14 +358,18 @@ export default function CitadelleChatWidget() {
                           {tx.listing_title || "Transaction"}
                         </p>
                         <p
-                          className="text-xs"
+                          className="text-xs truncate"
                           style={{
                             color: tx.status === "disputed"
                               ? "#DC2626"
                               : CITADELLE_COLORS.textMuted,
                           }}
                         >
-                          {tx.status === "disputed" ? "Litige — La Garde" : "En cours"}
+                          {tx.last_message
+                            ? (tx.last_message.sender_id === user?.id ? "Vous : " : "")
+                              + tx.last_message.content
+                            : (tx.status === "disputed" ? "Litige — La Garde" : "En cours")
+                          }
                         </p>
                       </div>
                     </button>
