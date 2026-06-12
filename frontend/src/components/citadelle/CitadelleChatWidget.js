@@ -20,37 +20,12 @@ const STATUTS_ACTIFS = [
 // Couleur d'une transaction : rouge si litige, bleu sinon
 const couleurTx = (tx) => tx.status === "disputed" ? "#DC2626" : "#1D4ED8";
 
-// Construit la liste unifiée des messages (normaux + litige), triés par date
-const construireMessages = (tx, messagesLitige, emailUtilisateur) => {
-  const normaux = (tx.messages || []).map(m => ({
-    id: m.id || m.timestamp,
-    contenu: m.content,
-    est_systeme: m.type === "system",
-    est_admin: false,
-    est_moi: m.sender_email === emailUtilisateur,
-    horodatage: m.timestamp || m.sent_at,
-  }));
-
-  const litige = (messagesLitige || []).map(m => ({
-    id: m.id,
-    contenu: m.content,
-    est_systeme: false,
-    est_admin: m.sender_role === "admin",
-    est_moi: m.sender_role !== "admin",
-    est_litige: true,
-    horodatage: m.sent_at,
-  }));
-
-  return [...normaux, ...litige].sort(
-    (a, b) => new Date(a.horodatage) - new Date(b.horodatage)
-  );
-};
-
 // ── Vue chat d'une conversation sélectionnée ──────────────────────────────────
+// Affiche uniquement la conversation normale vendeur/acheteur (tx.messages).
+// Le chat litige (La Garde) reste accessible sur la page de détail de la transaction.
 function VueChat({ tx, onRetour, user, audioCtxRef }) {
   const couleur = couleurTx(tx);
   const [messages, setMessages] = useState([]);
-  const [messagesLitige, setMessagesLitige] = useState([]);
   const [saisie, setSaisie] = useState("");
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const finMessagesRef = useRef(null);
@@ -83,7 +58,7 @@ function VueChat({ tx, onRetour, user, audioCtxRef }) {
     } catch { /* silence */ }
   }, [audioCtxRef]);
 
-  // Chargement + polling des messages toutes les 3 secondes
+  // Chargement + polling des messages normaux toutes les 3 secondes
   useEffect(() => {
     nbPrecedent.current = 0;
     premierChargement.current = true;
@@ -91,36 +66,23 @@ function VueChat({ tx, onRetour, user, audioCtxRef }) {
     const charger = async () => {
       try {
         const res = await citadelleApi.get(`/transactions/${tx.id}`);
-        const donnees = res.data;
-
-        let msgLitige = [];
-        if (donnees.seller_id === user?.id && donnees.status === "disputed") {
-          try {
-            const rd = await citadelleApi.get(`/transactions/${tx.id}/dispute-messages`);
-            msgLitige = rd.data.dispute_messages || [];
-          } catch { /* acheteur : pas d'accès aux messages de litige */ }
+        // On extrait uniquement les messages normaux (vendeur/acheteur)
+        const msgs = (res.data.messages || []).filter(m => m.type !== "system");
+        setMessages(res.data.messages || []);
+        // Vérification nouveau message entrant
+        if (!premierChargement.current && msgs.length > nbPrecedent.current) {
+          const dernier = msgs[msgs.length - 1];
+          if (dernier && dernier.sender_id !== user?.id) jouerSon();
         }
-
-        setMessagesLitige(msgLitige);
-        setMessages(construireMessages(donnees, msgLitige, user?.email));
+        nbPrecedent.current = msgs.length;
+        if (msgs.length > 0) premierChargement.current = false;
       } catch { /* silence */ }
     };
 
     charger();
     const intervalle = setInterval(charger, 3000);
     return () => clearInterval(intervalle);
-  }, [tx.id, user]);
-
-  // Son sur nouveau message entrant
-  useEffect(() => {
-    const visibles = messages.filter(m => !m.est_systeme);
-    if (!premierChargement.current && visibles.length > nbPrecedent.current) {
-      const dernier = visibles[visibles.length - 1];
-      if (dernier && !dernier.est_moi) jouerSon();
-    }
-    nbPrecedent.current = visibles.length;
-    if (visibles.length > 0) premierChargement.current = false;
-  }, [messages, jouerSon]);
+  }, [tx.id, user, jouerSon]);
 
   // Scroll automatique vers le dernier message
   useEffect(() => {
@@ -134,10 +96,12 @@ function VueChat({ tx, onRetour, user, audioCtxRef }) {
       await citadelleApi.post(`/transactions/${tx.id}/message`, { content: saisie.trim() });
       setSaisie("");
       const res = await citadelleApi.get(`/transactions/${tx.id}`);
-      setMessages(construireMessages(res.data, messagesLitige, user?.email));
+      setMessages(res.data.messages || []);
     } catch { /* silence */ }
     finally { setEnvoiEnCours(false); }
   };
+
+  const messagesVisibles = messages.filter(m => m.type !== "system");
 
   return (
     <>
@@ -159,33 +123,32 @@ function VueChat({ tx, onRetour, user, audioCtxRef }) {
             {tx.listing_title || "Transaction"}
           </p>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>
-            {tx.status === "disputed" ? "Litige — La Garde" : "En cours"}
+            {tx.status === "disputed" ? "Litige en cours" : "En cours"}
           </p>
         </div>
       </div>
 
       {/* Zone des messages */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
-        {messages.filter(m => !m.est_systeme).length === 0 ? (
-          <p className="text-xs text-center pt-8" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Démarrez la conversation...
-          </p>
-        ) : messages.map((msg, i) => {
-          // Message système (séparateur centré)
-          if (msg.est_systeme) return (
-            <div key={i} className="flex justify-center">
+        {/* Messages système (séparateurs) */}
+        {messages.map((msg, i) => {
+          if (msg.type === "system") return (
+            <div key={msg.id || i} className="flex justify-center">
               <span
                 className="text-xs px-2 py-0.5 rounded-full"
                 style={{ background: CITADELLE_COLORS.bg, color: CITADELLE_COLORS.textMuted }}
               >
-                {msg.contenu}
+                {msg.content}
               </span>
             </div>
           );
 
-          // Message de La Garde (admin)
-          if (msg.est_admin) return (
-            <div key={i} className="flex justify-start">
+          const estMoi = msg.sender_id === user?.id;
+          const estAdmin = msg.type === "admin";
+
+          // Message de l'administrateur dans la conversation normale
+          if (estAdmin) return (
+            <div key={msg.id || i} className="flex justify-start">
               <div className="max-w-[82%]">
                 <div className="flex items-center gap-1 mb-0.5">
                   <Shield size={9} style={{ color: "#DC2626" }} />
@@ -199,27 +162,27 @@ function VueChat({ tx, onRetour, user, audioCtxRef }) {
                     border: "1px solid rgba(220,38,38,0.15)",
                   }}
                 >
-                  {msg.contenu}
+                  {msg.content}
                 </div>
               </div>
             </div>
           );
 
-          // Message de l'utilisateur connecté
-          if (msg.est_moi) return (
-            <div key={i} className="flex justify-end">
+          // Mon message
+          if (estMoi) return (
+            <div key={msg.id || i} className="flex justify-end">
               <div
                 className="px-3 py-1.5 rounded-2xl rounded-tr-sm text-sm max-w-[82%] text-white"
                 style={{ background: couleur }}
               >
-                {msg.contenu}
+                {msg.content}
               </div>
             </div>
           );
 
           // Message de l'autre partie
           return (
-            <div key={i} className="flex justify-start">
+            <div key={msg.id || i} className="flex justify-start">
               <div
                 className="px-3 py-1.5 rounded-2xl rounded-tl-sm text-sm max-w-[82%]"
                 style={{
@@ -228,11 +191,18 @@ function VueChat({ tx, onRetour, user, audioCtxRef }) {
                   border: `1px solid ${CITADELLE_COLORS.border}`,
                 }}
               >
-                {msg.contenu}
+                {msg.content}
               </div>
             </div>
           );
         })}
+
+        {/* Message si aucune conversation */}
+        {messagesVisibles.length === 0 && (
+          <p className="text-xs text-center pt-8" style={{ color: CITADELLE_COLORS.textMuted }}>
+            Démarrez la conversation...
+          </p>
+        )}
         <div ref={finMessagesRef} />
       </div>
 
