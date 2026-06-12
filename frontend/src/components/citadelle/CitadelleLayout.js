@@ -14,6 +14,7 @@ import {
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { CITADELLE_CONFIG, CITADELLE_NAV_LINKS, CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
+import CitadelleChatWidget from "@/components/citadelle/CitadelleChatWidget";
 
 // ── Navigation ───────────────────────────────────────────────────────────────
 
@@ -284,6 +285,7 @@ const CitadelleLayout = ({ children, pageTitle }) => {
         {children}
       </main>
       <CitadelleFooter />
+      <CitadelleChatWidget />
     </div>
   );
 };
