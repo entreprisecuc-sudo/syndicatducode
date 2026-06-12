@@ -219,30 +219,40 @@ export default function CitadelleChatWidget() {
   const [transactions, setTransactions] = useState([]);
   const [masquees, setMasquees] = useState(chargerMasquees);
   const [panelOuvert, setPanelOuvert] = useState(false);
-  // { tx, mode } — mode = "normal" | "litige"
   const [selection, setSelection] = useState(null);
-  const audioCtxRef = useRef(null);
   // Mémorise les sent_at des derniers messages pour détecter les nouveaux
   const sentAtPrecedents = useRef({});
+  // Autorisé à jouer le son après la première interaction utilisateur
+  const sonAutorise = useRef(false);
 
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      try { audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)(); }
-      catch { /* non supporté */ }
-    }
-  };
-
-  // Son médiéval — utilisé par le polling global ET par VueChat
-  const jouerSon = useCallback(async () => {
+  // Son médiéval — nouvel AudioContext à chaque appel (évite le problème "suspended")
+  const jouerSon = useCallback(() => {
+    if (!sonAutorise.current) return;
     try {
-      const ctx = audioCtxRef.current;
-      if (!ctx) return;
-      if (ctx.state === "suspended") await ctx.resume();
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
       const notes = [
         { freq: 523.25, delai: 0,    vol: 0.15 },
         { freq: 783.99, delai: 0.07, vol: 0.12 },
         { freq: 1046.5, delai: 0.14, vol: 0.07 },
       ];
+      notes.forEach(({ freq, delai, vol }) => {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + delai);
+        gain.gain.setValueAtTime(vol, ctx.currentTime + delai);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delai + 1.6);
+        osc.start(ctx.currentTime + delai);
+        osc.stop(ctx.currentTime + delai + 1.6);
+      });
+      // Fermer le contexte proprement après la durée des notes
+      setTimeout(() => { try { ctx.close(); } catch {} }, 2000);
+    } catch { /* non supporté */ }
+  }, []);
       notes.forEach(({ freq, delai, vol }) => {
         const osc  = ctx.createOscillator();
         const gain = ctx.createGain();

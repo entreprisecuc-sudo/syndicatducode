@@ -1,53 +1,56 @@
 <analysis>**original_problem_statement**: 
-Création de la plateforme La Citadelle Numérique, une marketplace pour l'achat et la vente de sites web, SaaS, et actifs numériques. Cette plateforme s'intègre dans l'écosystème Syndicat du Code (1 Backend, 1 DB, mais Frontends séparés). 
+Création de la plateforme La Citadelle Numérique (Marketplace pour l'achat et la vente de sites web, SaaS, et actifs numériques). 
 PRODUCT REQUIREMENTS: 
-- 27 RÈGLES STRICTES de développement à respecter (voir ), incluant: principe KISS, Zéro Hardcoding, et **interdiction stricte de lancer des tests automatisés sans validation explicite du client**.
+- 27 RÈGLES STRICTES de développement à respecter (voir ), incluant: principe KISS, Zéro Hardcoding, DRY.
+- **Règle 6 : Interdiction stricte de lancer des tests automatisés (testing subagent) sans validation explicite du client**.
+- L'utilisateur exige que toute communication, pensée et code soient en **Français exclusif**.
 
-**User's preferred language**: FRENCH. The user strictly communicates in French. You MUST INSTRUCT the next agent to generate ALL thoughts, plans, code comments, and chat responses exclusively in French.
+**User's preferred language**: FRENCH. 
+⚠️ **CRITICAL INSTRUCTION FOR NEXT AGENT**: The user STRICTLY communicates in French. You MUST automatically detect this and INSTRUCT your own thoughts, code comments, tool usages, and chat responses to be exclusively in **French**. Furthermore, you MUST strictly adhere to the 27 development rules detailed in . Do not use automated testing agents without explicit permission.
 
 **what currently exists?** 
-The application has completed Phase A (Auth/Profile), Phase B (Listings), and now Phase C (Transactions & Messaging). The backend securely isolates users via  or . Users can create listings, upload mixed file types (images/PDFs), edit active listings (which reverts them to pending), and communicate via a real-time messaging system (polling-based). A full mock-escrow transaction flow is implemented: Buyer makes offer -> Seller accepts -> Buyer pays (mock Stripe) -> Seller provides credentials -> Admin verifies -> Admin transmits credentials via email to Buyer -> Funds released. Users can also fill out professional KYC data and upload documents (ID, RIB, KBIS). Admins have a dedicated dashboard to moderate listings, verify KYC documents, manage transactions, and configure the new Services catalog.
+Le widget de chat flottant a été refondu. Il consiste désormais en une bulle unique qui ouvre un panneau latéral listant toutes les conversations. Les conversations entre acheteurs/vendeurs (bleu) et les litiges avec l'admin La Garde (rouge) sont affichés sur des lignes séparées pour une même transaction. Chaque ligne affiche un aperçu du dernier message (façon WhatsApp) et possède une icône corbeille permettant de masquer la conversation (sauvegardé dans le ). Si un nouveau message arrive, la conversation réapparaît.
 
 **Last working item**: 
-    - Last item agent was working: Implémentation du catalogue Services (Phase D) avec interface publique et gestion admin.
-    - Status: NONE (Completed, user verification pending)
-    - Agent Testing Done: Y (Screenshots & Curl used)
-    - Which testing method agent to use? manual testing by curl/screenshot tool (Do NOT use testing subagent unless explicitly permitted by user per Rule 6).
+    - Last item agent was working: Réparation de la sonnerie médiévale (Web Audio API) à la réception d'un nouveau message. Le son ne se déclenchait plus car l' était bloqué à l'état  ou lié uniquement à la vue détaillée du chat. L'agent vient de modifier la logique pour instancier un nouvel  à la volée lors du polling global des messages pour forcer le son.
+    - Status: USER VERIFICATION PENDING
+    - Agent Testing Done: Y (Code implemented, not e2e tested for audio)
+    - Which testing method agent to use? screenshot tool / curl / python -c. (⚠️ **DO NOT USE testing_agent_v4_fork** unless asked)
     - User Testing Done: N
 
 **All Pending/In progress Issue list**: 
-None.
+  Issue 1 (P0): Le son médiéval de notification ne fonctionne pas
+     - Attempted fixes: L'agent a déplacé la fonction  dans le polling global du widget (au lieu de la limiter à la fenêtre de chat ouverte) et instancie désormais un nouvel  à chaque appel pour éviter le statut .
+     - Next debug checklist: Attendre le retour de l'utilisateur. Si le son ne marche toujours pas, cela est fort probablement dû à la politique d'Autoplay des navigateurs (qui bloque l'audio si l'utilisateur n'a pas interagi avec la page). Fichier: . Il faudra potentiellement capter un premier clic n'importe où sur la page pour déverrouiller le contexte audio globalement.
+     - Why fix this issue and what will be achieved with the fix? L'utilisateur veut une alerte sonore type médiéval à chaque réception de message.
+     - Status: USER VERIFICATION PENDING
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on other issue: None
 
 **In progress Task List**: 
-None.
+  None
 
 **Upcoming and Future Tasks**
-    - Phase D: Avis utilisateurs, Blog (P1)
-    - Phase E: Statistiques admin & SEO (P2)
-    - Remplacer le paiement Mocked par l'intégration Stripe réelle (P1)
-    - Sécuriser l'accès au dossier  (actuellement ouvert pour preview) pour la pré-production (P2)
-    - P1 (Syndicat): Audit logs admin
-    - P1 (Syndicat): APScheduler Cron Backup (en attente clé GDrive)
-    - P2 (Syndicat): E-invoicing France (Factur-X)
+    - P1: Remplacer le paiement Mocked par l'intégration Stripe réelle (le client fournira les clés).
+    - P1: Phase D — Avis utilisateurs (notation post-transaction).
+    - P2: Découper  (qui dépasse les 1100 lignes) en sous-modules (, etc.) pour respecter la Règle 17.
+    - P2: Refactoriser  (> 800 lignes).
+    - P2: Phase E — Statistiques admin & SEO.
+    - P2: Sécuriser l'accès au dossier .
 
 **Completed work in this session**
-- Rendu Frontend des PDFs/Docs sur les annonces avec icônes (DONE)
-- Fix global des uploads d'images cassés (montage Kubernetes via ) (DONE)
-- Fix UI/UX sur les pages Mot de passe oublié et Reset Password (glass-morphism) (DONE)
-- Correction envoi email Citadelle (utilisation temporaire de l'expéditeur Syndicat) (DONE)
-- Modification d'annonces actives (repasse en statut ) et suppression admin (DONE)
-- Phase C: Flow de Transaction complet avec offres, séquestre mocké, et validation admin (DONE)
-- Messagerie pré-vente acheteur/vendeur avec polling 3s et badge de notifications (DONE)
-- Isolation totale des comptes DB: Index unique modifié de  à  (DONE)
-- Transmission manuelle des accès par l'admin à l'acheteur + notification par email sécurisé (DONE)
-- Onglets Profil KYC : Infos bancaires, statut pro, upload CNI/RIB/KBIS + Visualisation Admin (DONE)
-- Catalogue de Services additionnels administrables (DONE)
+- Refonte complète du widget de chat flottant en une seule bulle (DONE)
+- Correction des statuts (, ) pour que les transactions ne disparaissent plus du widget (DONE)
+- Séparation des conversations normales (bleu) et litiges/admin (rouge) sur des lignes distinctes dans le widget (DONE)
+- Ajout de l'aperçu du dernier message (WhatsApp-like) dans la liste des conversations (DONE)
+- Implémentation du masquage des conversations via corbeille et , avec réapparition automatique au nouveau message (DONE)
 
 **Earlier issues found/mentioned but not fixed**
 None.
 
 **Known issue recurrence from previous fork**
-  - Issue recurrence in previous fork: None.
+  - Issue recurrence in previous fork: None
   - Recurrence count: 0
   - Status: RESOLVED
 
@@ -55,83 +58,76 @@ None.
 
 
 **Key Technical Concepts**
-React 19, FastAPI, MongoDB (Motor). 
-Platform isolation logic ( DB index). 
-Kubernetes ingress routing bypass: All static file urls must be prefixed via  to route through . 
-Polling-based real-time messaging (3-second interval).
+React 19, FastAPI, MongoDB (Motor). Web Audio API (génération de sons sans fichier audio). Mocks Stripe. Polling frontend pour la messagerie en temps réel. LocalStorage pour l'état de l'UI (masquage des chats).
 
 **key DB schema**
-  - : {email, password_hash, platform, billing, professional...} (Unique Index:  + )
-  - : {title, seller_id, status, images...}
-  - : {listing_id, buyer_id, seller_id, status, credentials, credentials_transmitted}
-  - : {conversation_id, sender_id, receiver_id, content, read_by}
-  - : {title, price_type, price, is_active}
+  - : id, status, listing_title, buyer_id, seller_id, dispute_messages (Array), messages (Array).
 
 **changes in tech stack**
-  - None.
+  - Implémentation d'AudioContext éphémère (créé à la volée) pour contourner les limitations de suspension d'audio en arrière-plan.
 
 **All files of reference** 
-  - : **MANDATORY READING.** Contains the 27 golden rules.
-  - : Updated with KYC doc uploads and isolated registration.
-  - : New.
-  - : New.
-  - : New.
-  - : Contains path helper .
+  -  (MANDATORY READING)
+  - 
+  - 
 
 **Areas that need refactoring**: 
-None currently required. The 3-second polling for messaging is a KISS approach approved implicitly by the user, but monitor for performance if usage scales heavily.
+-  (> 1100 lignes). L'agent précédent l'a signalé dans le PRD (Règle 17).
+-  (> 800 lignes).
 
 **key api endpoints**
-- 
-- 
+-  (Retourne  et )
 - 
 - 
 
 **Critical Info for New Agent** 
-- **FRENCH ONLY:** The user insists on communicating entirely in French.
-- **RULE 6 IS STRICT:** Do NOT run tests (via testing subagent or otherwise) without explicitly asking the user first via .
-- **Database Change:** A unique index on just  caused registration blocks. It was updated to an  compound index ( + ). A user can now have  under  and a completely separate account under . 
-- **Kubernetes Static Routing:** Frontend paths for uploads () must be converted to  using the helper  to bypass Kubernetes ingress rules.
+- **RÈGLE 6 :** NE JAMAIS utiliser  sans demander au client. Testez localement avec  et .
+- Parlez, pensez et commentez UNIQUEMENT en Français.
+- Gardez à l'esprit la politique stricte des navigateurs sur l' audio. Si l'utilisateur confirme que le son ne marche toujours pas, c'est probablement dû à cette restriction (l'audio est bloqué si l'utilisateur ne clique nulle part sur la page après le chargement).
 
 **documents and test reports created in this job** 
   - /app/memory/PRD.md
+  - /app/memory/test_credentials.md
 
 **Last 10 User Messages and any pending HUMAN messages** 
-1. User confirmed transactions Phase C logic.
-2. User requested solution for account creation block when email already exists in Syndicat DB.
-3. User approved Option A (separate accounts via DB index update).
-4. User requested pre-sale messaging between buyer and seller.
-5. User requested messaging to be real-time/fluid.
-6. User requested unread message badge on the dashboard.
-7. User requested that Admins must explicitly click a button to transmit credentials to the buyer.
-8. User requested that transmitting credentials also sends an email to the buyer.
-9. User requested KYC fields in user profile (IBAN, Pro status, SIREN).
-10. User requested document uploads (ID, RIB, KBIS) and admin visualization of these documents.
-11. User requested the addition of the Services catalog.
-- *Pending Human Action*: The agent completed the Services feature and finished the session. Wait for user instructions on Phase D (Reviews/Blog) or Stripe.
+1. (User) Demande que le panneau de chat s'ouvre à côté de la bulle et garde le son médiéval. (Complété)
+2. (User) Signale que les conversations clients n'apparaissent pas. (Complété - fix des statuts actifs)
+3. (User) Envoie capture montrant que les messages vendeur/acheteur n'apparaissent plus dans la vue de détail du widget. (Complété - alignement de la logique de  sur )
+4. (User) Demande d'envoyer un message via le compte Joseph pour tester. (Complété - test backend réussi)
+5. (User) Signale que le message n'est pas visible. (L'utilisateur regardait la liste, pas la conversation ouverte. Résolu en expliquant, puis...)
+6. (User) Demande d'afficher le dernier message en aperçu dans la liste, comme WhatsApp. (Complété - modif backend/frontend)
+7. (User) Signale que les conversations admin et utilisateur sont mélangées. (Complété)
+8. (User) Précise vouloir 2 lignes séparées pour les deux types d'échanges d'une même transaction. (Complété)
+9. (User) Demande une corbeille pour masquer temporairement la conversation. (Complété - via LocalStorage)
+10. (User) Signale que la sonnerie médiévale ne marche plus lors de la réception d'un message. 
+- *Pending Human Action*: L'utilisateur doit tester la toute dernière modification de l'agent qui crée un  à la volée pour forcer le son.
 
 **Project Health Check:**
-- Mocked: Stripe integration (Mock PI generated in ).
+- Broken: Potentiel blocage de la Web Audio API par l'Autoplay policy du navigateur.
+- Mocked: Stripe (Paiements).
 
 **3rd Party Integrations** 
-- Hostinger SMTP (Emails) - requires User credentials (Present in )
-- Google Drive (Backup) - requires Service Account JSON Key (Pending)
-- Stripe (Payments) - requires User API Key (Mocked)
-*(None utilize Emergent LLM Key)*
+- Stripe (Mocked)
+- Hostinger SMTP (Emails)
 
 **Testing status** 
-- Testing agent used after significant changes: NO (Blocked by User Rule 6).
+- Testing agent used after significant changes: NO (Interdit par les règles du projet).
 - Troubleshoot agent used after agent stuck in loop: NO.
 - Test files created: None.
-- Known regressions: None.
+- Known regressions: None (La régression du son a été théoriquement patchée en fin de session).
 
 **Credentials to test flow:**
-- Admin:  /  (Connect via )
-- Seller:  /  (Connect via )
-- Buyer:  /  (Connect via )
+- Admin:  / 
+- Seller:  / 
+- Buyer:  / 
 
 **What agent forgot to execute**
-N/A - All requests were addressed.
+N/A. L'agent a traité les retours en cascade avec l'utilisateur et s'est arrêté juste après avoir poussé le fix final pour l'audio.
 
 **Debugging checklist for current issue**
-N/A - Awaiting user instruction for next phase.</analysis>
+    Issue: Le son médiéval ne joue pas lors de la réception d'un nouveau message via le polling global du widget.
+
+    Frontend files to check: 
+    -  (Ligne 190-250)
+    -> Si la création d'un  à la volée échoue en silence, vérifier les avertissements console (Autoplay policy).
+    -> Solution potentielle: Ajouter un overlay/bouton invisible ou lier l'initialisation de l' au premier clic de l'utilisateur sur la page pour débloquer l'audio du navigateur, et le conserver dans un .</analysis>
