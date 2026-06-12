@@ -241,6 +241,36 @@ async def create_offer(
     return transaction
 
 
+@router.get("/transactions/unread-count", summary="Nombre de transactions avec messages non lus")
+async def transactions_unread_count(
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """Compte les transactions où le dernier message est de l'autre partie
+    (= en attente de réponse de l'utilisateur courant).
+    Inclut également les litiges avec un dernier message de l'admin."""
+    user_id = current_user.get("sub")
+    cursor = db.citadelle_transactions.find(
+        {"$or": [{"buyer_id": user_id}, {"seller_id": user_id}]},
+        {"_id": 0, "messages": 1, "dispute_messages": 1, "seller_id": 1, "status": 1}
+    )
+    transactions = await cursor.to_list(100)
+
+    total = 0
+    for tx in transactions:
+        # Dernier message normal — non lu si envoyé par l'autre partie
+        msgs = [m for m in (tx.get("messages") or []) if m.get("type") != "system"]
+        if msgs and msgs[-1].get("sender_id") != user_id:
+            total += 1
+            continue
+        # Dernier message de litige — non lu si admin et utilisateur est le vendeur
+        if tx.get("seller_id") == user_id and tx.get("status") == "disputed":
+            dispute_msgs = tx.get("dispute_messages") or []
+            if dispute_msgs and dispute_msgs[-1].get("sender_role") == "admin":
+                total += 1
+
+    return {"unread": total}
+
+
 @router.get("/transactions/my", summary="Mes transactions (acheteur + vendeur)")
 async def my_transactions(
     current_user: dict = Depends(require_citadelle_user)

@@ -14,18 +14,25 @@ import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants"
 export default function CitadelleDashboard() {
   const { user, logout, isAuthenticated } = useCitadelleAuth();
   const navigate = useNavigate();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessages, setUnreadMessages]         = useState(0);
+  const [unreadTransactions, setUnreadTransactions] = useState(0);
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    const fetchUnread = async () => {
+
+    const fetchCounts = async () => {
       try {
-        const res = await citadelleApi.get("/messages-unread-count");
-        setUnreadCount(res.data.unread || 0);
+        const [resMsg, resTx] = await Promise.all([
+          citadelleApi.get("/messages-unread-count"),
+          citadelleApi.get("/transactions/unread-count"),
+        ]);
+        setUnreadMessages(resMsg.data.unread || 0);
+        setUnreadTransactions(resTx.data.unread || 0);
       } catch { /* silence */ }
     };
-    fetchUnread();
-    const interval = setInterval(fetchUnread, 10000);
+
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 10000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
@@ -38,8 +45,8 @@ export default function CitadelleDashboard() {
   const menuItems = [
     { icon: Plus,          label: "Publier une annonce", desc: "Mettez votre actif en vente",      href: "/citadelle/espace-membre/mes-annonces/creer", active: true },
     { icon: FileText,      label: "Mes annonces",         desc: "Gérez vos annonces actives",       href: "/citadelle/espace-membre/mes-annonces",        active: true },
-    { icon: ArrowLeftRight,label: "Mes transactions",     desc: "Suivez vos achats et ventes",      href: "/citadelle/espace-membre/transactions",    active: true },
-    { icon: MessageSquare, label: "Mes messages",         desc: "Échangez avec acheteurs et vendeurs", href: "/citadelle/espace-membre/messages",     active: true, unread: unreadCount },
+    { icon: ArrowLeftRight,label: "Mes transactions",     desc: "Suivez vos achats et ventes",      href: "/citadelle/espace-membre/transactions",    active: true, unread: unreadTransactions },
+    { icon: MessageSquare, label: "Mes messages",         desc: "Échangez avec acheteurs et vendeurs", href: "/citadelle/espace-membre/messages",     active: true, unread: unreadMessages },
     { icon: TrendingUp,    label: "Mes services",         desc: "Demandes d'évaluation et d'audit", href: "/citadelle/espace-membre/mes-services",        active: true },
     { icon: User,          label: "Mon profil",           desc: "Modifier mes informations",        href: "/citadelle/espace-membre/profil",              active: true },
   ];
