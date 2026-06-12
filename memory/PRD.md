@@ -165,4 +165,14 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **paid_at** → Ajouté lors du paiement (12/06/2026). Transactions antérieures ont `paid_at: None` → annulation acheteur désactivée pour ces transactions.
 - ⚠️ Règle 17 : `transactions.py` ≈ 1030 lignes et `CitadelleTransactionDetail.js` ≈ 716 lignes. Découpage futur recommandé.
 
+### ✅ Widget Chat Flottant Refonte (TERMINÉ 12/06/2026)
+- Suppression des bulles multiples (une par transaction)
+- Une seule bulle noire/dorée, positionnée à 100px du bas (au-dessus du footer)
+- Clic → panneau "Mes conversations" à droite de la bulle
+- Rouge : litige (La Garde) | Bleu : conversation standard
+- Clic sur une conversation → vue chat complète (messages + saisie + envoi)
+- Bouton retour vers la liste
+- Sons médiévaux conservés (Web Audio API)
+- Fichier : `CitadelleChatWidget.js` (refonte complète, 1 seul fichier)
+
 *Mise à jour : 12/06/2026*
