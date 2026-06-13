@@ -302,7 +302,7 @@ export default function CitadelleListingDetail() {
                               setBidError(err.response?.data?.detail || "Erreur lors de l'enchère");
                             } finally { setBidLoading(false); }
                           }} disabled={bidLoading}
-                            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-all hover:scale-[1.02]"
+                            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-all hover:scale-[1.02] mt-3"
                             style={{ background: "#DC2626", color: "white" }}
                             data-testid="btn-place-bid">
                             {bidLoading ? <div className="w-4 h-4 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: "white" }} />
@@ -310,7 +310,7 @@ export default function CitadelleListingDetail() {
                           </button>
                           {listing.auction_buy_now_price && (
                             <button onClick={() => setOfferModal(true)}
-                              className="w-full py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                              className="w-full py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02] mt-3"
                               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                               data-testid="btn-buy-now">
                               <Zap size={14} /> Acheter immédiatement — {listing.auction_buy_now_price.toLocaleString("fr-FR")} €
