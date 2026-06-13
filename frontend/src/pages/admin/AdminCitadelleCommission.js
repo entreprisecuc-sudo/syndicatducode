@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { Save, Percent, Euro, Info, RotateCcw, CheckCircle } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import citadelleApi from "@/services/citadelleApi";
+import api from "@/services/api";
 
 const DEFAULTS = { rate: 0.05, minimum_eur: 49 };
 
@@ -20,7 +20,7 @@ export default function AdminCitadelleCommission() {
 
   // Chargement des paramètres actuels
   useEffect(() => {
-    citadelleApi.get("/settings/commission")
+    api.get("/citadelle/settings/commission")
       .then(res => {
         const d = res.data;
         setSettings(d);
@@ -49,7 +49,7 @@ export default function AdminCitadelleCommission() {
     setError("");
     setSaving(true);
     try {
-      const res = await citadelleApi.put("/admin/settings/commission", { rate, minimum_eur: min });
+      const res = await api.put("/citadelle/admin/settings/commission", { rate, minimum_eur: min });
       setSettings(res.data);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
