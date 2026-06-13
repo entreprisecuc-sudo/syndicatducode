@@ -273,17 +273,12 @@ export default function CitadelleServices() {
               />
             )}
 
-            {/* 2. Vendeurs (dark) + Acheteurs (light) côte à côte */}
-            <div
-              className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden"
-              style={{ border: `1px solid ${CITADELLE_COLORS.border}` }}
-            >
-              {/* ── Zone Vendeurs — fond bleu nuit ── */}
+            {/* 2. Vendeurs (dark) — pleine largeur */}
+            {vendorServices.length > 0 && (
               <div
-                className="flex flex-col"
+                className="rounded-2xl overflow-hidden"
                 style={{ background: CITADELLE_COLORS.blue }}
               >
-                {/* Header */}
                 <div
                   className="px-8 py-7"
                   style={{ borderBottom: "1px solid rgba(201,164,92,0.2)" }}
@@ -306,9 +301,7 @@ export default function CitadelleServices() {
                     Évaluez, optimisez et valorisez votre projet avant la vente.
                   </p>
                 </div>
-
-                {/* Cartes */}
-                <div className="p-5 flex flex-col gap-3 flex-1">
+                <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {vendorServices.map((svc, i) => (
                     <DarkServiceCard
                       key={svc.id}
@@ -320,19 +313,14 @@ export default function CitadelleServices() {
                   ))}
                 </div>
               </div>
+            )}
 
-              {/* Séparateur vertical sur desktop */}
+            {/* 3. Acheteurs (light) — pleine largeur */}
+            {buyerServices.length > 0 && (
               <div
-                className="hidden lg:block absolute"
-                style={{ width: "1px", background: "rgba(201,164,92,0.25)" }}
-              />
-
-              {/* ── Zone Acheteurs — fond blanc ── */}
-              <div
-                className="flex flex-col"
-                style={{ background: "#FAFBFD" }}
+                className="rounded-2xl overflow-hidden"
+                style={{ background: "#FAFBFD", border: `1px solid ${CITADELLE_COLORS.border}` }}
               >
-                {/* Header */}
                 <div
                   className="px-8 py-7"
                   style={{ borderBottom: `1px solid ${CITADELLE_COLORS.border}` }}
@@ -355,9 +343,7 @@ export default function CitadelleServices() {
                     Sécurisez votre investissement avant et après l'acquisition.
                   </p>
                 </div>
-
-                {/* Cartes */}
-                <div className="p-5 flex flex-col gap-3 flex-1">
+                <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {buyerServices.map((svc, i) => (
                     <LightServiceCard
                       key={svc.id}
@@ -369,7 +355,7 @@ export default function CitadelleServices() {
                   ))}
                 </div>
               </div>
-            </div>
+            )}
 
           </div>
         )}
