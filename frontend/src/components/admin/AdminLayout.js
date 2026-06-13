@@ -147,6 +147,12 @@ const ADMIN_MENU_SECTIONS = [
         description: "Gérer le catalogue de services complémentaires"
       },
       {
+        path: "/syndicat-admin/citadelle/commission",
+        label: "Commission ventes",
+        icon: CreditCard,
+        description: "Configurer le taux et le minimum de commission prélevés sur chaque vente"
+      },
+      {
         path: "/syndicat-admin/citadelle/newsletter",
         label: "Newsletter",
         icon: Bell,
