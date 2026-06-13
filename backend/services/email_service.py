@@ -1556,32 +1556,98 @@ def send_citadelle_auction_winner_email(
     try:
         from config.settings import CITADELLE_URL
         payment_url = f"{CITADELLE_URL}/citadelle/espace-membre/transactions/{transaction_id}"
-        listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
 
-        msg = MIMEMultipart()
+        msg = MIMEMultipart("alternative")
         msg['From'] = CITADELLE_FROM_EMAIL
         msg['To'] = winner_email
         msg['Subject'] = f"Félicitations ! Vous avez remporté l'enchère — {listing_title}"
 
-        body = f"""Félicitations {winner_name} !
+        html = f"""<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
 
-Vous avez remporté l'enchère pour :
+        <!-- En-tête doré -->
+        <tr>
+          <td style="background:#0f2747;padding:32px 40px;text-align:center;">
+            <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9a45c;">La Citadelle Numérique</p>
+            <h1 style="margin:0;font-size:26px;font-weight:900;color:#ffffff;line-height:1.2;">
+              Félicitations, vous avez<br>remporté l'enchère !
+            </h1>
+            <div style="margin:20px auto 0;width:48px;height:3px;background:#c9a45c;border-radius:2px;"></div>
+          </td>
+        </tr>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-{listing_title}
-Montant remporté : {amount:,.0f} €
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        <!-- Corps -->
+        <tr>
+          <td style="background:#ffffff;padding:40px 40px 32px;">
+            <p style="margin:0 0 24px;font-size:16px;color:#4a5568;">
+              Bonjour <strong style="color:#0f2747;">{winner_name}</strong>,
+            </p>
+            <p style="margin:0 0 28px;font-size:15px;color:#4a5568;line-height:1.6;">
+              La Garde de la Citadelle a le plaisir de vous informer que vous avez remporté l'enchère pour l'actif numérique suivant :
+            </p>
 
-Pour finaliser votre acquisition, rendez-vous sur votre espace membre
-et procédez au paiement sécurisé :
+            <!-- Bloc annonce -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fc;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:28px;">
+              <tr>
+                <td style="padding:20px 24px;">
+                  <p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c9a45c;">Actif remporté</p>
+                  <p style="margin:0 0 16px;font-size:17px;font-weight:800;color:#0f2747;">{listing_title}</p>
+                  <table cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="padding-right:32px;">
+                        <p style="margin:0;font-size:11px;color:#718096;text-transform:uppercase;letter-spacing:1px;">Montant remporté</p>
+                        <p style="margin:4px 0 0;font-size:28px;font-weight:900;color:#0f2747;">{amount:,.0f} €</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
 
-{payment_url}
+            <p style="margin:0 0 24px;font-size:15px;color:#4a5568;line-height:1.6;">
+              Pour finaliser votre acquisition, procédez au paiement sécurisé depuis votre espace membre en cliquant sur le bouton ci-dessous :
+            </p>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-La Citadelle Numérique
-{CITADELLE_URL}
-"""
-        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+            <!-- Bouton paiement -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+              <tr>
+                <td align="center">
+                  <a href="{payment_url}"
+                    style="display:inline-block;background:#c9a45c;color:#0f2747;font-size:16px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:10px;letter-spacing:0.5px;">
+                    Procéder au paiement →
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0;font-size:13px;color:#a0aec0;text-align:center;line-height:1.6;">
+              Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
+              <a href="{payment_url}" style="color:#c9a45c;word-break:break-all;">{payment_url}</a>
+            </p>
+          </td>
+        </tr>
+
+        <!-- Pied de page -->
+        <tr>
+          <td style="background:#0f2747;padding:24px 40px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.45);">
+              © La Citadelle Numérique — Marketplace d'actifs numériques
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+        msg.attach(MIMEText(html, "html", "utf-8"))
         _envoyer_email(msg)
         return True
     except Exception as e:
