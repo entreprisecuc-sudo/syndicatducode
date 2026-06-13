@@ -263,7 +263,7 @@ export default function CitadelleServices() {
         {loading ? (
           <SkeletonLoading />
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-12">
 
             {/* 1. Transaction Sécurisée — hero pleine largeur */}
             {commonService && (
@@ -312,6 +312,24 @@ export default function CitadelleServices() {
                     />
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Séparateur entre les deux zones */}
+            {vendorServices.length > 0 && buyerServices.length > 0 && (
+              <div className="flex items-center gap-4">
+                <div className="flex-1 h-px" style={{ background: CITADELLE_COLORS.border }} />
+                <div
+                  className="px-4 py-1.5 rounded-full text-xs font-semibold"
+                  style={{
+                    border: `1px solid ${CITADELLE_COLORS.border}`,
+                    color: CITADELLE_COLORS.textMuted,
+                    background: "white",
+                  }}
+                >
+                  Pour les acheteurs
+                </div>
+                <div className="flex-1 h-px" style={{ background: CITADELLE_COLORS.border }} />
               </div>
             )}
 
