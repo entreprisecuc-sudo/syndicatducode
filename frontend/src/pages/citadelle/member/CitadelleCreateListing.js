@@ -118,7 +118,13 @@ export default function CitadelleCreateListing() {
       await citadelleApi.post("/listings", payload);
       setSubmitted(true);
     } catch (err) {
-      setError(err.response?.data?.detail || "Une erreur est survenue");
+      const detail = err.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        // Erreur de validation Pydantic → tableau d'objets
+        setError(detail.map(e => e.msg || JSON.stringify(e)).join(" — "));
+      } else {
+        setError(detail || "Une erreur est survenue");
+      }
     } finally {
       setLoading(false);
     }

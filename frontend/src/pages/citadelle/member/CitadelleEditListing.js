@@ -112,7 +112,8 @@ export default function CitadelleEditListing() {
       await citadelleApi.patch(`/listings/${id}`, payload);
       navigate("/citadelle/espace-membre/mes-annonces");
     } catch (err) {
-      setError(err.response?.data?.detail || "Une erreur est survenue lors de la sauvegarde");
+      const detail = err.response?.data?.detail;
+      setError(Array.isArray(detail) ? detail.map(e => e.msg || JSON.stringify(e)).join(" — ") : detail || "Une erreur est survenue lors de la sauvegarde");
     } finally {
       setSaving(false);
     }
