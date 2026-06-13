@@ -11,6 +11,7 @@ from routes.citadelle.messages import router as citadelle_messages_router, set_d
 from routes.citadelle.services import router as citadelle_services_router, set_database as set_citadelle_services_db
 from routes.citadelle.newsletter import router as citadelle_newsletter_router, set_database as set_citadelle_newsletter_db
 from routes.citadelle.blog import router as citadelle_blog_router, set_database as set_citadelle_blog_db
+from routes.citadelle.contact import router as citadelle_contact_router
 
 router = APIRouter(prefix="/citadelle", tags=["La Citadelle Numérique"])
 router.include_router(citadelle_auth_router)
@@ -20,6 +21,7 @@ router.include_router(citadelle_messages_router)
 router.include_router(citadelle_services_router)
 router.include_router(citadelle_newsletter_router)
 router.include_router(citadelle_blog_router)
+router.include_router(citadelle_contact_router)
 
 _db = None
 

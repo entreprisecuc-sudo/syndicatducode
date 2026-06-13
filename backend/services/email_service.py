@@ -1408,3 +1408,43 @@ def send_service_order_admin_notification_email(
     except Exception as e:
         logger.error(f"[Citadelle] Erreur email notification admin commande : {e}")
         return False
+
+
+def send_citadelle_contact_email(nom: str, email: str, sujet: str, message: str) -> bool:
+    """
+    Transmet le message du formulaire de contact à l'équipe La Citadelle Numérique.
+    L'admin reçoit le contenu complet avec l'email de l'expéditeur pour répondre.
+    """
+    try:
+        from config.settings import CITADELLE_ADMIN_EMAIL
+
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = CITADELLE_ADMIN_EMAIL
+        msg['Reply-To'] = email
+        msg['Subject'] = f"[Contact Citadelle] {sujet}"
+
+        body = f"""Nouveau message de contact — La Citadelle Numérique
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+De        : {nom}
+Email     : {email}
+Sujet     : {sujet}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{message}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Message envoyé depuis le formulaire de contact
+{CITADELLE_URL}/citadelle/contact
+"""
+
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        _envoyer_email(msg)
+
+        logger.info(f"[Citadelle Contact] Message reçu de {email} — sujet: {sujet[:50]}")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Citadelle Contact] Erreur envoi email contact: {e}")
+        return False

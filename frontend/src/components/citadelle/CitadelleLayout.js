@@ -227,10 +227,10 @@ const CitadelleFooter = () => (
           <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider" style={{ color: CITADELLE_COLORS.gold }}>Informations</h4>
           <ul className="space-y-2">
             <li>
-              <a href={`mailto:${CITADELLE_CONFIG.email}`} className="text-sm flex items-center gap-2 transition-colors" style={{ color: "rgba(255,255,255,0.55)" }}>
+              <Link to="/citadelle/contact" className="text-sm flex items-center gap-2 transition-colors hover:opacity-100" style={{ color: "rgba(255,255,255,0.55)" }}>
                 <Mail size={13} />
-                {CITADELLE_CONFIG.email}
-              </a>
+                Nous contacter
+              </Link>
             </li>
             {[
               { href: "/citadelle/cgv", label: "CGV" },
