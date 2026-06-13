@@ -4,10 +4,10 @@
  */
 
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Star, Eye, Filter, AlertCircle, Trash2, X, ExternalLink, Globe, BarChart2, Calendar, TrendingUp, Hammer } from "lucide-react";
+import { CheckCircle, XCircle, Star, Eye, Filter, AlertCircle, Trash2, X, ExternalLink, Globe, BarChart2, Calendar, TrendingUp, Hammer, FileText } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
-import { getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
+import { getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@/config/citadelleConstants";
 
 const STATUS_LABELS = {
   pending:  { label: "En attente", color: "#F59E0B", bg: "rgba(245,158,11,0.1)" },
@@ -278,12 +278,46 @@ export default function AdminCitadelleListings() {
             <div className="p-5 space-y-5">
               {/* Images */}
               {detailModal.images?.filter(Boolean).filter(isImageFile).length > 0 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {detailModal.images.filter(Boolean).filter(isImageFile).map((img, i) => (
-                    <img key={i} src={getListingImageUrl(img)} alt=""
-                      className="h-32 w-auto rounded-xl object-cover flex-shrink-0"
-                      onError={e => e.target.style.display = "none"} />
-                  ))}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider opacity-40 mb-2">Photos</p>
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {detailModal.images.filter(Boolean).filter(isImageFile).map((img, i) => (
+                      <a key={i} href={getListingImageUrl(img)} target="_blank" rel="noopener noreferrer">
+                        <img src={getListingImageUrl(img)} alt=""
+                          className="h-36 w-auto rounded-xl object-cover flex-shrink-0 hover:opacity-90 transition-opacity"
+                          onError={e => e.target.style.display = "none"} />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Documents (PJ vendeur) */}
+              {detailModal.images?.filter(Boolean).filter(isDocumentFile).length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider opacity-40 mb-2">Pièces jointes du vendeur</p>
+                  <div className="space-y-2">
+                    {detailModal.images.filter(Boolean).filter(isDocumentFile).map((doc, i) => {
+                      const url = getListingImageUrl(doc);
+                      const nom = doc.split("/").pop();
+                      const label = getFileLabel(doc);
+                      return (
+                        <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:scale-[1.01]"
+                          style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.15)" }}>
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{ background: "rgba(201,164,92,0.15)" }}>
+                            <FileText size={15} style={{ color: "#C9A45C" }} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold truncate">{nom}</p>
+                            <p className="text-xs opacity-40">{label}</p>
+                          </div>
+                          <ExternalLink size={13} style={{ color: "#C9A45C", flexShrink: 0 }} />
+                        </a>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -331,6 +365,13 @@ export default function AdminCitadelleListings() {
                   className="flex items-center gap-2 text-xs hover:underline" style={{ color: "#C9A45C" }}>
                   <ExternalLink size={12} /> {detailModal.url_preview}
                 </a>
+              )}
+
+              {/* Prix négociable */}
+              {detailModal.price_negotiable && (
+                <p className="text-xs px-3 py-1.5 rounded-lg inline-block" style={{ background: "rgba(201,164,92,0.07)", color: "#C9A45C" }}>
+                  Prix négociable
+                </p>
               )}
             </div>
 

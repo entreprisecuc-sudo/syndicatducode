@@ -22,7 +22,10 @@ from services.auth_service import (
     decode_access_token,
     generate_user_id
 )
-from services.email_service import send_citadelle_reset_password_email
+from services.email_service import (
+    send_citadelle_reset_password_email,
+    send_citadelle_admin_new_user_email,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -245,6 +248,13 @@ async def citadelle_register(user_data: CitadelleRegister):
 
     await db.users.insert_one(user_doc)
     logger.info(f"[Citadelle] Nouvel utilisateur inscrit: {user_data.email}")
+
+    # Notification admin — nouveau compte
+    send_citadelle_admin_new_user_email(
+        prenom=user_data.first_name.strip(),
+        nom=user_data.last_name.strip(),
+        email=user_data.email.lower(),
+    )
 
     return CitadelleUserResponse(
         id=user_id,

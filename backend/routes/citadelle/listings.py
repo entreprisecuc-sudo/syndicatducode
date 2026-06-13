@@ -19,6 +19,7 @@ from services.email_service import (
     send_citadelle_auction_bid_email,
     send_citadelle_auction_winner_email,
     send_citadelle_auction_new_listing_email,
+    send_citadelle_admin_new_listing_email,
 )
 
 logger = logging.getLogger(__name__)
@@ -357,6 +358,16 @@ async def create_listing(
     await db.citadelle_listings.insert_one(listing_doc)
     listing_doc.pop("_id", None)
     logger.info(f"[Citadelle] Nouvelle annonce soumise: {slug} par {current_user.get('email')}")
+
+    # Notification admin — nouvelle annonce à modérer
+    send_citadelle_admin_new_listing_email(
+        seller_email=current_user.get("email"),
+        listing_title=data.title,
+        listing_type=data.type,
+        listing_price=data.price,
+        is_auction=data.is_auction,
+    )
+
     return listing_doc
 
 
