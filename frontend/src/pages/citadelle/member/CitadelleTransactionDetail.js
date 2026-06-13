@@ -34,6 +34,8 @@ export default function CitadelleTransactionDetail() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [sanitizedWarning, setSanitizedWarning] = useState(false);
+  const [sanitizedDisputeWarning, setSanitizedDisputeWarning] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [counterModal, setCounterModal] = useState(false);
   const [counterAmount, setCounterAmount] = useState("");
@@ -139,8 +141,10 @@ export default function CitadelleTransactionDetail() {
   const sendMessage = async () => {
     if (!message.trim() || sending) return;
     setSending(true);
+    setSanitizedWarning(false);
     try {
-      await citadelleApi.post(`/transactions/${id}/message`, { content: message.trim() });
+      const res = await citadelleApi.post(`/transactions/${id}/message`, { content: message.trim() });
+      if (res.data.sanitized) setSanitizedWarning(true);
       setMessage("");
       await fetchTransaction();
     } catch { /* ignore */ }
@@ -150,8 +154,10 @@ export default function CitadelleTransactionDetail() {
   const sendDisputeMessage = async () => {
     if (!disputeMessage.trim() || sendingDispute) return;
     setSendingDispute(true);
+    setSanitizedDisputeWarning(false);
     try {
-      await citadelleApi.post(`/transactions/${id}/dispute-messages`, { content: disputeMessage.trim() });
+      const res = await citadelleApi.post(`/transactions/${id}/dispute-messages`, { content: disputeMessage.trim() });
+      if (res.data.sanitized) setSanitizedDisputeWarning(true);
       setDisputeMessage("");
       await fetchDisputeMessages();
     } catch { /* ignore */ }
@@ -446,22 +452,35 @@ export default function CitadelleTransactionDetail() {
 
           {/* Zone de saisie */}
           {!["offer_refused", "cancelled", "completed"].includes(tx.status) && (
-            <div className="px-4 py-3 flex gap-2" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}`, background: CITADELLE_COLORS.bg }}>
-              <input
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && sendMessage()}
-                placeholder="Votre message..."
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
-                style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
-                data-testid="message-input"
-              />
-              <button onClick={sendMessage} disabled={sending || !message.trim()}
-                className="px-4 py-2.5 rounded-xl disabled:opacity-40 transition-all"
-                style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
-                data-testid="send-message-btn">
-                <Send size={16} />
-              </button>
+            <div style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}`, background: CITADELLE_COLORS.bg }}>
+              {sanitizedWarning && (
+                <div className="px-4 pt-3 pb-1">
+                  <div
+                    className="px-4 py-2.5 rounded-xl text-xs"
+                    style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#92400E" }}
+                    data-testid="sanitized-warning-tx"
+                  >
+                    Certaines informations de contact ont été masquées afin de maintenir les échanges sur La Citadelle.
+                  </div>
+                </div>
+              )}
+              <div className="px-4 py-3 flex gap-2">
+                <input
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && sendMessage()}
+                  placeholder="Votre message..."
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
+                  style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
+                  data-testid="message-input"
+                />
+                <button onClick={sendMessage} disabled={sending || !message.trim()}
+                  className="px-4 py-2.5 rounded-xl disabled:opacity-40 transition-all"
+                  style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                  data-testid="send-message-btn">
+                  <Send size={16} />
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -508,22 +527,35 @@ export default function CitadelleTransactionDetail() {
               ))}
               <div ref={disputeEndRef} />
             </div>
-            <div className="px-4 py-3 flex gap-2" style={{ borderTop: "1px solid rgba(220,38,38,0.2)", background: "rgba(220,38,38,0.03)" }}>
-              <input
-                value={disputeMessage}
-                onChange={e => setDisputeMessage(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && sendDisputeMessage()}
-                placeholder="Votre message au vendeur / à La Garde..."
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
-                style={{ background: "white", border: "1px solid rgba(220,38,38,0.2)", color: CITADELLE_COLORS.blue }}
-                data-testid="dispute-message-input"
-              />
-              <button onClick={sendDisputeMessage} disabled={sendingDispute || !disputeMessage.trim()}
-                className="px-4 py-2.5 rounded-xl disabled:opacity-40 transition-all"
-                style={{ background: "#DC2626", color: "white" }}
-                data-testid="dispute-send-btn">
-                <Send size={16} />
-              </button>
+            <div style={{ borderTop: "1px solid rgba(220,38,38,0.2)", background: "rgba(220,38,38,0.03)" }}>
+              {sanitizedDisputeWarning && (
+                <div className="px-4 pt-3 pb-1">
+                  <div
+                    className="px-4 py-2.5 rounded-xl text-xs"
+                    style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#92400E" }}
+                    data-testid="sanitized-warning-dispute"
+                  >
+                    Certaines informations de contact ont été masquées afin de maintenir les échanges sur La Citadelle.
+                  </div>
+                </div>
+              )}
+              <div className="px-4 py-3 flex gap-2">
+                <input
+                  value={disputeMessage}
+                  onChange={e => setDisputeMessage(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && sendDisputeMessage()}
+                  placeholder="Votre message au vendeur / à La Garde..."
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
+                  style={{ background: "white", border: "1px solid rgba(220,38,38,0.2)", color: CITADELLE_COLORS.blue }}
+                  data-testid="dispute-message-input"
+                />
+                <button onClick={sendDisputeMessage} disabled={sendingDispute || !disputeMessage.trim()}
+                  className="px-4 py-2.5 rounded-xl disabled:opacity-40 transition-all"
+                  style={{ background: "#DC2626", color: "white" }}
+                  data-testid="dispute-send-btn">
+                  <Send size={16} />
+                </button>
+              </div>
             </div>
 
             {/* Bouton annulation vendeur — visible uniquement pour le vendeur */}

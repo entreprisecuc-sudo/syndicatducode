@@ -18,6 +18,7 @@ export default function CitadelleConversationDetail() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [sanitizedWarning, setSanitizedWarning] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => { fetchConversation(); }, [id]);
@@ -49,8 +50,10 @@ export default function CitadelleConversationDetail() {
   const sendMessage = async () => {
     if (!message.trim() || sending) return;
     setSending(true);
+    setSanitizedWarning(false);
     try {
-      await citadelleApi.post(`/messages/${id}/reply`, { content: message.trim() });
+      const res = await citadelleApi.post(`/messages/${id}/reply`, { content: message.trim() });
+      if (res.data.sanitized) setSanitizedWarning(true);
       setMessage("");
       await fetchConversation();
     } catch { /* ignore */ }
@@ -171,22 +174,36 @@ export default function CitadelleConversationDetail() {
               </Link>
             </div>
           ) : (
-            <div className="px-4 py-3 flex gap-2" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}`, background: CITADELLE_COLORS.bg }}>
-              <input
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && sendMessage()}
-                placeholder="Votre message..."
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
-                style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
-                data-testid="message-input"
-              />
-              <button onClick={sendMessage} disabled={sending || !message.trim()}
-                className="px-4 py-2.5 rounded-xl disabled:opacity-40 transition-all"
-                style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
-                data-testid="send-message-btn">
-                <Send size={16} />
-              </button>
+            <div style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}`, background: CITADELLE_COLORS.bg }}>
+              {/* Avertissement masquage contact */}
+              {sanitizedWarning && (
+                <div className="px-4 pt-3 pb-1 flex items-start gap-2">
+                  <div
+                    className="flex-1 px-4 py-2.5 rounded-xl text-xs"
+                    style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#92400E" }}
+                    data-testid="sanitized-warning"
+                  >
+                    Certaines informations de contact ont été masquées afin de maintenir les échanges sur La Citadelle.
+                  </div>
+                </div>
+              )}
+              <div className="px-4 py-3 flex gap-2">
+                <input
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && sendMessage()}
+                  placeholder="Votre message..."
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
+                  style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
+                  data-testid="message-input"
+                />
+                <button onClick={sendMessage} disabled={sending || !message.trim()}
+                  className="px-4 py-2.5 rounded-xl disabled:opacity-40 transition-all"
+                  style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                  data-testid="send-message-btn">
+                  <Send size={16} />
+                </button>
+              </div>
             </div>
           )}
         </div>

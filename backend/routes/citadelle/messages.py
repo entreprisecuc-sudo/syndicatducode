@@ -65,11 +65,16 @@ async def send_message(
         raise HTTPException(status_code=400, detail="Vous ne pouvez pas vous envoyer un message à vous-même")
 
     now = datetime.now(timezone.utc).isoformat()
+
+    # Filtrage des informations de contact (email, téléphone)
+    from utils.message_sanitizer import sanitiser_message
+    contenu_sanitise, sanitized = sanitiser_message(data.content)
+
     msg = {
         "id": str(uuid.uuid4()),
         "sender_id": sender_id,
         "sender_email": current_user.get("email"),
-        "content": data.content,
+        "content": contenu_sanitise,
         "sent_at": now,
     }
 
@@ -129,7 +134,7 @@ async def send_message(
         else:
             logger.warning(f"[Citadelle] Seller email manquant pour la conversation {conv_id}")
 
-    return {"conversation_id": conv_id, "message": msg}
+    return {"conversation_id": conv_id, "message": msg, "sanitized": sanitized}
 
 
 @router.post("/messages/{conversation_id}/reply", summary="Répondre dans une conversation")
@@ -155,11 +160,16 @@ async def reply_message(
         )
 
     now = datetime.now(timezone.utc).isoformat()
+
+    # Filtrage des informations de contact (email, téléphone)
+    from utils.message_sanitizer import sanitiser_message
+    contenu_sanitise, sanitized = sanitiser_message(data.content)
+
     msg = {
         "id": str(uuid.uuid4()),
         "sender_id": user_id,
         "sender_email": current_user.get("email"),
-        "content": data.content,
+        "content": contenu_sanitise,
         "sent_at": now,
     }
 
@@ -176,7 +186,7 @@ async def reply_message(
             {"$set": {"reminder_sent_at": now}},
         )
 
-    return msg
+    return {"message": msg, "sanitized": sanitized}
 
 
 @router.get("/messages/my", summary="Mes conversations")

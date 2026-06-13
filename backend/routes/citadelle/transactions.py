@@ -601,11 +601,15 @@ async def send_message(
     if tx["status"] in ("offer_refused", "cancelled"):
         raise HTTPException(status_code=400, detail="Impossible d'envoyer un message sur une transaction terminée")
 
+    # Filtrage des informations de contact (email, téléphone)
+    from utils.message_sanitizer import sanitiser_message
+    contenu_sanitise, sanitized = sanitiser_message(data.content)
+
     msg = {
         "id": str(uuid.uuid4()),
         "sender_id": user_id if not is_admin else "admin",
         "sender_email": current_user.get("email"),
-        "content": data.content,
+        "content": contenu_sanitise,
         "sent_at": datetime.now(timezone.utc).isoformat(),
         "type": "admin" if is_admin else "message"
     }
@@ -614,7 +618,7 @@ async def send_message(
         {"id": transaction_id},
         {"$push": {"messages": msg}, "$set": {"updated_at": msg["sent_at"]}}
     )
-    return msg
+    return {**msg, "sanitized": sanitized}
 
 
 # ── Routes Admin ───────────────────────────────────────────────────────────────
@@ -1066,12 +1070,16 @@ async def send_dispute_message(
     if tx["status"] != "disputed":
         raise HTTPException(status_code=400, detail="Le chat litige n'est actif qu'en cas de litige ouvert")
 
+    # Filtrage des informations de contact (email, téléphone)
+    from utils.message_sanitizer import sanitiser_message
+    contenu_sanitise, sanitized = sanitiser_message(data.content)
+
     msg = {
         "id": str(uuid.uuid4()),
         "sender_id": "admin" if is_admin else user_id,
         "sender_email": current_user.get("email"),
         "sender_role": "admin" if is_admin else "seller",
-        "content": data.content,
+        "content": contenu_sanitise,
         "sent_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -1079,7 +1087,7 @@ async def send_dispute_message(
         {"id": transaction_id},
         {"$push": {"dispute_messages": msg}, "$set": {"updated_at": msg["sent_at"]}}
     )
-    return msg
+    return {**msg, "sanitized": sanitized}
 
 
 # ── Routes Admin — Gestion des litiges ───────────────────────────────────────
