@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { Search, SlidersHorizontal, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, ArrowRight, Shield } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ListingCard from "@/components/citadelle/ListingCard";
 import citadelleApi from "@/services/citadelleApi";
@@ -145,6 +145,47 @@ export default function CitadelleListings() {
 
       {/* Grille */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+
+        {/* ── Bandeau vendeur ──────────────────────────────────────────── */}
+        <div className="relative overflow-hidden rounded-2xl mb-8 px-8 py-7 flex flex-col md:flex-row items-center justify-between gap-6"
+          style={{ background: CITADELLE_COLORS.night }}>
+
+          {/* Ornements décoratifs */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full opacity-5"
+              style={{ background: CITADELLE_COLORS.gold }} />
+            <div className="absolute -left-8 -bottom-12 w-40 h-40 rounded-full opacity-5"
+              style={{ background: CITADELLE_COLORS.gold }} />
+          </div>
+
+          {/* Texte */}
+          <div className="relative flex items-center gap-5">
+            <div className="hidden md:flex w-12 h-12 rounded-xl items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(201,164,92,0.15)", border: "1px solid rgba(201,164,92,0.25)" }}>
+              <Shield size={22} style={{ color: CITADELLE_COLORS.gold }} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: CITADELLE_COLORS.gold }}>
+                Vendeurs
+              </p>
+              <h2 className="text-lg md:text-xl font-black text-white leading-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                Votre actif numérique mérite la Citadelle
+              </h2>
+              <p className="text-sm mt-1 hidden md:block" style={{ color: "rgba(255,255,255,0.5)" }}>
+                Publiez votre site, SaaS ou newsletter — La Garde vérifie et met en valeur votre annonce sous 24h.
+              </p>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <Link to="/citadelle/espace-membre/annonces/nouvelle"
+            className="relative flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105 hover:brightness-110 whitespace-nowrap"
+            style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+            data-testid="cta-vendre-annonce">
+            Publier mon annonce
+            <ArrowRight size={15} />
+          </Link>
+        </div>
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
