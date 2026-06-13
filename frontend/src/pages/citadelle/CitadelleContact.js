@@ -259,20 +259,37 @@ function InfoCard({ icon: Icon, titre, contenu }) {
 function SuccessMessage() {
   return (
     <div className="p-8 rounded-2xl flex flex-col items-center text-center"
-      style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, boxShadow: "0 4px 24px rgba(15,39,71,0.06)" }}>
-      <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4"
-        style={{ background: "rgba(201,164,92,0.1)", border: `2px solid rgba(201,164,92,0.3)` }}>
-        <CheckCircle size={26} style={{ color: CITADELLE_COLORS.gold }} />
+      style={{ background: CITADELLE_COLORS.night, border: `1px solid rgba(201,164,92,0.3)`, boxShadow: "0 4px 32px rgba(15,39,71,0.2)" }}>
+
+      {/* Icône */}
+      <div className="w-16 h-16 rounded-full flex items-center justify-center mb-5"
+        style={{ background: "rgba(201,164,92,0.12)", border: `2px solid rgba(201,164,92,0.35)` }}>
+        <CheckCircle size={30} style={{ color: CITADELLE_COLORS.gold }} />
       </div>
-      <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: CITADELLE_COLORS.gold }}>
-        La Garde a reçu votre message
-      </p>
-      <h3 className="text-lg font-bold mb-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-        Requête transmise avec succès
+
+      {/* Étiquette */}
+      <div className="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full"
+        style={{ background: "rgba(201,164,92,0.1)", border: "1px solid rgba(201,164,92,0.25)" }}>
+        <Shield size={11} style={{ color: CITADELLE_COLORS.gold }} />
+        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: CITADELLE_COLORS.gold }}>
+          Message reçu
+        </span>
+      </div>
+
+      <h3 className="text-xl font-black mb-3 text-white" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+        La Garde a entendu votre requête
       </h3>
-      <p className="text-sm leading-relaxed max-w-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
-        Votre message a franchi les remparts de la Citadelle. La Garde l'examinera avec toute l'attention qu'il mérite et vous répondra sous 48h ouvrées.
+
+      <p className="text-sm leading-relaxed max-w-sm mb-5" style={{ color: "rgba(255,255,255,0.6)" }}>
+        Votre message a bien franchi les remparts de la Citadelle. Nos chevaliers l'examinent avec toute la rigueur qui s'impose — nous vous répondrons au plus vite.
       </p>
+
+      {/* Séparateur */}
+      <div className="flex items-center gap-3">
+        <div className="h-px w-10" style={{ background: "rgba(201,164,92,0.3)" }} />
+        <Shield size={11} style={{ color: "rgba(201,164,92,0.4)" }} />
+        <div className="h-px w-10" style={{ background: "rgba(201,164,92,0.3)" }} />
+      </div>
     </div>
   );
 }
