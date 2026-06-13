@@ -51,40 +51,51 @@ const SearchBar = () => {
     navigate(`/citadelle/annonces?${params.toString()}`);
   };
 
+  const sepStyle = {
+    width: "1px",
+    alignSelf: "stretch",
+    background: "rgba(255,255,255,0.12)",
+    flexShrink: 0,
+    margin: "10px 0",
+  };
+
   return (
-    <div
-      className="relative z-10 mx-4 md:mx-0 rounded-2xl p-2"
-      style={{
-        background: "rgba(255,255,255,0.06)",
-        border: "1px solid rgba(201,164,92,0.3)",
-        backdropFilter: "blur(16px)",
-        marginTop: "2rem"
-      }}
-      data-testid="citadelle-searchbar"
-    >
-      <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-2">
+    <div className="relative z-10 mt-8 mx-4 md:mx-0" data-testid="citadelle-searchbar">
+      {/* Desktop — barre pill unifiée */}
+      <form
+        onSubmit={handleSearch}
+        className="hidden md:flex items-center rounded-full overflow-hidden"
+        style={{
+          background: "rgba(255,255,255,0.08)",
+          border: "1px solid rgba(201,164,92,0.35)",
+          backdropFilter: "blur(20px)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+        }}
+      >
         {/* Mot-clé */}
-        <div className="flex items-center gap-3 flex-1 px-4 py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.07)" }}>
-          <Search size={18} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0 }} />
+        <div className="flex items-center gap-2.5 flex-1 px-5 py-4">
+          <Search size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0 }} />
           <input
             type="text"
             value={keyword}
             onChange={e => setKeyword(e.target.value)}
             placeholder="Mot-clé, niche, technologie..."
-            className="bg-transparent outline-none text-sm w-full"
+            className="bg-transparent outline-none text-sm w-full placeholder-white/40"
             style={{ color: "white" }}
             data-testid="citadelle-search-keyword"
           />
         </div>
 
+        <div style={sepStyle} />
+
         {/* Type d'actif */}
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl md:w-52" style={{ background: "rgba(255,255,255,0.07)" }}>
-          <SlidersHorizontal size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0 }} />
+        <div className="flex items-center gap-2.5 px-5 py-4 w-48">
+          <SlidersHorizontal size={15} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0 }} />
           <select
             value={type}
             onChange={e => setType(e.target.value)}
             className="bg-transparent outline-none text-sm w-full cursor-pointer appearance-none"
-            style={{ color: type ? "white" : "rgba(255,255,255,0.5)" }}
+            style={{ color: type ? "white" : "rgba(255,255,255,0.45)" }}
             data-testid="citadelle-search-type"
           >
             <option value="" style={{ background: "#0F2747" }}>Type d'actif</option>
@@ -94,14 +105,16 @@ const SearchBar = () => {
           </select>
         </div>
 
+        <div style={sepStyle} />
+
         {/* Budget */}
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl md:w-52" style={{ background: "rgba(255,255,255,0.07)" }}>
-          <TrendingUp size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0 }} />
+        <div className="flex items-center gap-2.5 px-5 py-4 w-52">
+          <TrendingUp size={15} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0 }} />
           <select
             value={budget}
             onChange={e => setBudget(e.target.value)}
             className="bg-transparent outline-none text-sm w-full cursor-pointer appearance-none"
-            style={{ color: budget ? "white" : "rgba(255,255,255,0.5)" }}
+            style={{ color: budget ? "white" : "rgba(255,255,255,0.45)" }}
             data-testid="citadelle-search-budget"
           >
             {BUDGET_OPTIONS.map(o => (
@@ -110,12 +123,76 @@ const SearchBar = () => {
           </select>
         </div>
 
-        {/* Bouton recherche */}
+        {/* Bouton */}
+        <div className="p-2 pr-2">
+          <button
+            type="submit"
+            className="flex items-center gap-2 px-7 py-3 rounded-full font-bold text-sm transition-all hover:scale-105 hover:brightness-110"
+            style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+            data-testid="citadelle-search-submit"
+          >
+            <Search size={15} />
+            Rechercher
+          </button>
+        </div>
+      </form>
+
+      {/* Mobile — empilement vertical */}
+      <form onSubmit={handleSearch} className="flex md:hidden flex-col gap-3">
+        <div
+          className="flex items-center gap-3 px-4 py-3.5 rounded-2xl"
+          style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(201,164,92,0.25)" }}
+        >
+          <Search size={16} style={{ color: CITADELLE_COLORS.gold }} />
+          <input
+            type="text"
+            value={keyword}
+            onChange={e => setKeyword(e.target.value)}
+            placeholder="Mot-clé, niche, technologie..."
+            className="bg-transparent outline-none text-sm w-full"
+            style={{ color: "white" }}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div
+            className="flex items-center gap-2 px-4 py-3.5 rounded-2xl"
+            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(201,164,92,0.25)" }}
+          >
+            <SlidersHorizontal size={15} style={{ color: CITADELLE_COLORS.gold }} />
+            <select
+              value={type}
+              onChange={e => setType(e.target.value)}
+              className="bg-transparent outline-none text-sm w-full cursor-pointer appearance-none"
+              style={{ color: type ? "white" : "rgba(255,255,255,0.45)" }}
+            >
+              <option value="" style={{ background: "#0F2747" }}>Type</option>
+              {CITADELLE_CATEGORIES.map(c => (
+                <option key={c.slug} value={c.slug} style={{ background: "#0F2747" }}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+          <div
+            className="flex items-center gap-2 px-4 py-3.5 rounded-2xl"
+            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(201,164,92,0.25)" }}
+          >
+            <TrendingUp size={15} style={{ color: CITADELLE_COLORS.gold }} />
+            <select
+              value={budget}
+              onChange={e => setBudget(e.target.value)}
+              className="bg-transparent outline-none text-sm w-full cursor-pointer appearance-none"
+              style={{ color: budget ? "white" : "rgba(255,255,255,0.45)" }}
+            >
+              {BUDGET_OPTIONS.map(o => (
+                <option key={o.value} value={o.value} style={{ background: "#0F2747" }}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
         <button
           type="submit"
-          className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105 w-full md:w-auto flex-shrink-0"
+          className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm"
           style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
-          data-testid="citadelle-search-submit"
+          data-testid="citadelle-search-submit-mobile"
         >
           <Search size={16} />
           Rechercher
