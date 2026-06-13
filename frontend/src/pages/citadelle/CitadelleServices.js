@@ -1,116 +1,108 @@
 /**
  * Page Services — La Citadelle Numérique
- * Catalogue de services organisé par catégorie cible (vendeur / acheteur / commun)
+ * Layout :
+ *   1. Hero — Transaction Sécurisée (commun)
+ *   2. Deux zones immersives distinctes côte à côte : Vendeurs (dark) | Acheteurs (light)
  */
 
 import { useState, useEffect } from "react";
-import { Star, Handshake, Zap, Shield, ShoppingCart, ArrowRight } from "lucide-react";
+import { Star, Handshake, Zap, Shield, ShoppingCart, ArrowRight, TrendingUp, Search } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ServiceDetailModal from "@/components/citadelle/ServiceDetailModal";
 import ServiceCheckoutModal from "@/components/citadelle/ServiceCheckoutModal";
+import ServiceHeroBanner from "@/components/citadelle/ServiceHeroBanner";
 import citadelleApi from "@/services/citadelleApi";
-import { CITADELLE_COLORS, SERVICE_TARGET_SECTIONS } from "@/config/citadelleConstants";
+import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 
 // ── Icônes par type de service ─────────────────────────────────────────────────
 const TYPE_ICONS = { paid: Zap, free: Star, partner: Handshake, quote: Shield };
 
-// ── Labels badge par type ──────────────────────────────────────────────────────
-const TYPE_BADGE = {
-  paid:    { label: "Payant",    bg: "rgba(201,164,92,0.12)",  color: "#C9A45C" },
-  free:    { label: "Gratuit",   bg: "rgba(34,197,94,0.10)",   color: "#16A34A" },
-  partner: { label: "Partenaire",bg: "rgba(59,130,246,0.10)",  color: "#3B82F6" },
-  quote:   { label: "Sur devis", bg: "rgba(100,116,139,0.10)", color: "#64748B" },
-};
-
-// Un service est achetable directement s'il est payant et a un prix positif
 const isPayable = (svc) => svc.service_type === "paid" && svc.price > 0;
 
 
-// ── Carte service individuelle ────────────────────────────────────────────────
+// ── Carte pour la zone VENDEURS (fond sombre) ─────────────────────────────────
 
-function ServiceCard({ svc, onDetails, onBuy }) {
+function DarkServiceCard({ svc, index, onDetails, onBuy }) {
   const TypeIcon = TYPE_ICONS[svc.service_type] || Star;
-  const badge = TYPE_BADGE[svc.service_type];
   const payable = isPayable(svc);
 
   return (
     <div
-      className="p-6 rounded-2xl flex flex-col transition-all hover:-translate-y-1 hover:shadow-md"
-      style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}
+      className="group p-5 rounded-xl flex flex-col gap-4 transition-all duration-200 hover:translate-y-[-2px] cursor-default"
+      style={{
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(201,164,92,0.18)",
+      }}
       data-testid={`service-card-${svc.id}`}
     >
-      {/* Icône + badge type */}
-      <div className="flex items-start justify-between mb-4">
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center"
-          style={{ background: "rgba(201,164,92,0.1)" }}
-        >
-          <TypeIcon size={20} style={{ color: CITADELLE_COLORS.gold }} />
+      {/* Numéro + Icône */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span
+            className="text-xs font-black"
+            style={{ color: "rgba(201,164,92,0.5)", fontFamily: "'Montserrat', sans-serif", letterSpacing: "1px" }}
+          >
+            0{index + 1}
+          </span>
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: "rgba(201,164,92,0.12)" }}
+          >
+            <TypeIcon size={15} style={{ color: CITADELLE_COLORS.gold }} />
+          </div>
         </div>
-        {badge && (
-          <span
-            className="text-xs px-2.5 py-0.5 rounded-full font-semibold"
-            style={{ background: badge.bg, color: badge.color }}
-          >
-            {badge.label}
-          </span>
-        )}
+        {/* Badge type */}
+        <span
+          className="text-xs px-2.5 py-0.5 rounded-full font-semibold"
+          style={{
+            background: "rgba(201,164,92,0.12)",
+            color: CITADELLE_COLORS.gold,
+            border: "1px solid rgba(201,164,92,0.2)",
+          }}
+        >
+          {svc.price_label || (svc.price > 0 ? `${svc.price.toLocaleString("fr-FR")} €` : svc.price === 0 ? "Gratuit" : "Sur devis")}
+        </span>
       </div>
 
-      {/* Titre */}
-      <h3 className="font-bold text-base mb-2" style={{ color: CITADELLE_COLORS.blue }}>
-        {svc.title}
-      </h3>
+      {/* Séparateur doré */}
+      <div className="h-px" style={{ background: "rgba(201,164,92,0.15)" }} />
 
-      {/* Description courte */}
-      <p className="text-sm flex-1 mb-4 leading-relaxed" style={{ color: CITADELLE_COLORS.textMuted }}>
-        {svc.short_description || svc.description?.substring(0, 100)}
-      </p>
-
-      {/* Prix */}
-      <div className="mb-4">
-        {svc.price_label ? (
-          <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.blue }}>
-            {svc.price_label}
-          </span>
-        ) : svc.price != null ? (
-          <span
-            className="text-xl font-black"
-            style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
-          >
-            {svc.price > 0 ? `${svc.price.toLocaleString("fr-FR")} €` : "Gratuit"}
-          </span>
-        ) : null}
+      {/* Titre + Description */}
+      <div>
+        <h3 className="font-bold text-sm mb-1.5" style={{ color: "white" }}>
+          {svc.title}
+        </h3>
+        <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
+          {svc.short_description || svc.description?.substring(0, 90)}
+        </p>
       </div>
 
-      {/* Boutons CTA */}
-      <div className="flex gap-2">
+      {/* Actions */}
+      <div className="flex gap-2 mt-auto">
         <button
           onClick={() => onDetails(svc)}
-          className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
-          style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
+          className="flex-1 py-2 rounded-lg text-xs font-medium transition-all hover:bg-white/10"
+          style={{ border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)" }}
           data-testid={`service-details-btn-${svc.id}`}
         >
           Détails
         </button>
-
         {payable ? (
           <button
             onClick={() => onBuy(svc)}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all hover:scale-[1.02]"
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
             data-testid={`service-buy-btn-${svc.id}`}
           >
-            <ShoppingCart size={13} />
-            Acheter — {svc.price.toLocaleString("fr-FR")} €
+            <ShoppingCart size={11} /> Acheter
           </button>
         ) : (
           <button
             onClick={() => onDetails(svc)}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all hover:scale-[1.02]"
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
           >
-            {svc.cta_label || "En savoir plus"} <ArrowRight size={14} />
+            Voir <ArrowRight size={11} />
           </button>
         )}
       </div>
@@ -119,18 +111,108 @@ function ServiceCard({ svc, onDetails, onBuy }) {
 }
 
 
-// ── Squelette de chargement ───────────────────────────────────────────────────
+// ── Carte pour la zone ACHETEURS (fond clair) ─────────────────────────────────
 
-function SkeletonGrid() {
+function LightServiceCard({ svc, index, onDetails, onBuy }) {
+  const TypeIcon = TYPE_ICONS[svc.service_type] || Star;
+  const payable = isPayable(svc);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {[1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="h-56 rounded-2xl animate-pulse"
-          style={{ background: CITADELLE_COLORS.bg }}
-        />
-      ))}
+    <div
+      className="group p-5 rounded-xl flex flex-col gap-4 transition-all duration-200 hover:shadow-lg hover:translate-y-[-2px]"
+      style={{
+        background: "white",
+        border: `1px solid ${CITADELLE_COLORS.border}`,
+        boxShadow: "0 2px 8px rgba(15,39,71,0.06)",
+      }}
+      data-testid={`service-card-${svc.id}`}
+    >
+      {/* Numéro + Icône */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span
+            className="text-xs font-black"
+            style={{ color: "rgba(201,164,92,0.4)", fontFamily: "'Montserrat', sans-serif", letterSpacing: "1px" }}
+          >
+            0{index + 1}
+          </span>
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: "rgba(15,39,71,0.06)" }}
+          >
+            <TypeIcon size={15} style={{ color: CITADELLE_COLORS.blue }} />
+          </div>
+        </div>
+        {/* Badge type */}
+        <span
+          className="text-xs px-2.5 py-0.5 rounded-full font-semibold"
+          style={{
+            background: "rgba(15,39,71,0.06)",
+            color: CITADELLE_COLORS.blue,
+            border: `1px solid ${CITADELLE_COLORS.border}`,
+          }}
+        >
+          {svc.price_label || (svc.price > 0 ? `${svc.price.toLocaleString("fr-FR")} €` : svc.price === 0 ? "Gratuit" : "Sur devis")}
+        </span>
+      </div>
+
+      {/* Séparateur */}
+      <div className="h-px" style={{ background: CITADELLE_COLORS.border }} />
+
+      {/* Titre + Description */}
+      <div>
+        <h3 className="font-bold text-sm mb-1.5" style={{ color: CITADELLE_COLORS.blue }}>
+          {svc.title}
+        </h3>
+        <p className="text-xs leading-relaxed" style={{ color: CITADELLE_COLORS.textMuted }}>
+          {svc.short_description || svc.description?.substring(0, 90)}
+        </p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 mt-auto">
+        <button
+          onClick={() => onDetails(svc)}
+          className="flex-1 py-2 rounded-lg text-xs font-medium transition-all hover:opacity-70"
+          style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.textMuted }}
+          data-testid={`service-details-btn-${svc.id}`}
+        >
+          Détails
+        </button>
+        {payable ? (
+          <button
+            onClick={() => onBuy(svc)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all hover:scale-[1.02]"
+            style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+            data-testid={`service-buy-btn-${svc.id}`}
+          >
+            <ShoppingCart size={11} /> Acheter
+          </button>
+        ) : (
+          <button
+            onClick={() => onDetails(svc)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all hover:scale-[1.02]"
+            style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+          >
+            Voir <ArrowRight size={11} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+// ── Squelette chargement ──────────────────────────────────────────────────────
+
+function SkeletonLoading() {
+  return (
+    <div className="space-y-8">
+      <div className="h-52 rounded-2xl animate-pulse" style={{ background: CITADELLE_COLORS.bg }} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-2xl overflow-hidden">
+        <div className="h-96 animate-pulse" style={{ background: "#0F2747", opacity: 0.3 }} />
+        <div className="h-96 animate-pulse" style={{ background: CITADELLE_COLORS.bg }} />
+      </div>
     </div>
   );
 }
@@ -152,11 +234,9 @@ export default function CitadelleServices() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Groupage par section cible (ordre conservé grâce à SERVICE_TARGET_SECTIONS)
-  const sections = SERVICE_TARGET_SECTIONS.map((section) => ({
-    ...section,
-    items: services.filter((svc) => (svc.target_category || "commun") === section.key),
-  })).filter((section) => section.items.length > 0);
+  const commonService  = services.find((s) => (s.target_category || "commun") === "commun");
+  const vendorServices = services.filter((s) => s.target_category === "vendeur");
+  const buyerServices  = services.filter((s) => s.target_category === "acheteur");
 
   const openBuy = (svc) => {
     setSelectedService(null);
@@ -167,8 +247,8 @@ export default function CitadelleServices() {
     <CitadelleLayout>
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12" data-testid="citadelle-services">
 
-        {/* En-tête de page */}
-        <div className="text-center mb-14">
+        {/* En-tête */}
+        <div className="text-center mb-12">
           <h1
             className="text-3xl md:text-4xl font-black"
             style={{ fontFamily: "'Montserrat', sans-serif", color: CITADELLE_COLORS.blue }}
@@ -180,52 +260,117 @@ export default function CitadelleServices() {
           </p>
         </div>
 
-        {/* Contenu */}
         {loading ? (
-          <SkeletonGrid />
-        ) : services.length === 0 ? (
-          <div className="py-20 text-center">
-            <Star size={48} className="mx-auto mb-4" style={{ color: CITADELLE_COLORS.textMuted, opacity: 0.2 }} />
-            <p className="text-lg font-semibold" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Services bientôt disponibles
-            </p>
-          </div>
+          <SkeletonLoading />
         ) : (
-          <div className="space-y-16">
-            {sections.map((section) => (
-              <section key={section.key} data-testid={`services-section-${section.key}`}>
-                {/* En-tête de section */}
-                <div className="mb-8">
+          <div className="space-y-8">
+
+            {/* 1. Transaction Sécurisée — hero pleine largeur */}
+            {commonService && (
+              <ServiceHeroBanner
+                service={commonService}
+                onDetails={setSelectedService}
+              />
+            )}
+
+            {/* 2. Vendeurs (dark) + Acheteurs (light) côte à côte */}
+            <div
+              className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden"
+              style={{ border: `1px solid ${CITADELLE_COLORS.border}` }}
+            >
+              {/* ── Zone Vendeurs — fond bleu nuit ── */}
+              <div
+                className="flex flex-col"
+                style={{ background: CITADELLE_COLORS.blue }}
+              >
+                {/* Header */}
+                <div
+                  className="px-8 py-7"
+                  style={{ borderBottom: "1px solid rgba(201,164,92,0.2)" }}
+                >
                   <div className="flex items-center gap-3 mb-1">
                     <div
-                      className="w-1 h-7 rounded-full"
-                      style={{ background: CITADELLE_COLORS.gold }}
-                    />
+                      className="w-9 h-9 rounded-xl flex items-center justify-center"
+                      style={{ background: "rgba(201,164,92,0.15)" }}
+                    >
+                      <TrendingUp size={18} style={{ color: CITADELLE_COLORS.gold }} />
+                    </div>
                     <h2
                       className="text-xl font-black"
-                      style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
+                      style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}
                     >
-                      {section.label}
+                      Pour les vendeurs
                     </h2>
                   </div>
-                  <p className="text-sm pl-4 ml-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    {section.subtitle}
+                  <p className="text-xs pl-12" style={{ color: "rgba(255,255,255,0.45)" }}>
+                    Évaluez, optimisez et valorisez votre projet avant la vente.
                   </p>
                 </div>
 
-                {/* Grille de cartes */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {section.items.map((svc) => (
-                    <ServiceCard
+                {/* Cartes */}
+                <div className="p-5 flex flex-col gap-3 flex-1">
+                  {vendorServices.map((svc, i) => (
+                    <DarkServiceCard
                       key={svc.id}
                       svc={svc}
+                      index={i}
                       onDetails={setSelectedService}
                       onBuy={openBuy}
                     />
                   ))}
                 </div>
-              </section>
-            ))}
+              </div>
+
+              {/* Séparateur vertical sur desktop */}
+              <div
+                className="hidden lg:block absolute"
+                style={{ width: "1px", background: "rgba(201,164,92,0.25)" }}
+              />
+
+              {/* ── Zone Acheteurs — fond blanc ── */}
+              <div
+                className="flex flex-col"
+                style={{ background: "#FAFBFD" }}
+              >
+                {/* Header */}
+                <div
+                  className="px-8 py-7"
+                  style={{ borderBottom: `1px solid ${CITADELLE_COLORS.border}` }}
+                >
+                  <div className="flex items-center gap-3 mb-1">
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center"
+                      style={{ background: "rgba(201,164,92,0.1)" }}
+                    >
+                      <Search size={18} style={{ color: CITADELLE_COLORS.gold }} />
+                    </div>
+                    <h2
+                      className="text-xl font-black"
+                      style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
+                    >
+                      Pour les acheteurs
+                    </h2>
+                  </div>
+                  <p className="text-xs pl-12" style={{ color: CITADELLE_COLORS.textMuted }}>
+                    Sécurisez votre investissement avant et après l'acquisition.
+                  </p>
+                </div>
+
+                {/* Cartes */}
+                <div className="p-5 flex flex-col gap-3 flex-1">
+                  {buyerServices.map((svc, i) => (
+                    <LightServiceCard
+                      key={svc.id}
+                      svc={svc}
+                      index={i}
+                      onDetails={setSelectedService}
+                      onBuy={openBuy}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
       </div>
