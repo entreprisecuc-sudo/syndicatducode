@@ -216,8 +216,23 @@ const CitadelleFooter = () => (
         <div>
           <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider" style={{ color: CITADELLE_COLORS.gold }}>Services</h4>
           <ul className="space-y-2">
-            {["Évaluation gratuite", "Vérification", "Migration", "Audit avant vente"].map(s => (
-              <li key={s} className="text-sm" style={{ color: "rgba(255,255,255,0.55)" }}>{s}</li>
+            {[
+              "Évaluation Standard",
+              "Évaluation Expert Certifiée",
+              "Valorisation Avant Vente",
+              "Refonte Avant Vente",
+              "Vente aux Enchères",
+              "Audit Avant Achat",
+              "Audit Sécurité",
+              "Migration Technique",
+              "Accompagnement Achat",
+              "Transaction Sécurisée",
+            ].map(s => (
+              <li key={s}>
+                <Link to="/citadelle/services" className="text-sm transition-colors hover:opacity-100" style={{ color: "rgba(255,255,255,0.55)" }}>
+                  {s}
+                </Link>
+              </li>
             ))}
           </ul>
         </div>
