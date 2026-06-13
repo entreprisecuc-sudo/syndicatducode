@@ -181,7 +181,7 @@ const CitadelleNav = () => {
 const CitadelleFooter = () => (
   <footer style={{ background: CITADELLE_COLORS.night, borderTop: "1px solid rgba(201,164,92,0.2)" }} data-testid="citadelle-footer">
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-12">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
         {/* Marque */}
         <div>
           <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-14 w-auto mb-4" />
@@ -212,9 +212,9 @@ const CitadelleFooter = () => (
           </ul>
         </div>
 
-        {/* Services */}
+        {/* Services Vendeurs */}
         <div>
-          <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider" style={{ color: CITADELLE_COLORS.gold }}>Services</h4>
+          <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider" style={{ color: CITADELLE_COLORS.gold }}>Vendeurs</h4>
           <ul className="space-y-2">
             {[
               "Évaluation Standard",
@@ -222,6 +222,21 @@ const CitadelleFooter = () => (
               "Valorisation Avant Vente",
               "Refonte Avant Vente",
               "Vente aux Enchères",
+            ].map(s => (
+              <li key={s}>
+                <Link to="/citadelle/services" className="text-sm transition-colors hover:opacity-100" style={{ color: "rgba(255,255,255,0.55)" }}>
+                  {s}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Services Acheteurs */}
+        <div>
+          <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider" style={{ color: CITADELLE_COLORS.gold }}>Acheteurs</h4>
+          <ul className="space-y-2">
+            {[
               "Audit Avant Achat",
               "Audit Sécurité",
               "Migration Technique",
