@@ -12,7 +12,7 @@ export const CITADELLE_CONFIG = {
   description: "La plateforme française dédiée à l'achat et à la vente d'actifs numériques.",
   promise: "Vendez votre projet numérique en toute confiance.",
   logo: "/citadelle-logo.png",
-  email: "contact@lacitadellenumerique.fr",
+  email: "lagarde@lacitadellenumerique.fr",
 };
 
 // Palette de couleurs — charte graphique officielle
