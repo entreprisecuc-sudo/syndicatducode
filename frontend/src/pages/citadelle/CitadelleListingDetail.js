@@ -222,8 +222,8 @@ export default function CitadelleListingDetail() {
               {/* ── Mode ENCHÈRE ── */}
               {listing.is_auction && listing.auction_ends_at ? (
                 <div>
-                  {/* Timer */}
-                  {tempsRestant && (
+                  {/* Timer — uniquement si enchère encore active */}
+                  {tempsRestant && listing.status === "active" && (
                     <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl"
                       style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)" }}>
                       <Clock size={14} style={{ color: "#DC2626" }} />
