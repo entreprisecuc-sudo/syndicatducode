@@ -273,50 +273,8 @@ export default function CitadelleServices() {
               />
             )}
 
-            {/* 2. Vendeurs (dark) — pleine largeur */}
+            {/* 2. Vendeurs (light) — pleine largeur */}
             {vendorServices.length > 0 && (
-              <div
-                className="rounded-2xl overflow-hidden"
-                style={{ background: CITADELLE_COLORS.blue }}
-              >
-                <div
-                  className="px-8 py-7"
-                  style={{ borderBottom: "1px solid rgba(201,164,92,0.2)" }}
-                >
-                  <div className="flex items-center gap-3 mb-1">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center"
-                      style={{ background: "rgba(201,164,92,0.15)" }}
-                    >
-                      <TrendingUp size={18} style={{ color: CITADELLE_COLORS.gold }} />
-                    </div>
-                    <h2
-                      className="text-xl font-black"
-                      style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}
-                    >
-                      Pour les vendeurs
-                    </h2>
-                  </div>
-                  <p className="text-xs pl-12" style={{ color: "rgba(255,255,255,0.45)" }}>
-                    Évaluez, optimisez et valorisez votre projet avant la vente.
-                  </p>
-                </div>
-                <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {vendorServices.map((svc, i) => (
-                    <DarkServiceCard
-                      key={svc.id}
-                      svc={svc}
-                      index={i}
-                      onDetails={setSelectedService}
-                      onBuy={openBuy}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 3. Acheteurs (light) — pleine largeur */}
-            {buyerServices.length > 0 && (
               <div
                 className="rounded-2xl overflow-hidden"
                 style={{ background: "#FAFBFD", border: `1px solid ${CITADELLE_COLORS.border}` }}
@@ -330,22 +288,64 @@ export default function CitadelleServices() {
                       className="w-9 h-9 rounded-xl flex items-center justify-center"
                       style={{ background: "rgba(201,164,92,0.1)" }}
                     >
-                      <Search size={18} style={{ color: CITADELLE_COLORS.gold }} />
+                      <TrendingUp size={18} style={{ color: CITADELLE_COLORS.gold }} />
                     </div>
                     <h2
                       className="text-xl font-black"
                       style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
                     >
-                      Pour les acheteurs
+                      Pour les vendeurs
                     </h2>
                   </div>
                   <p className="text-xs pl-12" style={{ color: CITADELLE_COLORS.textMuted }}>
+                    Évaluez, optimisez et valorisez votre projet avant la vente.
+                  </p>
+                </div>
+                <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {vendorServices.map((svc, i) => (
+                    <LightServiceCard
+                      key={svc.id}
+                      svc={svc}
+                      index={i}
+                      onDetails={setSelectedService}
+                      onBuy={openBuy}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 3. Acheteurs (dark) — pleine largeur */}
+            {buyerServices.length > 0 && (
+              <div
+                className="rounded-2xl overflow-hidden"
+                style={{ background: CITADELLE_COLORS.blue }}
+              >
+                <div
+                  className="px-8 py-7"
+                  style={{ borderBottom: "1px solid rgba(201,164,92,0.2)" }}
+                >
+                  <div className="flex items-center gap-3 mb-1">
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center"
+                      style={{ background: "rgba(201,164,92,0.15)" }}
+                    >
+                      <Search size={18} style={{ color: CITADELLE_COLORS.gold }} />
+                    </div>
+                    <h2
+                      className="text-xl font-black"
+                      style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}
+                    >
+                      Pour les acheteurs
+                    </h2>
+                  </div>
+                  <p className="text-xs pl-12" style={{ color: "rgba(255,255,255,0.45)" }}>
                     Sécurisez votre investissement avant et après l'acquisition.
                   </p>
                 </div>
                 <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {buyerServices.map((svc, i) => (
-                    <LightServiceCard
+                    <DarkServiceCard
                       key={svc.id}
                       svc={svc}
                       index={i}
