@@ -234,7 +234,7 @@ _SERVICES_SEED: list[dict] = [
         "description": (
             "Pour qui ?\n"
             "Vendeurs souhaitant améliorer leur projet avant sa mise en vente.\n\n"
-            "Réalisé par :\nLes partenaires du Syndicat du Code.\n\n"
+            "Réalisé par :\nLe Syndicat du Code.\n\n"
             "Prestations possibles :\n"
             "• Refonte graphique\n• Optimisation UX/UI\n• Optimisation mobile\n"
             "• Optimisation SEO\n• Amélioration des performances\n"
@@ -464,6 +464,11 @@ async def buy_service(service_id: str, data: ServiceOrderCreate):
         send_service_order_confirmation_email,
         send_service_order_admin_notification_email,
     )
+    from config.settings import CONTACT_EMAIL
+
+    # Pour "Refonte Avant Vente" (catégorie "refonte"), notifier aussi le Syndicat du Code
+    cc = [CONTACT_EMAIL] if service.get("category") == "refonte" else None
+
     send_service_order_confirmation_email(
         to_email=data.client_email,
         client_name=data.client_name,
@@ -478,6 +483,7 @@ async def buy_service(service_id: str, data: ServiceOrderCreate):
         client_email=data.client_email,
         client_message=data.client_message,
         order_id=order["id"],
+        cc_recipients=cc,
     )
 
     logger.info(

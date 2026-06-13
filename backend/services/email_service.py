@@ -1332,10 +1332,12 @@ def send_service_order_admin_notification_email(
     client_email: str,
     client_message: str,
     order_id: str,
+    cc_recipients: list[str] | None = None,
 ) -> bool:
     """
     Notifie l'administrateur Citadelle d'une nouvelle commande de service.
-    Destinataire : CITADELLE_ADMIN_EMAIL (settings).
+    Destinataire principal : CITADELLE_ADMIN_EMAIL.
+    cc_recipients : liste optionnelle d'adresses en copie (ex. Syndicat du Code).
     """
     try:
         from config.settings import CITADELLE_ADMIN_EMAIL
@@ -1397,6 +1399,8 @@ def send_service_order_admin_notification_email(
         msg = MIMEMultipart("alternative")
         msg["From"] = CITADELLE_FROM_EMAIL
         msg["To"] = CITADELLE_ADMIN_EMAIL
+        if cc_recipients:
+            msg["Cc"] = ", ".join(cc_recipients)
         msg["Subject"] = f"[Citadelle Admin] Nouvelle commande — {service_title} — {amount_str} €"
 
         msg.attach(MIMEText(html, "html", "utf-8"))
