@@ -133,7 +133,7 @@ async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
 
 # ── Modèles ────────────────────────────────────────────────────────────────────
 
-LISTING_TYPES = ["website", "ecommerce", "saas", "webapp", "social_account"]
+LISTING_TYPES = ["website", "ecommerce", "saas", "webapp", "social_account", "domain"]
 LISTING_STATUSES = ["draft", "pending", "active", "sold", "expired", "rejected"]
 
 LISTING_EXPIRY_DAYS = 90  # Durée de validité d'une annonce active

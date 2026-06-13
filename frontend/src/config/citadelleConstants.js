@@ -37,6 +37,7 @@ export const CITADELLE_CATEGORIES = [
   { slug: "saas",           label: "SaaS",              icon: "Cloud",        description: "Logiciels en tant que service" },
   { slug: "webapp",         label: "Applications web",  icon: "Monitor",      description: "Apps web, outils en ligne" },
   { slug: "social_account", label: "Réseaux sociaux",   icon: "Users",        description: "Comptes, pages, communautés" },
+  { slug: "domain",         label: "Noms de domaine",  icon: "Globe",        description: "Domaines, extensions premium" },
 ];
 
 // Types de services — utilisé sur la page d'accueil (section présentation)

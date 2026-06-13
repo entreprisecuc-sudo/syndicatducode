@@ -29,6 +29,7 @@ LISTING_TYPE_LABELS = {
     "saas": "SaaS",
     "webapp": "Application web",
     "social_account": "Réseau social",
+    "domain": "Nom de domaine",
 }
 
 DEFAULT_CONFIG = {

@@ -604,6 +604,7 @@ _LISTING_TYPE_LABELS = {
     "saas": "SaaS",
     "webapp": "Application web",
     "social_account": "Réseau social",
+    "domain": "Nom de domaine",
 }
 
 # Libellés de période pour le sous-titre de l'email

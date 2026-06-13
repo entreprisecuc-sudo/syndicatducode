@@ -22,6 +22,7 @@ const TYPE_OPTIONS = [
   { value: "saas",           label: "SaaS",            icon: Cloud,         desc: "Logiciel en tant que service" },
   { value: "webapp",         label: "Application web", icon: Monitor,       desc: "Outil ou app en ligne" },
   { value: "social_account", label: "Réseau social",   icon: Users,         desc: "Compte ou page" },
+  { value: "domain",         label: "Nom de domaine",  icon: Globe,         desc: "Domaine, extension premium" },
 ];
 
 export default function CitadelleEditListing() {

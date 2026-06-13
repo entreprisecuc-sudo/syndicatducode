@@ -275,7 +275,7 @@ export default function CitadelleVendre() {
               className="mb-10 leading-relaxed"
               style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.7)", maxWidth: "540px" }}
             >
-              Sites internet, SaaS, e-commerce, applications web, blogs ou actifs numériques.
+              Sites internet, SaaS, e-commerce, applications web, noms de domaine ou tout autre actif numérique.
               Publiez votre annonce gratuitement et bénéficiez d'un accompagnement professionnel.
             </p>
 
