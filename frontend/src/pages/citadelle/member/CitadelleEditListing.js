@@ -36,6 +36,13 @@ export default function CitadelleEditListing() {
   const [notFound, setNotFound] = useState(false);
   const [showCommissionPopup, setShowCommissionPopup] = useState(false);
   const [commissionAcknowledged, setCommissionAcknowledged] = useState(false);
+  const [commission, setCommission] = useState({ rate: 0.05, minimum_eur: 49 });
+
+  useEffect(() => {
+    citadelleApi.get("/settings/commission")
+      .then(r => setCommission(r.data))
+      .catch(() => {});
+  }, []);
 
   const handlePriceFocus = () => {
     if (!commissionAcknowledged) setShowCommissionPopup(true);
@@ -249,6 +256,17 @@ export default function CitadelleEditListing() {
                 style={inputStyle}
                 data-testid="edit-listing-price"
               />
+              {(() => {
+                const p = parseFloat(form.price);
+                if (!p || p <= 0) return null;
+                const com = Math.max(p * commission.rate, commission.minimum_eur);
+                return (
+                  <p className="text-xs mt-1.5 px-1" style={{ color: CITADELLE_COLORS.textMuted }}>
+                    Commission&nbsp;: <strong>{com.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
+                    &nbsp;·&nbsp;Vous recevrez&nbsp;: <strong style={{ color: CITADELLE_COLORS.blue }}>{(p - com).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
+                  </p>
+                );
+              })()}
             </div>
             <div className="flex items-end pb-3">
               <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: CITADELLE_COLORS.blue }}>

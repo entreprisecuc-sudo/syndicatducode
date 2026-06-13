@@ -3,7 +3,7 @@
  * Formulaire multi-étapes (4 étapes)
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Globe, ShoppingCart, Cloud, Monitor, Users, ChevronRight, ChevronLeft, CheckCircle, AlertCircle } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
@@ -44,8 +44,15 @@ export default function CitadelleCreateListing() {
   const [submitted, setSubmitted] = useState(false);
   const [showCommissionPopup, setShowCommissionPopup] = useState(false);
   const [commissionAcknowledged, setCommissionAcknowledged] = useState(false);
+  const [commission, setCommission] = useState({ rate: 0.05, minimum_eur: 49 });
   const { isAuthenticated } = useCitadelleAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    citadelleApi.get("/settings/commission")
+      .then(r => setCommission(r.data))
+      .catch(() => {});
+  }, []);
 
   const handlePriceFocus = () => {
     if (!commissionAcknowledged) setShowCommissionPopup(true);
@@ -55,6 +62,10 @@ export default function CitadelleCreateListing() {
     setCommissionAcknowledged(true);
     setShowCommissionPopup(false);
   };
+
+  // Calcul indicateur commission en temps réel
+  const priceNum = parseFloat(form.price);
+  const commissionEst = priceNum > 0 ? Math.max(priceNum * commission.rate, commission.minimum_eur) : null;
 
   if (!isAuthenticated) {
     return (
@@ -260,6 +271,12 @@ export default function CitadelleCreateListing() {
                   onFocus={handlePriceFocus}
                   placeholder="5000" min="1" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle}
                   data-testid="create-listing-price" />
+                {commissionEst !== null && (
+                  <p className="text-xs mt-1.5 px-1" style={{ color: CITADELLE_COLORS.textMuted }}>
+                    Commission estimée&nbsp;: <strong>{commissionEst.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
+                    &nbsp;·&nbsp;Vous recevrez&nbsp;: <strong style={{ color: CITADELLE_COLORS.blue }}>{(priceNum - commissionEst).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
+                  </p>
+                )}
               </div>
               <div className="flex items-end pb-3">
                 {!form.is_auction && (
