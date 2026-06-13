@@ -41,10 +41,10 @@ const CitadelleNav = () => {
         }}
         data-testid="citadelle-nav"
       >
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-24 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-28 flex items-center justify-between">
           {/* Logo */}
           <Link to="/citadelle" className="flex items-center gap-3" data-testid="citadelle-logo">
-            <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-20 w-auto" />
+            <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-24 w-auto" />
           </Link>
 
           {/* Liens desktop */}
