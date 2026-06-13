@@ -216,11 +216,10 @@ function calculerTempsRestant(auctionEndsAt) {
   const diff = new Date(auctionEndsAt) - new Date();
   if (diff <= 0) return null;
   const jours    = Math.floor(diff / 86400000);
-  const heures   = Math.floor((diff % 86400000) / 3600000);
-  const minutes  = Math.floor((diff % 3600000) / 60000);
-  const secondes = Math.floor((diff % 60000) / 1000);
-  if (jours > 0)   return `${jours}j ${heures}h ${minutes}min`;
-  if (heures > 0)  return `${heures}h ${minutes}min ${secondes}s`;
-  if (minutes > 0) return `${minutes}min ${secondes}s`;
-  return `${secondes}s`;
+  const heures   = Math.floor((diff % 86400000) / 3600000).toString().padStart(2, "0");
+  const minutes  = Math.floor((diff % 3600000) / 60000).toString().padStart(2, "0");
+  const secondes = Math.floor((diff % 60000) / 1000).toString().padStart(2, "0");
+  return jours > 0
+    ? `${jours}j ${heures}:${minutes}:${secondes}`
+    : `${heures}:${minutes}:${secondes}`;
 }
