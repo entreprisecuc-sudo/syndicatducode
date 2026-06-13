@@ -6,12 +6,35 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, BarChart2,
-  Calendar, ShieldCheck, Star, ArrowLeft, Eye, Share2, Lock, FileText, Download, Send, AlertCircle
+  Calendar, ShieldCheck, Star, ArrowLeft, Eye, Share2, Lock, FileText, Download, Send, AlertCircle, Hammer, Clock, Zap
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { CITADELLE_COLORS, getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@/config/citadelleConstants";
+
+// ── Hook : compte à rebours ──────────────────────────────────────────────────
+
+function useTempsRestant(auctionEndsAt) {
+  const calc = () => {
+    if (!auctionEndsAt) return null;
+    const diff = new Date(auctionEndsAt) - new Date();
+    if (diff <= 0) return null;
+    const jours = Math.floor(diff / 86400000);
+    const heures = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    if (jours > 0) return `${jours}j ${heures}h ${minutes}min`;
+    if (heures > 0) return `${heures}h ${minutes}min`;
+    return `${minutes} min`;
+  };
+  const [reste, setReste] = useState(calc);
+  useEffect(() => {
+    if (!auctionEndsAt) return;
+    const t = setInterval(() => setReste(calc), 30000);
+    return () => clearInterval(t);
+  }, [auctionEndsAt]);
+  return reste;
+}
 
 const TYPE_CONFIG = {
   website:        { label: "Site internet",    icon: Globe },
@@ -37,6 +60,12 @@ export default function CitadelleListingDetail() {
   const [contactMessage, setContactMessage] = useState("");
   const [contactLoading, setContactLoading] = useState(false);
   const [contactError, setContactError] = useState("");
+  // Enchères
+  const [bidAmount, setBidAmount] = useState("");
+  const [bidLoading, setBidLoading] = useState(false);
+  const [bidError, setBidError] = useState("");
+  const [bidSuccess, setBidSuccess] = useState(false);
+  const tempsRestant = useTempsRestant(listing?.auction_ends_at);
 
   useEffect(() => {
     fetchListing();
@@ -188,51 +217,160 @@ export default function CitadelleListingDetail() {
               <h1 className="font-black text-xl mb-4 leading-snug" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
                 {listing.title}
               </h1>
-              <div className="mb-1">
-                <span className="text-3xl font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                  {listing.price?.toLocaleString("fr-FR")} €
-                </span>
-              </div>
-              {listing.price_negotiable && <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>Prix négociable</p>}
 
-              {/* CTA — Faire une offre */}
-              <div className="space-y-2 mt-5">
-                {listing.status === "sold" ? (
-                  <div className="p-4 rounded-xl text-center"
-                    style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)" }}>
-                    <p className="text-sm font-bold" style={{ color: "#DC2626" }}>Site vendu</p>
-                    <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      Ce site a trouvé son acquéreur.
+              {/* ── Mode ENCHÈRE ── */}
+              {listing.is_auction && listing.auction_ends_at ? (
+                <div>
+                  {/* Timer */}
+                  {tempsRestant && (
+                    <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl"
+                      style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)" }}>
+                      <Clock size={14} style={{ color: "#DC2626" }} />
+                      <span className="text-xs font-bold" style={{ color: "#DC2626" }}>
+                        Enchère en cours — {tempsRestant} restants
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Enchère courante */}
+                  <div className="mb-2">
+                    <p className="text-xs font-semibold mb-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
+                      {(listing.auction_bids?.length || 0) === 0 ? "Prix de départ" : "Enchère en cours"}
                     </p>
-                    <Link to="/citadelle/annonces"
-                      className="inline-block mt-3 px-4 py-2 rounded-lg text-xs font-semibold transition-all hover:scale-105"
-                      style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-                      Voir les autres annonces
-                    </Link>
+                    <span className="text-3xl font-black" style={{ color: "#DC2626", fontFamily: "'Montserrat', sans-serif" }}>
+                      {(listing.auction_current_bid || listing.price)?.toLocaleString("fr-FR")} €
+                    </span>
+                    {listing.auction_bids?.length > 0 && (
+                      <span className="ml-2 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
+                        ({listing.auction_bids.length} enchère{listing.auction_bids.length > 1 ? "s" : ""})
+                      </span>
+                    )}
                   </div>
-                ) : isAuthenticated && user?.id !== listing.seller_id ? (
-                  <>
-                    <button onClick={() => setOfferModal(true)}
-                      className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"
-                      style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
-                      data-testid="btn-make-offer">
-                      Faire une offre
-                    </button>
-                    <button onClick={() => setContactModal(true)}
-                      className="w-full py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.02]"
-                      style={{ border: `1px solid ${CITADELLE_COLORS.blue}`, color: CITADELLE_COLORS.blue }}
-                      data-testid="btn-contact-seller">
-                      Contacter le vendeur
-                    </button>
-                  </>
-                ) : !isAuthenticated ? (
-                  <Link to="/citadelle/connexion"
-                    className="block w-full py-3 rounded-xl font-bold text-sm text-center transition-all hover:scale-[1.02]"
-                    style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-                    Se connecter pour faire une offre
-                  </Link>
-                ) : null}
-              </div>
+                  {listing.auction_show_reserve && (
+                    <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
+                      Prix de réserve : {listing.price?.toLocaleString("fr-FR")} €
+                    </p>
+                  )}
+
+                  {/* Prix d'achat immédiat */}
+                  {listing.auction_buy_now_price && (
+                    <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl"
+                      style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.15)" }}>
+                      <Zap size={13} style={{ color: "#22C55E" }} />
+                      <span className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
+                        Achat immédiat : <strong style={{ color: CITADELLE_COLORS.blue }}>{listing.auction_buy_now_price.toLocaleString("fr-FR")} €</strong>
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Formulaire enchère */}
+                  {listing.status !== "sold" && tempsRestant && isAuthenticated && user?.id !== listing.seller_id ? (
+                    <div className="space-y-3 mt-4">
+                      {bidSuccess ? (
+                        <div className="p-3 rounded-xl text-xs text-center" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", color: "#22C55E" }}>
+                          Votre enchère a bien été enregistrée ! Un email de confirmation vous a été envoyé.
+                        </div>
+                      ) : (
+                        <>
+                          {bidError && (
+                            <div className="flex items-center gap-2 p-3 rounded-xl text-xs" style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626" }}>
+                              <AlertCircle size={13} /> {bidError}
+                            </div>
+                          )}
+                          <div>
+                            <label className="block text-xs font-semibold mb-1" style={{ color: CITADELLE_COLORS.blue }}>
+                              Votre enchère (€) — minimum {((listing.auction_bids?.length || 0) === 0 ? (listing.auction_current_bid || listing.price) : (listing.auction_current_bid || listing.price) + 10).toLocaleString("fr-FR")} €
+                            </label>
+                            <input type="number" value={bidAmount} onChange={e => { setBidAmount(e.target.value); setBidError(""); }}
+                              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                              style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
+                              data-testid="bid-amount" />
+                          </div>
+                          <button onClick={async () => {
+                            setBidError("");
+                            const amount = parseFloat(bidAmount);
+                            if (!amount || amount <= 0) { setBidError("Montant invalide"); return; }
+                            setBidLoading(true);
+                            try {
+                              const res = await citadelleApi.post(`/listings/${listing.id}/bid`, { amount });
+                              setListing(res.data);
+                              setBidSuccess(true);
+                              setBidAmount("");
+                              setTimeout(() => setBidSuccess(false), 5000);
+                            } catch (err) {
+                              setBidError(err.response?.data?.detail || "Erreur lors de l'enchère");
+                            } finally { setBidLoading(false); }
+                          }} disabled={bidLoading}
+                            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-all hover:scale-[1.02]"
+                            style={{ background: "#DC2626", color: "white" }}
+                            data-testid="btn-place-bid">
+                            {bidLoading ? <div className="w-4 h-4 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: "white" }} />
+                              : <><Hammer size={15} /> Enchérir</>}
+                          </button>
+                          {listing.auction_buy_now_price && (
+                            <button onClick={() => setOfferModal(true)}
+                              className="w-full py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                              style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                              data-testid="btn-buy-now">
+                              <Zap size={14} /> Acheter immédiatement — {listing.auction_buy_now_price.toLocaleString("fr-FR")} €
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ) : listing.status === "sold" ? (
+                    <AnnonceSoldee listing={listing} user={user} />
+                  ) : !isAuthenticated ? (
+                    <Link to="/citadelle/connexion"
+                      className="block w-full py-3 rounded-xl font-bold text-sm text-center mt-4 transition-all hover:scale-[1.02]"
+                      style={{ background: "#DC2626", color: "white" }}>
+                      Se connecter pour enchérir
+                    </Link>
+                  ) : null}
+                </div>
+              ) : (
+                /* ── Mode VENTE CLASSIQUE ── */
+                <div>
+                  <div className="mb-1">
+                    {listing.original_price && listing.original_price > listing.price && (
+                      <span className="text-sm line-through mr-2" style={{ color: CITADELLE_COLORS.textMuted }}>
+                        {listing.original_price.toLocaleString("fr-FR")} €
+                      </span>
+                    )}
+                    <span className="text-3xl font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                      {listing.price?.toLocaleString("fr-FR")} €
+                    </span>
+                  </div>
+                  {listing.price_negotiable && <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>Prix négociable</p>}
+
+                  <div className="space-y-2 mt-5">
+                    {listing.status === "sold" ? (
+                      <AnnonceSoldee listing={listing} user={user} />
+                    ) : isAuthenticated && user?.id !== listing.seller_id ? (
+                      <>
+                        <button onClick={() => setOfferModal(true)}
+                          className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"
+                          style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                          data-testid="btn-make-offer">
+                          Faire une offre
+                        </button>
+                        <button onClick={() => setContactModal(true)}
+                          className="w-full py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.02]"
+                          style={{ border: `1px solid ${CITADELLE_COLORS.blue}`, color: CITADELLE_COLORS.blue }}
+                          data-testid="btn-contact-seller">
+                          Contacter le vendeur
+                        </button>
+                      </>
+                    ) : !isAuthenticated ? (
+                      <Link to="/citadelle/connexion"
+                        className="block w-full py-3 rounded-xl font-bold text-sm text-center transition-all hover:scale-[1.02]"
+                        style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
+                        Se connecter pour faire une offre
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Métriques clés */}
@@ -338,8 +476,7 @@ export default function CitadelleListingDetail() {
         </div>
       )}
       {/* Modal — Contacter le vendeur */}
-      {contactModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)" }}>
+      {contactModal && (        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)" }}>
           <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
             <h3 className="font-bold text-lg mb-1" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
               Contacter le vendeur
@@ -396,5 +533,40 @@ export default function CitadelleListingDetail() {
         </div>
       )}
     </CitadelleLayout>
+  );
+}
+
+// ── Composant : annonce vendue (gagnant ou autres) ───────────────────────────
+function AnnonceSoldee({ listing, user }) {
+  const isWinner = user && listing.auction_winner_transaction_id &&
+    listing.auction_current_bidder_id === user.id;
+
+  if (isWinner) {
+    return (
+      <div className="p-4 rounded-xl mt-2" style={{ background: "rgba(201,164,92,0.08)", border: "1px solid rgba(201,164,92,0.3)" }}>
+        <p className="text-sm font-bold mb-1" style={{ color: CITADELLE_COLORS.gold }}>Félicitations, vous avez remporté l'enchère !</p>
+        <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
+          Montant : {listing.auction_current_bid?.toLocaleString("fr-FR")} €
+        </p>
+        <Link to={`/citadelle/espace-membre/transactions/${listing.auction_winner_transaction_id}`}
+          className="block w-full py-2.5 rounded-xl font-bold text-sm text-center transition-all hover:scale-[1.02]"
+          style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+          data-testid="btn-winner-pay">
+          Procéder au paiement
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 rounded-xl text-center" style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)" }}>
+      <p className="text-sm font-bold" style={{ color: "#DC2626" }}>Site vendu</p>
+      <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>Ce site a trouvé son acquéreur.</p>
+      <Link to="/citadelle/annonces"
+        className="inline-block mt-3 px-4 py-2 rounded-lg text-xs font-semibold transition-all hover:scale-105"
+        style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
+        Voir les autres annonces
+      </Link>
+    </div>
   );
 }

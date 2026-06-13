@@ -27,7 +27,12 @@ const initialForm = {
   price: "", price_negotiable: false,
   monthly_revenue: "", monthly_traffic: "", age_months: "", niche: "",
   description: "", technologies: "", url_preview: "",
-  images: ["", "", "", "", ""]
+  images: ["", "", "", "", ""],
+  // Enchères
+  is_auction: false,
+  auction_show_reserve: false,
+  auction_duration_days: 7,
+  auction_buy_now_price: "",
 };
 
 export default function CitadelleCreateListing() {
@@ -104,6 +109,11 @@ export default function CitadelleCreateListing() {
         technologies: form.technologies.split(",").map(t => t.trim()).filter(Boolean),
         url_preview: form.url_preview.trim() || null,
         images: form.images.filter(Boolean),
+        // Enchères
+        is_auction: form.is_auction,
+        auction_show_reserve: form.auction_show_reserve,
+        auction_duration_days: form.is_auction ? parseInt(form.auction_duration_days) : 7,
+        auction_buy_now_price: form.is_auction && form.auction_buy_now_price ? parseFloat(form.auction_buy_now_price) : null,
       };
       await citadelleApi.post("/listings", payload);
       setSubmitted(true);
@@ -224,18 +234,62 @@ export default function CitadelleCreateListing() {
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold mb-2" style={labelStyle}>Prix de vente (€) *</label>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>
+                  {form.is_auction ? "Prix de départ / réserve (€) *" : "Prix de vente (€) *"}
+                </label>
                 <input type="number" value={form.price} onChange={e => set("price", e.target.value)}
                   placeholder="5000" min="1" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle}
                   data-testid="create-listing-price" />
               </div>
               <div className="flex items-end pb-3">
-                <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: CITADELLE_COLORS.blue }}>
-                  <input type="checkbox" checked={form.price_negotiable} onChange={e => set("price_negotiable", e.target.checked)} className="w-4 h-4 rounded" />
-                  Prix négociable
-                </label>
+                {!form.is_auction && (
+                  <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: CITADELLE_COLORS.blue }}>
+                    <input type="checkbox" checked={form.price_negotiable} onChange={e => set("price_negotiable", e.target.checked)} className="w-4 h-4 rounded" />
+                    Prix négociable
+                  </label>
+                )}
               </div>
             </div>
+
+            {/* Section Enchères */}
+            <div className="p-4 rounded-2xl" style={{ background: "rgba(201,164,92,0.05)", border: `1px solid rgba(201,164,92,0.2)` }}>
+              <label className="flex items-center gap-3 cursor-pointer mb-1">
+                <input type="checkbox" checked={form.is_auction} onChange={e => set("is_auction", e.target.checked)} className="w-4 h-4 rounded" />
+                <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.blue }}>Mettre en enchère</span>
+              </label>
+              <p className="text-xs ml-7 mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
+                Les acheteurs enchérissent sur votre annonce. Le prix de départ est le prix saisi ci-dessus.
+              </p>
+
+              {form.is_auction && (
+                <div className="space-y-4 mt-3">
+                  <div className="flex items-center gap-3 ml-1">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: CITADELLE_COLORS.blue }}>
+                      <input type="checkbox" checked={form.auction_show_reserve} onChange={e => set("auction_show_reserve", e.target.checked)} className="w-4 h-4 rounded" />
+                      Afficher le prix de départ publiquement
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-2" style={labelStyle}>Durée de l'enchère (jours)</label>
+                      <input type="number" value={form.auction_duration_days}
+                        onChange={e => set("auction_duration_days", Math.min(31, Math.max(3, parseInt(e.target.value) || 7)))}
+                        min="3" max="31" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+                      <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>Entre 3 et 31 jours</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-2" style={labelStyle}>Prix d'achat immédiat (€) <span className="font-normal">(optionnel)</span></label>
+                      <input type="number" value={form.auction_buy_now_price}
+                        onChange={e => set("auction_buy_now_price", e.target.value)}
+                        placeholder="Ex: 12000" min="1" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+                      <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>Permet un achat direct sans enchère</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>Revenus mensuels (€)</label>

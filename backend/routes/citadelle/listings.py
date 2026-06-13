@@ -15,7 +15,10 @@ from middleware.auth import get_current_user
 from services.auth_service import decode_access_token
 from services.email_service import (
     send_citadelle_listing_approved_email,
-    send_citadelle_listing_rejected_email
+    send_citadelle_listing_rejected_email,
+    send_citadelle_auction_bid_email,
+    send_citadelle_auction_winner_email,
+    send_citadelle_auction_new_listing_email,
 )
 
 logger = logging.getLogger(__name__)
@@ -149,6 +152,11 @@ class ListingCreate(BaseModel):
     technologies: Optional[List[str]] = []
     url_preview: Optional[str] = Field(None, max_length=500)
     images: Optional[List[str]] = []
+    # Enchères
+    is_auction: bool = False
+    auction_show_reserve: bool = False
+    auction_duration_days: int = Field(7, ge=3, le=31)
+    auction_buy_now_price: Optional[float] = Field(None, gt=0)
 
     def validate_type(self):
         if self.type not in LISTING_TYPES:
@@ -168,6 +176,11 @@ class ListingUpdate(BaseModel):
     technologies: Optional[List[str]] = None
     url_preview: Optional[str] = None
     images: Optional[List[str]] = None
+    # Enchères
+    is_auction: Optional[bool] = None
+    auction_show_reserve: Optional[bool] = None
+    auction_duration_days: Optional[int] = Field(None, ge=3, le=31)
+    auction_buy_now_price: Optional[float] = Field(None, gt=0)
 
 
 class AdminRejectListing(BaseModel):
@@ -326,7 +339,19 @@ async def create_listing(
         "created_at": now,
         "updated_at": now,
         "published_at": None,
-        "expires_at": None
+        "expires_at": None,
+        # Enchères
+        "is_auction": data.is_auction,
+        "auction_show_reserve": data.auction_show_reserve,
+        "auction_duration_days": data.auction_duration_days,
+        "auction_buy_now_price": data.auction_buy_now_price,
+        "auction_ends_at": None,
+        "auction_current_bid": None,
+        "auction_current_bidder_id": None,
+        "auction_current_bidder_email": None,
+        "auction_current_bidder_name": None,
+        "auction_bids": [],
+        "auction_winner_transaction_id": None,
     }
 
     await db.citadelle_listings.insert_one(listing_doc)
@@ -441,6 +466,16 @@ async def admin_validate_listing(
     now = datetime.now(timezone.utc)
     expires = now + timedelta(days=LISTING_EXPIRY_DAYS)
 
+    auction_updates = {}
+    if listing.get("is_auction"):
+        # Lancement de l'enchère : calcul de la date de fin
+        duration = listing.get("auction_duration_days", 7)
+        auction_ends = now + timedelta(days=duration)
+        auction_updates = {
+            "auction_ends_at": auction_ends.isoformat(),
+            "auction_current_bid": listing.get("price"),  # Démarre au prix de réserve
+        }
+
     await db.citadelle_listings.update_one(
         {"id": listing_id},
         {"$set": {
@@ -448,7 +483,8 @@ async def admin_validate_listing(
             "published_at": now.isoformat(),
             "expires_at": expires.isoformat(),
             "updated_at": now.isoformat(),
-            "rejection_reason": None
+            "rejection_reason": None,
+            **auction_updates
         }}
     )
 
@@ -459,6 +495,11 @@ async def admin_validate_listing(
             listing["title"],
             listing["slug"]
         )
+
+    # Si enchère : notifier tous les utilisateurs + abonnés newsletter
+    if listing.get("is_auction") and auction_updates:
+        import asyncio
+        asyncio.create_task(_notifier_utilisateurs_enchere(listing, auction_updates["auction_ends_at"]))
 
     logger.info(f"[Citadelle Admin] Annonce validée: {listing_id} par {current_user.get('email')}")
     return {"message": "Annonce validée et publiée avec succès"}
@@ -529,3 +570,123 @@ async def admin_delete_listing(
     await db.citadelle_listings.delete_one({"id": listing_id})
     logger.info(f"[Citadelle Admin] Annonce supprimée: {listing['title']} (par {current_user.get('email')})")
     return {"message": "Annonce supprimée avec succès"}
+
+
+# ── Enchères ────────────────────────────────────────────────────────────────────
+
+class BidCreate(BaseModel):
+    amount: float = Field(..., gt=0)
+
+
+@router.post("/listings/{listing_id}/bid", summary="Placer une enchère")
+async def place_bid(
+    listing_id: str,
+    data: BidCreate,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """Acheteur : place une enchère sur une annonce mise aux enchères."""
+    listing = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+    if listing.get("status") != "active":
+        raise HTTPException(status_code=400, detail="Cette annonce n'est plus disponible")
+    if not listing.get("is_auction"):
+        raise HTTPException(status_code=400, detail="Cette annonce n'est pas en mode enchère")
+
+    # Vérifier que l'enchère est toujours en cours
+    auction_ends_at = listing.get("auction_ends_at")
+    if not auction_ends_at:
+        raise HTTPException(status_code=400, detail="L'enchère n'a pas encore démarré")
+    now = datetime.now(timezone.utc)
+    if now >= datetime.fromisoformat(auction_ends_at):
+        raise HTTPException(status_code=400, detail="L'enchère est terminée")
+
+    # Vérification de l'identité
+    bidder_id = current_user.get("sub")
+    if listing["seller_id"] == bidder_id:
+        raise HTTPException(status_code=400, detail="Vous ne pouvez pas enchérir sur votre propre annonce")
+
+    # Montant minimum attendu
+    current_bid = listing.get("auction_current_bid") or listing.get("price", 0)
+    has_bids = bool(listing.get("auction_bids"))
+    montant_min = (current_bid + 10) if has_bids else current_bid
+    if data.amount < montant_min:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Montant minimum : {montant_min:,.0f} € (enchère actuelle + 10 €)"
+        )
+
+    # Récupérer le nom de l'enchérisseur
+    bidder_user = await db.citadelle_users.find_one({"id": bidder_id}, {"_id": 0, "first_name": 1, "last_name": 1})
+    bidder_name = ""
+    if bidder_user:
+        bidder_name = f"{bidder_user.get('first_name', '')} {bidder_user.get('last_name', '')}".strip()
+
+    bid_entry = {
+        "bidder_id": bidder_id,
+        "bidder_email": current_user.get("email"),
+        "bidder_name": bidder_name or current_user.get("email"),
+        "amount": data.amount,
+        "bid_at": now.isoformat(),
+    }
+
+    await db.citadelle_listings.update_one(
+        {"id": listing_id},
+        {
+            "$set": {
+                "auction_current_bid": data.amount,
+                "auction_current_bidder_id": bidder_id,
+                "auction_current_bidder_email": current_user.get("email"),
+                "auction_current_bidder_name": bidder_name or current_user.get("email"),
+                "updated_at": now.isoformat(),
+            },
+            "$push": {"auction_bids": bid_entry}
+        }
+    )
+
+    # Email de confirmation à l'enchérisseur
+    send_citadelle_auction_bid_email(
+        bidder_email=current_user.get("email"),
+        bidder_name=bidder_name or current_user.get("email"),
+        listing_title=listing["title"],
+        listing_slug=listing["slug"],
+        amount=data.amount,
+        auction_ends_at=auction_ends_at,
+    )
+
+    listing_updated = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
+    logger.info(f"[Citadelle Enchère] {current_user.get('email')} a enchéri {data.amount}€ sur {listing['title']}")
+    return listing_updated
+
+
+async def _notifier_utilisateurs_enchere(listing: dict, auction_ends_at: str):
+    """Envoie les notifications email à tous les utilisateurs + abonnés newsletter lors d'une nouvelle enchère."""
+    try:
+        emails_notifies = set()
+
+        # Tous les utilisateurs inscrits
+        cursor = db.citadelle_users.find({}, {"_id": 0, "email": 1, "first_name": 1})
+        async for user in cursor:
+            email = user.get("email", "")
+            if email and email != listing.get("seller_email"):
+                emails_notifies.add(email)
+
+        # Abonnés newsletter (peut inclure des non-inscrits)
+        cursor_nl = db.citadelle_newsletter.find({"active": True}, {"_id": 0, "email": 1})
+        async for sub in cursor_nl:
+            email = sub.get("email", "")
+            if email:
+                emails_notifies.add(email)
+
+        for email in emails_notifies:
+            send_citadelle_auction_new_listing_email(
+                recipient_email=email,
+                listing_title=listing["title"],
+                listing_slug=listing["slug"],
+                listing_price=listing.get("price", 0),
+                auction_ends_at=auction_ends_at,
+            )
+
+        logger.info(f"[Citadelle Enchère] Notifications envoyées à {len(emails_notifies)} destinataires pour '{listing['title']}'")
+    except Exception as e:
+        logger.error(f"[Citadelle Enchère] Erreur notification utilisateurs: {e}")

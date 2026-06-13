@@ -1448,3 +1448,193 @@ Message envoyé depuis le formulaire de contact
     except Exception as e:
         logger.error(f"[Citadelle Contact] Erreur envoi email contact: {e}")
         return False
+
+
+def send_citadelle_auction_new_listing_email(
+    recipient_email: str,
+    listing_title: str,
+    listing_slug: str,
+    listing_price: float,
+    auction_ends_at: str,
+) -> bool:
+    """Notifie un utilisateur/abonné newsletter qu'une nouvelle enchère a démarré."""
+    try:
+        from datetime import datetime, timezone
+        from config.settings import CITADELLE_URL
+        ends = datetime.fromisoformat(auction_ends_at)
+        ends_str = ends.strftime("%d/%m/%Y à %Hh%M")
+        listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
+
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = recipient_email
+        msg['Subject'] = f"[Enchère] {listing_title} — La Citadelle Numérique"
+
+        body = f"""Nouvelle enchère sur La Citadelle Numérique !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{listing_title}
+Prix de départ : {listing_price:,.0f} €
+Fin de l'enchère : {ends_str}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cet actif numérique vient d'être mis aux enchères sur La Citadelle Numérique.
+Ne manquez pas cette opportunité — les enchères sont ouvertes !
+
+Voir l'annonce et enchérir :
+{listing_url}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+La Citadelle Numérique — Marketplace d'actifs numériques
+{CITADELLE_URL}
+"""
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        _envoyer_email(msg)
+        return True
+    except Exception as e:
+        logger.error(f"[Citadelle Enchère] Erreur email nouvelle enchère: {e}")
+        return False
+
+
+def send_citadelle_auction_bid_email(
+    bidder_email: str,
+    bidder_name: str,
+    listing_title: str,
+    listing_slug: str,
+    amount: float,
+    auction_ends_at: str,
+) -> bool:
+    """Confirme une enchère à l'enchérisseur."""
+    try:
+        from datetime import datetime
+        from config.settings import CITADELLE_URL
+        ends = datetime.fromisoformat(auction_ends_at)
+        ends_str = ends.strftime("%d/%m/%Y à %Hh%M")
+        listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
+
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = bidder_email
+        msg['Subject'] = f"Votre enchère de {amount:,.0f} € — {listing_title}"
+
+        body = f"""Bonjour {bidder_name},
+
+Votre enchère a bien été enregistrée sur La Citadelle Numérique.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Annonce     : {listing_title}
+Votre offre : {amount:,.0f} €
+Fin         : {ends_str}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Vous serez averti si un autre enchérisseur dépasse votre offre.
+Vous pouvez enchérir à nouveau à tout moment.
+
+Voir l'annonce :
+{listing_url}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+La Citadelle Numérique
+"""
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        _envoyer_email(msg)
+        return True
+    except Exception as e:
+        logger.error(f"[Citadelle Enchère] Erreur email confirmation enchère: {e}")
+        return False
+
+
+def send_citadelle_auction_winner_email(
+    winner_email: str,
+    winner_name: str,
+    listing_title: str,
+    listing_slug: str,
+    amount: float,
+    transaction_id: str,
+) -> bool:
+    """Félicite le gagnant de l'enchère et lui fournit le lien de paiement."""
+    try:
+        from config.settings import CITADELLE_URL
+        payment_url = f"{CITADELLE_URL}/citadelle/espace-membre/transactions/{transaction_id}"
+        listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
+
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = winner_email
+        msg['Subject'] = f"Félicitations ! Vous avez remporté l'enchère — {listing_title}"
+
+        body = f"""Félicitations {winner_name} !
+
+Vous avez remporté l'enchère pour :
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{listing_title}
+Montant remporté : {amount:,.0f} €
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pour finaliser votre acquisition, rendez-vous sur votre espace membre
+et procédez au paiement sécurisé :
+
+{payment_url}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+La Citadelle Numérique
+{CITADELLE_URL}
+"""
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        _envoyer_email(msg)
+        return True
+    except Exception as e:
+        logger.error(f"[Citadelle Enchère] Erreur email gagnant: {e}")
+        return False
+
+
+def send_citadelle_auction_daily_digest_email(
+    seller_email: str,
+    seller_name: str,
+    listing_title: str,
+    listing_slug: str,
+    current_bid: float,
+    nb_bids: int,
+    auction_ends_at: str,
+) -> bool:
+    """Digest quotidien envoyé au vendeur avec l'état de son enchère."""
+    try:
+        from datetime import datetime
+        from config.settings import CITADELLE_URL
+        ends = datetime.fromisoformat(auction_ends_at)
+        ends_str = ends.strftime("%d/%m/%Y à %Hh%M")
+        listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
+
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = seller_email
+        msg['Subject'] = f"[Enchère] Résumé du jour — {listing_title}"
+
+        body = f"""Bonjour {seller_name},
+
+Voici le résumé quotidien de votre enchère en cours :
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{listing_title}
+Enchère la plus haute : {current_bid:,.0f} €
+Nombre d'enchères     : {nb_bids}
+Fin de l'enchère      : {ends_str}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Voir votre annonce :
+{listing_url}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+La Citadelle Numérique
+"""
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        _envoyer_email(msg)
+        return True
+    except Exception as e:
+        logger.error(f"[Citadelle Enchère] Erreur email digest vendeur: {e}")
+        return False
+
+    except Exception as e:
+        logger.error(f"[Citadelle Contact] Erreur envoi email contact: {e}")
+        return False

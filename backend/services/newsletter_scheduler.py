@@ -20,6 +20,8 @@ _db = None
 
 NEWSLETTER_JOB_ID = "citadelle_newsletter_digest"
 BLOG_SCHEDULER_JOB_ID = "citadelle_blog_scheduled_publish"
+AUCTION_CHECK_JOB_ID = "citadelle_auction_check"
+AUCTION_DIGEST_JOB_ID = "citadelle_auction_daily_digest"
 
 LISTING_TYPE_LABELS = {
     "website": "Site internet",
@@ -359,6 +361,141 @@ def reschedule_newsletter_job(day_of_week: int, hour: int):
         logger.error(f"[Newsletter] Erreur lors de la reprogrammation du job : {e}")
 
 
+async def check_ended_auctions():
+    """
+    Vérifie toutes les 30 min les enchères terminées.
+    Si un gagnant existe : crée la transaction et envoie l'email de félicitations.
+    """
+    if _db is None:
+        return
+    try:
+        from services.email_service import send_citadelle_auction_winner_email
+        from config.settings import CITADELLE_URL
+        import uuid as _uuid
+
+        now = datetime.now(timezone.utc)
+        cursor = _db.citadelle_listings.find({
+            "is_auction": True,
+            "status": "active",
+            "auction_ends_at": {"$lte": now.isoformat()},
+            "auction_winner_transaction_id": None,
+        }, {"_id": 0})
+
+        async for listing in cursor:
+            listing_id = listing["id"]
+            winner_id = listing.get("auction_current_bidder_id")
+            winner_email = listing.get("auction_current_bidder_email")
+            winner_name = listing.get("auction_current_bidder_name", "")
+            amount = listing.get("auction_current_bid", 0)
+
+            if winner_id:
+                # Créer la transaction automatiquement
+                tx_id = str(_uuid.uuid4())
+                tx_now = now.isoformat()
+                transaction = {
+                    "id": tx_id,
+                    "listing_id": listing_id,
+                    "listing_title": listing["title"],
+                    "listing_slug": listing.get("slug", ""),
+                    "buyer_id": winner_id,
+                    "buyer_email": winner_email,
+                    "seller_id": listing["seller_id"],
+                    "seller_email": listing.get("seller_email", ""),
+                    "status": "offer_accepted",
+                    "offer_amount": amount,
+                    "offer_message": "Enchère remportée automatiquement.",
+                    "counter_amount": None,
+                    "counter_message": None,
+                    "payment_id": None,
+                    "payment_amount": amount,
+                    "credentials": None,
+                    "credentials_transmitted": False,
+                    "messages": [{
+                        "id": str(_uuid.uuid4()),
+                        "sender_id": "system",
+                        "content": f"Enchère remportée : {amount:,.0f} €. Procédez au paiement pour finaliser l'acquisition.",
+                        "sent_at": tx_now,
+                        "type": "system"
+                    }],
+                    "dispute_messages": [],
+                    "created_at": tx_now,
+                    "updated_at": tx_now,
+                    "completed_at": None,
+                    "paid_at": None,
+                    "disputed_at": None,
+                    "dispute_reason": None,
+                }
+                await _db.citadelle_transactions.insert_one(transaction)
+                transaction.pop("_id", None)
+
+                # Marquer l'annonce comme vendue
+                await _db.citadelle_listings.update_one(
+                    {"id": listing_id},
+                    {"$set": {
+                        "status": "sold",
+                        "auction_winner_transaction_id": tx_id,
+                        "updated_at": tx_now,
+                    }}
+                )
+
+                # Email de félicitations au gagnant
+                send_citadelle_auction_winner_email(
+                    winner_email=winner_email,
+                    winner_name=winner_name,
+                    listing_title=listing["title"],
+                    listing_slug=listing.get("slug", ""),
+                    amount=amount,
+                    transaction_id=tx_id,
+                )
+                logger.info(f"[Enchère] Clôturée: '{listing['title']}' — gagnant: {winner_email} ({amount}€)")
+            else:
+                # Pas d'enchère reçue : l'annonce reste active mais l'enchère est terminée
+                await _db.citadelle_listings.update_one(
+                    {"id": listing_id},
+                    {"$set": {
+                        "auction_ends_at": None,
+                        "updated_at": now.isoformat(),
+                    }}
+                )
+                logger.info(f"[Enchère] Terminée sans gagnant: '{listing['title']}'")
+
+    except Exception as e:
+        logger.error(f"[Enchère Scheduler] Erreur check_ended_auctions: {e}")
+
+
+async def send_auction_daily_digests():
+    """Envoie chaque matin à 9h un email au vendeur avec l'état de son enchère en cours."""
+    if _db is None:
+        return
+    try:
+        from services.email_service import send_citadelle_auction_daily_digest_email
+        now = datetime.now(timezone.utc)
+
+        cursor = _db.citadelle_listings.find({
+            "is_auction": True,
+            "status": "active",
+            "auction_ends_at": {"$gt": now.isoformat()},
+        }, {"_id": 0})
+
+        async for listing in cursor:
+            seller_email = listing.get("seller_email", "")
+            current_bid = listing.get("auction_current_bid") or listing.get("price", 0)
+            nb_bids = len(listing.get("auction_bids", []))
+            if seller_email:
+                send_citadelle_auction_daily_digest_email(
+                    seller_email=seller_email,
+                    seller_name=listing.get("seller_email", ""),
+                    listing_title=listing["title"],
+                    listing_slug=listing.get("slug", ""),
+                    current_bid=current_bid,
+                    nb_bids=nb_bids,
+                    auction_ends_at=listing["auction_ends_at"],
+                )
+        logger.info("[Enchère Scheduler] Digests quotidiens envoyés aux vendeurs.")
+    except Exception as e:
+        logger.error(f"[Enchère Scheduler] Erreur send_auction_daily_digests: {e}")
+
+
 async def init_newsletter_scheduler():
     """
     Initialise le scheduler au démarrage de l'application.
@@ -400,8 +537,25 @@ async def init_newsletter_scheduler():
         replace_existing=True,
     )
 
+    # ── Job 4 : Vérification des enchères terminées (toutes les 30 min) ─────────
+    scheduler.add_job(
+        check_ended_auctions,
+        CronTrigger(minute="*/30"),
+        id=AUCTION_CHECK_JOB_ID,
+        replace_existing=True,
+    )
+
+    # ── Job 5 : Digest quotidien enchères aux vendeurs (9h chaque matin) ────────
+    scheduler.add_job(
+        send_auction_daily_digests,
+        CronTrigger(hour=9, minute=0),
+        id=AUCTION_DIGEST_JOB_ID,
+        replace_existing=True,
+    )
+
     scheduler.start()
     logger.info(
         f"[Scheduler] Démarré — Newsletter: jour={config.get('day_of_week', 4)}, heure={config.get('hour', 16)}h | "
-        f"Relances conversations: toutes les heures | Blog planifié: toutes les heures."
+        f"Relances conversations: toutes les heures | Blog planifié: toutes les heures | "
+        f"Enchères: vérification toutes les 30min | Digest enchères: 9h."
     )

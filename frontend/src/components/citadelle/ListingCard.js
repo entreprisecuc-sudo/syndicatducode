@@ -3,9 +3,9 @@
  * Composant réutilisable pour la liste et les suggestions
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, TrendingDown, BarChart2, Calendar, ShieldCheck, Star } from "lucide-react";
+import { Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, TrendingDown, BarChart2, Calendar, ShieldCheck, Star, Hammer, Clock } from "lucide-react";
 import { CITADELLE_COLORS, getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
 
 const TYPE_CONFIG = {
@@ -23,6 +23,9 @@ export default function ListingCard({ listing }) {
   const firstImage = listing.images?.filter(Boolean).find(img => isImageFile(img));
   const mainImage = firstImage ? getListingImageUrl(firstImage) : PLACEHOLDER_IMG;
   const isSold = listing.status === "sold";
+
+  // Calcul du temps restant pour les enchères
+  const tempsRestant = useTempsRestant(listing.is_auction ? listing.auction_ends_at : null);
 
   // Wrapper conditionnel : div non cliquable si vendu, Link sinon
   const Wrapper = isSold
@@ -76,7 +79,7 @@ export default function ListingCard({ listing }) {
         )}
         {/* Badges overlay (masqués si vendu) */}
         {!isSold && (
-          <div className="absolute top-3 left-3 flex gap-2">
+          <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
               style={{ background: CITADELLE_COLORS.night, color: CITADELLE_COLORS.gold }}>
               <TypeIcon size={11} />
@@ -89,6 +92,17 @@ export default function ListingCard({ listing }) {
                 Recommandé
               </span>
             )}
+          </div>
+        )}
+        {/* Badge enchère (bas de l'image) */}
+        {!isSold && listing.is_auction && listing.auction_ends_at && tempsRestant && (
+          <div className="absolute bottom-3 left-3 right-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold w-full justify-center"
+              style={{ background: "rgba(220,38,38,0.92)", color: "white", backdropFilter: "blur(4px)" }}
+              data-testid={`listing-auction-badge-${listing.slug}`}>
+              <Hammer size={11} />
+              ENCHÈRE — {tempsRestant}
+            </span>
           </div>
         )}
         {!isSold && listing.is_verified && (
@@ -172,4 +186,34 @@ export default function ListingCard({ listing }) {
       </div>
     </Wrapper>
   );
+}
+
+// ── Hook : compte à rebours pour les enchères ────────────────────────────────
+
+function useTempsRestant(auctionEndsAt) {
+  const [reste, setReste] = useState(() => calculerTempsRestant(auctionEndsAt));
+
+  useEffect(() => {
+    if (!auctionEndsAt) return;
+    const interval = setInterval(() => {
+      const r = calculerTempsRestant(auctionEndsAt);
+      setReste(r);
+      if (!r) clearInterval(interval);
+    }, 60000); // mise à jour chaque minute
+    return () => clearInterval(interval);
+  }, [auctionEndsAt]);
+
+  return reste;
+}
+
+function calculerTempsRestant(auctionEndsAt) {
+  if (!auctionEndsAt) return null;
+  const diff = new Date(auctionEndsAt) - new Date();
+  if (diff <= 0) return null;
+  const jours = Math.floor(diff / 86400000);
+  const heures = Math.floor((diff % 86400000) / 3600000);
+  if (jours > 0) return `${jours}j ${heures}h`;
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  if (heures > 0) return `${heures}h ${minutes}min`;
+  return `${minutes} min`;
 }
