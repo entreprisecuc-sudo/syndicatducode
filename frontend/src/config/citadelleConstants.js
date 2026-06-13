@@ -47,7 +47,9 @@ export const CITADELLE_SERVICES = [
   { slug: "audit",        label: "Audit avant vente",icon: "FileSearch",   description: "Rapport technique complet pour rassurer les acheteurs",      price: "Sur devis" },
 ];
 
-// Sections du catalogue de services (target_category)
+// Commission La Citadelle sur chaque vente
+export const COMMISSION_RATE = 0.05;     // 5 %
+export const COMMISSION_MINIMUM_EUR = 49; // Minimum 49 €
 export const SERVICE_TARGET_SECTIONS = [
   {
     key: "vendeur",

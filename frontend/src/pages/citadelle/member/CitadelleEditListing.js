@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CitadelleImageUpload } from "@/components/citadelle/CitadelleImageUpload";
+import CommissionInfoPopup from "@/components/citadelle/CommissionInfoPopup";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
@@ -33,6 +34,17 @@ export default function CitadelleEditListing() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [showCommissionPopup, setShowCommissionPopup] = useState(false);
+  const [commissionAcknowledged, setCommissionAcknowledged] = useState(false);
+
+  const handlePriceFocus = () => {
+    if (!commissionAcknowledged) setShowCommissionPopup(true);
+  };
+
+  const handleCommissionAcknowledge = () => {
+    setCommissionAcknowledged(true);
+    setShowCommissionPopup(false);
+  };
 
   // Chargement de l'annonce existante
   useEffect(() => {
@@ -155,6 +167,7 @@ export default function CitadelleEditListing() {
   const labelStyle = { color: CITADELLE_COLORS.blue };
 
   return (
+    <>
     <CitadelleLayout>
       <div className="max-w-2xl mx-auto px-4 md:px-6 py-10" data-testid="edit-listing-form">
 
@@ -230,6 +243,7 @@ export default function CitadelleEditListing() {
                 type="number"
                 value={form.price}
                 onChange={e => set("price", e.target.value)}
+                onFocus={handlePriceFocus}
                 placeholder="5000" min="1"
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none"
                 style={inputStyle}
@@ -345,5 +359,9 @@ export default function CitadelleEditListing() {
 
       </div>
     </CitadelleLayout>
+    {showCommissionPopup && (
+      <CommissionInfoPopup onAcknowledge={handleCommissionAcknowledge} />
+    )}
+    </>
   );
 }

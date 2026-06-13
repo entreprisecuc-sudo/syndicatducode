@@ -8,6 +8,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Globe, ShoppingCart, Cloud, Monitor, Users, ChevronRight, ChevronLeft, CheckCircle, AlertCircle } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CitadelleImageUpload } from "@/components/citadelle/CitadelleImageUpload";
+import CommissionInfoPopup from "@/components/citadelle/CommissionInfoPopup";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
@@ -41,8 +42,19 @@ export default function CitadelleCreateListing() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showCommissionPopup, setShowCommissionPopup] = useState(false);
+  const [commissionAcknowledged, setCommissionAcknowledged] = useState(false);
   const { isAuthenticated } = useCitadelleAuth();
   const navigate = useNavigate();
+
+  const handlePriceFocus = () => {
+    if (!commissionAcknowledged) setShowCommissionPopup(true);
+  };
+
+  const handleCommissionAcknowledge = () => {
+    setCommissionAcknowledged(true);
+    setShowCommissionPopup(false);
+  };
 
   if (!isAuthenticated) {
     return (
@@ -160,6 +172,7 @@ export default function CitadelleCreateListing() {
   const labelStyle = { color: CITADELLE_COLORS.blue };
 
   return (
+    <>
     <CitadelleLayout>
       <div className="max-w-2xl mx-auto px-4 md:px-6 py-10" data-testid="create-listing-form">
         {/* En-tête */}
@@ -244,6 +257,7 @@ export default function CitadelleCreateListing() {
                   {form.is_auction ? "Prix de départ / réserve (€) *" : "Prix de vente (€) *"}
                 </label>
                 <input type="number" value={form.price} onChange={e => set("price", e.target.value)}
+                  onFocus={handlePriceFocus}
                   placeholder="5000" min="1" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle}
                   data-testid="create-listing-price" />
               </div>
@@ -400,5 +414,9 @@ export default function CitadelleCreateListing() {
         </div>
       </div>
     </CitadelleLayout>
+    {showCommissionPopup && (
+      <CommissionInfoPopup onAcknowledge={handleCommissionAcknowledge} />
+    )}
+  </>
   );
 }
