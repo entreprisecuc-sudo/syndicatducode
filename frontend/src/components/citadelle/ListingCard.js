@@ -94,11 +94,15 @@ export default function ListingCard({ listing }) {
             )}
           </div>
         )}
-        {/* Badge enchère (bas de l'image) */}
+        {/* Badge enchère — pleine largeur, bas de l'image, doré */}
         {!isSold && listing.is_auction && listing.auction_ends_at && tempsRestant && (
-          <div className="absolute bottom-3 left-3 right-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold w-full justify-center"
-              style={{ background: "rgba(220,38,38,0.92)", color: "white", backdropFilter: "blur(4px)" }}
+          <div className="absolute bottom-0 left-0 right-0">
+            <span className="flex items-center gap-1.5 px-3 py-2 text-xs font-black w-full justify-center"
+              style={{
+                background: CITADELLE_COLORS.gold,
+                color: CITADELLE_COLORS.night,
+                letterSpacing: "0.04em",
+              }}
               data-testid={`listing-auction-badge-${listing.slug}`}>
               <Hammer size={11} />
               ENCHÈRE — {tempsRestant}
@@ -188,18 +192,19 @@ export default function ListingCard({ listing }) {
   );
 }
 
-// ── Hook : compte à rebours pour les enchères ────────────────────────────────
+// ── Hook : compte à rebours dynamique (seconde par seconde) ─────────────────
 
 function useTempsRestant(auctionEndsAt) {
   const [reste, setReste] = useState(() => calculerTempsRestant(auctionEndsAt));
 
   useEffect(() => {
     if (!auctionEndsAt) return;
+    // Mise à jour à la seconde pour un décompte vivant
     const interval = setInterval(() => {
       const r = calculerTempsRestant(auctionEndsAt);
       setReste(r);
       if (!r) clearInterval(interval);
-    }, 60000); // mise à jour chaque minute
+    }, 1000);
     return () => clearInterval(interval);
   }, [auctionEndsAt]);
 
@@ -210,10 +215,12 @@ function calculerTempsRestant(auctionEndsAt) {
   if (!auctionEndsAt) return null;
   const diff = new Date(auctionEndsAt) - new Date();
   if (diff <= 0) return null;
-  const jours = Math.floor(diff / 86400000);
-  const heures = Math.floor((diff % 86400000) / 3600000);
-  if (jours > 0) return `${jours}j ${heures}h`;
-  const minutes = Math.floor((diff % 3600000) / 60000);
-  if (heures > 0) return `${heures}h ${minutes}min`;
-  return `${minutes} min`;
+  const jours    = Math.floor(diff / 86400000);
+  const heures   = Math.floor((diff % 86400000) / 3600000);
+  const minutes  = Math.floor((diff % 3600000) / 60000);
+  const secondes = Math.floor((diff % 60000) / 1000);
+  if (jours > 0)   return `${jours}j ${heures}h ${minutes}min`;
+  if (heures > 0)  return `${heures}h ${minutes}min ${secondes}s`;
+  if (minutes > 0) return `${minutes}min ${secondes}s`;
+  return `${secondes}s`;
 }
