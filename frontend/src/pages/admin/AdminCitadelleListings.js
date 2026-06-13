@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Star, Eye, Clock, Filter, AlertCircle, Trash2 } from "lucide-react";
+import { CheckCircle, XCircle, Star, Eye, Filter, AlertCircle, Trash2, X, ExternalLink, Globe, BarChart2, Calendar, TrendingUp, Hammer } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
 import { getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
@@ -31,9 +31,10 @@ export default function AdminCitadelleListings() {
   const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("pending");
-  const [rejectModal, setRejectModal] = useState(null); // { id, title }
+  const [rejectModal, setRejectModal]   = useState(null);
   const [rejectReason, setRejectReason] = useState("");
-  const [deleteModal, setDeleteModal] = useState(null); // { id, title }
+  const [deleteModal, setDeleteModal]   = useState(null);
+  const [detailModal, setDetailModal]   = useState(null); // listing complet
   const [actionLoading, setActionLoading] = useState(null);
 
   useEffect(() => {
@@ -194,13 +195,14 @@ export default function AdminCitadelleListings() {
                   </span>
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {listing.status === "active" && (
-                      <a href={`/citadelle/annonces/${listing.slug}`} target="_blank" rel="noopener noreferrer"
-                        className="p-2 rounded-lg transition-all hover:scale-110 opacity-60 hover:opacity-100"
-                        title="Voir l'annonce">
-                        <Eye size={15} />
-                      </a>
-                    )}
+                    {/* Voir les détails — toujours disponible */}
+                    <button onClick={() => setDetailModal(listing)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:scale-105"
+                      style={{ background: "rgba(201,164,92,0.1)", color: "#C9A45C" }}
+                      title="Voir les détails"
+                      data-testid={`admin-view-${listing.id}`}>
+                      <Eye size={13} /> Voir
+                    </button>
                     {listing.status === "active" && (
                       <button onClick={() => toggleFeature(listing.id)}
                         disabled={actionLoading === listing.id + "_feature"}
@@ -226,7 +228,6 @@ export default function AdminCitadelleListings() {
                         </button>
                       </>
                     )}
-                    {/* Supprimer — disponible pour tous les statuts */}
                     <button onClick={() => setDeleteModal({ id: listing.id, title: listing.title })}
                       disabled={actionLoading === listing.id + "_delete"}
                       className="p-2 rounded-lg transition-all hover:scale-110 opacity-50 hover:opacity-100"
@@ -242,6 +243,117 @@ export default function AdminCitadelleListings() {
           </div>
         )}
       </div>
+
+      {/* Modal détail annonce */}
+      {detailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.8)" }}
+          onClick={e => { if (e.target === e.currentTarget) setDetailModal(null); }}>
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl"
+            style={{ background: "var(--admin-bg, #1a1a2e)", border: "1px solid rgba(201,164,92,0.2)" }}>
+
+            {/* En-tête */}
+            <div className="flex items-start justify-between p-5 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+              <div className="flex-1 min-w-0 pr-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                    style={{ background: STATUS_LABELS[detailModal.status]?.bg, color: STATUS_LABELS[detailModal.status]?.color }}>
+                    {STATUS_LABELS[detailModal.status]?.label}
+                  </span>
+                  <span className="text-xs opacity-40">{TYPE_LABELS[detailModal.type] || detailModal.type}</span>
+                  {detailModal.is_auction && (
+                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
+                      style={{ background: "rgba(201,164,92,0.15)", color: "#C9A45C" }}>
+                      <Hammer size={10} /> Enchère
+                    </span>
+                  )}
+                </div>
+                <h2 className="font-bold text-base leading-snug">{detailModal.title}</h2>
+                <p className="text-xs opacity-40 mt-1">{detailModal.seller_email} · {new Date(detailModal.created_at).toLocaleDateString("fr-FR")}</p>
+              </div>
+              <button onClick={() => setDetailModal(null)} className="p-1.5 rounded-lg opacity-50 hover:opacity-100 flex-shrink-0">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-5">
+              {/* Images */}
+              {detailModal.images?.filter(Boolean).filter(isImageFile).length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {detailModal.images.filter(Boolean).filter(isImageFile).map((img, i) => (
+                    <img key={i} src={getListingImageUrl(img)} alt=""
+                      className="h-32 w-auto rounded-xl object-cover flex-shrink-0"
+                      onError={e => e.target.style.display = "none"} />
+                  ))}
+                </div>
+              )}
+
+              {/* Métriques clés */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <MetriqueCard icon={TrendingUp} label="Prix" value={`${detailModal.price?.toLocaleString("fr-FR")} €`} />
+                {detailModal.monthly_revenue != null && <MetriqueCard icon={BarChart2} label="CA mensuel" value={`${detailModal.monthly_revenue?.toLocaleString("fr-FR")} €`} />}
+                {detailModal.monthly_traffic != null && <MetriqueCard icon={Globe} label="Trafic/mois" value={detailModal.monthly_traffic?.toLocaleString("fr-FR")} />}
+                {detailModal.age_months != null && <MetriqueCard icon={Calendar} label="Âge" value={`${detailModal.age_months} mois`} />}
+              </div>
+
+              {/* Enchère */}
+              {detailModal.is_auction && (
+                <div className="p-4 rounded-xl space-y-1" style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.15)" }}>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "#C9A45C" }}>Paramètres enchère</p>
+                  <p className="text-xs opacity-70">Prix de départ : <strong>{detailModal.price?.toLocaleString("fr-FR")} €</strong> · Réserve {detailModal.auction_show_reserve ? "visible" : "cachée"}</p>
+                  <p className="text-xs opacity-70">Durée : <strong>{detailModal.auction_duration_days} jours</strong></p>
+                  {detailModal.auction_buy_now_price && <p className="text-xs opacity-70">Achat immédiat : <strong>{detailModal.auction_buy_now_price?.toLocaleString("fr-FR")} €</strong></p>}
+                </div>
+              )}
+
+              {/* Description courte */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider opacity-40 mb-1">Description courte</p>
+                <p className="text-sm opacity-80 leading-relaxed">{detailModal.short_description}</p>
+              </div>
+
+              {/* Description complète */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider opacity-40 mb-1">Description complète</p>
+                <p className="text-sm opacity-70 leading-relaxed whitespace-pre-line">{detailModal.description}</p>
+              </div>
+
+              {/* Technologies + niche */}
+              {(detailModal.technologies?.length > 0 || detailModal.niche) && (
+                <div className="flex flex-wrap gap-2">
+                  {detailModal.niche && <span className="text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.07)" }}>{detailModal.niche}</span>}
+                  {detailModal.technologies?.map(t => <span key={t} className="text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.07)" }}>{t}</span>)}
+                </div>
+              )}
+
+              {/* URL de prévisualisation */}
+              {detailModal.url_preview && (
+                <a href={detailModal.url_preview} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-xs hover:underline" style={{ color: "#C9A45C" }}>
+                  <ExternalLink size={12} /> {detailModal.url_preview}
+                </a>
+              )}
+            </div>
+
+            {/* Actions en bas — uniquement si en attente */}
+            {detailModal.status === "pending" && (
+              <div className="flex gap-3 p-5 border-t" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+                <button onClick={() => { validate(detailModal.id); setDetailModal(null); }}
+                  disabled={actionLoading !== null}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] disabled:opacity-60"
+                  style={{ background: "rgba(34,197,94,0.12)", color: "#22C55E" }}
+                  data-testid="admin-detail-validate">
+                  <CheckCircle size={15} /> Valider et publier
+                </button>
+                <button onClick={() => { setDetailModal(null); setRejectModal({ id: detailModal.id, title: detailModal.title }); }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02]"
+                  style={{ background: "rgba(220,38,38,0.1)", color: "#DC2626" }}>
+                  <XCircle size={15} /> Rejeter
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Modal rejet */}
       {rejectModal && (
@@ -293,5 +405,17 @@ export default function AdminCitadelleListings() {
         </div>
       )}
     </AdminLayout>
+  );
+}
+
+function MetriqueCard({ icon: Icon, label, value }) {
+  return (
+    <div className="p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+      <div className="flex items-center gap-1.5 mb-1">
+        <Icon size={11} style={{ color: "#C9A45C" }} />
+        <span className="text-xs opacity-40 uppercase tracking-wide">{label}</span>
+      </div>
+      <p className="text-sm font-bold">{value}</p>
+    </div>
   );
 }
