@@ -71,7 +71,14 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Styles CSS blog-content (clair) + blog-content--dark (admin)
 - `BLOG_CATEGORIES` centralisées dans `citadelleConstants.js` (DRY)
 
-### Phase D — Avis (À FAIRE)
+### ✅ Catalogue Services v2 — Contenu officiel (TERMINÉ 13/06/2026)
+- Ajout du champ `target_category` (vendeur / acheteur / commun) aux modèles `ServiceCreate` et `ServiceUpdate`
+- Route de seeding idempotente `POST /api/citadelle/admin/services/seed` : 10 services officiels créés, 3 anciens désactivés
+- Frontend restructuré en 3 sections distinctes avec en-têtes visuels
+- Extraction des modales en composants indépendants (`ServiceDetailModal.js`, `ServiceCheckoutModal.js`) — respect Règle 17
+- Constante `SERVICE_TARGET_SECTIONS` centralisée dans `citadelleConstants.js` — respect DRY
+
+
 ### Phase E — Statistiques & SEO (À FAIRE)
 
 ### ✅ Gestion des Litiges — Dispute Management (TERMINÉ 12/06/2026)

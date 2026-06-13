@@ -39,12 +39,31 @@ export const CITADELLE_CATEGORIES = [
   { slug: "social_account", label: "Réseaux sociaux",   icon: "Users",        description: "Comptes, pages, communautés" },
 ];
 
-// Types de services proposés
+// Types de services — utilisé sur la page d'accueil (section présentation)
 export const CITADELLE_SERVICES = [
-  { slug: "valuation", label: "Évaluation", icon: "TrendingUp", description: "Estimation précise de la valeur de votre actif numérique", price: "Gratuit" },
-  { slug: "verification", label: "Vérification", icon: "ShieldCheck", description: "Audit indépendant du trafic, revenus et données GA", price: "Sur devis" },
-  { slug: "migration", label: "Migration", icon: "ArrowRightLeft", description: "Transfert technique complet réalisé par nos partenaires", price: "Sur devis" },
-  { slug: "audit", label: "Audit avant vente", icon: "FileSearch", description: "Rapport technique complet pour rassurer les acheteurs", price: "Sur devis" },
+  { slug: "valuation",    label: "Évaluation",      icon: "TrendingUp",    description: "Estimation précise de la valeur de votre actif numérique", price: "Gratuit" },
+  { slug: "verification", label: "Vérification",    icon: "ShieldCheck",   description: "Audit indépendant du trafic, revenus et données GA",        price: "Sur devis" },
+  { slug: "migration",    label: "Migration",       icon: "ArrowRightLeft",description: "Transfert technique complet réalisé par nos partenaires",    price: "Sur devis" },
+  { slug: "audit",        label: "Audit avant vente",icon: "FileSearch",   description: "Rapport technique complet pour rassurer les acheteurs",      price: "Sur devis" },
+];
+
+// Sections du catalogue de services (target_category)
+export const SERVICE_TARGET_SECTIONS = [
+  {
+    key: "vendeur",
+    label: "Pour les vendeurs",
+    subtitle: "Évaluez, optimisez et valorisez votre projet avant la vente.",
+  },
+  {
+    key: "acheteur",
+    label: "Pour les acheteurs",
+    subtitle: "Sécurisez votre investissement avant et après l'acquisition.",
+  },
+  {
+    key: "commun",
+    label: "Services communs",
+    subtitle: "Des services essentiels pour toutes vos transactions.",
+  },
 ];
 
 // Catégories du blog — centralisées ici pour usage public et admin
