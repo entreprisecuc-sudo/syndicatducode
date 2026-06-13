@@ -100,6 +100,7 @@ import AdminCitadelleCommission from "@/pages/admin/AdminCitadelleCommission";
 import CitadelleBlog from "@/pages/citadelle/CitadelleBlog";
 import CitadelleBlogPost from "@/pages/citadelle/CitadelleBlogPost";
 import CitadelleContact from "@/pages/citadelle/CitadelleContact";
+import CitadelleVendre from "@/pages/citadelle/CitadelleVendre";
 import AdminCitadelleBlog from "@/pages/admin/AdminCitadelleBlog";
 
 // Pages partagées (tous les membres)
@@ -329,6 +330,7 @@ function App() {
               <Route path="/citadelle/annonces" element={<CitadelleListings />} />
               <Route path="/citadelle/annonces/:slug" element={<CitadelleListingDetail />} />
               <Route path="/citadelle/services" element={<CitadelleServices />} />
+              <Route path="/citadelle/vendre" element={<CitadelleVendre />} />
               <Route path="/citadelle/blog" element={<CitadelleBlog />} />
               <Route path="/citadelle/blog/:slug" element={<CitadelleBlogPost />} />
               <Route path="/citadelle/contact" element={<CitadelleContact />} />
