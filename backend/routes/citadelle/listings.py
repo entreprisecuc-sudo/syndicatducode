@@ -352,6 +352,19 @@ async def update_listing(
     if not updates:
         return listing
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Traçabilité baisse de prix : on conserve original_price lors de la première baisse
+    nouveau_prix = updates.get("price")
+    if nouveau_prix is not None:
+        prix_actuel = listing.get("price", 0)
+        original = listing.get("original_price")
+        if nouveau_prix < prix_actuel:
+            # Baisse de prix : mémoriser le prix de référence (le plus haut connu)
+            updates["original_price"] = original if original and original > prix_actuel else prix_actuel
+        elif original and nouveau_prix >= original:
+            # Prix remonté au-dessus du prix de référence : effacer le badge
+            updates["original_price"] = None
+
     # Toute modification repasse l'annonce en pending pour re-validation admin
     if listing["status"] in ("active", "rejected"):
         updates["status"] = "pending"

@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, BarChart2, Calendar, ShieldCheck, Star } from "lucide-react";
+import { Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, TrendingDown, BarChart2, Calendar, ShieldCheck, Star } from "lucide-react";
 import { CITADELLE_COLORS, getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
 
 const TYPE_CONFIG = {
@@ -113,6 +113,19 @@ export default function ListingCard({ listing }) {
 
         {/* Prix */}
         <div className="mb-3">
+          {listing.original_price && listing.original_price > listing.price && !isSold && (
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs line-through" style={{ color: CITADELLE_COLORS.textMuted }}>
+                {listing.original_price.toLocaleString("fr-FR")} €
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                style={{ background: "rgba(220,38,38,0.1)", color: "#DC2626" }}
+                data-testid={`listing-price-drop-${listing.slug}`}>
+                <TrendingDown size={11} />
+                Prix en baisse
+              </span>
+            </div>
+          )}
           <span className="text-xl font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
             {listing.price?.toLocaleString("fr-FR")} €
           </span>
