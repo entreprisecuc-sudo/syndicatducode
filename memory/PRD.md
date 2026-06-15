@@ -217,4 +217,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 
 **Reportés** (décision client) : ④ découpage `transactions.py` (à faire avec l'arrivée du paiement réel + futur paiement Syndicat) et ⑤ découpage `CitadelleTransactionDetail.js` (UI qui va évoluer).
 
+### ✅ Sécurité — Migration JWT (TERMINÉ 15/06/2026)
+- `python-jose` (CVE connues) remplacé par `PyJWT==2.11.0` dans `services/auth_service.py` (2 lignes : import + `except InvalidTokenError`). Algo HS256 et secret inchangés → **rétro-compatible** (aucune session cassée). `python-jose` désinstallé, `requirements.txt` mis à jour via pip freeze. Testé : login Syndicat + Citadelle OK, token invalide → 401.
+
 *Mise à jour : 12/06/2026*

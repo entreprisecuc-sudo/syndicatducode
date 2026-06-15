@@ -10,7 +10,8 @@ import secrets
 import hashlib
 
 from passlib.context import CryptContext
-from jose import jwt, JWTError
+import jwt
+from jwt import InvalidTokenError
 
 from config.settings import (
     JWT_SECRET_KEY,
@@ -70,7 +71,7 @@ def decode_access_token(token: str) -> Optional[dict]:
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
         return payload
-    except JWTError:
+    except InvalidTokenError:
         return None
 
 
