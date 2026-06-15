@@ -1,0 +1,1 @@
+"""Emails — La Citadelle Numérique."""

@@ -202,4 +202,19 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **S6** : validation des pièces jointes du formulaire de contact (`server.py`) — liste blanche MIME (images, PDF, Word, txt) + 10 Mo max. Empêche le stockage de fichiers dangereux (ex. .html/.svg servis en statique).
 - Tous vérifiés par curl (auto-tests). Aucun agent de test lancé (Règle 6).
 
+### ✅ Refactoring P2 — DRY + rangement emails (TERMINÉ 15/06/2026)
+**① Helpers token reset mutualisés** : suppression des doublons dans `routes/citadelle/auth.py` → utilisation des fonctions sûres de `services/auth_service.py` (clé portée à 48 + `compare_digest` pour les 2 sites). Imports `hashlib`/`secrets` morts retirés. Testé : reset Syndicat + Citadelle OK.
+
+**② Dépendances d'auth Citadelle centralisées** : `require_admin` / `require_citadelle_user` désormais définis une seule fois dans `routes/citadelle/dependencies.py` et importés par les 8 fichiers (blog, listings, messages, newsletter, services, settings, transactions, auth). Le Syndicat (`middleware/auth.py`) n'est pas impacté. Testé : 403 sans token, 200 admin.
+
+**③ Emails rangés par site (package)** : `services/email_service.py` (1860 l.) converti en package `services/email_service/` structuré par site (structure validée client) :
+- `core.py` (transport SMTP `_envoyer_email` + `_build_notification_base` + `send_citadelle_email`)
+- `syndicat.py`
+- `citadelle/` : `auth.py`, `listings.py`, `transactions.py`, `services.py`, `contact.py`, `newsletter.py`, `auctions.py`
+- `__init__.py` ré-exporte tout (imports existants `from services.email_service import X` préservés). Chaque fichier < 400 lignes (Règle 17 ✅). Découpage par extraction exacte (contenu identique au caractère près).
+
+**🐞 Bug réparé (découvert pendant ③)** : `payments.py` appelait `send_citadelle_email` qui **n'existait pas** → les emails de confirmation de paiement de service (client + admin) n'étaient jamais envoyés. Fonction `async send_citadelle_email(to, subject, html_content)` créée dans `core.py`. Testé : flux d'emails répondent 200.
+
+**Reportés** (décision client) : ④ découpage `transactions.py` (à faire avec l'arrivée du paiement réel + futur paiement Syndicat) et ⑤ découpage `CitadelleTransactionDetail.js` (UI qui va évoluer).
+
 *Mise à jour : 12/06/2026*
