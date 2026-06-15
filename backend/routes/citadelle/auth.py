@@ -12,15 +12,16 @@ from pathlib import Path as FilePath
 import logging
 import re
 import uuid
-import hashlib
-import secrets
 
 from services.auth_service import (
     hash_password,
     verify_password,
     create_access_token,
     decode_access_token,
-    generate_user_id
+    generate_user_id,
+    generate_reset_token,
+    verify_reset_token,
+    is_token_expired,
 )
 from services.email_service import (
     send_citadelle_reset_password_email,
@@ -181,24 +182,8 @@ async def _log_failed_attempt(ip: str, email: str) -> None:
     })
 
 
-def _generate_reset_token() -> tuple[str, str]:
-    """Génère un token sécurisé et son hash SHA-256. Retourne (token_brut, token_hash)."""
-    raw = secrets.token_urlsafe(48)
-    hashed = hashlib.sha256(raw.encode()).hexdigest()
-    return raw, hashed
-
-
-def _verify_reset_token(raw_token: str, token_hash: str) -> bool:
-    """Vérifie un token brut contre son hash stocké."""
-    return hashlib.sha256(raw_token.encode()).hexdigest() == token_hash
-
-
-def _is_token_expired(expires_at: str) -> bool:
-    """Vérifie si un token est expiré."""
-    expiry = datetime.fromisoformat(expires_at)
-    if expiry.tzinfo is None:
-        expiry = expiry.replace(tzinfo=timezone.utc)
-    return expiry < datetime.now(timezone.utc)
+# Helpers de reset token mutualisés dans services/auth_service.py (DRY)
+# (generate_reset_token / verify_reset_token / is_token_expired)
 
 
 # ============================================
@@ -392,7 +377,7 @@ async def citadelle_forgot_password(data: ForgotPasswordRequest):
     )
 
     if user:
-        raw_token, token_hash = _generate_reset_token()
+        raw_token, token_hash = generate_reset_token()
         now = datetime.now(timezone.utc)
         expires_at = (now + timedelta(hours=1)).isoformat()
 
@@ -432,7 +417,7 @@ async def citadelle_reset_password(data: ResetPasswordRequest):
 
     valid_reset = None
     for reset in reset_tokens:
-        if _verify_reset_token(data.token, reset["token_hash"]):
+        if verify_reset_token(data.token, reset["token_hash"]):
             valid_reset = reset
             break
 
@@ -442,7 +427,7 @@ async def citadelle_reset_password(data: ResetPasswordRequest):
             detail="Lien de réinitialisation invalide ou déjà utilisé"
         )
 
-    if _is_token_expired(valid_reset["expires_at"]):
+    if is_token_expired(valid_reset["expires_at"]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Le lien de réinitialisation a expiré. Veuillez en demander un nouveau."
@@ -740,18 +725,15 @@ async def upload_document(
 
 # ── Route admin : détail utilisateur Citadelle ─────────────────────────────────
 
-from middleware.auth import get_current_user
+from routes.citadelle.dependencies import require_admin
 
-async def _require_admin(current_user: dict = Depends(get_current_user)) -> dict:
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs")
-    return current_user
+# _require_admin remplacé par require_admin importé depuis dependencies (DRY)
 
 
 @router.get("/admin/users/{user_id}", status_code=200)
 async def admin_get_citadelle_user(
     user_id: str,
-    current_user: dict = Depends(_require_admin)
+    current_user: dict = Depends(require_admin)
 ):
     """
     Admin : détail complet d'un utilisateur Citadelle
@@ -771,7 +753,7 @@ async def admin_list_citadelle_users(
     page: int = 1,
     limit: int = 50,
     search: str = "",
-    current_user: dict = Depends(_require_admin)
+    current_user: dict = Depends(require_admin)
 ):
     """
     Admin : liste paginée des utilisateurs Citadelle avec données de consentement CGU/CGV.

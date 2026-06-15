@@ -11,7 +11,7 @@ from pathlib import Path
 import re, uuid, shutil
 import logging
 
-from middleware.auth import get_current_user
+from routes.citadelle.dependencies import require_admin, require_citadelle_user
 from services.auth_service import decode_access_token
 from services.email_service import (
     send_citadelle_listing_approved_email,
@@ -111,24 +111,7 @@ async def upload_listing_image(
     return {"url": url, "filename": filename}
 
 
-async def require_citadelle_user(current_user: dict = Depends(get_current_user)) -> dict:
-    """Vérifie que l'utilisateur est membre Citadelle ou admin"""
-    if current_user.get("platform") != "citadelle" and current_user.get("role") != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Accès réservé aux membres de La Citadelle Numérique"
-        )
-    return current_user
-
-
-async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
-    """Vérifie que l'utilisateur est administrateur"""
-    if current_user.get("role") != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Accès réservé aux administrateurs"
-        )
-    return current_user
+# require_citadelle_user / require_admin importés depuis routes/citadelle/dependencies (DRY)
 
 
 # ── Modèles ────────────────────────────────────────────────────────────────────

@@ -83,8 +83,8 @@ def generate_reset_token() -> tuple[str, str]:
         - token_brut: à envoyer par email
         - token_hashé: à stocker en BDD
     """
-    # Génère un token aléatoire sécurisé
-    raw_token = secrets.token_urlsafe(32)
+    # Génère un token aléatoire sécurisé (clé longue, identique pour les 2 plateformes)
+    raw_token = secrets.token_urlsafe(48)
     
     # Hash le token pour le stockage (on ne stocke jamais le token brut)
     token_hash = hashlib.sha256(raw_token.encode()).hexdigest()

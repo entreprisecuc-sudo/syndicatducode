@@ -13,7 +13,7 @@ import re
 import unicodedata
 import logging
 
-from middleware.auth import get_current_user
+from routes.citadelle.dependencies import require_admin
 
 logger = logging.getLogger(__name__)
 
@@ -59,10 +59,7 @@ async def _unique_slug(raw: str, exclude_id: str = None) -> str:
         n += 1
 
 
-async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs")
-    return current_user
+# require_admin importé depuis routes/citadelle/dependencies (DRY)
 
 
 # ── Modèles Pydantic ───────────────────────────────────────────────────────────

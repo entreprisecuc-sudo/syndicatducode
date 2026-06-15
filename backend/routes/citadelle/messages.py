@@ -11,7 +11,7 @@ import uuid
 import logging
 import asyncio
 
-from middleware.auth import get_current_user
+from routes.citadelle.dependencies import require_citadelle_user
 from services.email_service import send_new_message_notification_email
 
 logger = logging.getLogger(__name__)
@@ -37,10 +37,7 @@ class MessageReply(BaseModel):
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-async def require_citadelle_user(current_user: dict = Depends(get_current_user)) -> dict:
-    if current_user.get("platform") != "citadelle" and current_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Accès réservé aux membres Citadelle")
-    return current_user
+# require_citadelle_user importé depuis routes/citadelle/dependencies (DRY)
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────────

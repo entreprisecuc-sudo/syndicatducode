@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 import uuid
 import logging
 
-from middleware.auth import get_current_user
+from routes.citadelle.dependencies import require_admin, require_citadelle_user
 
 logger = logging.getLogger(__name__)
 
@@ -25,18 +25,7 @@ def set_database(database):
 
 # ── Helpers d'authentification ─────────────────────────────────────────────────
 
-async def require_citadelle_user(current_user: dict = Depends(get_current_user)) -> dict:
-    """Vérifie que l'utilisateur est un membre Citadelle (ou admin)"""
-    if current_user.get("platform") != "citadelle" and current_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Accès réservé aux membres Citadelle")
-    return current_user
-
-
-async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
-    """Vérifie que l'utilisateur est administrateur"""
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs")
-    return current_user
+# require_citadelle_user / require_admin importés depuis routes/citadelle/dependencies (DRY)
 
 
 # ── Modèles ────────────────────────────────────────────────────────────────────

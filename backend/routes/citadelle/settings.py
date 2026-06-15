@@ -26,12 +26,9 @@ _COMMISSION_DEFAULT = {"rate": 0.05, "minimum_eur": 49}
 
 
 # ── Dépendance admin ──────────────────────────────────────────────────────────
-from routes.citadelle.auth import get_current_user
+from routes.citadelle.dependencies import require_admin
 
-async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Accès réservé à l'administration.")
-    return current_user
+# require_admin importé depuis routes/citadelle/dependencies (DRY)
 
 
 # ── Modèles ────────────────────────────────────────────────────────────────────

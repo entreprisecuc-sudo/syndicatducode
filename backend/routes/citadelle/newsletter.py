@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from urllib.parse import unquote
 
 from middleware.auth import get_current_user
+from routes.citadelle.dependencies import require_admin
 from services.newsletter_scheduler import (
     get_or_create_config,
     reschedule_newsletter_job,
@@ -40,10 +41,7 @@ def set_database(database):
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs.")
-    return current_user
+# require_admin importé depuis routes/citadelle/dependencies (DRY)
 
 
 # ── Modèles ────────────────────────────────────────────────────────────────────

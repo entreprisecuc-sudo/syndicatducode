@@ -11,7 +11,7 @@ import uuid
 import logging
 import asyncio
 
-from middleware.auth import get_current_user
+from routes.citadelle.dependencies import require_admin, require_citadelle_user
 from services.email_service import send_citadelle_credentials_email, send_new_offer_notification_email
 
 logger = logging.getLogger(__name__)
@@ -124,15 +124,7 @@ async def get_dispute_fee(payment_amount: float, role: str = "buyer") -> float:
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-async def require_citadelle_user(current_user: dict = Depends(get_current_user)) -> dict:
-    if current_user.get("platform") != "citadelle" and current_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Accès réservé aux membres Citadelle")
-    return current_user
-
-async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs")
-    return current_user
+# require_citadelle_user / require_admin importés depuis routes/citadelle/dependencies (DRY)
 
 def system_message(content: str) -> dict:
     """Crée un message système dans la conversation"""
