@@ -102,6 +102,10 @@ import CitadelleBlogPost from "@/pages/citadelle/CitadelleBlogPost";
 import CitadelleContact from "@/pages/citadelle/CitadelleContact";
 import CitadelleVendre from "@/pages/citadelle/CitadelleVendre";
 import CitadellePaymentSuccess from "@/pages/citadelle/CitadellePaymentSuccess";
+import CitadelleMentionsLegales from "@/pages/citadelle/CitadelleMentionsLegales";
+import CitadelleCGU from "@/pages/citadelle/CitadelleCGU";
+import CitadelleCGV from "@/pages/citadelle/CitadelleCGV";
+import CitadelleConfidentialite from "@/pages/citadelle/CitadelleConfidentialite";
 import AdminCitadelleBlog from "@/pages/admin/AdminCitadelleBlog";
 
 // Pages partagées (tous les membres)
@@ -333,6 +337,10 @@ function App() {
               <Route path="/citadelle/services" element={<CitadelleServices />} />
               <Route path="/citadelle/vendre" element={<CitadelleVendre />} />
               <Route path="/citadelle/paiement/confirmation" element={<CitadellePaymentSuccess />} />
+              <Route path="/citadelle/mentions-legales" element={<CitadelleMentionsLegales />} />
+              <Route path="/citadelle/cgu" element={<CitadelleCGU />} />
+              <Route path="/citadelle/cgv" element={<CitadelleCGV />} />
+              <Route path="/citadelle/confidentialite" element={<CitadelleConfidentialite />} />
               <Route path="/citadelle/blog" element={<CitadelleBlog />} />
               <Route path="/citadelle/blog/:slug" element={<CitadelleBlogPost />} />
               <Route path="/citadelle/contact" element={<CitadelleContact />} />

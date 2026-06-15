@@ -266,6 +266,7 @@ const CitadelleFooter = () => (
               { href: "/citadelle/cgv", label: "CGV" },
               { href: "/citadelle/cgu", label: "CGU" },
               { href: "/citadelle/confidentialite", label: "Confidentialité (RGPD)" },
+              { href: "/citadelle/mentions-legales", label: "Mentions légales" },
             ].map(link => (
               <li key={link.href}>
                 <Link to={link.href} className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.55)" }}>
