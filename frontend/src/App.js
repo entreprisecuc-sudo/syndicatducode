@@ -108,6 +108,7 @@ import CitadelleCGU from "@/pages/citadelle/CitadelleCGU";
 import CitadelleCGV from "@/pages/citadelle/CitadelleCGV";
 import CitadelleConfidentialite from "@/pages/citadelle/CitadelleConfidentialite";
 import AdminCitadelleBlog from "@/pages/admin/AdminCitadelleBlog";
+import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 
 // Pages partagées (tous les membres)
 import MemberPartners from "@/pages/shared/MemberPartners";
@@ -162,6 +163,9 @@ function App() {
               {/* PAGES D'AUTHENTIFICATION */}
               {/* ============================================ */}
               
+              {/* Connexion admin dédiée */}
+              <Route path="/admin-access" element={<AdminLoginPage />} />
+
               {/* Routes françaises (principales) */}
               <Route path="/connexion" element={<PublicRoute><LoginPage /></PublicRoute>} />
               <Route path="/inscription" element={<PublicRoute><RegisterPage /></PublicRoute>} />

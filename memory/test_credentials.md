@@ -1,8 +1,18 @@
 # Identifiants de test — La Citadelle Numérique
 
-## Compte Admin
+## Comptes Admin (platform: syndicat)
 - Email : admin@syndicatducode.fr
 - Mot de passe : AdminSyndicat2025!
+- Rôle : admin
+
+- Email : bigpapa1981@asar.com
+- Mot de passe : Josiane03@@@!1981
+- Rôle : admin
+- Créé le : 15/06/2026
+
+## URL de connexion admin dédiée
+- URL : /admin-access
+- Redirige vers /syndicat-admin après connexion
 
 ## Compte Vendeur
 - Email : becamarnaud@yahoo.fr
