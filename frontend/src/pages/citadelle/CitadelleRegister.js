@@ -10,6 +10,7 @@ import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
+import CGUAcceptanceModal from "@/components/citadelle/CGUAcceptanceModal";
 
 export default function CitadelleRegister() {
   const [form, setForm] = useState({ first_name: "", last_name: "", email: "", password: "", confirm: "" });
@@ -17,6 +18,7 @@ export default function CitadelleRegister() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showCGU, setShowCGU] = useState(false);
   const { login } = useCitadelleAuth();
   const navigate = useNavigate();
   useCitadellePageMeta("Inscription");
@@ -36,26 +38,33 @@ export default function CitadelleRegister() {
     return null;
   };
 
+  // Étape 1 : validation du formulaire → affichage modale CGU
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationError = validate();
     if (validationError) { setError(validationError); return; }
+    setShowCGU(true);
+  };
 
+  // Étape 2 : utilisateur accepte les CGU → inscription réelle
+  const handleCGUAccept = async () => {
     setLoading(true);
     try {
-      // Inscription
       await citadelleApi.post("/auth/register", {
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
         email: form.email,
-        password: form.password
+        password: form.password,
+        cgu_accepted: true,
       });
       // Connexion automatique après inscription
       const loginRes = await citadelleApi.post("/auth/login", { email: form.email, password: form.password });
       login(loginRes.data.access_token, loginRes.data.user);
+      setShowCGU(false);
       setSuccess(true);
       setTimeout(() => navigate("/citadelle/espace-membre"), 1500);
     } catch (err) {
+      setShowCGU(false);
       setError(err.response?.data?.detail || "Une erreur est survenue lors de l'inscription");
     } finally {
       setLoading(false);

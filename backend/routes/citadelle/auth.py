@@ -49,6 +49,7 @@ class CitadelleRegister(BaseModel):
     last_name: str = Field(..., min_length=2, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=8)
+    cgu_accepted: bool = False
 
     def validate_password(self):
         p = self.password
@@ -203,12 +204,20 @@ def _is_token_expired(expires_at: str) -> bool:
 # ============================================
 
 @router.post("/register", response_model=CitadelleUserResponse, status_code=status.HTTP_201_CREATED)
-async def citadelle_register(user_data: CitadelleRegister):
+async def citadelle_register(user_data: CitadelleRegister, request: Request):
     """
     Inscription sur La Citadelle Numérique.
     Crée un compte INDÉPENDANT avec platform='citadelle'.
     L'email doit être unique au sein de la plateforme Citadelle.
+    Enregistre l'acceptation CGU/CGV avec horodatage et adresse IP.
     """
+    # Validation acceptation CGU obligatoire
+    if not user_data.cgu_accepted:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Vous devez accepter les CGU et CGV pour créer un compte."
+        )
+
     # Validation mot de passe
     try:
         user_data.validate_password()
@@ -225,6 +234,12 @@ async def citadelle_register(user_data: CitadelleRegister):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Un compte existe déjà avec cet email"
         )
+
+    # Capture de l'IP réelle (derrière proxy/Kubernetes)
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    client_ip = forwarded_for.split(",")[0].strip() if forwarded_for else (
+        request.client.host if request.client else "unknown"
+    )
 
     now = datetime.now(timezone.utc).isoformat()
     user_id = generate_user_id()
@@ -243,11 +258,16 @@ async def citadelle_register(user_data: CitadelleRegister):
         "buyer_score": 0.0,
         "created_at": now,
         "updated_at": now,
-        "first_login": False
+        "first_login": False,
+        # Consentement CGU/CGV
+        "cgu_accepted": True,
+        "cgu_accepted_at": now,
+        "cgu_ip_address": client_ip,
+        "cgu_version": "1.0",
     }
 
     await db.users.insert_one(user_doc)
-    logger.info(f"[Citadelle] Nouvel utilisateur inscrit: {user_data.email}")
+    logger.info(f"[Citadelle] Nouvel utilisateur inscrit: {user_data.email} — IP: {client_ip}")
 
     # Notification admin — nouveau compte
     send_citadelle_admin_new_user_email(
@@ -739,3 +759,35 @@ async def admin_get_citadelle_user(
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur Citadelle introuvable")
     return user
+
+
+@router.get("/admin/users", status_code=200)
+async def admin_list_citadelle_users(
+    page: int = 1,
+    limit: int = 50,
+    search: str = "",
+    current_user: dict = Depends(_require_admin)
+):
+    """
+    Admin : liste paginée des utilisateurs Citadelle avec données de consentement CGU/CGV.
+    """
+    query = {"platform": "citadelle"}
+    if search.strip():
+        query["$or"] = [
+            {"email": {"$regex": search.strip(), "$options": "i"}},
+            {"first_name": {"$regex": search.strip(), "$options": "i"}},
+            {"last_name": {"$regex": search.strip(), "$options": "i"}},
+        ]
+
+    total = await db.users.count_documents(query)
+    skip = (page - 1) * limit
+
+    cursor = db.users.find(query, {"_id": 0, "password_hash": 0}).sort("created_at", -1).skip(skip).limit(limit)
+    users = await cursor.to_list(length=limit)
+
+    return {
+        "users": users,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit,
+    }
