@@ -19,8 +19,8 @@ export const CONFIG = {
 };
 
 // Mode développement - Active les boutons de connexion rapide dans le footer
-// ⚠️ À DÉSACTIVER EN PRODUCTION
-export const DEV_MODE = true;
+// ⚠️ Désactivé pour la production
+export const DEV_MODE = false;
 
 // Comptes de test pour le mode développement
 export const TEST_ACCOUNTS = {
