@@ -45,10 +45,41 @@ def _get_stripe():
     api_key = os.environ.get("STRIPE_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="Configuration Stripe manquante.")
+    # Le secret webhook (whsec_...) active la vérification de signature en production.
+    # Configurable via STRIPE_WEBHOOK_SECRET ; absent → parsing sans vérification (dev/preview).
     return StripeCheckout(
         api_key=api_key,
-        webhook_url="",  # webhook géré séparément
+        webhook_secret=os.environ.get("STRIPE_WEBHOOK_SECRET") or None,
     )
+
+
+# ── Finalisation idempotente d'un paiement ────────────────────────────────────
+
+async def _finalize_paid_transaction(session_id: str) -> bool:
+    """
+    Marque une transaction comme payée de façon idempotente et envoie les emails
+    de confirmation. Source unique utilisée par le polling ET le webhook Stripe.
+    Retourne True si c'est la première finalisation (emails envoyés), False sinon.
+    """
+    result = await _db.payment_transactions.update_one(
+        {"session_id": session_id, "payment_status": {"$ne": "paid"}},
+        {"$set": {
+            "payment_status": "paid",
+            "status": "complete",
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }}
+    )
+    if result.modified_count == 0:
+        # Transaction déjà finalisée (ou introuvable) → aucun double traitement
+        return False
+
+    transaction = await _db.payment_transactions.find_one({"session_id": session_id})
+    logger.info(f"Paiement confirmé : {session_id} — {transaction.get('service_title')}")
+    try:
+        await _send_payment_confirmation_emails(transaction)
+    except Exception as e:
+        logger.warning(f"Erreur envoi email confirmation paiement : {e}")
+    return True
 
 
 # ── POST /payments/service/checkout ──────────────────────────────────────────
@@ -170,23 +201,9 @@ async def get_service_payment_status(session_id: str):
     new_payment_status = checkout_status.payment_status  # "paid", "unpaid", ...
     new_status = checkout_status.status  # "complete", "open", "expired"
 
-    # Mise à jour BDD (une seule fois pour éviter double traitement)
-    if new_payment_status == "paid" and transaction.get("payment_status") != "paid":
-        await _db.payment_transactions.update_one(
-            {"session_id": session_id},
-            {"$set": {
-                "payment_status": "paid",
-                "status": "complete",
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-            }}
-        )
-        logger.info(f"Paiement confirmé : {session_id} — {transaction.get('service_title')}")
-
-        # Envoi des emails de confirmation (sans bloquer la réponse)
-        try:
-            await _send_payment_confirmation_emails(transaction)
-        except Exception as e:
-            logger.warning(f"Erreur envoi email confirmation paiement : {e}")
+    # Mise à jour BDD idempotente (logique partagée avec le webhook → pas de double email)
+    if new_payment_status == "paid":
+        await _finalize_paid_transaction(session_id)
 
     elif new_status == "expired":
         await _db.payment_transactions.update_one(
@@ -218,9 +235,23 @@ async def stripe_webhook(request: Request):
     stripe = _get_stripe()
     try:
         event = await stripe.handle_webhook(body, sig)
-        logger.info(f"Webhook Stripe reçu : {event.event_type} — session {event.session_id}")
     except Exception as e:
-        logger.warning(f"Webhook Stripe ignoré : {e}")
+        # Signature invalide ou payload corrompu → rejet explicite (sécurité)
+        logger.warning(f"Webhook Stripe rejeté (signature/payload invalide) : {e}")
+        raise HTTPException(status_code=400, detail="Webhook invalide")
+
+    logger.info(f"Webhook Stripe reçu : {event.event_type} — session {event.session_id}")
+
+    # Paiement confirmé → finalisation fiable (même si l'acheteur a fermé l'onglet)
+    if (
+        event.event_type == "checkout.session.completed"
+        and event.payment_status == "paid"
+        and event.session_id
+    ):
+        try:
+            await _finalize_paid_transaction(event.session_id)
+        except Exception as e:
+            logger.error(f"Erreur traitement webhook paiement {event.session_id} : {e}")
 
     return {"received": True}
 

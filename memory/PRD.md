@@ -170,8 +170,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 ---
 
 ## ⚠️ Points d'attention
-- **Stripe MOCKED** — En attente des clés API
-- **CITADELLE_FROM_EMAIL** → `atelier@syndicatducode.fr` (temporaire)
+- **Stripe MOCKED** — En attente des clés API- **CITADELLE_FROM_EMAIL** → `atelier@syndicatducode.fr` (temporaire)
 - **CITADELLE_URL** → `https://lacitadellenumerique.fr` (pas encore déployé)
 - **BACKEND_PUBLIC_URL** → URL publique du backend pour les images d'annonces dans les emails (configurable dans .env)
 - **Uploads** accessibles via `/api/uploads/` (fix K8s)
@@ -188,5 +187,12 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Bouton retour vers la liste
 - Sons médiévaux conservés (Web Audio API)
 - Fichier : `CitadelleChatWidget.js` (refonte complète, 1 seul fichier)
+
+### ✅ Audit sécurité + correctifs P0 (TERMINÉ 15/06/2026)
+- **S1** : `GET /api/contacts` (server.py) désormais protégé par `Depends(require_admin)` — fuite de données personnelles (RGPD) corrigée. Vérifié : 403 sans token, 200 admin.
+- **S2** : `CORS_ORIGINS` (.env) restreint aux domaines réels (syndicatducode.fr, lacitadellenumerique.fr, + www + preview) au lieu de `*`. Vérifié en direct : origine non autorisée refusée.
+- **S3 + F1** : Webhook Stripe (payments.py) sécurisé — vérification de signature via `STRIPE_WEBHOOK_SECRET` (nouvelle var .env), rejet 400 si signature invalide. Finalisation de paiement extraite en helper idempotent `_finalize_paid_transaction` partagé entre le polling et le webhook (DRY) → un paiement reste fiable même si l'acheteur ferme l'onglet, sans double email.
+- ⚠️ Action prod : configurer l'endpoint webhook dans Stripe (`/api/payments/webhook/stripe`) et renseigner `STRIPE_WEBHOOK_SECRET`.
+- Rapport d'audit complet : `/app/memory/AUDIT_2026-06.md` (P1/P2 restants : secret JWT par défaut, IP brute-force login, 401 vs 500, validation upload contact, découpage fichiers, DRY helpers).
 
 *Mise à jour : 12/06/2026*

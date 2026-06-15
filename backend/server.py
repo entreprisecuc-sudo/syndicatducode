@@ -3,7 +3,7 @@ Serveur principal Le Syndicat du Code
 API FastAPI avec authentification et gestion des contacts
 """
 
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
@@ -20,6 +20,8 @@ import shutil
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+
+from middleware.auth import require_admin
 
 # Configuration
 ROOT_DIR = Path(__file__).parent
@@ -201,8 +203,9 @@ async def create_contact(
     )
 
 
-@api_router.get("/contacts")
+@api_router.get("/contacts", dependencies=[Depends(require_admin)])
 async def get_contacts():
+    """Liste des demandes de contact — réservé aux administrateurs (données personnelles, RGPD)."""
     contacts = await db.contacts.find({}, {"_id": 0}).to_list(100)
     return contacts
 
