@@ -9,55 +9,45 @@ French (Français)
 ⚠️ **CRITICAL INSTRUCTION FOR NEXT AGENT**: The user STRICTLY communicates in French. You MUST automatically detect this and INSTRUCT your own thoughts, code comments, tool usages, and chat responses to be exclusively in **French**. Furthermore, you MUST strictly adhere to the 27 development rules detailed in . Do not use automated testing agents without explicit permission.
 
 **what currently exists?** 
-La plateforme dispose d'un catalogue de services complet, d'un indicateur de commission dynamique, d'une page Vendre (landing page commerciale). L'intégration de Stripe est désormais Live pour le paiement direct des services vendeurs/acheteurs. Un cadrage juridique a été généré, aboutissant à la création des pages légales (CGU, CGV, Mentions Légales, Politique de confidentialité).
+La plateforme est fonctionnelle et prête pour son déploiement initial. Elle dispose d'un catalogue de services, d'une modale bloquante d'acceptation des CGU/CGV (avec tracking IP et horodatage pour Stripe), de paiements Live via Stripe, et de toutes ses pages légales. Une page de connexion dédiée à l'administration () a été créée. Le mode développement (bannière rouge) a été désactivé. L'audit de déploiement est vert (PASS).
 
 **Last working item**: 
-    - Last item agent was working: Implémentation du popup bloquant d'acceptation des CGU/CGV lors de l'inscription d'un utilisateur, avec capture de l'adresse IP et de la date du consentement pour répondre aux exigences de Stripe Connect, ainsi que l'affichage de ces données dans le panel Admin.
-    - Status: IN PROGRESS
-    - Agent Testing Done: N
-    - Which testing method agent to use? screenshot tool / manual testing by curl. (NEVER use testing agent without user permission).
+    - Last item agent was working: Audit de l'application et préparation finale avant le déploiement sur le domaine de production .
+    - Status: USER VERIFICATION PENDING (L'utilisateur procède au fork et au déploiement).
+    - Agent Testing Done: Y (via l'audit du deployment_agent).
+    - Which testing method agent to use? deployment_agent / manual testing. (NEVER use testing agent without user permission).
     - User Testing Done: N
 
 **All Pending/In progress Issue list**: 
-  Issue 1: Finaliser l'injection du composant  dans  (P0)
-     - Attempted fixes: Les fichiers ,  et les endpoints backend dans  ont été mis à jour/créés. L'agent était en train d'insérer la modale dans le JSX de .
-     - Next debug checklist: 
-        1. Finaliser le  dans .
-        2. S'assurer que le backend capture correctement l'IP du  lors de la route .
-        3. Vérifier que la nouvelle page admin  affiche bien les dates et IP.
-     - Why fix this issue and what will be achieved with the fix?: C'est une obligation légale stricte et une exigence de Stripe Connect avant de pouvoir déployer le site en production.
-     - Status: IN PROGRESS
+  Issue 1: Correctifs post-déploiement (P0)
+     - Attempted fixes: N/A (En attente du déploiement réel par l'utilisateur).
+     - Next debug checklist: Vérifier/mettre à jour les URLs de callback Stripe (webhooks) et les variables d'environnement (, ) pour correspondre au domaine de production. S'assurer que les liens de réinitialisation de mot de passe pointent vers le bon domaine.
+     - Why fix this issue and what will be achieved with the fix?: C'est une étape post-déploiement obligatoire (annoncée par le client) pour que l'application communique correctement avec les services tiers en production.
+     - Status: NOT STARTED
      - Is recurring issue?: N
      - Should Test frontend/backend/both after fix?: both
-     - Blocked on other issue: None
+     - Blocked on other issue: Bloqué en attendant que l'utilisateur termine l'installation sur son serveur/domaine.
 
 **In progress Task List**: 
-  Task 1: Popup d'acceptation CGU/CGV à l'inscription (P0)
-     - Where to resume: Finir la modification de  pour rendre le formulaire dépendant de la validation de la modale.
-     - What will be achieved with this?: Consentement actif tracé, indispensable pour l'activation Stripe Connect.
-     - Status: IN PROGRESS
-     - Should Test frontend/backend/both after fix?: both
-     - Blocked on something: None
+Aucune tâche de code en cours, l'agent est en attente du retour de l'utilisateur suite au déploiement.
 
 **Upcoming and Future Tasks**
-    - P0: Déployer l'application en production sur le domaine  avec HTTPS (requis par l'utilisateur pour valider Stripe Connect).
-    - P1: Finaliser l'intégration de Stripe Connect pour les transactions Marketplace < 15 000 € (séquestre).
+    - P0: Ajuster la configuration (Variables d'environnement, URLs, Webhooks Stripe) post-déploiement sur le domaine .
+    - P1: Finaliser l'intégration de Stripe Connect pour les transactions Marketplace < 15 000 € (mise en place du séquestre, KYC).
     - P1: Phase D — Avis utilisateurs (notation post-transaction).
     - P2: Système de factures personnalisées dans l'espace client avec intégration future à  (Factur-X).
-    - P2: Découper  (qui dépasse les 1200 lignes) et  (qui dépasse 1700 lignes) en sous-modules.
+    - P2: Découper  (qui dépasse les 1200 lignes) et  (qui dépasse 1700 lignes) en sous-modules (Cf. Règle PRD #17).
     - P2: Phase E — Statistiques admin & SEO.
     - P2: Intégration du badge Évalué par La Citadelle sur les annonces.
 
 **Completed work in this session**
-- Ajout du type d'annonce Nom de domaine (backend + frontend) (DONE)
-- Création de la page commerciale Vendre () (DONE)
-- Agrandissement itératif du logo du header (DONE)
-- Refonte de la barre de recherche en design pill unifiée (DONE)
-- Réorganisation du footer en 5 colonnes avec séparation acheteurs/vendeurs (DONE)
-- Création du  listant les contraintes réglementaires (DONE)
-- Intégration de paiements LIVE via Stripe pour les services de la plateforme (, , ) (DONE)
-- Création des pages légales: Mentions Légales, CGU, CGV, et Politique de confidentialité (DONE)
-- Mise à jour des CGV pour inclure le rôle de maître d'ouvrage/partenaires et l'acquisition pour compte > 15 000 € (DONE)
+- Injection et validation de la modale d'acceptation des CGU/CGV dans  avec tracking IP et date (DONE)
+- Création du endpoint  pour les anciens utilisateurs (DONE)
+- Affichage de l'IP et de la date d'acceptation des CGU dans le tableau de bord Admin (DONE)
+- Création d'un compte super-admin en base de données () (DONE)
+- Création d'une page d'authentification cachée spécifique pour l'administration :  (DONE)
+- Désactivation du mode de développement () et suppression du bandeau d'alerte (DONE)
+- Audit complet du code avec l'agent de déploiement (Résultat : PASS) (DONE)
 
 **Earlier issues found/mentioned but not fixed**
 None.
@@ -74,20 +64,18 @@ None.
 React 19, FastAPI, MongoDB (Motor), Intégration Stripe Native Checkout (Session ID / Webhooks).
 
 **key DB schema**
-  - : {, , , , , }
+  - : {, , , , , , }
   - : {, , , , , }
 
 **changes in tech stack**
-  - Ajout des clés Stripe Live (API native) dans les variables d'environnement. Modèles pydantic mis à jour pour intercepter les IP de connexion.
+  - Aucun.
 
 **All files of reference** 
-  -  (Modale à injecter)
-  -  (Modifié - Capture IP et date)
-  -  (Nouveau)
-  -  (Nouveau)
-  -  (Nouveau - Stripe Service Checkout)
-  -  (Nouveau)
-  - Les 4 fichiers des pages légales dans  (, , , )
+  -  (Modifié - Intègre le popup CGU)
+  -  (Modifié - Ajout endpoint accept-cgu)
+  -  (Créé - Page de login /admin-access)
+  -  (Modifié - Ajout de la route /admin-access)
+  -  (Modifié - DEV_MODE mis à false)
 
 **Areas that need refactoring**: 
 -  (> 1200 lignes).
@@ -97,36 +85,31 @@ React 19, FastAPI, MongoDB (Motor), Intégration Stripe Native Checkout (Session
 - 
 - 
 - 
-- 
 
 **Critical Info for New Agent** 
-- **RÈGLE 6 - TESTS:** Vous ne devez **SOUS AUCUN PRÉTEXTE** lancer un agent de test () sans l'accord express de l'utilisateur. 
-- Les clés Stripe LIVE ont été fournies par l'utilisateur et sont enregistrées dans le . Stripe fonctionne actuellement en live pour l'achat de services.
-- Vous devez IMPÉRATIVEMENT continuer le développement et la conversation en **Français**.
+- **RÈGLE 6 - TESTS:** Vous ne devez **SOUS AUCUN PRÉTEXTE** lancer un agent de test () sans l'accord express de l'utilisateur.
+- **RÈGLES PRD:** Respectez impérativement les 27 règles du fichier  qui ont été validées et acceptées formellement dans cette session.
+- **DÉPLOIEMENT EN COURS:** L'utilisateur est en train de déployer l'application. Attendez-vous à devoir résoudre des bugs post-déploiement liés à l'environnement de production (CORS, Stripe webhooks, variables d'environnement).
+- Vous devez IMPÉRATIVEMENT continuer le développement, les commentaires et la réflexion en **Français**.
 
 **documents and test reports created in this job** 
   - /app/memory/PRD.md
-  - /app/memory/CADRAGE_JURIDIQUE.md
+  - /app/memory/test_credentials.md (Mis à jour avec le nouveau compte admin)
 
 **Last 10 User Messages and any pending HUMAN messages** 
-1. (User) Asked to update footer separated in 2 sections (Acheteur/Vendeur). (Completed)
-2. (User) Requested a legal/business framing document (Cadrage juridique). (Completed)
-3. (User) Shared strategic plan for Stripe standard/Connect & acquisition services. (Completed)
-4. (User) Provided Stripe live public key. (Completed)
-5. (User) Provided Stripe live secret key, for services only. (Completed)
-6. (User) Asked for advice on Stripe Connect setup options. (Completed)
-7. (User) Discussed custom invoices vs Stripe invoices for 2027 compliance. (Completed)
-8. (User) Stated the need to deploy before activating Connect, asked what to do first. (Completed)
-9. (User) Requested the creation of legal pages (CGU, CGV, etc.). (Completed)
-10. (User) Asked to implement CGU/CGV acceptance modal at registration with IP tracking. (IN PROGRESS)
-- *Pending Human Action*: None. The agent must finish modifying the React registration component and test the flow.
+1. (User) Rappel strict des 27 règles de développement et de la langue française. (Completed)
+2. (User) Demande d'implémentation de la modale CGU/CGV bloquante à l'inscription avec IP. (Completed)
+3. (User) Demande de création d'un compte admin  et d'une URL de connexion admin () avec récupération de mot de passe. (Completed)
+4. (User) Demande de retirer le bandeau de mode développement (DEV_MODE) avant déploiement. (Completed)
+5. (User) ok maintenant on fork, on fait un audit puis apres on installe, par contre on devra faire des correctif après malgrès tous. (Completed - Audit PASS).
+- *Pending Human Action*: L'agent attend le retour de l'utilisateur pour appliquer les correctifs post-installation.
 
 **Project Health Check:**
 - Broken: None.
-- Mocked: None (Stripe services est maintenant réel).
+- Mocked: None.
 
 **3rd Party Integrations** 
-- Stripe (Payments) — Requires User API Key (Fournies par l'utilisateur et configurées en production).
+- Stripe (Payments) — Requires User API Key (Clés Live en production).
 - Hostinger SMTP (Emails).
 
 **Testing status** 
@@ -136,16 +119,16 @@ React 19, FastAPI, MongoDB (Motor), Intégration Stripe Native Checkout (Session
 - Known regressions: None.
 
 **Credentials to test flow:**
-- Admin:  / 
-- Admin Emails (pour test réception):  et 
-- Seller:  / 
-- Buyer:  / 
+- Nouvel Admin (via ) :  / 
+- Ancien Admin :  / 
+- Seller :  / 
+- Buyer :  / 
 
 **What agent forgot to execute**
-L'agent n'a pas eu le temps de finaliser l'injection du composant React  dans le composant parent  à cause d'une limite de contexte/tokens. 
+Rien. L'audit de déploiement s'est passé avec succès et le projet est paré pour la production.
 
 **Debugging checklist for current issue**
-    Issue: Finaliser la modale d'acceptation RGPD/CGU
-    Frontend files to check: 
-    Backend files to check: 
-    Database to check:  (Vérifier la bonne insertion de  et ).</analysis>
+    Issue: Correctifs post-déploiement anticipés (CORS, Stripe Webhooks, Envois d'emails)
+    Frontend files to check: Fichiers de configuration réseau/API si les appels échouent.
+    Backend files to check:  (FRONTEND_URL, CITADELLE_URL) et configuration de Stripe  pour valider que le webhook pointera vers .
+    Database to check: N/A.</analysis>
