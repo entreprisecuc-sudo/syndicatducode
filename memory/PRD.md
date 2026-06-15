@@ -220,4 +220,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 ### ✅ Sécurité — Migration JWT (TERMINÉ 15/06/2026)
 - `python-jose` (CVE connues) remplacé par `PyJWT==2.11.0` dans `services/auth_service.py` (2 lignes : import + `except InvalidTokenError`). Algo HS256 et secret inchangés → **rétro-compatible** (aucune session cassée). `python-jose` désinstallé, `requirements.txt` mis à jour via pip freeze. Testé : login Syndicat + Citadelle OK, token invalide → 401.
 
+### ✅ Fonctionnalité "Se souvenir de moi" + Tests anti-régression (TERMINÉ 15/06/2026)
+- **Se souvenir de moi** : login Syndicat + Citadelle + Admin. Backend : `JWT_REMEMBER_ME_EXPIRE_MINUTES` (30 jours) dans settings, helper `get_access_token_expiry(remember_me)` (DRY) dans auth_service, champ `remember_me` ajouté aux modèles `UserLogin`/`CitadelleLogin`. Frontend : case à cocher sur les 3 pages de connexion (`LoginPage.js`, `CitadelleLogin.js`, `AdminLoginPage.js`) + `authService.login` envoie `remember_me`. Vérifié : 24h sans / 30 jours avec.
+- **Tests automatisés (avec accord client)** : campagne anti-régression complète via testing agent → **backend 20/20, frontend 3/3 — 100% PASS, aucun bug**. Couvre : migration PyJWT, token invalide→401, S1 /api/contacts, S6 upload, dependencies Citadelle, reset DRY, emails package, remember-me, flux login + modale CGU. Suite pérenne : `backend/tests/test_anti_regression.py`. Rapport : `test_reports/iteration_3.json`.
+
 *Mise à jour : 12/06/2026*
