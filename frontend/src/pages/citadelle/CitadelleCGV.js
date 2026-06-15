@@ -140,15 +140,16 @@ export default function CitadelleCGV() {
         </Section>
 
         <Section num="5" title="Commission de la Plateforme">
-          <InfoBox>
-            <strong>Taux de commission : 5 % du prix de vente final · Minimum : 50 €</strong><br/>
-            La commission est due uniquement en cas de vente aboutie. Elle est à la charge du vendeur.
-          </InfoBox>
-          <p>La commission est calculée sur le prix de vente final convenu entre les parties, hors services optionnels.</p>
-          <p>La commission est déduite automatiquement du montant versé au vendeur lors de la libération des fonds.</p>
-          <p>La commission est soumise à la TVA au taux légal en vigueur (20 % à la date de rédaction des présentes).</p>
+          <p>
+            La Plateforme perçoit une commission sur chaque vente aboutie réalisée via La Citadelle Numérique.
+            Le taux et le montant minimum de la commission sont indiqués sur la plateforme au moment de la publication de l'annonce
+            et peuvent évoluer selon les conditions tarifaires en vigueur.
+          </p>
+          <p>La commission est à la charge du vendeur et est déduite automatiquement du montant qui lui est reversé
+          lors de la libération des fonds.</p>
+          <p>Aucune commission n'est prélevée en l'absence de vente aboutie.</p>
           <p className="text-xs italic mt-2" style={{ color: "#888" }}>
-            La Plateforme se réserve le droit de modifier le taux de commission, avec notification préalable de 30 jours aux vendeurs.
+            La Plateforme se réserve le droit de modifier ses conditions tarifaires, avec notification préalable aux vendeurs.
           </p>
         </Section>
 
@@ -206,7 +207,35 @@ export default function CitadelleCGV() {
           </Sub>
         </Section>
 
-        <Section num="8" title="Gestion des litiges">
+        <Section num="8" title="Exécution des services — Rôle des partenaires">
+          <Sub title="Interlocuteur unique">
+            <p>
+              Quel que soit le service commandé, <strong>JOERKE.B est l'interlocuteur contractuel unique</strong> du client.
+              Le client contracte exclusivement avec JOERKE.B et non avec les prestataires intervenant en sous-traitance.
+            </p>
+          </Sub>
+          <Sub title="Intervention des partenaires du Syndicat du Code">
+            <p>
+              Certaines prestations (évaluations, audits, refontes, migrations, valorisations) peuvent être réalisées,
+              en tout ou partie, par des membres certifiés du <strong>Syndicat du Code</strong>, partenaires de JOERKE.B.
+            </p>
+            <p>
+              Ces partenaires sont sélectionnés et supervisés par JOERKE.B. Chacun est lié à JOERKE.B
+              par un accord de sous-traitance précisant les niveaux de service, les délais et les responsabilités.
+              Le client n'est pas partie à cet accord de sous-traitance.
+            </p>
+          </Sub>
+          <Sub title="Responsabilité">
+            <p>
+              JOERKE.B demeure responsable de la bonne exécution de la prestation vis-à-vis du client,
+              y compris en cas d'intervention d'un partenaire.
+              En cas de défaillance d'un partenaire, JOERKE.B s'engage à mettre en œuvre tous les moyens
+              raisonnables pour assurer la continuité ou la reprise du service.
+            </p>
+          </Sub>
+        </Section>
+
+        <Section num="9" title="Gestion des litiges">
           <Sub title="Rôle de La Garde">
             <p>En cas de litige entre acheteur et vendeur dans le cadre d'une Transaction Sécurisée,
             La Garde intervient en qualité de médiateur interne. Elle analyse les preuves soumises par chaque partie
@@ -236,17 +265,48 @@ export default function CitadelleCGV() {
           </Sub>
         </Section>
 
-        <Section num="9" title="Service d'acquisition pour compte (transactions > 15 000 €)">
-          <p>
-            Pour les transactions d'un montant supérieur à 15 000 €, La Citadelle Numérique peut proposer
-            un service d'acquisition pour compte, dans le cadre duquel JOERKE.B procède à l'acquisition
-            de l'actif au nom et pour le compte de l'acheteur, après signature d'un contrat spécifique.
-          </p>
-          <p>Ce service fait l'objet d'un contrat séparé, signé électroniquement par toutes les parties,
-          incluant les modalités de paiement, les garanties et les conditions de rétrocession.</p>
+        <Section num="10" title="Service d'acquisition pour compte">
+          <Sub title="Présentation">
+            <p>
+              Pour les transactions dont le montant dépasse un seuil défini par la Plateforme,
+              La Citadelle Numérique peut proposer un <strong>service d'acquisition pour compte</strong>.
+              Dans ce cadre, JOERKE.B procède à l'acquisition de l'actif <strong>en son nom propre, pour le compte de l'acheteur</strong>,
+              puis le lui rétrocède après vérification complète.
+            </p>
+          </Sub>
+          <Sub title="Conditions d'accès">
+            <p>Ce service est conditionné à :</p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>La signature préalable d'un contrat spécifique par toutes les parties (signature électronique)</li>
+              <li>Le règlement intégral par l'acheteur par virement bancaire avant toute acquisition</li>
+              <li>La réalisation optionnelle d'une analyse de vente approfondie à la charge du vendeur</li>
+              <li>L'accord explicite du vendeur sur les conditions de cession</li>
+            </ul>
+          </Sub>
+          <Sub title="Processus">
+            <ol className="list-decimal pl-5 space-y-1.5">
+              <li>Signature du contrat d'acquisition pour compte par l'acheteur et JOERKE.B</li>
+              <li>Règlement de l'intégralité du montant par l'acheteur par virement (RIB fourni)</li>
+              <li>Acquisition de l'actif par JOERKE.B auprès du vendeur</li>
+              <li>Vérification complète de l'actif par La Garde et ses partenaires techniques</li>
+              <li>Rétrocession de l'actif à l'acheteur après validation</li>
+            </ol>
+          </Sub>
+          <Sub title="Responsabilités et limitations">
+            <p>
+              JOERKE.B s'engage à réaliser toutes les vérifications raisonnables avant la rétrocession de l'actif.
+              Cette prestation constitue une <strong>obligation de moyens</strong>.
+              JOERKE.B ne saurait être tenue responsable de vices cachés non détectables lors d'une vérification menée
+              avec diligence professionnelle, ni des évolutions de l'actif postérieures à la rétrocession.
+            </p>
+            <p>
+              En cas de découverte d'une anomalie majeure lors de la vérification, JOERKE.B se réserve le droit
+              de suspendre l'acquisition et d'en informer l'acheteur avant tout versement au vendeur.
+            </p>
+          </Sub>
         </Section>
 
-        <Section num="10" title="Droit de rétractation">
+        <Section num="11" title="Droit de rétractation">
           <p>
             Conformément à l'article L221-28 du Code de la consommation, <strong>le droit de rétractation ne s'applique pas</strong> aux
             services pleinement exécutés avant la fin du délai de rétractation, ni aux contenus numériques
@@ -259,7 +319,7 @@ export default function CitadelleCGV() {
           </p>
         </Section>
 
-        <Section num="11" title="Responsabilité du vendeur">
+        <Section num="12" title="Responsabilité du vendeur">
           <p>Le vendeur est seul responsable de l'exactitude des informations contenues dans son annonce.
           En cas de litige résultant d'informations inexactes ou trompeuses, le vendeur s'engage à indemniser
           l'acheteur et à tenir la Plateforme indemne de toute réclamation.</p>
