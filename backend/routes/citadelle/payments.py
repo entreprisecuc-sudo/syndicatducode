@@ -4,18 +4,17 @@ Intégration Stripe Checkout pour les services
 """
 
 import os
+import json
 import logging
+import asyncio
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional
 import uuid
 
+import stripe as stripe_sdk
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr
-
-from emergentintegrations.payments.stripe.checkout import (
-    StripeCheckout,
-    CheckoutSessionRequest,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +26,91 @@ _db = None
 def set_database(database):
     global _db
     _db = database
+
+
+# ── Modèles internes Stripe (remplacent emergentintegrations) ─────────────────
+
+@dataclass
+class CheckoutSessionRequest:
+    """Paramètres de création d'une session Stripe Checkout."""
+    amount: float       # Montant en euros (ex: 99.0)
+    currency: str
+    success_url: str
+    cancel_url: str
+    metadata: dict
+
+
+@dataclass
+class _WebhookEvent:
+    """Représentation simplifiée d'un événement webhook Stripe."""
+    event_type: str
+    session_id: str
+    payment_status: str
+
+
+class _StripeClient:
+    """
+    Wrapper autour du SDK Stripe officiel.
+    Remplace emergentintegrations.payments.stripe.checkout
+    pour un déploiement indépendant de la plateforme Emergent.
+    """
+
+    def __init__(self, api_key: str, webhook_secret: Optional[str] = None):
+        self.api_key = api_key
+        self.webhook_secret = webhook_secret
+
+    async def create_checkout_session(self, req: CheckoutSessionRequest):
+        """Crée une session Stripe Checkout. Retourne l'objet session (id, url)."""
+        session = await asyncio.to_thread(
+            stripe_sdk.checkout.Session.create,
+            api_key=self.api_key,
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": req.currency,
+                    "product_data": {"name": req.metadata.get("service_title", "Service")},
+                    "unit_amount": int(req.amount * 100),  # EUR → centimes Stripe
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=req.success_url,
+            cancel_url=req.cancel_url,
+            metadata=req.metadata,
+        )
+        return session
+
+    async def get_checkout_status(self, session_id: str):
+        """Récupère le statut d'une session Stripe (payment_status, status)."""
+        session = await asyncio.to_thread(
+            stripe_sdk.checkout.Session.retrieve,
+            session_id,
+            api_key=self.api_key,
+        )
+        return session
+
+    async def handle_webhook(self, body: bytes, sig: str) -> _WebhookEvent:
+        """Parse et vérifie la signature d'un payload webhook Stripe."""
+        if self.webhook_secret:
+            event = await asyncio.to_thread(
+                stripe_sdk.Webhook.construct_event,
+                body, sig, self.webhook_secret,
+            )
+            obj = event["data"]["object"]
+            return _WebhookEvent(
+                event_type=event["type"],
+                session_id=obj.get("id", ""),
+                payment_status=obj.get("payment_status", ""),
+            )
+        else:
+            # Mode développement : pas de vérification de signature
+            event_data = json.loads(body)
+            obj = event_data.get("data", {}).get("object", {})
+            return _WebhookEvent(
+                event_type=event_data.get("type", ""),
+                session_id=obj.get("id", ""),
+                payment_status=obj.get("payment_status", ""),
+            )
 
 
 # ── Schémas ───────────────────────────────────────────────────────────────────
@@ -41,13 +125,13 @@ class ServiceCheckoutRequest(BaseModel):
 
 # ── Utilitaire Stripe ─────────────────────────────────────────────────────────
 
-def _get_stripe():
+def _get_stripe() -> _StripeClient:
     api_key = os.environ.get("STRIPE_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="Configuration Stripe manquante.")
     # Le secret webhook (whsec_...) active la vérification de signature en production.
-    # Configurable via STRIPE_WEBHOOK_SECRET ; absent → parsing sans vérification (dev/preview).
-    return StripeCheckout(
+    # Configurable via STRIPE_WEBHOOK_SECRET ; absent → parsing sans vérification (dev).
+    return _StripeClient(
         api_key=api_key,
         webhook_secret=os.environ.get("STRIPE_WEBHOOK_SECRET") or None,
     )
@@ -159,9 +243,9 @@ async def create_service_checkout(payload: ServiceCheckoutRequest):
     }
     await _db.payment_transactions.insert_one(transaction_doc)
 
-    logger.info(f"Checkout session créée : {session.session_id} pour service {service.get('title')}")
+    logger.info(f"Checkout session créée : {session.id} pour service {service.get('title')}")
 
-    return {"checkout_url": session.url, "session_id": session.session_id}
+    return {"checkout_url": session.url, "session_id": session.id}
 
 
 # ── GET /payments/service/status/{session_id} ─────────────────────────────────
