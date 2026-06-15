@@ -4,6 +4,9 @@
 .idea/
 .vscode/
 
+# Identifiants de test (ne jamais versionner — sécurité)
+memory/test_credentials.md
+
 # Dependencies
 node_modules/
 /node_modules
