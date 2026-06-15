@@ -16,7 +16,7 @@ MONGO_URL = os.environ.get('MONGO_URL')
 DB_NAME = os.environ.get('DB_NAME')
 
 # JWT Configuration
-JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'syndicat-du-code-secret-key-change-in-production')
+JWT_SECRET_KEY = os.environ['JWT_SECRET_KEY']
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 heures
 JWT_RESET_TOKEN_EXPIRE_MINUTES = 60  # 1 heure pour reset password

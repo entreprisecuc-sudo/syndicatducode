@@ -195,4 +195,11 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - ⚠️ Action prod : configurer l'endpoint webhook dans Stripe (`/api/payments/webhook/stripe`) et renseigner `STRIPE_WEBHOOK_SECRET`.
 - Rapport d'audit complet : `/app/memory/AUDIT_2026-06.md` (P1/P2 restants : secret JWT par défaut, IP brute-force login, 401 vs 500, validation upload contact, découpage fichiers, DRY helpers).
 
+### ✅ Correctifs sécurité P1 (TERMINÉ 15/06/2026)
+- **S4** : suppression du secret JWT par défaut en dur (`config/settings.py` → fail-fast `os.environ['JWT_SECRET_KEY']`). Zéro hardcoding.
+- **S5** : nouvelle fonction utilitaire `backend/utils/request_utils.py::get_client_ip` (DRY) extrayant l'IP réelle via `X-Forwarded-For` ; utilisée par register/login/accept-cgu. Corrige le comptage brute-force au login (qui utilisait l'IP du proxy K8s → blocage collectif).
+- **F2** : token JWT invalide renvoie désormais 401 (au lieu de 500) sur `/me`, `/profile`, `/accept-cgu`.
+- **S6** : validation des pièces jointes du formulaire de contact (`server.py`) — liste blanche MIME (images, PDF, Word, txt) + 10 Mo max. Empêche le stockage de fichiers dangereux (ex. .html/.svg servis en statique).
+- Tous vérifiés par curl (auto-tests). Aucun agent de test lancé (Règle 6).
+
 *Mise à jour : 12/06/2026*

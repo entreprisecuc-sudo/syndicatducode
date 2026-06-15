@@ -34,6 +34,16 @@ UPLOADS_DIR.mkdir(exist_ok=True)
 INVOICES_DIR = UPLOADS_DIR / "invoices"
 INVOICES_DIR.mkdir(exist_ok=True)
 
+# Validation des pièces jointes du formulaire de contact (sécurité)
+ALLOWED_CONTACT_FILE_TYPES = {
+    "image/jpeg", "image/png", "image/webp", "image/gif",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/plain",
+}
+MAX_CONTACT_FILE_SIZE = 10 * 1024 * 1024  # 10 Mo
+
 # SMTP Configuration
 SMTP_HOST = os.environ.get('SMTP_HOST', '')
 SMTP_PORT = int(os.environ.get('SMTP_PORT', 465))
@@ -165,15 +175,30 @@ async def create_contact(
     # Save uploaded files
     saved_files = []
     for file in files:
-        if file.filename:
-            file_ext = Path(file.filename).suffix
-            file_id = f"{contact_id}_{uuid.uuid4().hex[:8]}{file_ext}"
-            file_path = UPLOADS_DIR / file_id
-            
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            
-            saved_files.append(file_id)
+        if not file.filename:
+            continue
+        # Validation du type MIME (liste blanche)
+        if file.content_type not in ALLOWED_CONTACT_FILE_TYPES:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Type de fichier non autorisé : {file.content_type}"
+            )
+        # Validation de la taille
+        contents = await file.read()
+        if len(contents) > MAX_CONTACT_FILE_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail="Fichier trop volumineux. Taille maximale : 10 Mo"
+            )
+
+        file_ext = Path(file.filename).suffix
+        file_id = f"{contact_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+        file_path = UPLOADS_DIR / file_id
+
+        with open(file_path, "wb") as buffer:
+            buffer.write(contents)
+
+        saved_files.append(file_id)
     
     doc = {
         "id": contact_id,

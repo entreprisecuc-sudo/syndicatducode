@@ -27,6 +27,8 @@ from services.email_service import (
     send_citadelle_admin_new_user_email,
 )
 
+from utils.request_utils import get_client_ip
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Citadelle Auth"])
@@ -236,10 +238,7 @@ async def citadelle_register(user_data: CitadelleRegister, request: Request):
         )
 
     # Capture de l'IP réelle (derrière proxy/Kubernetes)
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    client_ip = forwarded_for.split(",")[0].strip() if forwarded_for else (
-        request.client.host if request.client else "unknown"
-    )
+    client_ip = get_client_ip(request)
 
     now = datetime.now(timezone.utc).isoformat()
     user_id = generate_user_id()
@@ -295,7 +294,7 @@ async def citadelle_login(credentials: CitadelleLogin, request: Request):
     N'authentifie QUE les utilisateurs avec platform='citadelle'.
     Protégé contre le brute force (rate limiting par IP).
     """
-    ip = request.client.host if request.client else "unknown"
+    ip = get_client_ip(request)
 
     # Protection anti-brute force
     await _check_brute_force(ip)
@@ -363,6 +362,9 @@ async def citadelle_me(request: Request):
         payload = decode_access_token(auth_header.replace("Bearer ", ""))
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
+
+    if payload is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide ou expiré")
 
     if payload.get("platform") != "citadelle":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Accès réservé aux utilisateurs Citadelle")
@@ -479,6 +481,9 @@ async def citadelle_update_profile(request: Request):
         decoded = decode_access_token(token)
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
+
+    if decoded is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide ou expiré")
 
     user = await db.users.find_one(
         {"id": decoded["sub"], "platform": "citadelle"},
@@ -810,6 +815,9 @@ async def citadelle_accept_cgu(request: Request):
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
 
+    if decoded is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide ou expiré")
+
     if decoded.get("platform") != "citadelle":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Accès réservé aux utilisateurs Citadelle")
 
@@ -821,10 +829,7 @@ async def citadelle_accept_cgu(request: Request):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable")
 
     # Capture de l'IP réelle (derrière proxy/Kubernetes)
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    client_ip = forwarded_for.split(",")[0].strip() if forwarded_for else (
-        request.client.host if request.client else "unknown"
-    )
+    client_ip = get_client_ip(request)
 
     now = datetime.now(timezone.utc).isoformat()
 
