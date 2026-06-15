@@ -163,6 +163,12 @@ const ADMIN_MENU_SECTIONS = [
         label: "Blog",
         icon: BookOpen,
         description: "Rédiger et gérer les articles du blog Citadelle"
+      },
+      {
+        path: "/syndicat-admin/citadelle/utilisateurs",
+        label: "Utilisateurs Citadelle",
+        icon: Users,
+        description: "Liste des membres avec consentement CGU/CGV horodaté et adresse IP"
       }
     ]
   }

@@ -10,12 +10,17 @@ import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
+import CGUAcceptanceModal from "@/components/citadelle/CGUAcceptanceModal";
 
 export default function CitadelleLogin() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // CGU : modale si l'utilisateur existant n'a pas encore accepté
+  const [showCGU, setShowCGU] = useState(false);
+  const [pendingAuth, setPendingAuth] = useState(null); // { token, user }
+  const [cguLoading, setCguLoading] = useState(false);
   const { login } = useCitadelleAuth();
   const navigate = useNavigate();
   useCitadellePageMeta("Connexion");
@@ -33,12 +38,38 @@ export default function CitadelleLogin() {
     setLoading(true);
     try {
       const res = await citadelleApi.post("/auth/login", form);
-      login(res.data.access_token, res.data.user);
-      navigate("/citadelle/espace-membre");
+      // Si l'utilisateur n'a pas encore accepté les CGU/CGV → afficher la modale
+      if (!res.data.user.cgu_accepted) {
+        setPendingAuth({ token: res.data.access_token, user: res.data.user });
+        setShowCGU(true);
+      } else {
+        login(res.data.access_token, res.data.user);
+        navigate("/citadelle/espace-membre");
+      }
     } catch (err) {
       setError(err.response?.data?.detail || "Email ou mot de passe incorrect");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Acceptation CGU depuis la page de connexion (utilisateur existant)
+  const handleCGUAccept = async () => {
+    setCguLoading(true);
+    try {
+      await citadelleApi.patch(
+        "/auth/accept-cgu",
+        {},
+        { headers: { Authorization: `Bearer ${pendingAuth.token}` } }
+      );
+      login(pendingAuth.token, { ...pendingAuth.user, cgu_accepted: true });
+      setShowCGU(false);
+      navigate("/citadelle/espace-membre");
+    } catch (err) {
+      setError("Erreur lors de l'enregistrement du consentement. Veuillez réessayer.");
+      setShowCGU(false);
+    } finally {
+      setCguLoading(false);
     }
   };
 
@@ -173,6 +204,9 @@ export default function CitadelleLogin() {
           Connexion sécurisée — Données chiffrées
         </div>
       </div>
+
+      {/* Modale CGU/CGV — affichée si l'utilisateur n'a pas encore accepté */}
+      {showCGU && <CGUAcceptanceModal onAccept={handleCGUAccept} loading={cguLoading} />}
     </div>
   );
 }

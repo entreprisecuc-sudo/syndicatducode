@@ -79,7 +79,14 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Constante `SERVICE_TARGET_SECTIONS` centralisée dans `citadelleConstants.js` — respect DRY
 
 
-### Phase E — Statistiques & SEO (À FAIRE)
+### ✅ Consentement CGU/CGV à l'inscription (TERMINÉ 15/06/2026)
+- Modale bloquante `CGUAcceptanceModal` affichée avant création du compte (2 cases à cocher distinctes : CGU + CGV)
+- À l'inscription : la modale s'affiche après validation du formulaire, la création du compte n'a lieu qu'après acceptation
+- À la première connexion : si `cgu_accepted=False`, modale affichée avant accès à l'espace membre
+- Backend : capture IP réelle (X-Forwarded-For / request.client), horodatage UTC → champs `cgu_accepted`, `cgu_accepted_at`, `cgu_ip_address`, `cgu_version`
+- Nouvel endpoint `PATCH /api/citadelle/auth/accept-cgu` pour les utilisateurs existants
+- Panel admin `/syndicat-admin/citadelle/utilisateurs` : tableau paginé avec date/heure d'acceptation + adresse IP
+- Conformité RGPD + Stripe Connect
 
 ### ✅ Gestion des Litiges — Dispute Management (TERMINÉ 12/06/2026)
 - **Acheteur** : Bannière "Fonds bloqués — La Garde veille" (statuts séquestre), bouton "Ouvrir un litige" + modal, bouton "Annuler l'achat" + modal avec frais calculés dynamiquement (dès 7 jours)

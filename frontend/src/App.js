@@ -97,6 +97,7 @@ import AdminCitadelleTransactions from "@/pages/admin/AdminCitadelleTransactions
 import AdminCitadelleServices from "@/pages/admin/AdminCitadelleServices";
 import AdminCitadelleNewsletter from "@/pages/admin/AdminCitadelleNewsletter";
 import AdminCitadelleCommission from "@/pages/admin/AdminCitadelleCommission";
+import AdminCitadelleUsers from "@/pages/admin/AdminCitadelleUsers";
 import CitadelleBlog from "@/pages/citadelle/CitadelleBlog";
 import CitadelleBlogPost from "@/pages/citadelle/CitadelleBlogPost";
 import CitadelleContact from "@/pages/citadelle/CitadelleContact";
@@ -386,6 +387,10 @@ function App() {
               <Route
                 path="/syndicat-admin/citadelle/blog"
                 element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleBlog /></RoleRoute>}
+              />
+              <Route
+                path="/syndicat-admin/citadelle/utilisateurs"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleUsers /></RoleRoute>}
               />
 
               {/* ============================================ */}

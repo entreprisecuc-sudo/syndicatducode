@@ -201,6 +201,9 @@ export default function CitadelleRegister() {
           Vos données sont protégées — Aucun paiement requis
         </div>
       </div>
+
+      {/* Modale CGU/CGV bloquante — affichée après validation du formulaire */}
+      {showCGU && <CGUAcceptanceModal onAccept={handleCGUAccept} loading={loading} />}
     </div>
   );
 }

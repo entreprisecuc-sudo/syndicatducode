@@ -791,3 +791,53 @@ async def admin_list_citadelle_users(
         "page": page,
         "pages": (total + limit - 1) // limit,
     }
+
+
+@router.patch("/accept-cgu", status_code=200)
+async def citadelle_accept_cgu(request: Request):
+    """
+    Enregistre l'acceptation des CGU/CGV pour un utilisateur Citadelle existant.
+    Utilisé lors de la première connexion si cgu_accepted=False.
+    Capture l'adresse IP et l'horodatage pour conformité RGPD / Stripe Connect.
+    """
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token manquant")
+
+    token = auth_header.split(" ")[1]
+    try:
+        decoded = decode_access_token(token)
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
+
+    if decoded.get("platform") != "citadelle":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Accès réservé aux utilisateurs Citadelle")
+
+    user = await db.users.find_one(
+        {"id": decoded["sub"], "platform": "citadelle"},
+        {"_id": 0, "id": 1}
+    )
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable")
+
+    # Capture de l'IP réelle (derrière proxy/Kubernetes)
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    client_ip = forwarded_for.split(",")[0].strip() if forwarded_for else (
+        request.client.host if request.client else "unknown"
+    )
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    await db.users.update_one(
+        {"id": user["id"], "platform": "citadelle"},
+        {"$set": {
+            "cgu_accepted": True,
+            "cgu_accepted_at": now,
+            "cgu_ip_address": client_ip,
+            "cgu_version": "1.0",
+            "updated_at": now,
+        }}
+    )
+
+    logger.info(f"[Citadelle] CGU/CGV acceptées (connexion) par user_id: {user['id']} — IP: {client_ip}")
+    return {"message": "CGU/CGV acceptées avec succès", "cgu_accepted_at": now}
