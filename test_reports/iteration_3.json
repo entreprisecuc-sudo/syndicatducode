@@ -1,0 +1,52 @@
+{
+  "summary": "Anti-régression complète : migration python-jose->PyJWT, refactoring DRY (helpers reset password, dependencies Citadelle, package emails), correctifs sécurité (S1 /api/contacts, S6 upload), et nouvelle fonctionnalité 'Se souvenir de moi'. Backend : 20/20 tests pass. Frontend : 3 pages de login validées avec case 'Se souvenir de moi' fonctionnelle.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_features": [
+    {"feature": "JWT migration PyJWT — login Syndicat (POST /api/auth/login)", "result": "PASS", "details": "Retourne 200 + access_token JWT décodable (exp/sub présents)"},
+    {"feature": "JWT migration PyJWT — login Citadelle (POST /api/citadelle/auth/login)", "result": "PASS", "details": "Retourne 200 + access_token JWT décodable"},
+    {"feature": "Token invalide -> 401 (pas 500)", "result": "PASS", "details": "GET /api/citadelle/auth/me avec Bearer bidon -> 401. PATCH /api/citadelle/auth/accept-cgu avec Bearer bidon -> 401. Sans header -> 401/403."},
+    {"feature": "Sécurité S1 — /api/contacts admin-only", "result": "PASS", "details": "Sans token -> 403. Avec token admin -> 200 (liste retournée)."},
+    {"feature": "Contrôles d'accès Citadelle (dependencies.py)", "result": "PASS", "details": "GET /api/citadelle/admin/services : sans token -> 403, avec admin -> 200. GET /api/citadelle/services/my-orders sans token -> 403."},
+    {"feature": "Reset mot de passe (helpers DRY)", "result": "PASS", "details": "POST /api/auth/forgot-password -> 200. POST /api/citadelle/auth/forgot-password -> 200. Aucune erreur serveur."},
+    {"feature": "Emails (package découpé)", "result": "PASS", "details": "POST /api/citadelle/contact (nom/email/sujet/message) -> 200. Endpoints forgot-password Syndicat+Citadelle -> 200. Aucun crash."},
+    {"feature": "Validation upload contact S6", "result": "PASS", "details": "POST /api/contact (multipart) avec fichier .html (text/html) -> 400 (rejeté). Sans fichier -> 200."},
+    {"feature": "Se souvenir de moi — backend Citadelle", "result": "PASS", "details": "POST /api/citadelle/auth/login remember_me=false : exp claim ~24h (validé entre 22-26h). remember_me=true : exp ~30 jours (validé entre 28-32 jours)."},
+    {"feature": "Se souvenir de moi — backend Syndicat", "result": "PASS", "details": "POST /api/auth/login : idem 24h vs 30 jours selon remember_me."},
+    {"feature": "Se souvenir de moi — frontend (3 pages)", "result": "PASS", "details": "Checkbox [data-testid=login-remember-me] visible sur /connexion. [data-testid=citadelle-login-remember-me] visible sur /citadelle/connexion. [data-testid=admin-login-remember-me] visible sur /admin-access."},
+    {"feature": "Login Syndicat /connexion", "result": "PASS", "details": "admin@syndicatducode.fr / AdminSyndicat2025! + remember_me coché -> redirection vers /dashboard."},
+    {"feature": "Login Admin /admin-access", "result": "PASS", "details": "admin@syndicatducode.fr / AdminSyndicat2025! + remember_me coché -> redirection vers /syndicat-admin."},
+    {"feature": "Login Citadelle /citadelle/connexion + modale CGU", "result": "PASS", "details": "becamarnaud@yahoo.fr / Test1234 -> modale CGU+CGV affichée (cgu_accepted=false). Cocher CGU + CGV puis cliquer 'Valider et créer mon compte' -> redirection vers /citadelle/espace-membre. Affiche 'Bonjour, arnaud !'."}
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_anti_regression.py",
+    "/app/test_reports/pytest/anti_regression.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "JWT_SECRET_KEY in backend/.env uses a static string (fail-fast en prod si manquant déjà géré). Pour production réelle, envisager rotation périodique du secret.",
+    "STRIPE_WEBHOOK_SECRET non configuré en preview — normal pour cette campagne, mais à activer impérativement avant la mise en production sous peine de webhook non vérifié.",
+    "Le champ 'phone' du POST /api/contact est optionnel — bonne validation MIME pour fichiers (.html rejeté en 400). Penser à aussi limiter la taille max (vérifié dans server.py).",
+    "La modale CGU/CGV nécessite que l'utilisateur Citadelle accepte les DEUX (CGU + CGV) pour activer le bouton. Ce flow est bloquant et fonctionne correctement — pas d'issue."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_anti_regression.py (nouveau fichier — 20 tests)"
+  ],
+  "success_rate": {"backend": "100% (20/20)", "frontend": "100% (3/3 pages login + remember-me + CGU flow)"},
+  "test_credentials": {
+    "admin": "admin@syndicatducode.fr / AdminSyndicat2025!",
+    "citadelle_vendeur": "becamarnaud@yahoo.fr / Test1234"
+  },
+  "seed_data_creation": "Aucune — les forgot-password ont été appelés avec un email inexistant 'nonexistent-anti-regression@example.com' (pas d'effet de bord). Test contact endpoints utilisent prefix 'TEST'.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Toute l'anti-régression de la session passe. Le test suite /app/backend/tests/test_anti_regression.py couvre JWT migration, invalid token handling, S1+S6 sécurité, dependencies Citadelle, reset password DRY, emails refactor, et remember_me 24h/30d. Pour Citadelle login: la modale CGU+CGV bloque si cgu_accepted=false — cocher les 2 cases puis cliquer 'Valider et créer mon compte'. Stripe est en mode LIVE, ne pas compléter de vrai paiement.",
+  "rca of the issue": "N/A — aucun bug détecté."
+}

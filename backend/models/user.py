@@ -30,6 +30,7 @@ class UserLogin(BaseModel):
     """Modèle pour la connexion"""
     email: EmailStr
     password: str
+    remember_me: bool = False
 
 
 class UserResponse(BaseModel):

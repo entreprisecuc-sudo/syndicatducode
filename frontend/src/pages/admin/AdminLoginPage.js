@@ -29,6 +29,7 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Formulaire mot de passe oublié
   const [forgotEmail, setForgotEmail] = useState("");
@@ -49,7 +50,7 @@ export default function AdminLoginPage() {
     setLoginLoading(true);
     setLoginError("");
     try {
-      const response = await login(credentials.email, credentials.password);
+      const response = await login(credentials.email, credentials.password, rememberMe);
       if (response.user.role !== "admin") {
         setLoginError("Accès refusé — Ce compte n'a pas les droits administrateur.");
         return;
@@ -188,8 +189,18 @@ export default function AdminLoginPage() {
                 </div>
               </div>
 
-              {/* Lien mot de passe oublié */}
-              <div className="text-right">
+              {/* Se souvenir de moi + mot de passe oublié */}
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 cursor-pointer accent-[#C9A45C]"
+                    data-testid="admin-login-remember-me"
+                  />
+                  Se souvenir de moi
+                </label>
                 <button
                   type="button"
                   onClick={() => { setView("forgot"); setLoginError(""); }}

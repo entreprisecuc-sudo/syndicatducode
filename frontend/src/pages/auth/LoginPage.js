@@ -17,6 +17,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,7 +30,7 @@ const LoginPage = () => {
     setError("");
 
     try {
-      const response = await login(formData.email, formData.password);
+      const response = await login(formData.email, formData.password, rememberMe);
       loginUser(response.user);
       
       // Redirige selon l'état du compte
@@ -136,8 +137,18 @@ const LoginPage = () => {
               </div>
             </div>
 
-            {/* Lien mot de passe oublié */}
-            <div className="text-right">
+            {/* Se souvenir de moi + mot de passe oublié */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "var(--text-secondary)" }}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 cursor-pointer"
+                  data-testid="login-remember-me"
+                />
+                Se souvenir de moi
+              </label>
               <Link 
                 to="/forgot-password" 
                 className="text-sm hover:underline"

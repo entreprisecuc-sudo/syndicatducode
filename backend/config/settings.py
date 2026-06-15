@@ -19,6 +19,7 @@ DB_NAME = os.environ.get('DB_NAME')
 JWT_SECRET_KEY = os.environ['JWT_SECRET_KEY']
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 heures
+JWT_REMEMBER_ME_EXPIRE_MINUTES = 60 * 24 * 30  # 30 jours ("Se souvenir de moi")
 JWT_RESET_TOKEN_EXPIRE_MINUTES = 60  # 1 heure pour reset password
 
 # SMTP Configuration

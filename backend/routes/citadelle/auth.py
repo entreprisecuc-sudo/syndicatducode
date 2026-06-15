@@ -22,6 +22,7 @@ from services.auth_service import (
     generate_reset_token,
     verify_reset_token,
     is_token_expired,
+    get_access_token_expiry,
 )
 from services.email_service import (
     send_citadelle_reset_password_email,
@@ -68,6 +69,7 @@ class CitadelleLogin(BaseModel):
     """Connexion sur La Citadelle Numérique"""
     email: EmailStr
     password: str
+    remember_me: bool = False
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -311,7 +313,7 @@ async def citadelle_login(credentials: CitadelleLogin, request: Request):
         "platform": "citadelle",
         "status": user.get("status", "active")
     }
-    access_token = create_access_token(token_data)
+    access_token = create_access_token(token_data, get_access_token_expiry(credentials.remember_me))
 
     logger.info(f"[Citadelle] Connexion réussie: {user['email']}")
 

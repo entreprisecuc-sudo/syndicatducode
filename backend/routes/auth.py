@@ -21,6 +21,7 @@ from services.auth_service import (
     hash_password,
     verify_password,
     create_access_token,
+    get_access_token_expiry,
     generate_reset_token,
     verify_reset_token,
     get_reset_token_expiry,
@@ -216,7 +217,7 @@ async def login(credentials: UserLogin, request: Request):
         "role": user.get("role"),
         "status": user.get("status")
     }
-    access_token = create_access_token(token_data)
+    access_token = create_access_token(token_data, get_access_token_expiry(credentials.remember_me))
     
     logger.info(f"Connexion réussie: {user['email']}")
     

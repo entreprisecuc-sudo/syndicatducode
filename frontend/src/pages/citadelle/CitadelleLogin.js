@@ -13,7 +13,7 @@ import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 import CGUAcceptanceModal from "@/components/citadelle/CGUAcceptanceModal";
 
 export default function CitadelleLogin() {
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "", remember_me: false });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -154,8 +154,18 @@ export default function CitadelleLogin() {
               </div>
             </div>
 
-            {/* Lien mot de passe oublié */}
-            <div className="text-right">
+            {/* Se souvenir de moi + mot de passe oublié */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: "rgba(255,255,255,0.6)" }}>
+                <input
+                  type="checkbox"
+                  checked={form.remember_me}
+                  onChange={(e) => setForm(prev => ({ ...prev, remember_me: e.target.checked }))}
+                  className="w-4 h-4 cursor-pointer accent-[#C9A45C]"
+                  data-testid="citadelle-login-remember-me"
+                />
+                Se souvenir de moi
+              </label>
               <Link
                 to="/citadelle/mot-de-passe-oublie"
                 className="text-xs transition-colors hover:opacity-80"

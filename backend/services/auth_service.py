@@ -17,6 +17,7 @@ from config.settings import (
     JWT_SECRET_KEY,
     JWT_ALGORITHM,
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
+    JWT_REMEMBER_ME_EXPIRE_MINUTES,
     JWT_RESET_TOKEN_EXPIRE_MINUTES
 )
 
@@ -56,6 +57,15 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
     
     return encoded_jwt
+
+
+def get_access_token_expiry(remember_me: bool = False) -> timedelta:
+    """
+    Durée de validité du token d'accès.
+    'Se souvenir de moi' prolonge la session (JWT_REMEMBER_ME_EXPIRE_MINUTES).
+    """
+    minutes = JWT_REMEMBER_ME_EXPIRE_MINUTES if remember_me else JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+    return timedelta(minutes=minutes)
 
 
 def decode_access_token(token: str) -> Optional[dict]:
