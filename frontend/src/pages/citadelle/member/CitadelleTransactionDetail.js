@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, Send, CheckCircle, XCircle, CreditCard, Shield, Lock,
   AlertTriangle, Clock, ArrowRight, MessageSquare, Scale, Ban
@@ -29,9 +29,11 @@ const STATUS_CONFIG = {
 
 export default function CitadelleTransactionDetail() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const { user } = useCitadelleAuth();
   const [tx, setTx] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [paymentStatus, setPaymentStatus] = useState(null); // null | "confirming" | "success" | "cancelled"
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sanitizedWarning, setSanitizedWarning] = useState(false);
@@ -86,6 +88,19 @@ export default function CitadelleTransactionDetail() {
     }, 3000);
     return () => clearInterval(interval);
   }, [id]);
+
+  // Gestion retour depuis Stripe Checkout
+  useEffect(() => {
+    const paymentParam = searchParams.get("payment");
+    if (paymentParam === "success") {
+      setPaymentStatus("confirming");
+      citadelleApi.post(`/transactions/${id}/confirm-payment`)
+        .then(() => { setPaymentStatus("success"); fetchTransaction(); })
+        .catch(() => setPaymentStatus("error"));
+    } else if (paymentParam === "cancelled") {
+      setPaymentStatus("cancelled");
+    }
+  }, [id]); // eslint-disable-line
 
   // Polling des messages litige (vendeur et admin uniquement)
   useEffect(() => {
@@ -167,7 +182,12 @@ export default function CitadelleTransactionDetail() {
   const doAction = async (endpoint, body = null) => {
     setActionLoading(true);
     try {
-      await citadelleApi.post(`/transactions/${id}/${endpoint}`, body);
+      const res = await citadelleApi.post(`/transactions/${id}/${endpoint}`, body);
+      // Paiement Stripe : redirection vers Stripe Checkout
+      if (endpoint === "pay" && res.data.checkout_url) {
+        window.location.href = res.data.checkout_url;
+        return;
+      }
       await fetchTransaction();
     } catch (err) {
       alert(err.response?.data?.detail || "Erreur");

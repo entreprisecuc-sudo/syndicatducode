@@ -14,6 +14,7 @@ from routes.citadelle.blog import router as citadelle_blog_router, set_database 
 from routes.citadelle.contact import router as citadelle_contact_router
 from routes.citadelle.settings import router as citadelle_settings_router, set_database as set_citadelle_settings_db
 from routes.citadelle.payments import router as citadelle_payments_router, set_database as set_citadelle_payments_db
+from routes.citadelle.connect import router as citadelle_connect_router, set_database as set_citadelle_connect_db
 
 router = APIRouter(prefix="/citadelle", tags=["La Citadelle Numérique"])
 router.include_router(citadelle_auth_router)
@@ -26,6 +27,7 @@ router.include_router(citadelle_blog_router)
 router.include_router(citadelle_contact_router)
 router.include_router(citadelle_settings_router)
 router.include_router(citadelle_payments_router)
+router.include_router(citadelle_connect_router)
 
 _db = None
 
@@ -37,7 +39,8 @@ def set_database(database):
     set_citadelle_transactions_db(database)
     set_citadelle_messages_db(database)
     set_citadelle_services_db(database)
-    set_citadelle_newsletter_db(database)  # Injecte DB dans newsletter + scheduler
+    set_citadelle_newsletter_db(database)
     set_citadelle_blog_db(database)
     set_citadelle_settings_db(database)
     set_citadelle_payments_db(database)
+    set_citadelle_connect_db(database)

@@ -1,15 +1,18 @@
 """
 Routes transactions — La Citadelle Numérique
-Gestion complète : offres, paiement (MOCKED), credentials, messagerie, admin
+Gestion complète : offres, paiement Stripe, credentials, messagerie, admin
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends, Query
-from pydantic import BaseModel, Field
-from typing import Optional, List
-from datetime import datetime, timezone
-import uuid
+import os
 import logging
+import uuid
 import asyncio
+from datetime import datetime, timezone
+from typing import Optional, List
+
+import stripe as stripe_sdk
+from fastapi import APIRouter, HTTPException, status, Depends, Query, Request
+from pydantic import BaseModel, Field
 
 from routes.citadelle.dependencies import require_admin, require_citadelle_user
 from services.email_service import send_citadelle_credentials_email, send_new_offer_notification_email
@@ -452,14 +455,35 @@ async def accept_counter_offer(
     return {"message": "Contre-offre acceptée", "payment_amount": tx["counter_amount"]}
 
 
-# ── Paiement (MOCKED) ─────────────────────────────────────────────────────────
+# ── Helpers commission ────────────────────────────────────────────────────────
 
-@router.post("/transactions/{transaction_id}/pay", summary="Payer (MOCKED — Stripe à venir)")
+async def _calculate_commission(payment_amount: float) -> tuple[float, float]:
+    """Retourne (commission, net_vendor) selon la config admin."""
+    config = await db.citadelle_settings.find_one({"key": "commission"}, {"_id": 0})
+    rate = config.get("rate", 0.05) if config else 0.05
+    minimum = config.get("minimum_eur", 49.0) if config else 49.0
+    commission = max(payment_amount * rate, minimum)
+    return round(commission, 2), round(payment_amount - commission, 2)
+
+
+def _stripe_key() -> str:
+    key = os.environ.get("STRIPE_API_KEY")
+    if not key:
+        raise HTTPException(status_code=500, detail="Configuration Stripe manquante.")
+    return key
+
+
+# ── Paiement via Stripe Checkout ──────────────────────────────────────────────
+
+@router.post("/transactions/{transaction_id}/pay", summary="Créer une session Stripe Checkout")
 async def pay_transaction(
     transaction_id: str,
     current_user: dict = Depends(require_citadelle_user)
 ):
-    """Acheteur : effectue le paiement (MOCKED). Fonds placés en séquestre."""
+    """
+    Acheteur : crée une session Stripe Checkout et retourne l'URL de paiement.
+    Les fonds sont retenus sur le compte plateforme (séquestre).
+    """
     tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction introuvable")
@@ -468,32 +492,128 @@ async def pay_transaction(
     if tx["status"] != "offer_accepted":
         raise HTTPException(status_code=400, detail="L'offre doit être acceptée avant le paiement")
 
+    payment_amount = tx["payment_amount"]
+    citadelle_url = os.environ.get("CITADELLE_URL", "https://lacitadellenumerique.fr")
+
+    try:
+        session = await asyncio.to_thread(
+            stripe_sdk.checkout.Session.create,
+            api_key=_stripe_key(),
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {
+                        "name": f"Achat : {tx['listing_title']}",
+                        "description": f"Transaction #{transaction_id[:8].upper()} — La Citadelle Numérique",
+                    },
+                    "unit_amount": int(payment_amount * 100),  # EUR → centimes
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=(
+                f"{citadelle_url}/citadelle/espace-membre/transactions/{transaction_id}"
+                f"?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
+            ),
+            cancel_url=(
+                f"{citadelle_url}/citadelle/espace-membre/transactions/{transaction_id}"
+                f"?payment=cancelled"
+            ),
+            metadata={
+                "transaction_id": transaction_id,
+                "type": "transaction_purchase",
+            },
+            payment_intent_data={
+                "transfer_group": transaction_id,  # regroupe paiement + virement futur
+            },
+        )
+    except stripe_sdk.error.StripeError as e:
+        logger.error(f"[Citadelle] Erreur création checkout : {e}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la création du paiement Stripe.")
+
+    # Sauvegarder l'ID de session (le statut reste offer_accepted jusqu'à confirmation)
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {
+            "stripe_session_id": session.id,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+
+    logger.info(f"[Citadelle] Session Checkout créée : {session.id} — {payment_amount} €")
+    return {"checkout_url": session.url, "session_id": session.id}
+
+
+@router.post("/transactions/{transaction_id}/confirm-payment", summary="Confirmer le paiement après retour Stripe")
+async def confirm_payment(
+    transaction_id: str,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """
+    Appelé par le frontend après retour de Stripe (paramètre ?payment=success).
+    Vérifie le statut réel de la session auprès de Stripe et confirme le paiement.
+    """
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+
+    # Déjà confirmé
+    if tx["status"] == "payment_done":
+        return {"status": "payment_done", "already_confirmed": True}
+
+    if tx["status"] != "offer_accepted":
+        raise HTTPException(status_code=400, detail="État de transaction invalide pour la confirmation")
+
+    session_id = tx.get("stripe_session_id")
+    if not session_id:
+        raise HTTPException(status_code=400, detail="Aucune session Stripe trouvée")
+
+    try:
+        session = await asyncio.to_thread(
+            stripe_sdk.checkout.Session.retrieve,
+            session_id,
+            api_key=_stripe_key(),
+        )
+    except stripe_sdk.error.StripeError as e:
+        logger.error(f"[Citadelle] Erreur vérification session : {e}")
+        raise HTTPException(status_code=500, detail="Erreur de vérification du paiement.")
+
+    if session.payment_status != "paid":
+        return {"status": "pending", "payment_status": session.payment_status}
+
     now = datetime.now(timezone.utc).isoformat()
-    mock_payment_id = f"mock_pi_{uuid.uuid4().hex[:16]}"
+    payment_intent_id = session.payment_intent
 
     await db.citadelle_transactions.update_one(
         {"id": transaction_id},
         {"$set": {
             "status": "payment_done",
-            "payment_id": mock_payment_id,
+            "payment_id": payment_intent_id,
             "paid_at": now,
             "updated_at": now
         }, "$push": {"messages": system_message(
-            f"Paiement de {tx['payment_amount']:,.0f} € effectué. Fonds placés en séquestre. "
-            f"En attente de la transmission des accès par le vendeur."
+            f"Paiement de {tx['payment_amount']:,.0f} € effectué. "
+            f"Fonds placés en séquestre. En attente de la transmission des accès par le vendeur."
         )}}
     )
-    logger.info(f"[Citadelle] Paiement MOCKED: {transaction_id} — {tx['payment_amount']} €")
 
-    # ── Passer l'annonce en "sold" dès le paiement ────────────────────────────
+    # Passer l'annonce en "sold"
     await db.citadelle_listings.update_one(
         {"id": tx["listing_id"]},
         {"$set": {"status": "sold", "updated_at": now}}
     )
 
-    # ── Bloquer les autres conversations actives sur la même annonce ──────────
-    # Message envoyé aux acheteurs non retenus
-    MSG_ANNONCE_VENDUE = (
+    # Bloquer les autres conversations actives sur la même annonce
+    await _block_other_conversations(tx, now)
+
+    logger.info(f"[Citadelle] Paiement confirmé : {transaction_id} — {tx['payment_amount']} €")
+    return {"status": "payment_done"}
+
+
+async def _block_other_conversations(tx: dict, now: str):
+    """Bloque les conversations parallèles sur la même annonce après paiement."""
+    MSG_VENDUE = (
         "Le vendeur vient d'accepter une offre. Malheureusement, ce site n'est plus en vente. "
         "Mais pas de panique, je vous invite à regarder les autres annonces pour trouver la perle rare."
     )
@@ -511,25 +631,18 @@ async def pay_transaction(
             "id": str(uuid.uuid4()),
             "sender_id": "system",
             "sender_email": "system",
-            "content": MSG_ANNONCE_VENDUE,
+            "content": MSG_VENDUE,
             "is_system": True,
             "sent_at": now,
             "created_at": now,
         }
         await db.citadelle_conversations.update_one(
             {"id": conv["id"]},
-            {
-                "$push": {"messages": sys_msg},
-                "$set": {"is_blocked": True, "updated_at": now}
-            }
+            {"$push": {"messages": sys_msg}, "$set": {"is_blocked": True, "updated_at": now}}
         )
 
     if other_convs:
-        logger.info(
-            f"[Citadelle] Annonce {tx['listing_id']} vendue — {len(other_convs)} conversation(s) bloquée(s)"
-        )
-
-    return {"message": "Paiement effectué (MOCKED)", "payment_id": mock_payment_id}
+        logger.info(f"[Citadelle] {len(other_convs)} conversation(s) bloquée(s) après paiement")
 
 
 # ── Credentials vendeur ────────────────────────────────────────────────────────
@@ -692,16 +805,16 @@ async def admin_verify_credentials(
     return {"message": "Accès vérifiés avec succès"}
 
 
-@router.post("/admin/transactions/{transaction_id}/complete", summary="Admin — Confirmer la vente")
+@router.post("/admin/transactions/{transaction_id}/complete", summary="Admin — Finaliser la vente et libérer les fonds")
 async def admin_complete_transaction(
     transaction_id: str,
     current_user: dict = Depends(require_admin)
 ):
     """
     Admin : finalise la vente.
-    - Libère les fonds pour le vendeur (MOCKED)
+    - Calcule la commission (config admin)
+    - Transfère le net vendeur vers son compte Stripe Connect
     - Rend les accès visibles à l'acheteur
-    - Passe l'annonce en statut 'sold'
     """
     tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
     if not tx:
@@ -710,6 +823,45 @@ async def admin_complete_transaction(
         raise HTTPException(status_code=400, detail="Les accès doivent être vérifiés avant de finaliser")
 
     now = datetime.now(timezone.utc).isoformat()
+    payment_amount = tx.get("payment_amount", 0)
+
+    # Calculer commission et montant net vendeur
+    commission, net_amount = await _calculate_commission(payment_amount)
+
+    # Récupérer le compte Stripe Connect du vendeur
+    seller = await db.users.find_one(
+        {"id": tx["seller_id"], "platform": "citadelle"},
+        {"_id": 0, "stripe_connect_account_id": 1, "stripe_connect_status": 1, "email": 1}
+    )
+    seller_stripe_account = seller.get("stripe_connect_account_id") if seller else None
+    seller_ready = seller.get("stripe_connect_status") == "active" if seller else False
+
+    stripe_transfer_id = None
+    transfer_note = ""
+
+    if seller_stripe_account and seller_ready:
+        try:
+            transfer = await asyncio.to_thread(
+                stripe_sdk.Transfer.create,
+                api_key=_stripe_key(),
+                amount=int(net_amount * 100),   # EUR → centimes
+                currency="eur",
+                destination=seller_stripe_account,
+                transfer_group=transaction_id,
+            )
+            stripe_transfer_id = transfer.id
+            transfer_note = (
+                f"Virement de {net_amount:,.0f} € effectué vers le vendeur. "
+                f"Commission plateforme : {commission:,.0f} €."
+            )
+            logger.info(f"[Citadelle] Transfer Stripe : {transfer.id} → {seller_stripe_account} — {net_amount} €")
+        except stripe_sdk.error.StripeError as e:
+            logger.error(f"[Citadelle] Erreur Stripe Transfer : {e}")
+            transfer_note = f"⚠️ Transfert automatique échoué — virement manuel requis ({net_amount:,.0f} €)."
+    elif seller_stripe_account and not seller_ready:
+        transfer_note = f"⚠️ Compte Stripe vendeur en cours de vérification — virement manuel requis ({net_amount:,.0f} €)."
+    else:
+        transfer_note = f"⚠️ Vendeur sans compte Stripe Connect — virement manuel requis ({net_amount:,.0f} €)."
 
     # Finaliser la transaction
     await db.citadelle_transactions.update_one(
@@ -717,9 +869,12 @@ async def admin_complete_transaction(
         {"$set": {
             "status": "completed",
             "completed_at": now,
-            "updated_at": now
+            "updated_at": now,
+            "stripe_transfer_id": stripe_transfer_id,
+            "commission_amount": commission,
+            "net_seller_amount": net_amount,
         }, "$push": {"messages": system_message(
-            f"Vente finalisée ! Fonds de {tx['payment_amount']:,.0f} € libérés pour le vendeur. "
+            f"Vente finalisée ! {transfer_note} "
             f"Les accès sont maintenant disponibles pour l'acheteur."
         )}}
     )
@@ -730,8 +885,13 @@ async def admin_complete_transaction(
         {"$set": {"status": "sold", "updated_at": now}}
     )
 
-    logger.info(f"[Citadelle Admin] Vente finalisée: {transaction_id} — {tx['payment_amount']} €")
-    return {"message": "Vente finalisée. Fonds libérés et accès transmis à l'acheteur."}
+    logger.info(f"[Citadelle Admin] Vente finalisée : {transaction_id} — {payment_amount} € (commission : {commission} €)")
+    return {
+        "message": "Vente finalisée. Fonds libérés et accès transmis à l'acheteur.",
+        "commission": commission,
+        "net_seller_amount": net_amount,
+        "stripe_transfer_id": stripe_transfer_id,
+    }
 
 
 @router.post("/admin/transactions/{transaction_id}/dispute", summary="Admin — Ouvrir un litige")
