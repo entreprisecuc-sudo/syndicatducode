@@ -61,15 +61,17 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Si vendeur répond → `reminder_sent_at` marqué pour bloquer toute future relance
 - Templates HTML visuels (bleu Citadelle / or / vert offre / orange relance)
 
-### ✅ Blog Citadelle (TERMINÉ 10/06/2026)
+### ✅ Blog Citadelle (TERMINÉ 10/06/2026 — étendu 02/2026)
 - Interface publique : liste d'articles avec filtres par catégorie, page de lecture Markdown
 - Gestion admin : éditeur Markdown plein écran + prévisualisation en temps réel (bascule)
 - **Image de couverture** : upload depuis l'interface admin, affichée en carte liste + hero article
-- Catégories : Actualités, Conseils, Tutoriels, Marché, Juridique
+- Catégories : Actualités, Conseils, Tutoriels, Marché, Juridique + vente-applications, reseaux-sociaux, marketplace
 - Slug auto-généré depuis le titre (unicité garantie)
 - Auteur, date de publication, lien partenaire
 - Styles CSS blog-content (clair) + blog-content--dark (admin)
 - `BLOG_CATEGORIES` centralisées dans `citadelleConstants.js` (DRY)
+- **41 articles SEO/GEO/AEO importés en base** (15 originaux + 15 nouveaux articles n°16-30 ajoutés 02/2026)
+  - Nouveaux articles : application mobile, YouTube, Instagram, juridique, rentabilité, outils audit, trafic, Shopify, migration, cybersécurité, pricing, SaaS, tendances 2026, transmission, marketplace
 
 ### ✅ Catalogue Services v2 — Contenu officiel (TERMINÉ 13/06/2026)
 - Ajout du champ `target_category` (vendeur / acheteur / commun) aux modèles `ServiceCreate` et `ServiceUpdate`
