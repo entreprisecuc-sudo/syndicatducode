@@ -28,7 +28,11 @@ def set_database(database):
 
 # ── Constantes ─────────────────────────────────────────────────────────────────
 
-BLOG_CATEGORIES = ["actualites", "conseils", "tutoriels", "marche", "juridique"]
+BLOG_CATEGORIES = [
+    "actualites", "conseils", "tutoriels", "marche", "juridique",
+    "vendre-un-site", "acheter-un-site", "estimation", "seo",
+    "securite", "migration", "business", "ecommerce", "saas"
+]
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -64,6 +68,12 @@ async def _unique_slug(raw: str, exclude_id: str = None) -> str:
 
 # ── Modèles Pydantic ───────────────────────────────────────────────────────────
 
+class AeoQuestion(BaseModel):
+    """Paire question/réponse pour l'optimisation AEO (featured snippets, voice search)."""
+    question: str
+    answer: str
+
+
 class BlogPostCreate(BaseModel):
     title: str = Field(min_length=3, max_length=200)
     excerpt: str = Field(default="", max_length=500)
@@ -73,10 +83,13 @@ class BlogPostCreate(BaseModel):
     partner_link: Optional[str] = Field(None, max_length=500)
     cover_image_url: Optional[str] = Field(None, max_length=500)
     is_published: bool = False
-    scheduled_at: Optional[str] = None       # ISO datetime pour publication planifiée
+    scheduled_at: Optional[str] = None
     seo_title: Optional[str] = Field(None, max_length=200)
     seo_description: Optional[str] = Field(None, max_length=300)
-    seo_slug: Optional[str] = Field(None, max_length=200)  # Slug URL personnalisé
+    seo_slug: Optional[str] = Field(None, max_length=200)
+    seo_keywords: Optional[list[str]] = Field(default=None)
+    geo_keywords: Optional[list[str]] = Field(default=None)
+    aeo_questions: Optional[list[AeoQuestion]] = Field(default=None)
 
 
 class BlogPostUpdate(BaseModel):
@@ -92,6 +105,9 @@ class BlogPostUpdate(BaseModel):
     seo_title: Optional[str] = Field(None, max_length=200)
     seo_description: Optional[str] = Field(None, max_length=300)
     seo_slug: Optional[str] = Field(None, max_length=200)
+    seo_keywords: Optional[list[str]] = None
+    geo_keywords: Optional[list[str]] = None
+    aeo_questions: Optional[list[AeoQuestion]] = None
 
 
 # ── Routes publiques ───────────────────────────────────────────────────────────
@@ -188,6 +204,9 @@ async def admin_create_post(
         "published_at": now if is_published else None,
         "seo_title": data.seo_title,
         "seo_description": data.seo_description,
+        "seo_keywords": data.seo_keywords or [],
+        "geo_keywords": data.geo_keywords or [],
+        "aeo_questions": [q.model_dump() for q in data.aeo_questions] if data.aeo_questions else [],
         "view_count": 0,
         "created_at": now,
         "updated_at": now,
