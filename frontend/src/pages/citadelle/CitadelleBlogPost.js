@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowLeft, Calendar, User, ExternalLink, BookOpen, Eye } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, User, ExternalLink, BookOpen, Eye } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, BLOG_CATEGORIES, getListingImageUrl } from "@/config/citadelleConstants";
@@ -16,6 +16,9 @@ const formatDate = (iso) => {
   if (!iso) return "";
   return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 };
+
+const getCategoryLabel = (slug) =>
+  BLOG_CATEGORIES.find(c => c.slug === slug)?.label || slug;
 
 // Injection des balises meta SEO (nettoyées au démontage du composant)
 function useSeoMeta(post) {
@@ -45,6 +48,117 @@ function useSeoMeta(post) {
       document.title = "La Citadelle Numérique";
     };
   }, [post]);
+}
+
+// ── Carte article lié ──────────────────────────────────────────────────────────
+function RelatedCard({ post }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <Link
+      to={`/citadelle/blog/${post.slug}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      data-testid="related-article-card"
+      style={{
+        display: "block",
+        background: hovered ? "rgba(15,39,71,0.06)" : "white",
+        border: `1px solid ${hovered ? CITADELLE_COLORS.gold : CITADELLE_COLORS.border}`,
+        borderRadius: 16,
+        overflow: "hidden",
+        textDecoration: "none",
+        transition: "border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s",
+        transform: hovered ? "translateY(-3px)" : "none",
+        boxShadow: hovered ? "0 8px 24px rgba(201,164,92,0.12)" : "0 1px 4px rgba(0,0,0,0.05)",
+      }}
+    >
+      {/* Image de couverture ou placeholder */}
+      <div style={{ height: 140, background: `linear-gradient(135deg, ${CITADELLE_COLORS.blue} 0%, #1a3a6b 100%)`, position: "relative", overflow: "hidden" }}>
+        {post.cover_image_url
+          ? <img src={getListingImageUrl(post.cover_image_url)} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <BookOpen size={36} style={{ color: "rgba(201,164,92,0.35)" }} />
+            </div>
+        }
+        {/* Badge catégorie */}
+        <span style={{
+          position: "absolute", top: 10, left: 12,
+          background: "rgba(201,164,92,0.9)", color: CITADELLE_COLORS.blue,
+          fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+          textTransform: "uppercase", padding: "3px 10px", borderRadius: 20,
+        }}>
+          {getCategoryLabel(post.category)}
+        </span>
+      </div>
+
+      {/* Contenu */}
+      <div style={{ padding: "16px 18px 18px" }}>
+        <h3 style={{
+          fontSize: 14, fontWeight: 700, lineHeight: 1.4,
+          color: CITADELLE_COLORS.blue, margin: "0 0 8px",
+          display: "-webkit-box", WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical", overflow: "hidden",
+        }}>
+          {post.title}
+        </h3>
+        {post.excerpt && (
+          <p style={{
+            fontSize: 12, color: CITADELLE_COLORS.textMuted, margin: "0 0 12px",
+            lineHeight: 1.5,
+            display: "-webkit-box", WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical", overflow: "hidden",
+          }}>
+            {post.excerpt}
+          </p>
+        )}
+        <span style={{
+          fontSize: 12, fontWeight: 600, color: CITADELLE_COLORS.gold,
+          display: "inline-flex", alignItems: "center", gap: 4,
+          transition: "gap 0.2s",
+        }}>
+          Lire l'article <ArrowRight size={12} style={{ transition: "transform 0.2s", transform: hovered ? "translateX(3px)" : "none" }} />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+// ── Section articles liés ──────────────────────────────────────────────────────
+function RelatedArticles({ slug }) {
+  const [related, setRelated] = useState([]);
+
+  useEffect(() => {
+    if (!slug) return;
+    citadelleApi.get(`/blog/${slug}/related`)
+      .then(res => setRelated(res.data?.related || []))
+      .catch(() => {});
+  }, [slug]);
+
+  if (related.length === 0) return null;
+
+  return (
+    <section data-testid="related-articles-section" style={{ marginTop: 56 }}>
+      {/* En-tête */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+        <h2 style={{
+          fontSize: 18, fontWeight: 800, color: CITADELLE_COLORS.blue,
+          margin: 0, whiteSpace: "nowrap",
+          fontFamily: "'Montserrat', sans-serif",
+        }}>
+          Articles liés
+        </h2>
+        <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${CITADELLE_COLORS.gold}55, transparent)` }} />
+      </div>
+
+      {/* Grille */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+        gap: 20,
+      }}>
+        {related.map(p => <RelatedCard key={p.id || p.slug} post={p} />)}
+      </div>
+    </section>
+  );
 }
 
 export default function CitadelleBlogPost() {
@@ -95,7 +209,7 @@ export default function CitadelleBlogPost() {
     );
   }
 
-  const categoryLabel = BLOG_CATEGORIES.find(c => c.slug === post.category)?.label || post.category;
+  const categoryLabel = getCategoryLabel(post.category);
 
   return (
     <CitadelleLayout pageTitle={post.title}>
@@ -162,6 +276,9 @@ export default function CitadelleBlogPost() {
             {post.content_md}
           </ReactMarkdown>
         </div>
+
+        {/* Articles liés */}
+        <RelatedArticles slug={slug} />
 
         {/* Retour bas de page */}
         <div className="mt-12 pt-6" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}` }}>

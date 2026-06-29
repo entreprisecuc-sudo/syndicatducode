@@ -72,6 +72,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - `BLOG_CATEGORIES` centralisées dans `citadelleConstants.js` (DRY)
 - **41 articles SEO/GEO/AEO importés en base** (15 originaux + 15 nouveaux articles n°16-30 ajoutés 02/2026)
   - Nouveaux articles : application mobile, YouTube, Instagram, juridique, rentabilité, outils audit, trafic, Shopify, migration, cybersécurité, pricing, SaaS, tendances 2026, transmission, marketplace
+- **Suggestions d'articles liés** (02/2026) : endpoint `/blog/{slug}/related`, algorithme 3 niveaux (catégorie → mots-clés → récents), 3 cartes visuelles en bas de chaque article
 
 ### ✅ Catalogue Services v2 — Contenu officiel (TERMINÉ 13/06/2026)
 - Ajout du champ `target_category` (vendeur / acheteur / commun) aux modèles `ServiceCreate` et `ServiceUpdate`

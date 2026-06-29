@@ -71,11 +71,23 @@ export const SERVICE_TARGET_SECTIONS = [
 
 // Catégories du blog — centralisées ici pour usage public et admin
 export const BLOG_CATEGORIES = [
-  { slug: "actualites", label: "Actualités" },
-  { slug: "conseils",   label: "Conseils" },
-  { slug: "tutoriels",  label: "Tutoriels" },
-  { slug: "marche",     label: "Marché" },
-  { slug: "juridique",  label: "Juridique" },
+  { slug: "actualites",        label: "Actualités" },
+  { slug: "conseils",          label: "Conseils" },
+  { slug: "tutoriels",         label: "Tutoriels" },
+  { slug: "marche",            label: "Marché" },
+  { slug: "juridique",         label: "Juridique" },
+  { slug: "vendre-un-site",    label: "Vendre un site" },
+  { slug: "acheter-un-site",   label: "Acheter un site" },
+  { slug: "estimation",        label: "Estimation" },
+  { slug: "seo",               label: "SEO" },
+  { slug: "securite",          label: "Sécurité" },
+  { slug: "migration",         label: "Migration" },
+  { slug: "business",          label: "Business" },
+  { slug: "ecommerce",         label: "E-commerce" },
+  { slug: "saas",              label: "SaaS" },
+  { slug: "vente-applications",label: "Applications mobiles" },
+  { slug: "reseaux-sociaux",   label: "Réseaux sociaux" },
+  { slug: "marketplace",       label: "Marketplace" },
 ];
 
 // Navigation principale

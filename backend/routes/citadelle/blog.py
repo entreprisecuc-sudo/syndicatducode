@@ -148,6 +148,59 @@ async def get_post(slug: str):
     return post
 
 
+@router.get("/blog/{slug}/related", summary="Articles liés à un article")
+async def get_related_posts(slug: str):
+    """
+    Retourne jusqu'à 3 articles liés à l'article donné.
+    Priorité : 1) même catégorie, 2) mots-clés SEO communs, 3) articles récents.
+    """
+    post = await db.citadelle_blog_posts.find_one(
+        {"slug": slug, "is_published": True},
+        {"_id": 0, "id": 1, "category": 1, "seo_keywords": 1}
+    )
+    if not post:
+        raise HTTPException(status_code=404, detail="Article introuvable")
+
+    projection = {"_id": 0, "content_md": 0}
+    related = []
+
+    # 1. Même catégorie
+    cursor = db.citadelle_blog_posts.find(
+        {"is_published": True, "slug": {"$ne": slug}, "category": post.get("category")},
+        projection
+    ).sort("view_count", -1).limit(3)
+    related = await cursor.to_list(3)
+
+    # 2. Compléter avec des articles partageant des mots-clés SEO
+    if len(related) < 3:
+        seen_ids = {r["id"] for r in related} | {post["id"]}
+        keywords = post.get("seo_keywords") or []
+        if keywords:
+            cursor2 = db.citadelle_blog_posts.find(
+                {
+                    "is_published": True,
+                    "slug": {"$ne": slug},
+                    "id": {"$nin": list(seen_ids)},
+                    "seo_keywords": {"$in": keywords}
+                },
+                projection
+            ).sort("view_count", -1).limit(3 - len(related))
+            more = await cursor2.to_list(3 - len(related))
+            related.extend(more)
+
+    # 3. Fallback : articles récents
+    if len(related) < 3:
+        seen_ids = {r["id"] for r in related} | {post["id"]}
+        cursor3 = db.citadelle_blog_posts.find(
+            {"is_published": True, "slug": {"$ne": slug}, "id": {"$nin": list(seen_ids)}},
+            projection
+        ).sort("published_at", -1).limit(3 - len(related))
+        more = await cursor3.to_list(3 - len(related))
+        related.extend(more)
+
+    return {"related": related[:3]}
+
+
 # ── Routes admin ───────────────────────────────────────────────────────────────
 
 @router.get("/admin/blog", summary="Admin — Tous les articles")
