@@ -76,7 +76,17 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Estimateur de valeur de site** (02/2026) : section interactive sur la page d'accueil, 5 types × 4 anciennetés, fourchette de prix instantanée, FAQ AEO Schema.org, CTA vers service d'estimation professionnel
 - **Page `/citadelle/estimation`** (02/2026) : estimateur avancé 5 paramètres (bénéfice net, type, ancienneté, % SEO organique, taux de croissance, diversification) avec décomposition des ajustements, table comparative des multiples, formulaire de demande d'estimation pro (POST `/api/citadelle/estimation/request`), FAQ accordéon avec microdata Schema.org, JSON-LD FAQPage + Service pour rich snippets Google
 
-### ✅ Sitemaps XML dynamiques (TERMINÉ 30/06/2026)
+### ✅ Module Facturation PDF — PDP (TERMINÉ 30/06/2026)
+- **Génération PDF** : `reportlab` → facture PDF complète (entête, détail, montants HT/TVA/TTC, numéro FAC-YYYY-NNNNN, conformité mentions légales)
+- **Hook post-paiement** : `_finalize_paid_transaction` dans `payments.py` appelle automatiquement `create_invoice_for_payment` après validation Stripe Webhook
+- **Routes backend** : `GET /api/citadelle/invoices/my` (client), `GET /api/citadelle/invoices/{id}/pdf` (client), `GET /api/citadelle/admin/invoices` (admin), `GET /api/citadelle/admin/invoices/{id}/pdf` (admin), `POST /api/citadelle/admin/invoices/bulk-pdf`
+- **Frontend client** : `/citadelle/espace-membre/factures` → `CitadelleMyInvoices.js` (CitadelleLayout, liste + téléchargement)
+- **Frontend admin** : `/syndicat-admin/citadelle/factures` → `AdminCitadelleInvoices.js` (AdminLayout + api Syndicat, liste + recherche + téléchargement)
+- **Collection MongoDB** : `citadelle_invoices`
+- **Bugs corrigés** : annotation `Request` FastAPI manquante, préfixe de route `/citadelle/` en double, `verify_token` inexistante → `decode_access_token`, utilisation de `citadelleApi` dans une page admin → `api` Syndicat, `AdminLayout` absent, lien admin depuis `AdminCitadelle.js` ajouté
+- **Testé** : API curl + PDF valide (3159 octets) + liste client/admin OK
+
+
 - **Citadelle** : `GET /api/sitemap-citadelle.xml` → 68 URLs (11 pages statiques + 56 articles + annonces live)
 - **Syndicat** : `GET /api/sitemap-syndicat.xml` → 8 URLs (pages publiques)
 - **Fichiers statiques** dans `public/` : `sitemap-citadelle.xml` (soumission directe GSC) + `sitemap-syndicat.xml`
@@ -220,6 +230,11 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 | POST /api/citadelle/admin/blog | Admin: créer un article |
 | PATCH /api/citadelle/admin/blog/{id} | Admin: modifier un article |
 | DELETE /api/citadelle/admin/blog/{id} | Admin: supprimer un article |
+| GET /api/citadelle/invoices/my | Client: liste de ses factures |
+| GET /api/citadelle/invoices/{id}/pdf | Client: télécharger PDF |
+| GET /api/citadelle/admin/invoices | Admin: toutes les factures (search, pagination) |
+| GET /api/citadelle/admin/invoices/{id}/pdf | Admin: télécharger PDF |
+| POST /api/citadelle/admin/invoices/bulk-pdf | Admin: export ZIP factures |
 
 ---
 
@@ -237,6 +252,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 | citadelle_conversations | Messagerie pré-vente (+ seller_notified_at, reminder_sent_at) |
 | citadelle_blog_posts | Articles blog (id, slug, title, excerpt, content_md, category, author_name, partner_link, is_published, published_at) |
 | citadelle_dispute_config | Config frais d'annulation par tranches de prix (doc unique id="default") |
+| citadelle_invoices | Factures PDF post-paiement (invoice_number, client_name, client_email, service_title, amount_ht, amount_ttc, vat_amount, pdp_status, pdf_path) |
 
 ---
 

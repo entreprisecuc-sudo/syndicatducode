@@ -141,6 +141,12 @@ const ADMIN_MENU_SECTIONS = [
         description: "Vérifier les accès, finaliser les ventes, gérer les litiges"
       },
       {
+        path: "/syndicat-admin/citadelle/factures",
+        label: "Factures",
+        icon: FileText,
+        description: "Télécharger les factures PDF à l'unité ou en lot pour la comptabilité"
+      },
+      {
         path: "/syndicat-admin/citadelle/services",
         label: "Services",
         icon: Star,

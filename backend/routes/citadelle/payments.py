@@ -6,6 +6,7 @@ Intégration Stripe Checkout pour les services
 import os
 import json
 import logging
+from routes.citadelle.invoices import create_invoice_for_payment
 import asyncio
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -164,6 +165,10 @@ async def _finalize_paid_transaction(session_id: str) -> bool:
         await _send_payment_confirmation_emails(transaction)
     except Exception as e:
         logger.warning(f"Erreur envoi email confirmation paiement : {e}")
+    try:
+        await create_invoice_for_payment(transaction)
+    except Exception as e:
+        logger.warning(f"Erreur création facture : {e}")
     return True
 
 

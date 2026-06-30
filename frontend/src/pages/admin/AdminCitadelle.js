@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Shield, Globe, ShoppingCart, Cloud, Monitor, Users, Settings, ExternalLink, Bell } from "lucide-react";
+import { Shield, Globe, ShoppingCart, Cloud, Monitor, Users, Settings, ExternalLink, Bell, FileText } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
 
@@ -35,6 +35,7 @@ export default function AdminCitadelle() {
     { icon: ShoppingCart, label: "Transactions", desc: "Suivre les transactions en cours", status: "Phase C", count: 0, href: "/syndicat-admin/citadelle/transactions" },
     { icon: Users, label: "Utilisateurs", desc: "Membres inscrits sur La Citadelle", status: "Actif", count: null, href: null },
     { icon: Cloud, label: "Services", desc: "Catalogue des services complémentaires", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/services" },
+    { icon: FileText, label: "Factures", desc: "Factures PDF générées après paiement", status: "Actif", count: null, href: "/syndicat-admin/citadelle/factures" },
     { icon: Bell, label: "Newsletter", desc: "Alertes annonces & gestion des abonnés", status: "Actif", count: null, href: "/syndicat-admin/citadelle/newsletter" },
     { icon: Monitor, label: "Blog", desc: "Articles et publications", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/blog" },
     { icon: Settings, label: "Paramètres", desc: "Configuration de la plateforme", status: "Phase A", count: null, href: null },

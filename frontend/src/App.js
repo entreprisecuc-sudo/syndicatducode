@@ -96,6 +96,8 @@ import CitadelleCreateListing from "@/pages/citadelle/member/CitadelleCreateList
 import CitadelleEditListing from "@/pages/citadelle/member/CitadelleEditListing";
 import CitadelleProfile from "@/pages/citadelle/member/CitadelleProfile";
 import CitadelleMyTransactions from "@/pages/citadelle/member/CitadelleMyTransactions";
+import CitadelleMyInvoices from "@/pages/citadelle/member/CitadelleMyInvoices";
+import AdminCitadelleInvoices from "@/pages/admin/AdminCitadelleInvoices";
 import CitadelleTransactionDetail from "@/pages/citadelle/member/CitadelleTransactionDetail";
 import CitadelleMyMessages from "@/pages/citadelle/member/CitadelleMyMessages";
 import CitadelleMyServices from "@/pages/citadelle/member/CitadelleMyServices";
@@ -368,6 +370,7 @@ function App() {
               <Route path="/citadelle/espace-membre/mes-annonces" element={<CitadelleMyListings />} />
               <Route path="/citadelle/espace-membre/transactions/:id" element={<CitadelleTransactionDetail />} />
               <Route path="/citadelle/espace-membre/transactions" element={<CitadelleMyTransactions />} />
+              <Route path="/citadelle/espace-membre/factures" element={<CitadelleMyInvoices />} />
               <Route path="/citadelle/espace-membre/messages/:id" element={<CitadelleConversationDetail />} />
               <Route path="/citadelle/espace-membre/messages" element={<CitadelleMyMessages />} />
               <Route path="/citadelle/espace-membre/mes-services" element={<CitadelleMyServices />} />
@@ -387,6 +390,10 @@ function App() {
               <Route
                 path="/syndicat-admin/citadelle/transactions"
                 element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleTransactions /></RoleRoute>}
+              />
+              <Route
+                path="/syndicat-admin/citadelle/factures"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleInvoices /></RoleRoute>}
               />
               <Route
                 path="/syndicat-admin/citadelle/services"
