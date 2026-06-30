@@ -215,7 +215,7 @@ export default function CitadelleBlogPost() {
   return (
     <CitadelleLayout pageTitle={post.title}>
       <Helmet>
-        <title>{post.seo_title || post.title} | La Citadelle Numérique</title>
+        <title>{`${post.seo_title || post.title} | La Citadelle Numérique`}</title>
         <meta name="description" content={post.seo_description || post.excerpt || `${post.title} — Article du blog La Citadelle Numérique.`} />
         {post.cover_image_url && <meta property="og:image" content={post.cover_image_url} />}
         <meta property="og:title" content={post.seo_title || post.title} />
