@@ -32,6 +32,7 @@ from services.email_service.citadelle.transactions import (
 from services.email_service.citadelle.services import (
     send_service_order_confirmation_email,
     send_service_order_admin_notification_email,
+    send_invoice_confirmation_email,
 )
 from services.email_service.citadelle.contact import send_citadelle_contact_email
 from services.email_service.citadelle.newsletter import (

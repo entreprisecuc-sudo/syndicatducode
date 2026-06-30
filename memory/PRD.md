@@ -79,12 +79,12 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 ### ✅ Module Facturation PDF — PDP (TERMINÉ 30/06/2026)
 - **Génération PDF** : `reportlab` → facture PDF complète (entête, détail, montants HT/TVA/TTC, numéro FAC-YYYY-NNNNN, conformité mentions légales)
 - **Hook post-paiement** : `_finalize_paid_transaction` dans `payments.py` appelle automatiquement `create_invoice_for_payment` après validation Stripe Webhook
+- **Email automatique** : `send_invoice_confirmation_email()` dans `email_service/citadelle/services.py` — PDF en pièce jointe (MIMEBase + base64), appelé via `run_in_executor` (non-bloquant), envoyé au client dès confirmation paiement
 - **Routes backend** : `GET /api/citadelle/invoices/my` (client), `GET /api/citadelle/invoices/{id}/pdf` (client), `GET /api/citadelle/admin/invoices` (admin), `GET /api/citadelle/admin/invoices/{id}/pdf` (admin), `POST /api/citadelle/admin/invoices/bulk-pdf`
 - **Frontend client** : `/citadelle/espace-membre/factures` → `CitadelleMyInvoices.js` (CitadelleLayout, liste + téléchargement)
 - **Frontend admin** : `/syndicat-admin/citadelle/factures` → `AdminCitadelleInvoices.js` (AdminLayout + api Syndicat, liste + recherche + téléchargement)
 - **Collection MongoDB** : `citadelle_invoices`
-- **Bugs corrigés** : annotation `Request` FastAPI manquante, préfixe de route `/citadelle/` en double, `verify_token` inexistante → `decode_access_token`, utilisation de `citadelleApi` dans une page admin → `api` Syndicat, `AdminLayout` absent, lien admin depuis `AdminCitadelle.js` ajouté
-- **Testé** : API curl + PDF valide (3159 octets) + liste client/admin OK
+- **Testé** : API curl + PDF valide (3159 octets) + email SMTP envoyé avec succès (2 factures de test)
 
 
 - **Citadelle** : `GET /api/sitemap-citadelle.xml` → 68 URLs (11 pages statiques + 56 articles + annonces live)

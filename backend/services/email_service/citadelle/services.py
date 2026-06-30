@@ -5,6 +5,8 @@ Emails Citadelle — Commandes de services.
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 
 from config.settings import (
     SMTP_HOST,
@@ -187,5 +189,116 @@ def send_service_order_admin_notification_email(
     except Exception as e:
         logger.error(f"[Citadelle] Erreur email notification admin commande : {e}")
         return False
+
+
+def send_invoice_confirmation_email(
+    invoice: dict,
+    pdf_bytes: bytes,
+) -> bool:
+    """
+    Envoie un email de confirmation de paiement au client avec la facture PDF en pièce jointe.
+    - invoice : document MongoDB de la facture (invoice_number, client_name, client_email, ...)
+    - pdf_bytes : contenu du PDF généré en mémoire (bytes)
+    """
+    try:
+        client_name   = invoice.get("client_name", "Client")
+        client_email  = invoice.get("client_email", "")
+        invoice_number = invoice.get("invoice_number", "")
+        service_title  = invoice.get("service_title", "Prestation")
+        amount_ttc     = invoice.get("amount_ttc", 0)
+        amount_ht      = invoice.get("amount_ht", 0)
+        vat_amount     = invoice.get("vat_amount", 0)
+
+        amount_ttc_str = f"{amount_ttc:,.2f}".replace(",", "\u202f").replace(".", ",")
+        amount_ht_str  = f"{amount_ht:,.2f}".replace(",", "\u202f").replace(".", ",")
+        vat_str        = f"{vat_amount:,.2f}".replace(",", "\u202f").replace(".", ",")
+
+        body_html = f"""
+        <p style="color:#1A2A3A;font-size:15px;line-height:1.6;margin:0 0 20px 0;">
+          Bonjour <strong>{client_name}</strong>,<br><br>
+          Votre paiement a bien &#233;t&#233; re&#231;u. Vous trouverez ci-joint votre facture
+          officielle en pi&#232;ce jointe (format PDF).
+        </p>
+
+        <div style="background:#F7F9FC;border-left:4px solid #C9A45C;
+                    border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:20px;">
+          <p style="color:#C9A45C;font-size:11px;font-weight:700;
+                     text-transform:uppercase;letter-spacing:0.8px;margin:0 0 10px 0;">
+            R&#233;capitulatif de votre facture
+          </p>
+          <p style="color:#0F2747;font-size:15px;font-weight:700;margin:0 0 6px 0;">
+            {service_title}
+          </p>
+          <table cellpadding="0" cellspacing="0" width="100%" style="margin-top:10px;">
+            <tr>
+              <td style="color:#5F6672;font-size:13px;padding:3px 0;">Montant HT</td>
+              <td style="color:#0F2747;font-size:13px;font-weight:600;text-align:right;">{amount_ht_str}&nbsp;&#8364;</td>
+            </tr>
+            <tr>
+              <td style="color:#5F6672;font-size:13px;padding:3px 0;">TVA (20&nbsp;%)</td>
+              <td style="color:#0F2747;font-size:13px;font-weight:600;text-align:right;">{vat_str}&nbsp;&#8364;</td>
+            </tr>
+            <tr>
+              <td style="color:#0F2747;font-size:14px;font-weight:700;padding:8px 0 3px 0;border-top:1px solid #E5E7EB;">Total TTC</td>
+              <td style="color:#0F2747;font-size:14px;font-weight:700;text-align:right;padding:8px 0 3px 0;border-top:1px solid #E5E7EB;">{amount_ttc_str}&nbsp;&#8364;</td>
+            </tr>
+          </table>
+          <p style="color:#9CA3AF;font-size:11px;margin:10px 0 0 0;">
+            N&#186; de facture&#160;: <strong style="color:#6B7280;">{invoice_number}</strong>
+          </p>
+        </div>
+
+        <div style="background:#F0FFF4;border-radius:8px;padding:12px 16px;margin-bottom:20px;
+                    border:1px solid #BBF7D0;">
+          <p style="color:#166534;font-size:13px;margin:0;line-height:1.6;">
+            &#10003; Votre facture PDF est attach&#233;e &#224; cet email.
+            Conservez-la pour votre comptabilit&#233;.
+          </p>
+        </div>
+
+        <p style="color:#5F6672;font-size:13px;line-height:1.6;margin:0;">
+          Une question ? Contactez-nous :<br>
+          <a href="mailto:{CITADELLE_FROM_EMAIL}" style="color:#C9A45C;">{CITADELLE_FROM_EMAIL}</a>
+        </p>"""
+
+        html = _build_notification_base(
+            title="Paiement confirm&#233; &#8212; Facture disponible",
+            subtitle=f"Facture {invoice_number}",
+            badge_color="#22C55E",
+            body_html=body_html,
+            cta_url=f"{CITADELLE_URL}/citadelle/espace-membre/factures",
+            cta_label="Acc&#233;der &#224; mes factures",
+        )
+
+        # Construction du message avec pièce jointe
+        msg = MIMEMultipart("mixed")
+        msg["From"]    = CITADELLE_FROM_EMAIL
+        msg["To"]      = client_email
+        msg["Subject"] = f"[Citadelle] Votre facture {invoice_number} — {service_title}"
+
+        # Corps HTML
+        html_part = MIMEMultipart("alternative")
+        html_part.attach(MIMEText(html, "html", "utf-8"))
+        msg.attach(html_part)
+
+        # Pièce jointe PDF
+        pdf_part = MIMEBase("application", "pdf")
+        pdf_part.set_payload(pdf_bytes)
+        encoders.encode_base64(pdf_part)
+        pdf_part.add_header(
+            "Content-Disposition",
+            "attachment",
+            filename=f"Facture_{invoice_number}.pdf",
+        )
+        msg.attach(pdf_part)
+
+        _envoyer_email(msg)
+        logger.info(f"[Citadelle] Email facture {invoice_number} envoyé à {client_email}")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Citadelle] Erreur envoi email facture : {e}")
+        return False
+
 
 

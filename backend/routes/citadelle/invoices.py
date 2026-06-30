@@ -144,6 +144,17 @@ async def create_invoice_for_payment(transaction: dict) -> str:
 
     await _db.citadelle_invoices.insert_one(doc)
     logger.info(f"Facture créée : {invoice_number} — {transaction.get('client_email')}")
+
+    # ── Envoi email avec facture PDF en pièce jointe ───────────────────────
+    try:
+        from services.email_service import send_invoice_confirmation_email
+        import asyncio
+        pdf_bytes = _build_pdf(doc)
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, send_invoice_confirmation_email, doc, pdf_bytes)
+    except Exception as e:
+        logger.error(f"[Facture] Erreur envoi email avec PDF : {e}")
+
     return invoice_id
 
 
