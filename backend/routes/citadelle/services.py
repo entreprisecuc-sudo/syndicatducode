@@ -155,181 +155,235 @@ async def admin_delete_service(
 
 
 # ── Données de seeding — catalogue officiel des services ──────────────────────
-# Référence : PRD services v2 validé par le client
+# Référence : catalogue validé par le client (13/06/2026)
 _SERVICES_SEED: list[dict] = [
     # ── Vendeur ─────────────────────────────────────────────────────────
     {
-        "title": "Évaluation Standard",
+        "title": "Estimation Standard",
         "target_category": "vendeur",
-        "short_description": "Estimez la valeur de votre projet avant sa mise en vente.",
+        "short_description": "Obtenez une première estimation de la valeur de votre site sous 48h.",
         "description": (
             "Pour qui ?\n"
-            "Vendeurs souhaitant connaître la valeur estimée de leur projet avant publication.\n\n"
-            "Ce que nous analysons :\n"
-            "• Type de projet\n• Ancienneté\n• Revenus déclarés\n• Trafic déclaré\n"
-            "• Positionnement du marché\n• Potentiel de croissance\n\n"
-            "Ce qui n'est pas vérifié :\n"
-            "• Code source\n• Comptabilité\n• Accès Analytics\n• Données privées\n\n"
-            "Vous recevez :\n"
-            "• Estimation de valeur\n• Fourchette basse\n• Fourchette recommandée\n"
-            "• Fourchette haute\n• Conseils de mise en vente\n\n"
-            "Badge : ✅ Évalué par La Citadelle"
+            "Vendeurs souhaitant obtenir une première estimation de leur site.\n\n"
+            "Ce que comprend le service :\n"
+            "• Analyse rapide du site\n"
+            "• Estimation de la valeur\n"
+            "• Rapport synthétique PDF\n"
+            "• Fourchette de prix conseillée"
         ),
-        "price": 1.0, "price_label": "", "service_type": "paid",
-        "category": "evaluation", "icon": "star", "display_order": 10,
+        "price": 49.0, "price_label": "", "service_type": "paid",
+        "category": "estimation", "icon": "star", "display_order": 10,
     },
     {
-        "title": "Évaluation Expert Certifiée",
+        "title": "Estimation Expert",
         "target_category": "vendeur",
-        "short_description": "Obtenez une valorisation approfondie et certifiée de votre projet.",
+        "short_description": "Valorisation complète et détaillée avec rapport PDF professionnel.",
         "description": (
             "Pour qui ?\n"
-            "Vendeurs souhaitant obtenir une expertise complète avant la vente.\n\n"
-            "Nous analysons :\n\n"
-            "Technique :\n• Architecture\n• Dette technique\n• Qualité du code\n"
-            "• Hébergement\n• Dépendances\n\n"
-            "Business :\n• Revenus\n• Marges\n• Sources de revenus\n\n"
-            "SEO :\n• Positionnement\n• Backlinks\n• Risques SEO\n\n"
-            "Juridique :\n• Domaine\n• Mentions légales\n• Conditions générales\n\n"
-            "Vous recevez :\n• Rapport complet\n• Analyse détaillée\n• Recommandations\n\n"
-            "Badge : 🏆 Évaluation Expert Certifiée"
+            "Vendeurs souhaitant une valorisation approfondie avant mise en vente.\n\n"
+            "Ce que comprend le service :\n"
+            "• Analyse complète du site\n"
+            "• Étude du trafic\n"
+            "• Étude SEO\n"
+            "• Analyse des revenus\n"
+            "• Analyse de la concurrence\n"
+            "• Valorisation détaillée\n"
+            "• Rapport PDF complet\n"
+            "• Conseils d'amélioration avant mise en vente"
         ),
-        "price": 1.0, "price_label": "", "service_type": "paid",
-        "category": "evaluation", "icon": "star", "display_order": 20,
+        "price": 149.0, "price_label": "", "service_type": "paid",
+        "category": "estimation", "icon": "star", "display_order": 20,
     },
     {
-        "title": "Valorisation Avant Vente",
+        "title": "Vérification La Garde",
         "target_category": "vendeur",
-        "short_description": "Augmentez l'attractivité de votre projet avant publication.",
+        "short_description": "Obtenez le badge de confiance « Vérifié par La Garde » sur votre annonce.",
+        "description": (
+            "Pour qui ?\n"
+            "Vendeurs souhaitant renforcer la crédibilité de leur annonce.\n\n"
+            "Ce que comprend le service :\n"
+            "• Vérification d'identité du vendeur\n"
+            "• Vérification des droits de propriété\n"
+            "• Contrôle des revenus déclarés\n"
+            "• Vérification des accès principaux\n"
+            "• Badge « Vérifié par La Garde » sur l'annonce\n\n"
+            "Ce badge rassure les acheteurs et accélère la vente."
+        ),
+        "price": 99.0, "price_label": "", "service_type": "paid",
+        "category": "verification", "icon": "shield", "display_order": 30,
+    },
+    {
+        "title": "Accompagnement Vente Premium",
+        "target_category": "vendeur",
+        "short_description": "Soyez accompagné à chaque étape de votre vente, de l'annonce à la signature.",
         "description": (
             "Pour qui ?\n"
             "Vendeurs souhaitant maximiser leurs chances de vendre rapidement.\n\n"
-            "Nous intervenons sur :\n"
-            "• Le titre de l'annonce\n• La présentation du projet\n• Les visuels\n"
-            "• La mise en valeur des revenus\n• La présentation du trafic\n"
-            "• L'argumentaire commercial\n\n"
-            "Vous recevez :\n"
-            "• Une annonce optimisée\n• Une présentation professionnelle\n"
-            "• Des recommandations personnalisées\n\n"
-            "Badge : ⭐ Annonce Optimisée"
+            "Ce que comprend le service :\n"
+            "• Préparation du dossier de vente\n"
+            "• Optimisation de l'annonce\n"
+            "• Conseils sur le prix\n"
+            "• Accompagnement vendeur\n"
+            "• Réponses aux acheteurs\n"
+            "• Assistance jusqu'à la signature"
         ),
-        "price": 1.0, "price_label": "", "service_type": "paid",
-        "category": "valorisation", "icon": "zap", "display_order": 30,
+        "price": 399.0, "price_label": "", "service_type": "paid",
+        "category": "accompagnement", "icon": "handshake", "display_order": 40,
     },
     {
-        "title": "Refonte Avant Vente",
+        "title": "Vente aux enchères",
         "target_category": "vendeur",
-        "short_description": "Augmentez la valeur de votre projet grâce à une intervention experte.",
+        "short_description": "Laissez le marché déterminer la valeur de votre site.",
         "description": (
             "Pour qui ?\n"
-            "Vendeurs souhaitant améliorer leur projet avant sa mise en vente.\n\n"
-            "Réalisé par :\nLe Syndicat du Code.\n\n"
-            "Prestations possibles :\n"
-            "• Refonte graphique\n• Optimisation UX/UI\n• Optimisation mobile\n"
-            "• Optimisation SEO\n• Amélioration des performances\n"
-            "• Corrections techniques\n• Modernisation du projet\n\n"
-            "Fonctionnement :\nÉtude préalable puis devis personnalisé."
+            "Vendeurs souhaitant maximiser leur prix de vente.\n\n"
+            "Ce que comprend le service :\n"
+            "• Mise aux enchères du site\n"
+            "• Gestion automatique des enchères\n"
+            "• Notifications en temps réel\n"
+            "• Historique complet des offres\n\n"
+            "Tarification :\n"
+            "• Commission : 5 % sur la vente\n"
+            "• Option mise en avant : 29 €\n\n"
+            "Toutes les enchères sont protégées par la Transaction Sécurisée de La Citadelle."
         ),
-        "price": None, "price_label": "Sur devis", "service_type": "quote",
-        "category": "refonte", "icon": "zap", "display_order": 40,
-    },
-    {
-        "title": "Vente aux Enchères",
-        "target_category": "vendeur",
-        "short_description": "Laissez le marché déterminer la valeur de votre projet.",
-        "description": (
-            "Pour qui ?\nVendeurs souhaitant maximiser leur prix de vente.\n\n"
-            "Le vendeur définit :\n"
-            "• Prix minimum\n• Date de début\n• Date de fin\n• Conditions de participation\n\n"
-            "Les acheteurs enchérissent jusqu'à la clôture.\n\n"
-            "Toutes les enchères sont protégées par le système de Transaction Sécurisée de La Citadelle."
-        ),
-        "price": 0.0, "price_label": "Gratuit", "service_type": "free",
+        "price": None, "price_label": "Commission 5 %", "service_type": "quote",
         "category": "encheres", "icon": "zap", "display_order": 50,
     },
     # ── Acheteur ─────────────────────────────────────────────────────────
     {
-        "title": "Audit Avant Achat",
+        "title": "Audit SEO",
         "target_category": "acheteur",
-        "short_description": "Analyse indépendante avant votre acquisition.",
+        "short_description": "Identifiez les forces et faiblesses SEO avant d'investir.",
         "description": (
-            "Pour qui ?\nAcheteurs souhaitant sécuriser leur investissement.\n\n"
-            "Nous analysons :\n"
-            "• Cohérence du prix demandé\n• Revenus\n• Trafic\n"
-            "• Historique du projet\n• Potentiel de croissance\n• Risques identifiés\n\n"
-            "Vous recevez :\n"
-            "• Rapport détaillé\n• Points forts\n• Points faibles\n• Recommandations\n\n"
-            "Conclusion :\n"
-            "• Achat recommandé\n• Achat à négocier\n• Achat déconseillé\n\n"
-            "Badge : 🔍 Audit Réalisé"
+            "Pour qui ?\n"
+            "Acheteurs et vendeurs souhaitant évaluer le potentiel SEO d'un site.\n\n"
+            "Ce que comprend le service :\n"
+            "• Audit technique complet\n"
+            "• Analyse des Core Web Vitals\n"
+            "• Analyse des backlinks\n"
+            "• Étude des mots-clés\n"
+            "• Identification des erreurs SEO\n"
+            "• Plan d'actions priorisé"
         ),
-        "price": 1.0, "price_label": "", "service_type": "paid",
-        "category": "audit", "icon": "shield", "display_order": 60,
+        "price": 199.0, "price_label": "", "service_type": "paid",
+        "category": "audit", "icon": "search", "display_order": 60,
     },
     {
         "title": "Audit Sécurité",
         "target_category": "acheteur",
         "short_description": "Identifiez les risques de sécurité avant d'investir.",
         "description": (
-            "Pour qui ?\nAcheteurs souhaitant vérifier la sécurité d'un projet.\n\n"
-            "Nous analysons :\n"
-            "• Authentification\n• Gestion des accès\n• Permissions\n"
-            "• Dépendances obsolètes\n• Vulnérabilités connues\n"
-            "• Hébergement\n• Protection des données\n\n"
-            "Vous recevez :\n"
-            "• Rapport de sécurité complet\n• Niveau de risque\n• Recommandations\n\n"
-            "Niveaux :\n🟢 Faible\n🟠 Moyen\n🔴 Élevé\n⚫ Critique\n\n"
-            "Badge : 🔒 Audit Sécurité Réalisé"
+            "Pour qui ?\n"
+            "Acheteurs souhaitant vérifier la sécurité d'un site avant acquisition.\n\n"
+            "Ce que comprend le service :\n"
+            "• Vérification HTTPS et certificats\n"
+            "• Analyse des vulnérabilités connues\n"
+            "• Audit CMS et extensions\n"
+            "• Vérification des sauvegardes\n"
+            "• Analyse de la configuration serveur\n"
+            "• Rapport de sécurité détaillé\n\n"
+            "Niveaux de risque : 🟢 Faible — 🟠 Moyen — 🔴 Élevé — ⚫ Critique"
         ),
-        "price": 1.0, "price_label": "", "service_type": "paid",
+        "price": 249.0, "price_label": "", "service_type": "paid",
         "category": "audit", "icon": "shield", "display_order": 70,
     },
     {
-        "title": "Migration Technique",
+        "title": "Migration de site",
         "target_category": "acheteur",
         "short_description": "Transférez votre acquisition en toute sérénité.",
         "description": (
-            "Pour qui ?\nAcheteurs souhaitant un transfert sécurisé.\n\n"
-            "Prestations :\n"
-            "• Transfert du domaine\n• Migration hébergement\n• Migration base de données\n"
-            "• Migration emails\n• Migration outils tiers\n• Vérifications post-transfert\n\n"
-            "Réalisé par :\nLes partenaires du Syndicat du Code."
+            "Pour qui ?\n"
+            "Acheteurs souhaitant un transfert complet et sécurisé de leur acquisition.\n\n"
+            "Ce que comprend le service :\n"
+            "• Migration du nom de domaine\n"
+            "• Migration de l'hébergement\n"
+            "• Migration de la base de données\n"
+            "• Migration des emails\n"
+            "• Migration des outils tiers\n"
+            "• Vérifications post-transfert\n"
+            "• Mise en ligne et confirmation\n\n"
+            "Option disponible :\n"
+            "• Migration urgente : +100 €"
         ),
-        "price": None, "price_label": "Sur devis", "service_type": "quote",
+        "price": None, "price_label": "À partir de 299 €", "service_type": "quote",
         "category": "migration", "icon": "zap", "display_order": 80,
     },
     {
-        "title": "Accompagnement Achat",
+        "title": "Refonte / Optimisation",
         "target_category": "acheteur",
-        "short_description": "Soyez accompagné durant toutes les étapes de votre acquisition.",
+        "short_description": "Modernisez votre acquisition pour en maximiser la valeur.",
         "description": (
-            "Pour qui ?\nAcheteurs souhaitant être guidés tout au long du processus.\n\n"
-            "Prestations :\n\n"
-            "Avant achat :\n• Analyse du projet\n• Questions au vendeur\n\n"
-            "Pendant la négociation :\n• Conseils\n• Analyse du prix\n• Aide à la décision\n\n"
-            "Après achat :\n• Suivi du transfert\n• Validation finale"
+            "Pour qui ?\n"
+            "Acheteurs et vendeurs souhaitant améliorer les performances d'un site.\n\n"
+            "Ce que comprend le service :\n"
+            "• Optimisation des performances\n"
+            "• Modernisation graphique\n"
+            "• Amélioration de l'expérience utilisateur\n"
+            "• Corrections techniques\n"
+            "• Optimisation SEO on-page\n\n"
+            "Réalisé par les développeurs du Syndicat du Code.\n"
+            "Étude préalable puis devis personnalisé."
         ),
-        "price": 1.0, "price_label": "", "service_type": "paid",
-        "category": "accompagnement", "icon": "handshake", "display_order": 90,
+        "price": None, "price_label": "À partir de 499 €", "service_type": "quote",
+        "category": "refonte", "icon": "zap", "display_order": 90,
     },
     # ── Commun ───────────────────────────────────────────────────────────
     {
-        "title": "Transaction Sécurisée",
+        "title": "Transaction Sécurisée Premium",
         "target_category": "commun",
-        "short_description": "Sécurisez chaque transaction réalisée sur la plateforme.",
+        "short_description": "Protégez votre achat ou votre vente avec notre système de séquestre et La Garde.",
         "description": (
-            "Pour qui ?\nAcheteurs et vendeurs.\n\n"
-            "Fonctionnement :\n"
-            "1. Paiement de l'acheteur\n2. Sécurisation des fonds\n"
-            "3. Transmission du projet\n4. Validation du transfert\n5. Libération des fonds\n\n"
-            "Inclus :\n"
-            "• Paiement sécurisé\n• Historique complet\n• Facturation\n"
-            "• Gestion des litiges\n• Intervention de La Garde si nécessaire\n\n"
-            "Particularité :\n"
-            "🛡️ Service obligatoire pour toutes les ventes réalisées sur La Citadelle Numérique."
+            "Pour qui ?\n"
+            "Acheteurs et vendeurs souhaitant sécuriser 100 % de leur transaction.\n\n"
+            "Ce que comprend le service :\n"
+            "• Gestion complète de la transaction\n"
+            "• Vérification vendeur et acheteur\n"
+            "• Signature électronique\n"
+            "• Contrôle des accès transmis\n"
+            "• Sécurisation du paiement via Stripe\n"
+            "• Assistance par La Garde jusqu'au transfert complet\n\n"
+            "Tarification :\n"
+            "• Commission : 5 % du montant de la transaction\n"
+            "• Minimum : 49 €\n\n"
+            "Service obligatoire pour toutes les ventes réalisées sur La Citadelle Numérique."
         ),
-        "price": 0.0, "price_label": "Inclus", "service_type": "free",
+        "price": None, "price_label": "5 % (min. 49 €)", "service_type": "quote",
         "category": "transaction", "icon": "shield", "display_order": 100,
+    },
+    # ── Gratuits ─────────────────────────────────────────────────────────
+    {
+        "title": "Dépôt d'annonce",
+        "target_category": "commun",
+        "short_description": "Publiez votre site à vendre gratuitement sur La Citadelle Numérique.",
+        "description": (
+            "Créez et publiez votre annonce de vente de site internet entièrement gratuitement.\n"
+            "Votre annonce est visible par tous les acheteurs inscrits sur la plateforme."
+        ),
+        "price": 0.0, "price_label": "Gratuit", "service_type": "free",
+        "category": "plateforme", "icon": "star", "display_order": 110,
+    },
+    {
+        "title": "Recherche d'annonces",
+        "target_category": "commun",
+        "short_description": "Accédez au catalogue complet des sites et projets en vente.",
+        "description": (
+            "Parcourez librement toutes les annonces de sites en vente sur La Citadelle Numérique.\n"
+            "Filtres par type, prix, revenus et ancienneté disponibles."
+        ),
+        "price": 0.0, "price_label": "Gratuit", "service_type": "free",
+        "category": "plateforme", "icon": "search", "display_order": 120,
+    },
+    {
+        "title": "Création de compte",
+        "target_category": "commun",
+        "short_description": "Créez votre espace membre et accédez à toutes les fonctionnalités.",
+        "description": (
+            "L'inscription sur La Citadelle Numérique est entièrement gratuite.\n"
+            "Accédez à la messagerie, aux offres d'achat et à votre espace membre sans frais."
+        ),
+        "price": 0.0, "price_label": "Gratuit", "service_type": "free",
+        "category": "plateforme", "icon": "star", "display_order": 130,
     },
 ]
 

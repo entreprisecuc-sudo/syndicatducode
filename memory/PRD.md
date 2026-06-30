@@ -76,12 +76,17 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Estimateur de valeur de site** (02/2026) : section interactive sur la page d'accueil, 5 types × 4 anciennetés, fourchette de prix instantanée, FAQ AEO Schema.org, CTA vers service d'estimation professionnel
 - **Page `/citadelle/estimation`** (02/2026) : estimateur avancé 5 paramètres (bénéfice net, type, ancienneté, % SEO organique, taux de croissance, diversification) avec décomposition des ajustements, table comparative des multiples, formulaire de demande d'estimation pro (POST `/api/citadelle/estimation/request`), FAQ accordéon avec microdata Schema.org, JSON-LD FAQPage + Service pour rich snippets Google
 
-### ✅ Catalogue Services v2 — Contenu officiel (TERMINÉ 13/06/2026)
-- Ajout du champ `target_category` (vendeur / acheteur / commun) aux modèles `ServiceCreate` et `ServiceUpdate`
-- Route de seeding idempotente `POST /api/citadelle/admin/services/seed` : 10 services officiels créés, 3 anciens désactivés
-- Frontend restructuré en 3 sections distinctes avec en-têtes visuels
-- Extraction des modales en composants indépendants (`ServiceDetailModal.js`, `ServiceCheckoutModal.js`) — respect Règle 17
-- Constante `SERVICE_TARGET_SECTIONS` centralisée dans `citadelleConstants.js` — respect DRY
+### ✅ Catalogue Services v3 — Prix officiels (TERMINÉ 30/06/2026)
+- Mise à jour complète du catalogue : 13 services officiels (9 payants/commission + 3 gratuits + 1 service "Vente aux enchères" sur commission)
+- Nouveaux titres définitifs validés par le client :
+  - **Vendeurs** : Estimation Standard (49€), Estimation Expert (149€), Vérification La Garde (99€), Accompagnement Vente Premium (399€), Vente aux enchères (Commission 5%)
+  - **Acheteurs** : Audit SEO (199€), Audit Sécurité (249€), Migration de site (À partir de 299€), Refonte / Optimisation (À partir de 499€)
+  - **Commun** : Transaction Sécurisée Premium (5%, min. 49€), Dépôt d'annonce (Gratuit), Recherche d'annonces (Gratuit), Création de compte (Gratuit)
+- Route de seeding idempotente `POST /api/citadelle/admin/services/seed` exécutée (12 créés, 1 mis à jour, 12 anciens désactivés)
+- Tunnel Stripe réel câblé : `ServiceCheckoutModal` → `/api/payments/service/checkout` (clé live configurée)
+- `ServiceHeroBanner` : badge "5 % (min. 49 €)" dynamique (via `price_label`)
+- `CitadelleServices.js` : section "Inclus gratuitement" ajoutée en bas de page
+- Footer + `CitadelleVendre.js` mis à jour avec les nouveaux noms
 
 
 ### ✅ Consentement CGU/CGV à l'inscription (TERMINÉ 15/06/2026)

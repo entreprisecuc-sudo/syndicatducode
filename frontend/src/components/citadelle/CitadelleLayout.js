@@ -217,11 +217,11 @@ const CitadelleFooter = () => (
           <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider" style={{ color: CITADELLE_COLORS.gold }}>Vendeurs</h4>
           <ul className="space-y-2">
             {[
-              "Évaluation Standard",
-              "Évaluation Expert Certifiée",
-              "Valorisation Avant Vente",
-              "Refonte Avant Vente",
-              "Vente aux Enchères",
+              "Estimation Standard",
+              "Estimation Expert",
+              "Vérification La Garde",
+              "Accompagnement Vente Premium",
+              "Vente aux enchères",
             ].map(s => (
               <li key={s}>
                 <Link to="/citadelle/services" className="text-sm transition-colors hover:opacity-100" style={{ color: "rgba(255,255,255,0.55)" }}>
@@ -237,11 +237,11 @@ const CitadelleFooter = () => (
           <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider" style={{ color: CITADELLE_COLORS.gold }}>Acheteurs</h4>
           <ul className="space-y-2">
             {[
-              "Audit Avant Achat",
+              "Audit SEO",
               "Audit Sécurité",
-              "Migration Technique",
-              "Accompagnement Achat",
-              "Transaction Sécurisée",
+              "Migration de site",
+              "Refonte / Optimisation",
+              "Transaction Sécurisée Premium",
             ].map(s => (
               <li key={s}>
                 <Link to="/citadelle/services" className="text-sm transition-colors hover:opacity-100" style={{ color: "rgba(255,255,255,0.55)" }}>

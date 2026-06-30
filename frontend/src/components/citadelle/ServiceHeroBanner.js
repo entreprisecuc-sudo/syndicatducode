@@ -59,9 +59,9 @@ export default function ServiceHeroBanner({ service, onDetails }) {
                 </h2>
                 <span
                   className="px-3 py-1 rounded-full text-xs font-black"
-                  style={{ background: "rgba(34,197,94,0.2)", color: "#4ADE80", border: "1px solid rgba(74,222,128,0.3)" }}
+                  style={{ background: "rgba(201,164,92,0.15)", color: CITADELLE_COLORS.gold, border: "1px solid rgba(201,164,92,0.35)" }}
                 >
-                  Inclus
+                  {service.price_label || "Inclus"}
                 </span>
               </div>
               <p className="text-sm md:text-base" style={{ color: "rgba(255,255,255,0.65)" }}>

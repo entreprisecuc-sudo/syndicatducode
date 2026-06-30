@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Star, Handshake, Zap, Shield, ShoppingCart, ArrowRight, TrendingUp, Search } from "lucide-react";
+import { Star, Handshake, Zap, Shield, ShoppingCart, ArrowRight, TrendingUp, Search, Check } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ServiceDetailModal from "@/components/citadelle/ServiceDetailModal";
 import ServiceCheckoutModal from "@/components/citadelle/ServiceCheckoutModal";
@@ -234,9 +234,10 @@ export default function CitadelleServices() {
       .finally(() => setLoading(false));
   }, []);
 
-  const commonService  = services.find((s) => (s.target_category || "commun") === "commun");
+  const commonService  = services.find((s) => s.target_category === "commun" && s.service_type !== "free");
   const vendorServices = services.filter((s) => s.target_category === "vendeur");
   const buyerServices  = services.filter((s) => s.target_category === "acheteur");
+  const freeServices   = services.filter((s) => s.service_type === "free" && s.target_category === "commun");
 
   const openBuy = (svc) => {
     setSelectedService(null);
@@ -370,6 +371,43 @@ export default function CitadelleServices() {
                       onDetails={setSelectedService}
                       onBuy={openBuy}
                     />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 4. Inclus gratuitement */}
+            {freeServices.length > 0 && (
+              <div
+                className="rounded-2xl px-8 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+                style={{ background: "rgba(22,163,74,0.04)", border: "1px solid rgba(22,163,74,0.18)" }}
+                data-testid="free-services-section"
+              >
+                <div className="flex-shrink-0">
+                  <h3
+                    className="text-base font-black"
+                    style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
+                  >
+                    Inclus gratuitement
+                  </h3>
+                  <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
+                    Fonctionnalités accessibles sans frais pour tout membre inscrit.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {freeServices.map((svc) => (
+                    <div
+                      key={svc.id}
+                      className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
+                      style={{
+                        background: "rgba(22,163,74,0.07)",
+                        border: "1px solid rgba(22,163,74,0.22)",
+                        color: "#15803d",
+                      }}
+                    >
+                      <Check size={13} />
+                      {svc.title}
+                    </div>
                   ))}
                 </div>
               </div>

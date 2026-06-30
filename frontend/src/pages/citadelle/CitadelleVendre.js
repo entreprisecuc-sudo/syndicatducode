@@ -58,7 +58,7 @@ const ETAPES = [
     num: "03",
     titre: "Choisissez les services adaptés",
     texte: "Boostez votre vente avec les services professionnels de La Citadelle :",
-    services: ["Évaluation Standard", "Évaluation Expert Certifiée", "Valorisation Avant Vente", "Refonte Avant Vente"],
+    services: ["Estimation Standard", "Estimation Expert", "Vérification La Garde", "Accompagnement Vente Premium"],
   },
   {
     num: "04",
@@ -101,27 +101,27 @@ const MODES_VENTE = [
 const SERVICES_VENDEUR = [
   {
     icon: Star,
-    titre: "Évaluation Standard",
+    titre: "Estimation Standard",
     texte: "Connaître rapidement la valeur de son projet grâce à notre méthode d'analyse propriétaire.",
-    type: "Gratuit",
+    type: "49 €",
   },
   {
     icon: Award,
-    titre: "Évaluation Expert Certifiée",
-    texte: "Obtenir une expertise complète, signée et opposable pour maximiser votre prix de vente.",
-    type: "Sur devis",
+    titre: "Estimation Expert",
+    texte: "Obtenir une expertise complète avec rapport PDF détaillé pour maximiser votre prix de vente.",
+    type: "149 €",
   },
   {
     icon: BarChart2,
-    titre: "Valorisation Avant Vente",
-    texte: "Optimiser votre annonce et mettre en valeur les atouts de votre projet pour attirer les meilleurs acheteurs.",
-    type: "Sur devis",
+    titre: "Vérification La Garde",
+    texte: "Obtenez le badge « Vérifié par La Garde » pour rassurer les acheteurs et accélérer la vente.",
+    type: "99 €",
   },
   {
     icon: Wrench,
-    titre: "Refonte Avant Vente",
-    texte: "Augmenter la valeur perçue de votre projet grâce à une refonte technique ou graphique avant publication.",
-    type: "Sur devis",
+    titre: "Accompagnement Vente Premium",
+    texte: "Soyez accompagné à chaque étape de la vente, de la rédaction de l'annonce jusqu'à la signature.",
+    type: "399 €",
   },
 ];
 
@@ -636,7 +636,7 @@ export default function CitadelleVendre() {
                 </div>
                 <div>
                   <p className="font-black text-base" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                    Évaluation Expert Certifiée
+                    Estimation Expert
                   </p>
                   <p className="text-sm mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
                     Rapport complet signé par un expert — référence pour les transactions importantes.
