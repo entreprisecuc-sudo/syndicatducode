@@ -116,7 +116,7 @@ class BlogPostUpdate(BaseModel):
 @router.get("/blog", summary="Liste des articles publiés")
 async def list_posts(
     category: Optional[str] = Query(None),
-    limit: int = Query(20, ge=1, le=50),
+    limit: int = Query(20, ge=1, le=200),
     skip: int = Query(0, ge=0)
 ):
     """Retourne les articles publiés, triés par date de publication décroissante"""

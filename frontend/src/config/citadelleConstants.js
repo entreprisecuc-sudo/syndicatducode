@@ -88,6 +88,10 @@ export const BLOG_CATEGORIES = [
   { slug: "vente-applications",label: "Applications mobiles" },
   { slug: "reseaux-sociaux",   label: "Réseaux sociaux" },
   { slug: "marketplace",       label: "Marketplace" },
+  { slug: "nom-de-domaine",    label: "Nom de domaine" },
+  { slug: "newsletter",        label: "Newsletter" },
+  { slug: "communautes",       label: "Communautés" },
+  { slug: "investissement",    label: "Investissement" },
 ];
 
 // Navigation principale

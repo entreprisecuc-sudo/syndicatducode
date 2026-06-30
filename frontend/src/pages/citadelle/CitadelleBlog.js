@@ -45,7 +45,7 @@ export default function CitadelleBlog() {
     (async () => {
       setLoading(true);
       try {
-        const res = await citadelleApi.get("/blog");
+        const res = await citadelleApi.get("/blog", { params: { limit: 200 } });
         setAllPosts(res.data.posts || []);
       } catch {
         setAllPosts([]);
