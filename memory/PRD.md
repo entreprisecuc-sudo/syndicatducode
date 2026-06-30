@@ -76,7 +76,14 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Estimateur de valeur de site** (02/2026) : section interactive sur la page d'accueil, 5 types × 4 anciennetés, fourchette de prix instantanée, FAQ AEO Schema.org, CTA vers service d'estimation professionnel
 - **Page `/citadelle/estimation`** (02/2026) : estimateur avancé 5 paramètres (bénéfice net, type, ancienneté, % SEO organique, taux de croissance, diversification) avec décomposition des ajustements, table comparative des multiples, formulaire de demande d'estimation pro (POST `/api/citadelle/estimation/request`), FAQ accordéon avec microdata Schema.org, JSON-LD FAQPage + Service pour rich snippets Google
 
-### ✅ Badge Vérifié par La Garde (TERMINÉ 30/06/2026)
+### ✅ Images de couverture blog (TERMINÉ 30/06/2026)
+- Script `update_blog_images.py` : 41/41 articles mis à jour avec `cover_image_url` + `cover_image_alt` (Unsplash)
+- Images thématiques et cohérentes par catégorie (estimation, vente, achat, SaaS, SEO, juridique, migration, sécurité, réseaux sociaux, e-commerce, mobile, négociation, marketplace)
+- `cover_image_alt` SEO/GEO/AEO optimisé (mots-clés français + contexte géographique France)
+- Frontend (`CitadelleBlogPost.js`, `CitadelleBlog.js`) : utilise `cover_image_alt || seo_title || title` pour le `<img alt>` → enrichissement SEO
+- OG:image automatiquement renseigné sur chaque article (social sharing)
+
+
 - Endpoint backend : `PATCH /api/citadelle/admin/listings/{id}/garde-verify` (toggle on/off, admin only)
 - Badge activé par l'admin → email HTML premium envoyé au vendeur (branding Citadelle bleu/or)
 - Affichage badge partout :

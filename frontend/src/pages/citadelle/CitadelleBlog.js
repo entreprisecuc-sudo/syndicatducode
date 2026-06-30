@@ -106,7 +106,7 @@ export default function CitadelleBlog() {
                     <div className="w-full h-44 overflow-hidden">
                       <img
                         src={getListingImageUrl(post.cover_image_url)}
-                        alt={post.title}
+                        alt={post.cover_image_alt || post.seo_title || post.title}
                         className="w-full h-full object-cover"
                       />
                     </div>

@@ -74,7 +74,7 @@ function RelatedCard({ post }) {
       {/* Image de couverture ou placeholder */}
       <div style={{ height: 140, background: `linear-gradient(135deg, ${CITADELLE_COLORS.blue} 0%, #1a3a6b 100%)`, position: "relative", overflow: "hidden" }}>
         {post.cover_image_url
-          ? <img src={getListingImageUrl(post.cover_image_url)} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ? <img src={getListingImageUrl(post.cover_image_url)} alt={post.cover_image_alt || post.seo_title || post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <BookOpen size={36} style={{ color: "rgba(201,164,92,0.35)" }} />
             </div>
@@ -227,7 +227,7 @@ export default function CitadelleBlogPost() {
           <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden mb-8">
             <img
               src={getListingImageUrl(post.cover_image_url)}
-              alt={post.title}
+              alt={post.cover_image_alt || post.seo_title || post.title}
               className="w-full h-full object-cover"
             />
           </div>
