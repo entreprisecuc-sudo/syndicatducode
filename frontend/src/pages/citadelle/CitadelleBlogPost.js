@@ -284,7 +284,7 @@ export default function CitadelleBlogPost() {
         {/* Contenu Markdown */}
         <div className="blog-content" data-testid="blog-post-content">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {post.content_md}
+            {post.content_md || post.content || ""}
           </ReactMarkdown>
         </div>
 

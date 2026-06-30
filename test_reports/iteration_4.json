@@ -1,0 +1,27 @@
+{
+  "summary": "Bug fix verification: Blog articles on La Citadelle Numérique now display full content. Tested blog listing, article body rendering, related articles navigation, and back navigation.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Bug fix confirmed working. Articles display full Markdown content (content_md field populated by migration). Tested slugs: comment-vendre-un-nom-de-domaine-au-meilleur-prix, comment-acheter-un-nom-de-domaine-premium. All 4 acceptance criteria pass.",
+  "test_results": {
+    "blog_listing_with_excerpts": "PASS - Blog page loads with article cards showing titles and excerpt text",
+    "article_content_displayed": "PASS - Article 'comment-vendre-un-nom-de-domaine-au-meilleur-prix' shows full Markdown (15 headings, 14 paragraphs, 4353 chars)",
+    "related_articles_clickable_with_content": "PASS - Related article 'comment-acheter-un-nom-de-domaine-premium' opens with full content (18 headings, 13 paragraphs, 4518 chars)",
+    "back_navigation": "PASS - 'Retour au blog' link correctly navigates back to /citadelle/blog"
+  }
+}
