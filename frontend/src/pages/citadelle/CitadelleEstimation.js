@@ -647,6 +647,9 @@ function ContactForm({ prefillType }) {
                   style={{
                     border: active ? `2px solid ${CITADELLE_COLORS.gold}` : `1px solid ${CITADELLE_COLORS.border}`,
                     background: active ? "rgba(201,164,92,0.06)" : CITADELLE_COLORS.bg,
+                    boxShadow: active ? `0 0 0 3px rgba(201,164,92,0.15)` : "none",
+                    outline: active ? `2px solid ${CITADELLE_COLORS.gold}` : "none",
+                    outlineOffset: 2,
                   }}>
                   {svc.badge && (
                     <span className="absolute -top-2.5 right-3 px-2.5 py-0.5 rounded-full text-xs font-black"

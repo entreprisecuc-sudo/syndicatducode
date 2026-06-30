@@ -76,6 +76,13 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Estimateur de valeur de site** (02/2026) : section interactive sur la page d'accueil, 5 types × 4 anciennetés, fourchette de prix instantanée, FAQ AEO Schema.org, CTA vers service d'estimation professionnel
 - **Page `/citadelle/estimation`** (02/2026) : estimateur avancé 5 paramètres (bénéfice net, type, ancienneté, % SEO organique, taux de croissance, diversification) avec décomposition des ajustements, table comparative des multiples, formulaire de demande d'estimation pro (POST `/api/citadelle/estimation/request`), FAQ accordéon avec microdata Schema.org, JSON-LD FAQPage + Service pour rich snippets Google
 
+### ✅ Estimation pro payante — Sélecteur Standard/Expert + Stripe (TERMINÉ 30/06/2026)
+- **Sélecteur de formule** : 2 cartes Standard (49€) / Expert (149€) avec features list + badge "Recommandé"
+- **ContactForm refonte** : appel `POST /api/citadelle/payments/service/checkout` → redirect Stripe (plus d'email gratuit)
+- **Backend** : `cancel_path` ajouté à `ServiceCheckoutRequest` → retour sur `/citadelle/estimation` si annulation
+- **Page confirmation** : détecte si service estimation → message adapté "48h ouvrées" + CTA "Créer mon espace client" (si non connecté) ou "Voir mes services" (si connecté)
+- **Testé à 95%** : cartes visibles, sélection fonctionnelle, bouton prix dynamique, appel API confirmé
+
 ### ✅ Bug fix — Articles de blog vides (CORRIGÉ 30/06/2026)
 - **Cause** : Les 15 articles importés (batch 3) avaient leur contenu Markdown dans le champ `content` au lieu de `content_md`
 - **Fix 1 — Frontend** : `CitadelleBlogPost.js` ligne 287 → `post.content_md || post.content` (fallback robuste)
