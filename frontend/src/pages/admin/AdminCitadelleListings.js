@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Star, Eye, Filter, AlertCircle, Trash2, X, ExternalLink, Globe, BarChart2, Calendar, TrendingUp, Hammer, FileText } from "lucide-react";
+import { CheckCircle, XCircle, Star, Eye, Filter, AlertCircle, Trash2, X, ExternalLink, Globe, BarChart2, Calendar, TrendingUp, Hammer, FileText, ShieldCheck } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
 import { getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@/config/citadelleConstants";
@@ -92,6 +92,18 @@ export default function AdminCitadelleListings() {
       await fetchListings();
     } catch (err) {
       alert("Erreur mise en avant");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const toggleGardeVerify = async (id) => {
+    setActionLoading(id + "_garde");
+    try {
+      await api.patch(`/citadelle/admin/listings/${id}/garde-verify`);
+      await fetchListings();
+    } catch (err) {
+      alert("Erreur badge La Garde");
     } finally {
       setActionLoading(null);
     }
@@ -204,13 +216,27 @@ export default function AdminCitadelleListings() {
                       <Eye size={13} /> Voir
                     </button>
                     {listing.status === "active" && (
-                      <button onClick={() => toggleFeature(listing.id)}
-                        disabled={actionLoading === listing.id + "_feature"}
-                        className="p-2 rounded-lg transition-all hover:scale-110"
-                        style={{ color: listing.is_featured ? "#C9A45C" : undefined }}
-                        title={listing.is_featured ? "Retirer la mise en avant" : "Mettre en avant"}>
-                        <Star size={15} fill={listing.is_featured ? "#C9A45C" : "none"} />
-                      </button>
+                      <>
+                        <button onClick={() => toggleFeature(listing.id)}
+                          disabled={actionLoading === listing.id + "_feature"}
+                          className="p-2 rounded-lg transition-all hover:scale-110"
+                          style={{ color: listing.is_featured ? "#C9A45C" : undefined }}
+                          title={listing.is_featured ? "Retirer la mise en avant" : "Mettre en avant"}>
+                          <Star size={15} fill={listing.is_featured ? "#C9A45C" : "none"} />
+                        </button>
+                        <button onClick={() => toggleGardeVerify(listing.id)}
+                          disabled={actionLoading === listing.id + "_garde"}
+                          className="p-2 rounded-lg transition-all hover:scale-110"
+                          style={{
+                            color: listing.garde_verified ? "#C9A45C" : "#6B7280",
+                            background: listing.garde_verified ? "rgba(201,164,92,0.12)" : "transparent",
+                            border: listing.garde_verified ? "1px solid rgba(201,164,92,0.3)" : "1px solid transparent",
+                          }}
+                          title={listing.garde_verified ? "Retirer le badge La Garde" : "Activer le badge La Garde"}
+                          data-testid={`admin-garde-${listing.id}`}>
+                          <ShieldCheck size={15} fill={listing.garde_verified ? "rgba(201,164,92,0.3)" : "none"} />
+                        </button>
+                      </>
                     )}
                     {listing.status === "pending" && (
                       <>

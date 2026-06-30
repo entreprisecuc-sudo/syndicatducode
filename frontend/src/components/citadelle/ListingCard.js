@@ -110,11 +110,28 @@ export default function ListingCard({ listing }) {
           </div>
         )}
         {!isSold && listing.is_verified && (
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
               style={{ background: "#22C55E", color: "white" }}>
               <ShieldCheck size={11} />
               Vérifié
+            </span>
+          </div>
+        )}
+        {!isSold && listing.garde_verified && (
+          <div className="absolute bottom-3 right-3">
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-black"
+              style={{
+                background: "linear-gradient(135deg, #0F2747 0%, #1a3a6b 100%)",
+                color: "#C9A45C",
+                border: "1px solid rgba(201,164,92,0.4)",
+                boxShadow: "0 2px 8px rgba(15,39,71,0.35)",
+              }}
+              data-testid={`garde-badge-${listing.slug}`}
+            >
+              <ShieldCheck size={11} />
+              Vérifié La Garde
             </span>
           </div>
         )}

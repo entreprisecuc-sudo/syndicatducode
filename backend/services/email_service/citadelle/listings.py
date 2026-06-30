@@ -122,6 +122,146 @@ Marketplace française d'actifs numériques
         return False
 
 
+def send_citadelle_garde_verified_email(
+    to_email: str,
+    listing_title: str,
+    listing_slug: str,
+    seller_name: str = "",
+) -> bool:
+    """
+    Notifie le vendeur que son annonce a obtenu le badge « Vérifié par La Garde ».
+    Email HTML premium avec branding Citadelle bleu/or.
+    """
+    try:
+        listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
+        prenom = seller_name.split()[0] if seller_name else "Bonjour"
+
+        msg = MIMEMultipart("alternative")
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = to_email
+        msg['Subject'] = f"Votre annonce est maintenant Vérifiée par La Garde — {listing_title}"
+
+        html = f"""<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f0f3f8;font-family:'Helvetica Neue',Arial,sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f3f8;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(15,39,71,0.12);">
+
+        <!-- EN-TÊTE BLEU NUIT -->
+        <tr>
+          <td style="background:#0f2747;padding:32px 40px 24px;text-align:center;">
+            <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:rgba(201,164,92,0.7);">La Citadelle Numérique</p>
+            <!-- Bouclier SVG doré -->
+            <div style="display:inline-block;margin:16px 0;">
+              <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                <tr><td align="center" style="background:rgba(201,164,92,0.12);border:2px solid rgba(201,164,92,0.35);border-radius:50%;width:72px;height:72px;">
+                  <span style="font-size:36px;line-height:72px;">🛡️</span>
+                </td></tr>
+              </table>
+            </div>
+            <h1 style="margin:8px 0 0;font-size:22px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;">Vérifié par La Garde</h1>
+            <p style="margin:8px 0 0;font-size:14px;color:rgba(255,255,255,0.55);">Badge de confiance activé sur votre annonce</p>
+          </td>
+        </tr>
+
+        <!-- BANDEAU DORÉ -->
+        <tr>
+          <td style="background:#c9a45c;padding:10px 40px;text-align:center;">
+            <p style="margin:0;font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#0f2747;">Identité · Droits · Revenus · Accès — Tout a été contrôlé</p>
+          </td>
+        </tr>
+
+        <!-- CORPS -->
+        <tr>
+          <td style="background:#ffffff;padding:36px 40px;">
+
+            <p style="margin:0 0 20px;font-size:15px;color:#1a2e4a;">Bonjour {prenom},</p>
+            <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#374151;">
+              Excellente nouvelle ! Votre annonce a passé avec succès la vérification complète de <strong>La Garde</strong>. 
+              Le badge <strong style="color:#0f2747;">« Vérifié par La Garde »</strong> est maintenant affiché sur votre annonce.
+            </p>
+
+            <!-- Carte annonce -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fc;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:28px;">
+              <tr><td style="padding:20px 24px;">
+                <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c9a45c;">Votre annonce</p>
+                <p style="margin:0;font-size:16px;font-weight:800;color:#0f2747;">{listing_title}</p>
+              </td></tr>
+            </table>
+
+            <!-- Ce que le badge apporte -->
+            <p style="margin:0 0 16px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#0f2747;">Ce que ce badge signifie pour vous</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+              <tr>
+                <td style="padding:8px 0;border-bottom:1px solid #f0f3f8;">
+                  <table cellpadding="0" cellspacing="0"><tr>
+                    <td style="padding-right:12px;font-size:18px;">✅</td>
+                    <td style="font-size:14px;color:#374151;line-height:1.5;"><strong>Plus de confiance</strong> — Les acheteurs savent que votre identité et vos droits ont été vérifiés.</td>
+                  </tr></table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;border-bottom:1px solid #f0f3f8;">
+                  <table cellpadding="0" cellspacing="0"><tr>
+                    <td style="padding-right:12px;font-size:18px;">⚡</td>
+                    <td style="font-size:14px;color:#374151;line-height:1.5;"><strong>Vente plus rapide</strong> — Les annonces vérifiées reçoivent en moyenne plus d'offres.</td>
+                  </tr></table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;">
+                  <table cellpadding="0" cellspacing="0"><tr>
+                    <td style="padding-right:12px;font-size:18px;">🛡️</td>
+                    <td style="font-size:14px;color:#374151;line-height:1.5;"><strong>Distinction visuelle</strong> — Un bouclier doré s'affiche sur votre carte d'annonce dans le listing.</td>
+                  </tr></table>
+                </td>
+              </tr>
+            </table>
+
+            <!-- CTA -->
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr><td align="center">
+                <a href="{listing_url}"
+                   style="display:inline-block;background:#c9a45c;color:#0f2747;font-size:14px;font-weight:900;text-decoration:none;padding:16px 40px;border-radius:10px;letter-spacing:0.3px;">
+                  Voir mon annonce →
+                </a>
+              </td></tr>
+            </table>
+
+            <p style="margin:28px 0 0;font-size:13px;line-height:1.6;color:#9ca3af;text-align:center;">
+              Merci de votre confiance. N'hésitez pas à nous contacter pour toute question.
+            </p>
+          </td>
+        </tr>
+
+        <!-- PIED DE PAGE -->
+        <tr>
+          <td style="background:#0f2747;padding:20px 40px;text-align:center;">
+            <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#c9a45c;">La Citadelle Numérique</p>
+            <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);">Marketplace française d'actifs numériques · <a href="{CITADELLE_URL}" style="color:rgba(201,164,92,0.5);text-decoration:none;">{CITADELLE_URL}</a></p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+
+</body>
+</html>"""
+
+        msg.attach(MIMEText(html, "html", "utf-8"))
+        _envoyer_email(msg)
+        logger.info(f"[Citadelle] Email Vérifié La Garde envoyé à {to_email} pour: {listing_title[:40]}")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Citadelle] Erreur email garde_verified: {e}")
+        return False
+
+
 def send_citadelle_admin_new_listing_email(
     seller_email: str,
     listing_title: str,

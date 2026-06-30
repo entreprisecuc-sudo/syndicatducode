@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Eye, Edit2, Trash2, AlertCircle, Clock, CheckCircle, XCircle, ShoppingBag } from "lucide-react";
+import { Plus, Eye, Edit2, Trash2, AlertCircle, Clock, CheckCircle, XCircle, ShoppingBag, ShieldCheck } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
@@ -111,7 +111,22 @@ export default function CitadelleMyListings() {
                   </div>
                   {/* Infos */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-sm truncate" style={{ color: CITADELLE_COLORS.blue }}>{listing.title}</h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-bold text-sm truncate" style={{ color: CITADELLE_COLORS.blue }}>{listing.title}</h3>
+                      {listing.garde_verified && (
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-black flex-shrink-0"
+                          style={{
+                            background: "linear-gradient(135deg, #0F2747 0%, #1a3a6b 100%)",
+                            color: "#C9A45C",
+                            border: "1px solid rgba(201,164,92,0.35)",
+                          }}
+                          data-testid={`my-listing-garde-badge-${listing.id}`}
+                        >
+                          <ShieldCheck size={10} /> Vérifié La Garde
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
                       {listing.price?.toLocaleString("fr-FR")} € · {new Date(listing.created_at).toLocaleDateString("fr-FR")}
                     </p>

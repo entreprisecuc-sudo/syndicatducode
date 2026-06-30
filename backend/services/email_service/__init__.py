@@ -21,6 +21,7 @@ from services.email_service.citadelle.listings import (
     send_citadelle_listing_approved_email,
     send_citadelle_listing_rejected_email,
     send_citadelle_admin_new_listing_email,
+    send_citadelle_garde_verified_email,
 )
 from services.email_service.citadelle.transactions import (
     send_citadelle_credentials_email,

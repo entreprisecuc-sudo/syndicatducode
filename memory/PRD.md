@@ -76,7 +76,16 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Estimateur de valeur de site** (02/2026) : section interactive sur la page d'accueil, 5 types × 4 anciennetés, fourchette de prix instantanée, FAQ AEO Schema.org, CTA vers service d'estimation professionnel
 - **Page `/citadelle/estimation`** (02/2026) : estimateur avancé 5 paramètres (bénéfice net, type, ancienneté, % SEO organique, taux de croissance, diversification) avec décomposition des ajustements, table comparative des multiples, formulaire de demande d'estimation pro (POST `/api/citadelle/estimation/request`), FAQ accordéon avec microdata Schema.org, JSON-LD FAQPage + Service pour rich snippets Google
 
-### ✅ Catalogue Services v3 — Prix officiels (TERMINÉ 30/06/2026)
+### ✅ Badge Vérifié par La Garde (TERMINÉ 30/06/2026)
+- Endpoint backend : `PATCH /api/citadelle/admin/listings/{id}/garde-verify` (toggle on/off, admin only)
+- Badge activé par l'admin → email HTML premium envoyé au vendeur (branding Citadelle bleu/or)
+- Affichage badge partout :
+  - Carte listing public : badge doré "Vérifié La Garde" en bas droite de l'image
+  - Page détail : bannière proéminente en haut de la fiche (bouclier + texte)
+  - Espace membre vendeur (CitadelleMyListings) : badge doré inline sur le titre de l'annonce
+  - Admin (AdminCitadelleListings) : bouton ShieldCheck toggle (or actif / gris inactif) dans la rangée d'actions
+
+
 - Mise à jour complète du catalogue : 13 services officiels (9 payants/commission + 3 gratuits + 1 service "Vente aux enchères" sur commission)
 - Nouveaux titres définitifs validés par le client :
   - **Vendeurs** : Estimation Standard (49€), Estimation Expert (149€), Vérification La Garde (99€), Accompagnement Vente Premium (399€), Vente aux enchères (Commission 5%)

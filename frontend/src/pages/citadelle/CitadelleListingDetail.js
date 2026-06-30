@@ -193,7 +193,34 @@ export default function CitadelleListingDetail() {
 
           {/* Colonne droite — Infos & CTA */}
           <div className="space-y-4">
-            {/* Badges */}
+            {/* Badge Vérifié La Garde — bannière proéminente */}
+            {listing.garde_verified && (
+              <div
+                className="flex items-center gap-4 p-4 rounded-xl"
+                style={{
+                  background: "linear-gradient(135deg, #0F2747 0%, #1a3a6b 100%)",
+                  border: "1px solid rgba(201,164,92,0.3)",
+                  boxShadow: "0 4px 16px rgba(15,39,71,0.18)",
+                }}
+                data-testid="garde-verified-banner"
+              >
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "rgba(201,164,92,0.15)", border: "1px solid rgba(201,164,92,0.3)" }}
+                >
+                  <ShieldCheck size={22} style={{ color: "#C9A45C" }} />
+                </div>
+                <div>
+                  <p className="font-black text-sm" style={{ color: "#C9A45C", letterSpacing: "0.3px" }}>
+                    Vérifié par La Garde
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>
+                    Identité du vendeur, droits de propriété, revenus et accès contrôlés par notre équipe.
+                  </p>
+                </div>
+              </div>
+            )}
+            {/* Badges statut */}
             <div className="flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
                 style={{ background: "rgba(15,39,71,0.07)", color: CITADELLE_COLORS.blue }}>

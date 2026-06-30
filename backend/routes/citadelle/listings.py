@@ -551,6 +551,55 @@ async def admin_feature_listing(
     return {"message": f"Annonce {action}", "is_featured": new_value}
 
 
+@router.patch("/admin/listings/{listing_id}/garde-verify", summary="Admin — Toggle badge Vérifié La Garde")
+async def admin_garde_verify_listing(
+    listing_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Admin : active ou désactive le badge « Vérifié par La Garde » sur une annonce.
+    Envoie un email de notification au vendeur lors de l'activation.
+    """
+    listing = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+
+    new_value = not listing.get("garde_verified", False)
+    now = datetime.now(timezone.utc).isoformat()
+
+    await db.citadelle_listings.update_one(
+        {"id": listing_id},
+        {"$set": {
+            "garde_verified": new_value,
+            "garde_verified_at": now if new_value else None,
+            "updated_at": now,
+        }}
+    )
+
+    # Email de notification au vendeur uniquement lors de l'activation
+    if new_value and listing.get("seller_email"):
+        from services.email_service import send_citadelle_garde_verified_email
+        seller = await db.users.find_one(
+            {"id": listing.get("seller_id")},
+            {"_id": 0, "first_name": 1, "last_name": 1}
+        )
+        seller_name = ""
+        if seller:
+            seller_name = f"{seller.get('first_name', '')} {seller.get('last_name', '')}".strip()
+        send_citadelle_garde_verified_email(
+            to_email=listing["seller_email"],
+            listing_title=listing["title"],
+            listing_slug=listing["slug"],
+            seller_name=seller_name,
+        )
+        logger.info(f"[Citadelle Admin] Badge La Garde activé sur: {listing['title']}")
+    else:
+        logger.info(f"[Citadelle Admin] Badge La Garde retiré sur: {listing['title']}")
+
+    action = "Badge La Garde activé" if new_value else "Badge La Garde retiré"
+    return {"message": action, "garde_verified": new_value}
+
+
 @router.delete("/admin/listings/{listing_id}", summary="Admin — Supprimer une annonce")
 async def admin_delete_listing(
     listing_id: str,
