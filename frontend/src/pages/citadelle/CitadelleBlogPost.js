@@ -222,15 +222,26 @@ export default function CitadelleBlogPost() {
           <ArrowLeft size={14} /> Retour au blog
         </Link>
 
-        {/* Image de couverture */}
+        {/* Image de couverture avec figcaption SEO/AEO */}
         {post.cover_image_url && (
-          <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden mb-8">
+          <figure className="w-full rounded-2xl overflow-hidden mb-8" style={{ margin: 0 }}>
             <img
               src={getListingImageUrl(post.cover_image_url)}
               alt={post.cover_image_alt || post.seo_title || post.title}
-              className="w-full h-full object-cover"
+              className="w-full h-64 md:h-80 object-cover"
+              loading="lazy"
+              width="1200"
+              height="480"
             />
-          </div>
+            {post.cover_image_alt && (
+              <figcaption
+                className="px-4 py-2 text-xs text-center"
+                style={{ color: CITADELLE_COLORS.textMuted, background: "rgba(15,39,71,0.03)", borderTop: `1px solid ${CITADELLE_COLORS.border}` }}
+              >
+                {post.cover_image_alt}
+              </figcaption>
+            )}
+          </figure>
         )}
 
         {/* Catégorie */}
