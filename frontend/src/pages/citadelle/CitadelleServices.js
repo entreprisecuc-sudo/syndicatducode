@@ -379,7 +379,7 @@ export default function CitadelleServices() {
             {/* 4. Inclus gratuitement */}
             {freeServices.length > 0 && (
               <div
-                className="rounded-2xl px-8 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+                className="mt-10 rounded-2xl px-8 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
                 style={{ background: "rgba(22,163,74,0.04)", border: "1px solid rgba(22,163,74,0.18)" }}
                 data-testid="free-services-section"
               >
