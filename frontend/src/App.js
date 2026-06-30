@@ -4,11 +4,19 @@
  */
 
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { ModalProvider } from "@/context/ModalContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { AdminThemeProvider } from "@/context/AdminThemeContext";
 import { PublicRoute, RoleRoute } from "@/components/auth/ProtectedRoute";
+
+// Scroll en haut à chaque changement de route
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
 
 // Pages publiques
 import HomePage from "@/pages/HomePage";
@@ -144,6 +152,8 @@ function App() {
         <AdminThemeProvider>
           <div className="App">
             <BrowserRouter>
+              {/* Scroll en haut à chaque navigation */}
+              <ScrollToTop />
               {/* Alertes globales (bannières et popups) */}
               <GlobalAlerts />
             
