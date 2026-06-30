@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://lacitadellenumerique.fr/sitemap-citadelle.xml
+Sitemap: https://syndicatducode.fr/sitemap-syndicat.xml
+
+# Exclure les espaces privés
+Disallow: /citadelle/espace-membre/
+Disallow: /espace-developpeur/
+Disallow: /espace-commercial/
+Disallow: /syndicat-admin/
+Disallow: /api/

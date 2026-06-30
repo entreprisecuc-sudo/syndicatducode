@@ -76,6 +76,13 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Estimateur de valeur de site** (02/2026) : section interactive sur la page d'accueil, 5 types × 4 anciennetés, fourchette de prix instantanée, FAQ AEO Schema.org, CTA vers service d'estimation professionnel
 - **Page `/citadelle/estimation`** (02/2026) : estimateur avancé 5 paramètres (bénéfice net, type, ancienneté, % SEO organique, taux de croissance, diversification) avec décomposition des ajustements, table comparative des multiples, formulaire de demande d'estimation pro (POST `/api/citadelle/estimation/request`), FAQ accordéon avec microdata Schema.org, JSON-LD FAQPage + Service pour rich snippets Google
 
+### ✅ Sitemaps XML dynamiques (TERMINÉ 30/06/2026)
+- **Citadelle** : `GET /api/sitemap-citadelle.xml` → 68 URLs (11 pages statiques + 56 articles + annonces live)
+- **Syndicat** : `GET /api/sitemap-syndicat.xml` → 8 URLs (pages publiques)
+- **Fichiers statiques** dans `public/` : `sitemap-citadelle.xml` (soumission directe GSC) + `sitemap-syndicat.xml`
+- **`robots.txt`** créé dans `public/` avec pointeurs vers les 2 sitemaps + exclusions des espaces privés
+- Priorités et changefreq calibrés par type de contenu (blog daily 0.9, annonces daily 0.9, statique monthly/yearly)
+
 ### ✅ Estimation pro payante — Sélecteur Standard/Expert + Stripe (TERMINÉ 30/06/2026)
 - **Sélecteur de formule** : 2 cartes Standard (49€) / Expert (149€) avec features list + badge "Recommandé"
 - **ContactForm refonte** : appel `POST /api/citadelle/payments/service/checkout` → redirect Stripe (plus d'email gratuit)

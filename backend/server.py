@@ -253,6 +253,7 @@ from routes.notifications import router as notifications_router, set_database as
 from routes.project_rooms import router as project_rooms_router, set_database as set_project_rooms_db
 from routes.invoices import router as invoices_router, set_database as set_invoices_db
 from routes.citadelle import router as citadelle_router, set_database as set_citadelle_db
+from routes.sitemaps import router as sitemaps_router
 
 # Injecter la base de données dans les modules
 set_auth_db(db)
@@ -285,6 +286,7 @@ api_router.include_router(notifications_router)
 api_router.include_router(project_rooms_router)
 api_router.include_router(invoices_router)
 api_router.include_router(citadelle_router)
+api_router.include_router(sitemaps_router)
 
 
 # ============================================
