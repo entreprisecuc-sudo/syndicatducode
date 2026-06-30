@@ -24,6 +24,32 @@ const SITE_TYPES = [
   { value: "social",      label: "Compte / Réseau social" },
 ];
 
+// Nouveaux types — mappés vers les multiples existants pour le calcul
+const TYPE_MAPPING = {
+  shopify_store: "ecommerce", amazon_fba: "ecommerce",
+  newsletter: "contenu", forum: "contenu", blog: "contenu", online_media: "contenu",
+  youtube_channel: "social", instagram: "social", tiktok: "social",
+  linkedin_page: "social", discord_server: "social",
+  ai_automation: "saas", template_plugin: "saas", database_api: "saas",
+};
+
+const EXTRA_SITE_TYPES = [
+  { value: "shopify_store",   label: "Boutique Shopify" },
+  { value: "amazon_fba",      label: "Amazon FBA" },
+  { value: "newsletter",      label: "Newsletter" },
+  { value: "youtube_channel", label: "Chaîne YouTube" },
+  { value: "instagram",       label: "Compte Instagram" },
+  { value: "tiktok",          label: "Compte TikTok" },
+  { value: "linkedin_page",   label: "Page LinkedIn Entreprise" },
+  { value: "discord_server",  label: "Serveur Discord" },
+  { value: "forum",           label: "Forum" },
+  { value: "blog",            label: "Blog" },
+  { value: "online_media",    label: "Média en ligne" },
+  { value: "ai_automation",   label: "Agents IA / Automatisations" },
+  { value: "template_plugin", label: "Templates / Plugins" },
+  { value: "database_api",    label: "Bases de données / APIs" },
+];
+
 const AGES = [
   { value: "lt1",   label: "< 1 an" },
   { value: "1-3",   label: "1 — 3 ans" },
@@ -56,7 +82,8 @@ const pct = (mult) => {
 // ── Algorithme d'estimation ───────────────────────────────────────────────────
 
 function compute({ revenue, siteType, age, seoPercent, growthPercent, diversification }) {
-  const [baseLow, baseHigh] = MULTIPLES[siteType][age];
+  const multKey = TYPE_MAPPING[siteType] || siteType;
+  const [baseLow, baseHigh] = MULTIPLES[multKey][age];
 
   // Ajustement SEO
   let seoMult, seoLabel, seoColor;
@@ -160,6 +187,7 @@ function AdvancedEstimator({ onResult, formRef }) {
   const [growthPercent, setGrowthPercent] = useState(3);
   const [diversification, setDiversification] = useState(2);
   const [result, setResult]             = useState(null);
+  const [showExtraTypes, setShowExtraTypes] = useState(false);
 
   const calculate = (e) => {
     e.preventDefault();
@@ -170,7 +198,7 @@ function AdvancedEstimator({ onResult, formRef }) {
     onResult({ revenue: rev, siteType });
   };
 
-  const reset = () => { setResult(null); setRevenue(""); onResult(null); };
+  const reset = () => { setResult(null); setRevenue(""); onResult(null); setShowExtraTypes(false); };
 
   const inputStyle = {
     background: "white",
@@ -229,7 +257,7 @@ function AdvancedEstimator({ onResult, formRef }) {
             </label>
             <div className="grid grid-cols-1 gap-2">
               {SITE_TYPES.map(t => (
-                <button key={t.value} type="button" onClick={() => setSiteType(t.value)}
+                <button key={t.value} type="button" onClick={() => { setSiteType(t.value); setShowExtraTypes(false); }}
                   data-testid={`adv-type-${t.value}`}
                   className="px-4 py-2.5 rounded-xl text-sm font-medium text-left transition-all"
                   style={{
@@ -241,6 +269,49 @@ function AdvancedEstimator({ onResult, formRef }) {
                   {t.label}
                 </button>
               ))}
+
+              {/* Bouton "Autres types" */}
+              <button type="button" onClick={() => setShowExtraTypes(v => !v)}
+                className="px-4 py-2.5 rounded-xl text-sm font-medium text-left transition-all"
+                style={{
+                  background: EXTRA_SITE_TYPES.some(t => t.value === siteType) ? `rgba(201,164,92,0.12)` : CITADELLE_COLORS.bg,
+                  border: `1px dashed ${EXTRA_SITE_TYPES.some(t => t.value === siteType) ? CITADELLE_COLORS.gold : CITADELLE_COLORS.border}`,
+                  color: EXTRA_SITE_TYPES.some(t => t.value === siteType) ? CITADELLE_COLORS.blue : CITADELLE_COLORS.textMuted,
+                  fontWeight: EXTRA_SITE_TYPES.some(t => t.value === siteType) ? 700 : 500,
+                }}>
+                {EXTRA_SITE_TYPES.some(t => t.value === siteType)
+                  ? `Autre : ${EXTRA_SITE_TYPES.find(t => t.value === siteType)?.label}`
+                  : `Autres types d'actifs ${showExtraTypes ? "▲" : "▼"}`}
+              </button>
+            </div>
+
+            {/* Panneau "Autres types" expansible */}
+            <div style={{
+              maxHeight: showExtraTypes ? "500px" : "0",
+              opacity: showExtraTypes ? 1 : 0,
+              overflow: "hidden",
+              transition: "max-height 0.35s ease, opacity 0.2s ease",
+            }}>
+              <div className="pt-3">
+                <div className="flex flex-wrap gap-1.5">
+                  {EXTRA_SITE_TYPES.map(t => {
+                    const active = siteType === t.value;
+                    return (
+                      <button key={t.value} type="button"
+                        onClick={() => setSiteType(t.value)}
+                        className="px-3 py-1.5 rounded-full text-xs transition-all"
+                        style={{
+                          border: active ? `1.5px solid ${CITADELLE_COLORS.gold}` : `1px solid ${CITADELLE_COLORS.border}`,
+                          background: active ? "rgba(201,164,92,0.12)" : "white",
+                          color: active ? CITADELLE_COLORS.blue : CITADELLE_COLORS.textMuted,
+                          fontWeight: active ? 700 : 500,
+                        }}>
+                        {t.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
 

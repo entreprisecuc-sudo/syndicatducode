@@ -116,7 +116,15 @@ async def upload_listing_image(
 
 # ── Modèles ────────────────────────────────────────────────────────────────────
 
-LISTING_TYPES = ["website", "ecommerce", "saas", "webapp", "social_account", "domain"]
+LISTING_TYPES = [
+    # Catégories principales
+    "website", "ecommerce", "saas", "webapp", "social_account", "domain",
+    # Catégories "Autre" (nouvelles)
+    "shopify_store", "amazon_fba", "newsletter", "youtube_channel",
+    "instagram", "tiktok", "linkedin_page", "discord_server",
+    "forum", "blog", "online_media", "ai_automation",
+    "template_plugin", "database_api",
+]
 LISTING_STATUSES = ["draft", "pending", "active", "sold", "expired", "rejected"]
 
 LISTING_EXPIRY_DAYS = 90  # Durée de validité d'une annonce active

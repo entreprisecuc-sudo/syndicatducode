@@ -76,6 +76,31 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Estimateur de valeur de site** (02/2026) : section interactive sur la page d'accueil, 5 types × 4 anciennetés, fourchette de prix instantanée, FAQ AEO Schema.org, CTA vers service d'estimation professionnel
 - **Page `/citadelle/estimation`** (02/2026) : estimateur avancé 5 paramètres (bénéfice net, type, ancienneté, % SEO organique, taux de croissance, diversification) avec décomposition des ajustements, table comparative des multiples, formulaire de demande d'estimation pro (POST `/api/citadelle/estimation/request`), FAQ accordéon avec microdata Schema.org, JSON-LD FAQPage + Service pour rich snippets Google
 
+### ✅ Widget estimateur contextuel sur les fiches annonces (TERMINÉ 30/06/2026)
+- Composant `EstimateurSidebar` ajouté dans `CitadelleListingDetail.js` (sidebar droite, après "URL masquée")
+- Pré-rempli automatiquement avec le `monthly_revenue` de l'annonce
+- Affiche le type SDE contextuel selon le type de l'annonce (20 types mappés vers contenu/ecommerce/saas/social)
+- Calcul instantané : fourchette de valorisation avec les multiples SDE min/max de la catégorie
+- Bouton "Recalculer" pour ajuster le bénéfice
+- CTA "Estimation pro gratuite — 48h →" vers `/citadelle/estimation`
+- Augmente les conversions vers le service d'estimation professionnel
+
+### ✅ Nouvelles catégories d'actifs — UX "Autre" (TERMINÉ 30/06/2026)
+- **14 nouvelles catégories** ajoutées sans surcharger l'interface de création d'annonce
+- **Backend** : `LISTING_TYPES` étendu de 6 → 20 types dans `listings.py`
+- **Constantes** : `CITADELLE_EXTRA_CATEGORIES` + `CITADELLE_ALL_CATEGORIES` dans `citadelleConstants.js`
+- **Page Création** (`CitadelleCreateListing.js`) :
+  - 7ème carte "Autre type d'actif" (pleine largeur) avec chevron rotatif
+  - Clic → panneau animé CSS (max-height + opacity) déployé **inline**, les 6 cartes restent visibles
+  - 14 pills cliquables avec icônes Lucide, mise en valeur dorée au clic
+  - Titre de la carte "Autre" se met à jour avec la catégorie sélectionnée
+- **Page Annonces** (`CitadelleListings.js`) : dropdown filtres avec les 20 types
+- **Page Estimation** (`CitadelleEstimation.js`) :
+  - Bouton "Autres types d'actifs" expansible avec 14 pills supplémentaires
+  - `TYPE_MAPPING` pour relier les nouveaux types aux multiples de valorisation existants
+  - Boutique Shopify/FBA → ecommerce · Newsletter/Forum/Blog/Média → contenu · YouTube/Instagram/TikTok/LinkedIn/Discord → social · Agents IA/Templates/BDD → saas
+- Nouvelles catégories : Boutique Shopify, Amazon FBA, Newsletter, Chaîne YouTube, Compte Instagram, Compte TikTok, Page LinkedIn Entreprise, Serveur Discord, Forum, Blog, Média en ligne, Agents IA / Automatisations, Templates / Thèmes / Plugins, Bases de données / APIs
+
 ### ✅ Images de couverture blog (TERMINÉ 30/06/2026)
 - Script `update_blog_images.py` : 41/41 articles mis à jour avec `cover_image_url` + `cover_image_alt` (Unsplash)
 - Images thématiques et cohérentes par catégorie (estimation, vente, achat, SaaS, SEO, juridique, migration, sécurité, réseaux sociaux, e-commerce, mobile, négociation, marketplace)

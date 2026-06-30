@@ -48,6 +48,27 @@ export const CITADELLE_SERVICES = [
   { slug: "audit",        label: "Audit avant vente",icon: "FileSearch",   description: "Rapport technique complet pour rassurer les acheteurs",      price: "Sur devis" },
 ];
 
+// Catégories supplémentaires ("Autre") — accessibles via le panneau expansible
+export const CITADELLE_EXTRA_CATEGORIES = [
+  { slug: "shopify_store",   label: "Boutique Shopify",              icon: "Store",          estimType: "ecommerce", description: "Boutique Shopify, dropshipping" },
+  { slug: "amazon_fba",      label: "Amazon FBA",                    icon: "Package",        estimType: "ecommerce", description: "Business Amazon FBA / Merch" },
+  { slug: "newsletter",      label: "Newsletter",                    icon: "Mail",           estimType: "contenu",   description: "Newsletter payante ou sponsorisée" },
+  { slug: "youtube_channel", label: "Chaîne YouTube",                icon: "Youtube",        estimType: "social",    description: "Chaîne monétisée YouTube" },
+  { slug: "instagram",       label: "Compte Instagram",              icon: "Camera",         estimType: "social",    description: "Compte ou page Instagram" },
+  { slug: "tiktok",          label: "Compte TikTok",                 icon: "Smartphone",     estimType: "social",    description: "Compte TikTok monétisé" },
+  { slug: "linkedin_page",   label: "Page LinkedIn Entreprise",      icon: "Linkedin",       estimType: "social",    description: "Page entreprise LinkedIn" },
+  { slug: "discord_server",  label: "Serveur Discord",               icon: "MessageSquare",  estimType: "social",    description: "Communauté Discord" },
+  { slug: "forum",           label: "Forum",                         icon: "MessagesSquare", estimType: "contenu",   description: "Forum ou communauté en ligne" },
+  { slug: "blog",            label: "Blog",                          icon: "FileText",       estimType: "contenu",   description: "Blog monétisé" },
+  { slug: "online_media",    label: "Média en ligne",                icon: "Newspaper",      estimType: "contenu",   description: "Magazine, journal, media digital" },
+  { slug: "ai_automation",   label: "Agents IA / Automatisations",   icon: "Bot",            estimType: "saas",      description: "Outils IA, scripts, workflows" },
+  { slug: "template_plugin", label: "Templates / Thèmes / Plugins",  icon: "LayoutTemplate", estimType: "saas",      description: "Assets numériques revendables" },
+  { slug: "database_api",    label: "Bases de données / APIs",       icon: "Database",       estimType: "saas",      description: "APIs, datasets, bases de données" },
+];
+
+// Toutes les catégories combinées (pour dropdowns de filtres)
+export const CITADELLE_ALL_CATEGORIES = [...CITADELLE_CATEGORIES, ...CITADELLE_EXTRA_CATEGORIES];
+
 // Commission La Citadelle sur chaque vente
 export const COMMISSION_RATE = 0.05;     // 5 %
 export const COMMISSION_MINIMUM_EUR = 49; // Minimum 49 €

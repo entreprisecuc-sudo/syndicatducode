@@ -9,7 +9,7 @@ import { Search, ChevronLeft, ChevronRight, ArrowRight, Shield } from "lucide-re
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ListingCard from "@/components/citadelle/ListingCard";
 import citadelleApi from "@/services/citadelleApi";
-import { CITADELLE_COLORS, CITADELLE_CATEGORIES } from "@/config/citadelleConstants";
+import { CITADELLE_COLORS, CITADELLE_ALL_CATEGORIES } from "@/config/citadelleConstants";
 
 const BUDGET_OPTIONS = [
   { value: "", label: "Tous budgets" },
@@ -115,7 +115,7 @@ export default function CitadelleListings() {
             style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
             data-testid="listings-filter-type">
             <option value="">Tous les types</option>
-            {CITADELLE_CATEGORIES.map(c => <option key={c.slug} value={c.slug}>{c.label}</option>)}
+            {CITADELLE_ALL_CATEGORIES.map(c => <option key={c.slug} value={c.slug}>{c.label}</option>)}
           </select>
 
           {/* Budget */}

@@ -426,6 +426,9 @@ export default function CitadelleListingDetail() {
                 L'URL du site est disponible après initiation d'une transaction sécurisée.
               </p>
             </div>
+
+            {/* Widget estimateur contextuel */}
+            <EstimateurSidebar listing={listing} />
           </div>
         </div>
       </div>
@@ -561,6 +564,107 @@ export default function CitadelleListingDetail() {
         </div>
       )}
     </CitadelleLayout>
+  );
+}
+
+// ── Composant : widget estimateur contextuel ─────────────────────────────────
+
+const ESTIM_TYPE_MAP = {
+  website: "contenu", ecommerce: "ecommerce", saas: "saas", webapp: "saas",
+  social_account: "social", domain: "contenu",
+  shopify_store: "ecommerce", amazon_fba: "ecommerce",
+  newsletter: "contenu", youtube_channel: "social", instagram: "social",
+  tiktok: "social", linkedin_page: "social", discord_server: "social",
+  forum: "contenu", blog: "contenu", online_media: "contenu",
+  ai_automation: "saas", template_plugin: "saas", database_api: "saas",
+};
+
+const ESTIM_MULTIPLES = {
+  saas:      { low: 14, high: 26, label: "SaaS / App" },
+  ecommerce: { low: 12, high: 22, label: "E-commerce" },
+  contenu:   { low: 12, high: 20, label: "Contenu / Blog" },
+  social:    { low: 5,  high: 12, label: "Réseau social" },
+};
+
+function EstimateurSidebar({ listing }) {
+  const [revenue, setRevenue] = useState(listing.monthly_revenue > 0 ? String(listing.monthly_revenue) : "");
+  const [result, setResult]   = useState(null);
+
+  const estType   = ESTIM_TYPE_MAP[listing.type] || "contenu";
+  const { low, high, label } = ESTIM_MULTIPLES[estType];
+  const fmt = (n) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(n) + " €";
+
+  const calculate = () => {
+    const rev = parseFloat(revenue);
+    if (!rev || rev <= 0) return;
+    setResult({ low: Math.round(rev * low), high: Math.round(rev * high) });
+  };
+
+  return (
+    <div className="p-5 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}
+      data-testid="estimateur-sidebar">
+      {/* En-tête */}
+      <div className="flex items-center gap-2 mb-1">
+        <TrendingUp size={15} style={{ color: CITADELLE_COLORS.gold }} />
+        <h3 className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+          Vous avez un actif similaire ?
+        </h3>
+      </div>
+      <p className="text-xs mb-4 pl-[23px]" style={{ color: CITADELLE_COLORS.textMuted }}>
+        Estimez sa valeur en quelques secondes — méthode SDE ({label}).
+      </p>
+
+      {/* Input bénéfice */}
+      <div className="mb-3">
+        <label className="block text-xs font-semibold mb-1" style={{ color: CITADELLE_COLORS.blue }}>
+          Bénéfice net mensuel (€)
+        </label>
+        <input
+          type="number" min="1" value={revenue}
+          onChange={e => { setRevenue(e.target.value); setResult(null); }}
+          placeholder="Ex : 1 500"
+          className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+          style={{
+            background: CITADELLE_COLORS.bg,
+            border: `1px solid ${result ? CITADELLE_COLORS.gold : CITADELLE_COLORS.border}`,
+            color: CITADELLE_COLORS.blue,
+          }}
+          data-testid="quick-estimator-revenue"
+        />
+      </div>
+
+      {/* Résultat ou bouton */}
+      {result ? (
+        <div className="mb-3 p-3 rounded-xl text-center"
+          style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.25)" }}>
+          <p className="text-xs mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Fourchette de valorisation</p>
+          <p className="text-lg font-black leading-tight" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+            {fmt(result.low)} — {fmt(result.high)}
+          </p>
+          <p className="text-xs mt-1.5" style={{ color: CITADELLE_COLORS.textMuted }}>
+            Multiple SDE × {low} – × {high} (ancienneté 1–3 ans)
+          </p>
+          <button onClick={() => setResult(null)} className="mt-2 text-xs underline" style={{ color: CITADELLE_COLORS.textMuted }}>
+            Recalculer
+          </button>
+        </div>
+      ) : (
+        <button onClick={calculate}
+          className="w-full py-2.5 rounded-xl text-sm font-semibold mb-3 transition-all hover:scale-[1.02]"
+          style={{ background: CITADELLE_COLORS.blue, color: "white" }}
+          data-testid="quick-estimator-btn">
+          Calculer
+        </button>
+      )}
+
+      {/* CTA estimation pro */}
+      <Link to="/citadelle/estimation"
+        className="block w-full py-2.5 rounded-xl text-xs font-semibold text-center transition-all hover:scale-[1.02]"
+        style={{ background: "rgba(201,164,92,0.08)", border: `1px solid rgba(201,164,92,0.3)`, color: CITADELLE_COLORS.blue }}
+        data-testid="quick-estimator-pro-link">
+        Estimation pro gratuite — 48h →
+      </Link>
+    </div>
   );
 }
 

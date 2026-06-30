@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Globe, ShoppingCart, Cloud, Monitor, Users, ChevronRight, ChevronLeft, CheckCircle, AlertCircle } from "lucide-react";
+import { Globe, ShoppingCart, Cloud, Monitor, Users, ChevronRight, ChevronLeft, CheckCircle, AlertCircle, MoreHorizontal, Store, Package, Mail, Youtube, Camera, Smartphone, Linkedin, MessageSquare, MessagesSquare, FileText, Newspaper, Bot, LayoutTemplate, Database } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CitadelleImageUpload } from "@/components/citadelle/CitadelleImageUpload";
 import CommissionInfoPopup from "@/components/citadelle/CommissionInfoPopup";
@@ -20,6 +20,23 @@ const TYPE_OPTIONS = [
   { value: "webapp",         label: "Application web", icon: Monitor,       desc: "Outil ou app en ligne" },
   { value: "social_account", label: "Réseau social",   icon: Users,         desc: "Compte ou page" },
   { value: "domain",         label: "Nom de domaine",  icon: Globe,         desc: "Domaine, extension premium" },
+];
+
+const EXTRA_TYPE_OPTIONS = [
+  { value: "shopify_store",   label: "Boutique Shopify",              icon: Store,          desc: "Shopify, dropshipping" },
+  { value: "amazon_fba",      label: "Amazon FBA",                    icon: Package,        desc: "Business Amazon FBA / Merch" },
+  { value: "newsletter",      label: "Newsletter",                    icon: Mail,           desc: "Newsletter payante ou sponsorisée" },
+  { value: "youtube_channel", label: "Chaîne YouTube",                icon: Youtube,        desc: "Chaîne monétisée" },
+  { value: "instagram",       label: "Compte Instagram",              icon: Camera,         desc: "Compte ou page Instagram" },
+  { value: "tiktok",          label: "Compte TikTok",                 icon: Smartphone,     desc: "Compte TikTok monétisé" },
+  { value: "linkedin_page",   label: "Page LinkedIn Entreprise",      icon: Linkedin,       desc: "Page entreprise LinkedIn" },
+  { value: "discord_server",  label: "Serveur Discord",               icon: MessageSquare,  desc: "Communauté Discord" },
+  { value: "forum",           label: "Forum",                         icon: MessagesSquare, desc: "Forum ou communauté en ligne" },
+  { value: "blog",            label: "Blog",                          icon: FileText,       desc: "Blog monétisé" },
+  { value: "online_media",    label: "Média en ligne",                icon: Newspaper,      desc: "Magazine, journal, media digital" },
+  { value: "ai_automation",   label: "Agents IA / Automatisations",   icon: Bot,            desc: "Outils IA, scripts, workflows" },
+  { value: "template_plugin", label: "Templates / Thèmes / Plugins",  icon: LayoutTemplate, desc: "Assets numériques revendables" },
+  { value: "database_api",    label: "Bases de données / APIs",       icon: Database,       desc: "APIs, datasets, bases de données" },
 ];
 
 const STEPS = ["Type & Titre", "Données clés", "Détails", "Récapitulatif"];
@@ -46,8 +63,19 @@ export default function CitadelleCreateListing() {
   const [showCommissionPopup, setShowCommissionPopup] = useState(false);
   const [commissionAcknowledged, setCommissionAcknowledged] = useState(false);
   const [commission, setCommission] = useState({ rate: 0.05, minimum_eur: 49 });
+  const [showOtherPanel, setShowOtherPanel] = useState(false);
   const { isAuthenticated } = useCitadelleAuth();
   const navigate = useNavigate();
+
+  // "Autre" est actif si le type sélectionné appartient aux catégories supplémentaires
+  const isOtherSelected = EXTRA_TYPE_OPTIONS.some(o => o.value === form.type);
+
+  const handleOtherClick = () => {
+    const next = !showOtherPanel;
+    setShowOtherPanel(next);
+    // Si on ferme le panneau alors qu'un type "Autre" était sélectionné, on réinitialise
+    if (!next && isOtherSelected) set("type", "");
+  };
 
   useEffect(() => {
     citadelleApi.get("/settings/commission")
@@ -227,9 +255,9 @@ export default function CitadelleCreateListing() {
           <div className="space-y-5">
             <div>
               <label className="block text-sm font-semibold mb-3" style={labelStyle}>Type d'actif *</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {TYPE_OPTIONS.map(({ value, label, icon: Icon, desc }) => (
-                  <button key={value} type="button" onClick={() => set("type", value)}
+                  <button key={value} type="button" onClick={() => { set("type", value); setShowOtherPanel(false); }}
                     className="flex items-center gap-3 p-4 rounded-xl text-left transition-all"
                     style={{ border: form.type === value ? `2px solid ${CITADELLE_COLORS.gold}` : `1px solid ${CITADELLE_COLORS.border}`,
                              background: form.type === value ? "rgba(201,164,92,0.06)" : "white" }}>
@@ -240,6 +268,65 @@ export default function CitadelleCreateListing() {
                     </div>
                   </button>
                 ))}
+
+                {/* Carte "Autre" — 7ème carte pleine largeur */}
+                <button type="button" onClick={handleOtherClick}
+                  className="flex items-center gap-3 p-4 rounded-xl text-left transition-all sm:col-span-2"
+                  data-testid="type-autre-card"
+                  style={{
+                    border: (showOtherPanel || isOtherSelected) ? `2px solid ${CITADELLE_COLORS.gold}` : `1px dashed ${CITADELLE_COLORS.border}`,
+                    background: (showOtherPanel || isOtherSelected) ? "rgba(201,164,92,0.06)" : "white",
+                  }}>
+                  <MoreHorizontal size={20} style={{ color: (showOtherPanel || isOtherSelected) ? CITADELLE_COLORS.gold : CITADELLE_COLORS.textMuted }} />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>
+                      {isOtherSelected
+                        ? EXTRA_TYPE_OPTIONS.find(o => o.value === form.type)?.label
+                        : "Autre type d'actif"}
+                    </p>
+                    <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
+                      Newsletter, YouTube, FBA, IA, Templates...
+                    </p>
+                  </div>
+                  <ChevronRight size={16} className="transition-transform" style={{
+                    color: CITADELLE_COLORS.textMuted,
+                    transform: showOtherPanel ? "rotate(90deg)" : "rotate(0deg)",
+                  }} />
+                </button>
+              </div>
+
+              {/* Panneau expansible — catégories "Autre" */}
+              <div style={{
+                maxHeight: showOtherPanel ? "600px" : "0",
+                opacity: showOtherPanel ? 1 : 0,
+                overflow: "hidden",
+                transition: "max-height 0.35s ease, opacity 0.2s ease",
+              }}>
+                <div className="pt-4 pb-1 px-1">
+                  <p className="text-xs font-semibold mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
+                    Sélectionnez la catégorie exacte :
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {EXTRA_TYPE_OPTIONS.map(({ value, label, icon: Icon }) => {
+                      const active = form.type === value;
+                      return (
+                        <button key={value} type="button"
+                          onClick={() => set("type", value)}
+                          data-testid={`extra-type-${value}`}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all"
+                          style={{
+                            border: active ? `1.5px solid ${CITADELLE_COLORS.gold}` : `1px solid ${CITADELLE_COLORS.border}`,
+                            background: active ? "rgba(201,164,92,0.12)" : CITADELLE_COLORS.bg,
+                            color: active ? CITADELLE_COLORS.blue : CITADELLE_COLORS.textMuted,
+                            fontWeight: active ? 700 : 500,
+                          }}>
+                          <Icon size={12} style={{ color: active ? CITADELLE_COLORS.gold : CITADELLE_COLORS.textMuted }} />
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
             <div>
@@ -389,7 +476,7 @@ export default function CitadelleCreateListing() {
           <div className="space-y-4">
             <div className="p-5 rounded-2xl space-y-3" style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
               {[
-                { label: "Type", value: TYPE_OPTIONS.find(t => t.value === form.type)?.label },
+                { label: "Type", value: [...TYPE_OPTIONS, ...EXTRA_TYPE_OPTIONS].find(t => t.value === form.type)?.label },
                 { label: "Titre", value: form.title },
                 { label: "Prix", value: `${parseFloat(form.price).toLocaleString("fr-FR")} €${form.price_negotiable ? " (négociable)" : ""}` },
                 { label: "Revenus/mois", value: form.monthly_revenue ? `${parseFloat(form.monthly_revenue).toLocaleString("fr-FR")} €` : "Non renseigné" },
