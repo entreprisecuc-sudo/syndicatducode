@@ -5,10 +5,11 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { CheckCircle, XCircle, Loader, Shield, ArrowRight } from "lucide-react";
+import { CheckCircle, XCircle, Loader, Shield, ArrowRight, TrendingUp, UserPlus } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 
 const MAX_POLLS = 8;
 const POLL_INTERVAL_MS = 2500;
@@ -16,8 +17,9 @@ const POLL_INTERVAL_MS = 2500;
 export default function CitadellePaymentSuccess() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const { isAuthenticated } = useCitadelleAuth();
 
-  const [state, setState] = useState("loading"); // loading | paid | failed | expired
+  const [state, setState] = useState("loading");
   const [data, setData] = useState(null);
   const [attempts, setAttempts] = useState(0);
 
@@ -95,55 +97,76 @@ export default function CitadellePaymentSuccess() {
           )}
 
           {/* ── Succès ── */}
-          {state === "paid" && (
-            <>
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                style={{ background: "rgba(34,197,94,0.1)" }}
-              >
-                <CheckCircle size={36} style={{ color: "#22C55E" }} />
-              </div>
-              <h2
-                className="font-black text-2xl mb-2"
-                style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
-                data-testid="payment-success-title"
-              >
-                Paiement confirmé !
-              </h2>
-              {data?.service_title && (
-                <p className="text-sm font-semibold mb-1" style={{ color: CITADELLE_COLORS.gold }}>
-                  {data.service_title}
-                </p>
-              )}
-              {data?.amount && (
-                <p className="text-3xl font-black my-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                  {Number(data.amount).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
-                </p>
-              )}
-              <p className="text-sm leading-relaxed mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Un email de confirmation a été envoyé à <strong>{data?.client_email}</strong>.
-                Notre équipe va vous contacter très prochainement pour démarrer la mission.
-              </p>
-              <div className="space-y-3">
-                <Link
-                  to="/citadelle/services"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"
-                  style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
-                  data-testid="payment-success-back-btn"
+          {state === "paid" && (() => {
+            const isEstimation = data?.service_title?.toLowerCase().includes("estimation");
+            const registerUrl  = `/citadelle/inscription${data?.client_email ? `?email=${encodeURIComponent(data.client_email)}` : ""}`;
+            return (
+              <>
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                  style={{ background: isEstimation ? "rgba(201,164,92,0.12)" : "rgba(34,197,94,0.1)" }}
                 >
-                  Retour aux services
-                  <ArrowRight size={16} />
-                </Link>
-                <Link
-                  to="/citadelle"
-                  className="block w-full py-3 rounded-xl text-sm font-medium"
-                  style={{ color: CITADELLE_COLORS.textMuted }}
+                  {isEstimation
+                    ? <TrendingUp size={32} style={{ color: CITADELLE_COLORS.gold }} />
+                    : <CheckCircle size={36} style={{ color: "#22C55E" }} />}
+                </div>
+                <h2
+                  className="font-black text-2xl mb-2"
+                  style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
+                  data-testid="payment-success-title"
                 >
-                  Accueil La Citadelle
-                </Link>
-              </div>
-            </>
-          )}
+                  {isEstimation ? "Demande d'estimation enregistrée !" : "Paiement confirmé !"}
+                </h2>
+                {data?.service_title && (
+                  <p className="text-sm font-semibold mb-1" style={{ color: CITADELLE_COLORS.gold }}>
+                    {data.service_title}
+                  </p>
+                )}
+                {data?.amount && (
+                  <p className="text-3xl font-black my-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                    {Number(data.amount).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
+                  </p>
+                )}
+                <p className="text-sm leading-relaxed mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
+                  {isEstimation
+                    ? <>Notre expert analyse votre dossier et vous contacte sous <strong>48h ouvrées</strong> à <strong>{data?.client_email}</strong> avec votre rapport de valorisation.</>
+                    : <>Un email de confirmation a été envoyé à <strong>{data?.client_email}</strong>. Notre équipe vous contacte très prochainement.</>}
+                </p>
+
+                <div className="space-y-3">
+                  {/* CTA principal */}
+                  {isAuthenticated ? (
+                    <Link
+                      to="/citadelle/espace-membre/mes-services"
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"
+                      style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                      data-testid="payment-success-back-btn"
+                    >
+                      Voir mes services <ArrowRight size={16} />
+                    </Link>
+                  ) : (
+                    <Link
+                      to={registerUrl}
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"
+                      style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                      data-testid="payment-success-back-btn"
+                    >
+                      <UserPlus size={16} /> Créer mon espace client
+                    </Link>
+                  )}
+
+                  {/* CTA secondaire */}
+                  <Link
+                    to={isEstimation ? "/citadelle/annonces" : "/citadelle/services"}
+                    className="block w-full py-3 rounded-xl text-sm font-medium"
+                    style={{ color: CITADELLE_COLORS.textMuted }}
+                  >
+                    {isEstimation ? "Parcourir les annonces" : "Retour aux services"}
+                  </Link>
+                </div>
+              </>
+            );
+          })()}
 
           {/* ── Expiré ── */}
           {state === "expired" && (

@@ -9,10 +9,12 @@ import { Link } from "react-router-dom";
 import {
   TrendingUp, ArrowRight, CheckCircle, ChevronDown, ChevronUp,
   BarChart2, Leaf, Layers, Send, Shield, Clock, Star, AlertCircle,
+  Zap, Crown, CreditCard,
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -494,16 +496,56 @@ function AdvancedEstimator({ onResult, formRef }) {
   );
 }
 
-// ── Formulaire de contact ─────────────────────────────────────────────────────
+// ── Sélecteur de service + formulaire → Stripe Checkout ──────────────────────
+
+const ESTIMATION_SERVICES = [
+  {
+    id: "7fd80984-9770-4078-9b18-cd0182677d6a",
+    slug: "standard",
+    title: "Estimation Standard",
+    price: 49,
+    icon: Zap,
+    delay: "Sous 48h",
+    badge: null,
+    features: [
+      "Estimation complète de la valeur",
+      "Analyse des revenus mensuels",
+      "Fourchette de prix conseillée",
+      "Rapport synthétique PDF",
+    ],
+  },
+  {
+    id: "72b653c4-6def-4053-bfb1-7441c03c0bcf",
+    slug: "expert",
+    title: "Estimation Expert",
+    price: 149,
+    icon: Crown,
+    delay: "Sous 72h",
+    badge: "Recommandé",
+    features: [
+      "Tout le Standard, plus :",
+      "Audit trafic & SEO approfondi",
+      "Analyse concurrence & marché",
+      "Conseils pré-vente personnalisés",
+      "Rapport PDF complet (15 pages)",
+      "Appel 30 min avec un expert",
+    ],
+  },
+];
 
 function ContactForm({ prefillType }) {
+  const { user } = useCitadelleAuth();
+
+  const [selectedService, setSelectedService] = useState(ESTIMATION_SERVICES[0].id);
   const [form, setForm] = useState({
-    nom: "", email: "", url_site: "",
+    nom: user ? `${user.first_name || ""} ${user.last_name || ""}`.trim() : "",
+    email: user?.email || "",
+    url_site: "",
     type_site: prefillType || "contenu",
     benefice_mensuel: "", ca_mensuel: "", message: "",
   });
-  const [status, setStatus] = useState("idle"); // idle | loading | success | error
-  const [erreur, setErreur] = useState("");
+  const [status, setStatus]   = useState("idle"); // idle | loading | error
+  const [erreur, setErreur]   = useState("");
 
   useEffect(() => {
     if (prefillType) setForm(f => ({ ...f, type_site: prefillType }));
@@ -514,15 +556,32 @@ function ContactForm({ prefillType }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("loading"); setErreur("");
+
+    const svc = ESTIMATION_SERVICES.find(s => s.id === selectedService);
+    const typeSiteLabel = SITE_TYPES.find(t => t.value === form.type_site)?.label || form.type_site;
+
+    // Résumé du dossier transmis dans le message (stocké en DB + email)
+    const clientMessage = [
+      form.url_site   ? `URL : ${form.url_site}` : null,
+      `Type d'actif : ${typeSiteLabel}`,
+      form.ca_mensuel        ? `CA mensuel : ${form.ca_mensuel} €` : null,
+      form.benefice_mensuel  ? `Bénéfice net mensuel : ${form.benefice_mensuel} €` : null,
+      form.message           ? `Notes : ${form.message}` : null,
+    ].filter(Boolean).join("\n");
+
     try {
-      await citadelleApi.post("/citadelle/estimation/request", {
-        ...form,
-        benefice_mensuel: form.benefice_mensuel ? parseFloat(form.benefice_mensuel) : null,
-        ca_mensuel: form.ca_mensuel ? parseFloat(form.ca_mensuel) : null,
+      const res = await citadelleApi.post("/payments/service/checkout", {
+        service_id:     selectedService,
+        client_name:    form.nom,
+        client_email:   form.email,
+        client_message: clientMessage,
+        origin_url:     window.location.origin,
+        cancel_path:    "/citadelle/estimation",
       });
-      setStatus("success");
+      // Redirection vers Stripe Checkout
+      window.location.href = res.data.checkout_url;
     } catch (err) {
-      setErreur(err?.response?.data?.detail || "Une erreur est survenue.");
+      setErreur(err?.response?.data?.detail || "Une erreur est survenue. Veuillez réessayer.");
       setStatus("error");
     }
   };
@@ -541,31 +600,6 @@ function ContactForm({ prefillType }) {
 
   const labelStyle = { display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: CITADELLE_COLORS.blue };
 
-  if (status === "success") {
-    return (
-      <div className="rounded-3xl overflow-hidden"
-        style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, boxShadow: "0 4px 24px rgba(15,39,71,0.08)" }}>
-        <div className="p-10 text-center">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-            style={{ background: "rgba(34,197,94,0.1)" }}>
-            <CheckCircle size={32} style={{ color: "#22c55e" }} />
-          </div>
-          <h3 className="text-xl font-black mb-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-            Demande envoyée !
-          </h3>
-          <p className="text-sm leading-relaxed mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Notre équipe analyse votre dossier et vous contacte sous <strong>48h ouvrées</strong> avec un rapport de valorisation détaillé.
-          </p>
-          <Link to="/citadelle/annonces"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105"
-            style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-            Parcourir les annonces
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="rounded-3xl overflow-hidden"
       style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, boxShadow: "0 4px 24px rgba(15,39,71,0.08)" }}>
@@ -573,10 +607,10 @@ function ContactForm({ prefillType }) {
       {/* En-tête */}
       <div className="px-7 py-5" style={{ background: CITADELLE_COLORS.night, borderBottom: `2px solid ${CITADELLE_COLORS.gold}` }}>
         <h2 className="font-black text-lg" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>
-          Estimation professionnelle gratuite
+          Estimation professionnelle
         </h2>
         <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>
-          Rapport personnalisé · Réponse sous 48h · 100% gratuit
+          Rapport personnalisé · Valorisation précise · Expertise La Garde
         </p>
       </div>
 
@@ -586,7 +620,7 @@ function ContactForm({ prefillType }) {
         {[
           { icon: Shield,   text: "Données confidentielles" },
           { icon: Clock,    text: "Réponse sous 48h" },
-          { icon: Star,     text: "Sans engagement" },
+          { icon: Star,     text: "Experts certifiés" },
         ].map(({ icon: Icon, text }) => (
           <div key={text} className="flex flex-col items-center gap-1.5 py-4 px-2 text-center">
             <Icon size={16} style={{ color: CITADELLE_COLORS.gold }} />
@@ -595,94 +629,146 @@ function ContactForm({ prefillType }) {
         ))}
       </div>
 
-      <form onSubmit={handleSubmit} className="p-7 space-y-5">
+      <div className="p-7 space-y-6">
 
-        {/* Nom + Email */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label style={labelStyle}>Prénom &amp; Nom *</label>
-            <input type="text" required value={form.nom} onChange={set("nom")}
-              placeholder="Jean Dupont" style={fieldStyle}
-              data-testid="form-nom" />
-          </div>
-          <div>
-            <label style={labelStyle}>Email *</label>
-            <input type="email" required value={form.email} onChange={set("email")}
-              placeholder="jean@exemple.fr" style={fieldStyle}
-              data-testid="form-email" />
-          </div>
-        </div>
-
-        {/* URL du site */}
+        {/* ── Sélecteur de service ── */}
         <div>
-          <label style={labelStyle}>URL du site à estimer</label>
-          <input type="url" value={form.url_site} onChange={set("url_site")}
-            placeholder="https://monsite.fr" style={fieldStyle}
-            data-testid="form-url" />
+          <p className="text-sm font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>
+            Choisissez votre formule
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {ESTIMATION_SERVICES.map(svc => {
+              const active = selectedService === svc.id;
+              const Icon   = svc.icon;
+              return (
+                <button key={svc.id} type="button" onClick={() => setSelectedService(svc.id)}
+                  data-testid={`service-selector-${svc.slug}`}
+                  className="relative p-4 rounded-2xl text-left transition-all hover:scale-[1.02]"
+                  style={{
+                    border: active ? `2px solid ${CITADELLE_COLORS.gold}` : `1px solid ${CITADELLE_COLORS.border}`,
+                    background: active ? "rgba(201,164,92,0.06)" : CITADELLE_COLORS.bg,
+                  }}>
+                  {svc.badge && (
+                    <span className="absolute -top-2.5 right-3 px-2.5 py-0.5 rounded-full text-xs font-black"
+                      style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
+                      {svc.badge}
+                    </span>
+                  )}
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon size={16} style={{ color: active ? CITADELLE_COLORS.gold : CITADELLE_COLORS.textMuted }} />
+                    <span className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue }}>{svc.title}</span>
+                  </div>
+                  <div className="text-xl font-black mb-1" style={{ color: active ? CITADELLE_COLORS.gold : CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                    {svc.price} €
+                  </div>
+                  <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>{svc.delay}</p>
+                  <ul className="space-y-1">
+                    {svc.features.map(f => (
+                      <li key={f} className="flex items-start gap-1.5 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
+                        <CheckCircle size={11} className="mt-0.5 shrink-0" style={{ color: CITADELLE_COLORS.gold }} />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Type de site */}
-        <div>
-          <label style={labelStyle}>Type de business *</label>
-          <select required value={form.type_site} onChange={set("type_site")}
-            style={fieldStyle} data-testid="form-type">
-            {SITE_TYPES.map(t => (
-              <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
-          </select>
-        </div>
+        {/* ── Formulaire ── */}
+        <form onSubmit={handleSubmit} className="space-y-5">
 
-        {/* CA + Bénéfice */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Nom + Email */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label style={labelStyle}>Prénom &amp; Nom *</label>
+              <input type="text" required value={form.nom} onChange={set("nom")}
+                placeholder="Jean Dupont" style={fieldStyle}
+                data-testid="form-nom" />
+            </div>
+            <div>
+              <label style={labelStyle}>Email *</label>
+              <input type="email" required value={form.email} onChange={set("email")}
+                placeholder="jean@exemple.fr" style={fieldStyle}
+                data-testid="form-email" />
+            </div>
+          </div>
+
+          {/* URL du site */}
           <div>
-            <label style={labelStyle}>CA mensuel moyen (€)</label>
-            <input type="number" min="0" value={form.ca_mensuel} onChange={set("ca_mensuel")}
-              placeholder="Ex : 8 000" style={fieldStyle}
-              data-testid="form-ca" />
+            <label style={labelStyle}>URL du site à estimer</label>
+            <input type="url" value={form.url_site} onChange={set("url_site")}
+              placeholder="https://monsite.fr" style={fieldStyle}
+              data-testid="form-url" />
           </div>
+
+          {/* Type de site */}
           <div>
-            <label style={labelStyle}>Bénéfice net mensuel (€)</label>
-            <input type="number" min="0" value={form.benefice_mensuel} onChange={set("benefice_mensuel")}
-              placeholder="Ex : 2 000" style={fieldStyle}
-              data-testid="form-benefice" />
+            <label style={labelStyle}>Type de business *</label>
+            <select required value={form.type_site} onChange={set("type_site")}
+              style={fieldStyle} data-testid="form-type">
+              {SITE_TYPES.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
           </div>
-        </div>
 
-        {/* Message */}
-        <div>
-          <label style={labelStyle}>Informations complémentaires</label>
-          <textarea value={form.message} onChange={set("message")} rows={4}
-            placeholder="Ancienneté, trafic mensuel, outils utilisés, motivations de vente..."
-            style={{ ...fieldStyle, resize: "vertical" }}
-            data-testid="form-message" />
-        </div>
-
-        {erreur && (
-          <div className="flex items-start gap-2 p-3 rounded-xl"
-            style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.25)" }}>
-            <AlertCircle size={15} style={{ color: "#ef4444", flexShrink: 0, marginTop: 1 }} />
-            <p className="text-sm" style={{ color: "#ef4444" }}>{erreur}</p>
+          {/* CA + Bénéfice */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label style={labelStyle}>CA mensuel moyen (€)</label>
+              <input type="number" min="0" value={form.ca_mensuel} onChange={set("ca_mensuel")}
+                placeholder="Ex : 8 000" style={fieldStyle}
+                data-testid="form-ca" />
+            </div>
+            <div>
+              <label style={labelStyle}>Bénéfice net mensuel (€)</label>
+              <input type="number" min="0" value={form.benefice_mensuel} onChange={set("benefice_mensuel")}
+                placeholder="Ex : 2 000" style={fieldStyle}
+                data-testid="form-benefice" />
+            </div>
           </div>
-        )}
 
-        <button type="submit" disabled={status === "loading"}
-          data-testid="form-submit-btn"
-          className="w-full py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-60"
-          style={{ background: CITADELLE_COLORS.blue, color: "white" }}>
-          {status === "loading" ? (
-            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Envoi en cours...</>
-          ) : (
-            <><Send size={16} /> Envoyer ma demande d'estimation</>
+          {/* Message */}
+          <div>
+            <label style={labelStyle}>Informations complémentaires</label>
+            <textarea value={form.message} onChange={set("message")} rows={4}
+              placeholder="Ancienneté, trafic mensuel, outils utilisés, motivations de vente..."
+              style={{ ...fieldStyle, resize: "vertical" }}
+              data-testid="form-message" />
+          </div>
+
+          {erreur && (
+            <div className="flex items-start gap-2 p-3 rounded-xl"
+              style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.25)" }}>
+              <AlertCircle size={15} style={{ color: "#ef4444", flexShrink: 0, marginTop: 1 }} />
+              <p className="text-sm" style={{ color: "#ef4444" }}>{erreur}</p>
+            </div>
           )}
-        </button>
 
-        <p className="text-xs text-center" style={{ color: CITADELLE_COLORS.textMuted }}>
-          Vos données sont traitées conformément à notre{" "}
-          <Link to="/citadelle/confidentialite" className="underline" style={{ color: CITADELLE_COLORS.gold }}>
-            politique de confidentialité
-          </Link>
-        </p>
-      </form>
+          {/* Bouton paiement */}
+          <button type="submit" disabled={status === "loading"}
+            data-testid="form-submit-btn"
+            className="w-full py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-60"
+            style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
+            {status === "loading" ? (
+              <><div className="w-4 h-4 border-2 border-night/30 border-t-night rounded-full animate-spin" /> Redirection vers le paiement…</>
+            ) : (
+              <><CreditCard size={16} /> Procéder au paiement — {ESTIMATION_SERVICES.find(s => s.id === selectedService)?.price} €</>
+            )}
+          </button>
+
+          <p className="text-xs text-center" style={{ color: CITADELLE_COLORS.textMuted }}>
+            Paiement sécurisé par{" "}
+            <span className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>Stripe</span>
+            {" "}· Vos données sont protégées ·{" "}
+            <Link to="/citadelle/confidentialite" className="underline" style={{ color: CITADELLE_COLORS.gold }}>
+              Politique de confidentialité
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

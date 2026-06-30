@@ -121,6 +121,7 @@ class ServiceCheckoutRequest(BaseModel):
     client_email: EmailStr
     client_message: Optional[str] = ""
     origin_url: str
+    cancel_path: Optional[str] = "/citadelle/services"  # chemin de retour si annulation
 
 
 # ── Utilitaire Stripe ─────────────────────────────────────────────────────────
@@ -199,7 +200,8 @@ async def create_service_checkout(payload: ServiceCheckoutRequest):
     # Construction des URLs de retour
     origin = payload.origin_url.rstrip("/")
     success_url = f"{origin}/citadelle/paiement/confirmation?session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = f"{origin}/citadelle/services"
+    cancel_path = payload.cancel_path or "/citadelle/services"
+    cancel_url = f"{origin}{cancel_path}"
 
     # Métadonnées transmises à Stripe (et récupérables après paiement)
     metadata = {
