@@ -73,6 +73,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **41 articles SEO/GEO/AEO importés en base** (15 originaux + 15 nouveaux articles n°16-30 ajoutés 02/2026)
   - Nouveaux articles : application mobile, YouTube, Instagram, juridique, rentabilité, outils audit, trafic, Shopify, migration, cybersécurité, pricing, SaaS, tendances 2026, transmission, marketplace
 - **Suggestions d'articles liés** (02/2026) : endpoint `/blog/{slug}/related`, algorithme 3 niveaux (catégorie → mots-clés → récents), 3 cartes visuelles en bas de chaque article
+- **Estimateur de valeur de site** (02/2026) : section interactive sur la page d'accueil, 5 types × 4 anciennetés, fourchette de prix instantanée, FAQ AEO Schema.org, CTA vers service d'estimation professionnel
 
 ### ✅ Catalogue Services v2 — Contenu officiel (TERMINÉ 13/06/2026)
 - Ajout du champ `target_category` (vendeur / acheteur / commun) aux modèles `ServiceCreate` et `ServiceUpdate`

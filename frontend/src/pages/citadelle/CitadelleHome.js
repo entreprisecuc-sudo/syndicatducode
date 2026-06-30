@@ -4,7 +4,7 @@
  * Sections : Hero (+ barre de recherche) → Catégories → Comment ça marche → Services → CTA
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Shield, TrendingUp, Lock, Globe, ShoppingCart, Cloud,
@@ -25,7 +25,309 @@ const SERVICE_ICONS = {
   TrendingUp, ShieldCheck, ArrowRightLeft, FileSearch
 };
 
-// ── Barre de recherche ────────────────────────────────────────────────────────
+// ── Constantes Estimateur ────────────────────────────────────────────────────
+
+const SITE_TYPES = [
+  { value: "contenu",     label: "Site de contenu / Blog" },
+  { value: "ecommerce",   label: "E-commerce / Boutique" },
+  { value: "saas",        label: "SaaS / Application web" },
+  { value: "application", label: "Application mobile" },
+  { value: "social",      label: "Compte / Réseau social" },
+];
+
+const AGES = [
+  { value: "lt1",  label: "< 1 an" },
+  { value: "1-3",  label: "1 — 3 ans" },
+  { value: "3-5",  label: "3 — 5 ans" },
+  { value: "5plus",label: "5 ans et +" },
+];
+
+// Multiples bas/haut par type × ancienneté (méthode SDE standard)
+const MULTIPLES = {
+  saas:        { lt1: [18,24], "1-3": [24,36], "3-5": [36,48], "5plus": [42,60] },
+  ecommerce:   { lt1: [15,20], "1-3": [20,30], "3-5": [28,36], "5plus": [32,42] },
+  contenu:     { lt1: [12,18], "1-3": [20,28], "3-5": [26,34], "5plus": [30,42] },
+  application: { lt1: [15,20], "1-3": [22,32], "3-5": [30,40], "5plus": [36,48] },
+  social:      { lt1: [10,14], "1-3": [12,20], "3-5": [18,26], "5plus": [20,30] },
+};
+
+const formatEur = (n) =>
+  new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+
+// Schema.org JSON-LD — FAQ AEO pour rich snippets Google
+const FAQ_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Combien vaut mon site internet ?",
+      acceptedAnswer: { "@type": "Answer", text: "La valeur d'un site internet se calcule en multipliant son bénéfice net mensuel moyen par un multiple de marché (12x à 60x selon le type et l'ancienneté). Un site de contenu générant 1 000 €/mois vaut généralement entre 20 000 € et 28 000 € en France." }
+    },
+    {
+      "@type": "Question",
+      name: "Comment estimer la valeur d'un site web en France ?",
+      acceptedAnswer: { "@type": "Answer", text: "En France, la méthode standard est le multiple de SDE (Seller's Discretionary Earnings) : Valeur = Bénéfice net mensuel × Multiple. Ce multiple varie de 12x pour un site récent à 60x pour un SaaS mature. La Citadelle Numérique propose une estimation gratuite et professionnelle." }
+    },
+    {
+      "@type": "Question",
+      name: "Quel est le prix d'un site internet rentable à vendre ?",
+      acceptedAnswer: { "@type": "Answer", text: "Un site rentable se vend entre 24 et 36 fois son bénéfice net mensuel en France. Les SaaS bien établis peuvent atteindre 36 à 60 fois. L'ancienneté, la qualité SEO et la diversification des revenus influencent fortement le multiple de valorisation." }
+    },
+  ]
+};
+
+function useEstimatorSchema() {
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "estimator-faq-schema";
+    script.text = JSON.stringify(FAQ_SCHEMA);
+    document.head.appendChild(script);
+    return () => { document.getElementById("estimator-faq-schema")?.remove(); };
+  }, []);
+}
+
+
+// ── Section Estimateur ────────────────────────────────────────────────────────
+
+const EstimatorSection = () => {
+  const [revenue, setRevenue]   = useState("");
+  const [siteType, setSiteType] = useState("contenu");
+  const [age, setAge]           = useState("1-3");
+  const [result, setResult]     = useState(null);
+  useEstimatorSchema();
+
+  const calculate = (e) => {
+    e.preventDefault();
+    const rev = parseFloat(revenue);
+    if (!rev || rev <= 0) return;
+    const [low, high] = MULTIPLES[siteType][age];
+    setResult({ price_low: rev * low, price_high: rev * high, rev, mult_low: low, mult_high: high });
+  };
+
+  return (
+    <section
+      className="py-20 relative overflow-hidden"
+      style={{ background: CITADELLE_COLORS.night }}
+      data-testid="citadelle-estimator"
+      aria-labelledby="estimator-heading"
+    >
+      {/* Motif de fond */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: "radial-gradient(circle at 1px 1px, rgba(201,164,92,0.08) 1px, transparent 0)",
+        backgroundSize: "40px 40px"
+      }} />
+      <div className="absolute top-1/3 right-0 w-80 h-80 rounded-full opacity-10 pointer-events-none"
+        style={{ background: CITADELLE_COLORS.gold, filter: "blur(100px)" }} />
+
+      <div className="relative max-w-3xl mx-auto px-4 md:px-6">
+
+        {/* En-tête SEO/GEO */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-5 text-xs font-semibold tracking-wider uppercase"
+            style={{ background: "rgba(201,164,92,0.15)", border: "1px solid rgba(201,164,92,0.3)", color: CITADELLE_COLORS.gold }}>
+            <TrendingUp size={13} />
+            Outil gratuit · Estimation instantanée
+          </div>
+          <h2
+            id="estimator-heading"
+            className="font-black mb-3"
+            style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(1.8rem, 5vw, 2.8rem)", color: "white" }}
+          >
+            Combien vaut votre site internet ?
+          </h2>
+          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "1.05rem" }}>
+            Estimez la valeur de votre business digital en 30 secondes &mdash; France &amp; Europe
+          </p>
+        </div>
+
+        {/* Card */}
+        <div className="rounded-3xl overflow-hidden"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,164,92,0.2)", backdropFilter: "blur(12px)" }}>
+
+          {!result ? (
+            /* ── Formulaire ── */
+            <form onSubmit={calculate} className="p-8 md:p-10 space-y-7">
+
+              {/* Bénéfice net */}
+              <div>
+                <label className="block text-sm font-semibold mb-1" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  Bénéfice net mensuel moyen (€)
+                </label>
+                <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.38)" }}>
+                  Revenus bruts &minus; toutes les charges (hébergement, outils, publicité…)
+                </p>
+                <input
+                  type="number" min="1" value={revenue}
+                  onChange={e => setRevenue(e.target.value)}
+                  placeholder="Ex : 1 500"
+                  required
+                  data-testid="estimator-revenue-input"
+                  className="w-full px-5 py-4 rounded-xl outline-none transition-all"
+                  style={{
+                    background: "rgba(255,255,255,0.07)",
+                    border: `1px solid ${revenue ? CITADELLE_COLORS.gold : "rgba(201,164,92,0.3)"}`,
+                    color: "white", fontSize: "1.25rem", fontWeight: 700,
+                  }}
+                />
+              </div>
+
+              {/* Type de business */}
+              <div>
+                <label className="block text-sm font-semibold mb-3" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  Type de business
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {SITE_TYPES.map(t => (
+                    <button key={t.value} type="button" onClick={() => setSiteType(t.value)}
+                      data-testid={`estimator-type-${t.value}`}
+                      className="px-4 py-3 rounded-xl text-sm font-medium text-left transition-all"
+                      style={{
+                        background: siteType === t.value ? "rgba(201,164,92,0.18)" : "rgba(255,255,255,0.04)",
+                        border: `1px solid ${siteType === t.value ? CITADELLE_COLORS.gold : "rgba(255,255,255,0.1)"}`,
+                        color: siteType === t.value ? CITADELLE_COLORS.gold : "rgba(255,255,255,0.55)",
+                      }}>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Ancienneté */}
+              <div>
+                <label className="block text-sm font-semibold mb-3" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  Ancienneté du site
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {AGES.map(a => (
+                    <button key={a.value} type="button" onClick={() => setAge(a.value)}
+                      data-testid={`estimator-age-${a.value}`}
+                      className="py-3 rounded-xl text-sm font-medium text-center transition-all"
+                      style={{
+                        background: age === a.value ? "rgba(201,164,92,0.18)" : "rgba(255,255,255,0.04)",
+                        border: `1px solid ${age === a.value ? CITADELLE_COLORS.gold : "rgba(255,255,255,0.1)"}`,
+                        color: age === a.value ? CITADELLE_COLORS.gold : "rgba(255,255,255,0.55)",
+                      }}>
+                      {a.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button type="submit" disabled={!revenue}
+                data-testid="estimator-calculate-btn"
+                className="w-full py-4 rounded-xl font-bold text-base transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
+                Estimer la valeur de mon site
+              </button>
+            </form>
+
+          ) : (
+            /* ── Résultat ── */
+            <div className="p-8 md:p-10">
+              <div className="text-center mb-6">
+                <p className="text-xs font-semibold uppercase tracking-widest mb-4"
+                  style={{ color: "rgba(255,255,255,0.45)" }}>
+                  Valeur estimée de votre site
+                </p>
+                <div className="flex items-baseline justify-center gap-3 flex-wrap">
+                  <span className="font-black" style={{
+                    fontSize: "clamp(2rem, 8vw, 3.8rem)", color: CITADELLE_COLORS.gold,
+                    fontFamily: "'Montserrat', sans-serif", lineHeight: 1,
+                  }}>
+                    {formatEur(result.price_low)}
+                  </span>
+                  <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "2rem" }}>&mdash;</span>
+                  <span className="font-black" style={{
+                    fontSize: "clamp(2rem, 8vw, 3.8rem)", color: CITADELLE_COLORS.goldLight,
+                    fontFamily: "'Montserrat', sans-serif", lineHeight: 1,
+                  }}>
+                    {formatEur(result.price_high)}
+                  </span>
+                </div>
+                <p className="mt-3 text-xs" style={{ color: "rgba(255,255,255,0.38)" }}>
+                  Multiple de {result.mult_low}x à {result.mult_high}x &times; {formatEur(result.rev)} de bénéfice net mensuel
+                </p>
+              </div>
+
+              {/* Barre dégradé */}
+              <div className="rounded-full h-1.5 mb-7" style={{ background: "rgba(255,255,255,0.07)" }}>
+                <div className="rounded-full h-1.5"
+                  style={{ width: "100%", background: `linear-gradient(to right, ${CITADELLE_COLORS.gold}, ${CITADELLE_COLORS.goldLight})` }} />
+              </div>
+
+              {/* Nuance */}
+              <div className="rounded-2xl p-5 mb-6"
+                style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.2)" }}>
+                <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.68)" }}>
+                  <strong style={{ color: CITADELLE_COLORS.gold }}>Cette fourchette est indicative.</strong>{" "}
+                  Le prix réel dépend de la stabilité des revenus, de la qualité du SEO, des actifs inclus et de l'état technique.
+                  Une estimation professionnelle peut affiner ce résultat de ±30%.
+                </p>
+              </div>
+
+              {/* CTA service */}
+              <div className="space-y-3">
+                <Link to="/citadelle/services"
+                  className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-bold text-base transition-all hover:scale-[1.02]"
+                  style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                  data-testid="estimator-cta-service">
+                  Obtenir une estimation professionnelle
+                  <ArrowRight size={17} />
+                </Link>
+                <button onClick={() => { setResult(null); setRevenue(""); }}
+                  className="w-full py-3 rounded-xl text-sm font-medium transition-all"
+                  style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.55)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  data-testid="estimator-reset-btn">
+                  Recommencer une estimation
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── FAQ AEO — Schema.org microdata + contenu visible ── */}
+        <div className="mt-14 space-y-4" itemScope itemType="https://schema.org/FAQPage">
+          <p className="text-center text-xs font-bold uppercase tracking-widest mb-6"
+            style={{ color: "rgba(255,255,255,0.25)", letterSpacing: "0.1em" }}>
+            Questions fréquentes · Valorisation de site internet
+          </p>
+          {[
+            {
+              q: "Combien vaut mon site internet ?",
+              a: "La valeur de votre site se calcule en multipliant votre bénéfice net mensuel moyen par un multiple de marché (12x à 60x selon le type et l'ancienneté). Un site de contenu générant 1 000 €/mois vaut généralement entre 20 000 € et 28 000 € en France.",
+            },
+            {
+              q: "Comment estimer la valeur d'un site web en France ?",
+              a: "La méthode standard en France est le multiple de SDE : Valeur = Bénéfice net mensuel × Multiple. Ce multiple varie de 12x (site récent) à 60x (SaaS mature). Notre équipe réalise des estimations professionnelles gratuites basées sur vos vraies données.",
+            },
+            {
+              q: "Quel est le prix d'un site internet rentable à vendre ?",
+              a: "Un site rentable se vend entre 24 et 36 fois son bénéfice net mensuel en moyenne sur le marché français. Les SaaS établis atteignent 36 à 60 fois. L'ancienneté, la diversification des revenus et la qualité SEO influencent fortement le multiple.",
+            },
+          ].map(({ q, a }) => (
+            <div key={q} itemScope itemProp="mainEntity" itemType="https://schema.org/Question"
+              className="rounded-2xl p-5"
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <h3 itemProp="name" className="font-semibold text-sm mb-2" style={{ color: CITADELLE_COLORS.gold }}>
+                {q}
+              </h3>
+              <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+                <p itemProp="text" className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
+                  {a}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+
+// ── Section Barre de recherche ────────────────────────────────────────────────
 
 const BUDGET_OPTIONS = [
   { value: "", label: "Tous les budgets" },
@@ -473,6 +775,7 @@ export default function CitadelleHome() {
       <HeroSection />
       <CategoriesSection />
       <HowItWorksSection />
+      <EstimatorSection />
       <ServicesSection />
       <NewsletterSection />
       <CTASection />
