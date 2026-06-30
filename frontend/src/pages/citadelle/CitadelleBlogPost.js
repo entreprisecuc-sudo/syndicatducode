@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Helmet } from "react-helmet-async";
 import { ArrowLeft, ArrowRight, Calendar, User, ExternalLink, BookOpen, Eye } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
@@ -27,7 +26,7 @@ function useSeoMeta(post) {
     if (!post) return;
     const title = post.seo_title || post.title;
     const desc = post.seo_description || post.excerpt || "";
-    document.title = post.title || "Article — La Citadelle Numérique";
+    document.title = `${title} | La Citadelle Numérique`;
 
     const setMeta = (name, content) => {
       let el = document.querySelector(`meta[name="${name}"]`);
@@ -39,11 +38,19 @@ function useSeoMeta(post) {
       if (!el) { el = document.createElement("meta"); el.setAttribute("property", prop); document.head.appendChild(el); }
       el.setAttribute("content", content);
     };
+    const setLink = (rel, href) => {
+      let el = document.querySelector(`link[rel="${rel}"]`);
+      if (!el) { el = document.createElement("link"); el.rel = rel; document.head.appendChild(el); }
+      el.setAttribute("href", href);
+    };
 
     setMeta("description", desc);
     setOg("og:title", title);
     setOg("og:description", desc);
+    setOg("og:type", "article");
+    setOg("og:url", `https://lacitadellenumerique.fr/citadelle/blog/${post.slug}`);
     if (post.cover_image_url) setOg("og:image", getListingImageUrl(post.cover_image_url));
+    setLink("canonical", `https://lacitadellenumerique.fr/citadelle/blog/${post.slug}`);
 
     return () => {
       document.title = "La Citadelle Numérique";
@@ -214,16 +221,6 @@ export default function CitadelleBlogPost() {
 
   return (
     <CitadelleLayout pageTitle={post.title}>
-      <Helmet>
-        <title>{`${post.seo_title || post.title} | La Citadelle Numérique`}</title>
-        <meta name="description" content={post.seo_description || post.excerpt || `${post.title} — Article du blog La Citadelle Numérique.`} />
-        {post.cover_image_url && <meta property="og:image" content={post.cover_image_url} />}
-        <meta property="og:title" content={post.seo_title || post.title} />
-        <meta property="og:description" content={post.seo_description || post.excerpt || `Article : ${post.title}`} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://lacitadellenumerique.fr/citadelle/blog/${post.slug}`} />
-        <link rel="canonical" href={`https://lacitadellenumerique.fr/citadelle/blog/${post.slug}`} />
-      </Helmet>
       <article className="max-w-3xl mx-auto px-4 md:px-6 py-12" data-testid="blog-post-article">
 
         {/* Retour */}
