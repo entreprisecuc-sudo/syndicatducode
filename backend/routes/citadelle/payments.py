@@ -235,7 +235,7 @@ async def create_service_checkout(payload: ServiceCheckoutRequest):
 
     # Enregistrement de la transaction en statut pending
     transaction_doc = {
-        "session_id": session.session_id,
+        "session_id": session.id,
         "service_id": payload.service_id,
         "service_title": service.get("title", ""),
         "client_name": payload.client_name,
