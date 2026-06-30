@@ -32,8 +32,9 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Catalogue paramétrable admin (CRUD)
 - Page publique /citadelle/services
 - Types : Payant, Gratuit, Partenaire, Sur devis
-- **Paiement direct (Stripe mocké) : TERMINÉ 10/06/2026**
-  - Route `POST /api/citadelle/services/{id}/buy` — checkout mocké (succès immédiat)
+- **Paiement direct Stripe LIVE (TERMINÉ 30/06/2026)**
+  - Bug corrigé : `session.session_id` → `session.id` (AttributeError Stripe SDK)
+  - Route `POST /api/citadelle/payments/service/checkout` — checkout Stripe LIVE
   - Collection `citadelle_service_orders` avec statuts : en_attente, en_cours, termine, annule
   - Modale de checkout côté public (nom, email, message + confirmation)
   - Écran de succès avec référence de commande
