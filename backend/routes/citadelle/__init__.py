@@ -15,6 +15,7 @@ from routes.citadelle.contact import router as citadelle_contact_router
 from routes.citadelle.settings import router as citadelle_settings_router, set_database as set_citadelle_settings_db
 from routes.citadelle.payments import router as citadelle_payments_router, set_database as set_citadelle_payments_db
 from routes.citadelle.connect import router as citadelle_connect_router, set_database as set_citadelle_connect_db
+from routes.citadelle.estimation import router as citadelle_estimation_router, set_database as set_citadelle_estimation_db
 
 router = APIRouter(prefix="/citadelle", tags=["La Citadelle Numérique"])
 router.include_router(citadelle_auth_router)
@@ -28,6 +29,7 @@ router.include_router(citadelle_contact_router)
 router.include_router(citadelle_settings_router)
 router.include_router(citadelle_payments_router)
 router.include_router(citadelle_connect_router)
+router.include_router(citadelle_estimation_router)
 
 _db = None
 
@@ -44,3 +46,4 @@ def set_database(database):
     set_citadelle_settings_db(database)
     set_citadelle_payments_db(database)
     set_citadelle_connect_db(database)
+    set_citadelle_estimation_db(database)

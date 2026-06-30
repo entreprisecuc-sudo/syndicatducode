@@ -269,7 +269,7 @@ const EstimatorSection = () => {
 
               {/* CTA service */}
               <div className="space-y-3">
-                <Link to="/citadelle/services"
+                <Link to="/citadelle/estimation"
                   className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-bold text-base transition-all hover:scale-[1.02]"
                   style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                   data-testid="estimator-cta-service">

@@ -102,6 +102,7 @@ import CitadelleBlog from "@/pages/citadelle/CitadelleBlog";
 import CitadelleBlogPost from "@/pages/citadelle/CitadelleBlogPost";
 import CitadelleContact from "@/pages/citadelle/CitadelleContact";
 import CitadelleVendre from "@/pages/citadelle/CitadelleVendre";
+import CitadelleEstimation from "@/pages/citadelle/CitadelleEstimation";
 import CitadellePaymentSuccess from "@/pages/citadelle/CitadellePaymentSuccess";
 import CitadelleMentionsLegales from "@/pages/citadelle/CitadelleMentionsLegales";
 import CitadelleCGU from "@/pages/citadelle/CitadelleCGU";
@@ -341,6 +342,7 @@ function App() {
               <Route path="/citadelle/annonces/:slug" element={<CitadelleListingDetail />} />
               <Route path="/citadelle/services" element={<CitadelleServices />} />
               <Route path="/citadelle/vendre" element={<CitadelleVendre />} />
+              <Route path="/citadelle/estimation" element={<CitadelleEstimation />} />
               <Route path="/citadelle/paiement/confirmation" element={<CitadellePaymentSuccess />} />
               <Route path="/citadelle/mentions-legales" element={<CitadelleMentionsLegales />} />
               <Route path="/citadelle/cgu" element={<CitadelleCGU />} />

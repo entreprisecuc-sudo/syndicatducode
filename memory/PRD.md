@@ -74,6 +74,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
   - Nouveaux articles : application mobile, YouTube, Instagram, juridique, rentabilité, outils audit, trafic, Shopify, migration, cybersécurité, pricing, SaaS, tendances 2026, transmission, marketplace
 - **Suggestions d'articles liés** (02/2026) : endpoint `/blog/{slug}/related`, algorithme 3 niveaux (catégorie → mots-clés → récents), 3 cartes visuelles en bas de chaque article
 - **Estimateur de valeur de site** (02/2026) : section interactive sur la page d'accueil, 5 types × 4 anciennetés, fourchette de prix instantanée, FAQ AEO Schema.org, CTA vers service d'estimation professionnel
+- **Page `/citadelle/estimation`** (02/2026) : estimateur avancé 5 paramètres (bénéfice net, type, ancienneté, % SEO organique, taux de croissance, diversification) avec décomposition des ajustements, table comparative des multiples, formulaire de demande d'estimation pro (POST `/api/citadelle/estimation/request`), FAQ accordéon avec microdata Schema.org, JSON-LD FAQPage + Service pour rich snippets Google
 
 ### ✅ Catalogue Services v2 — Contenu officiel (TERMINÉ 13/06/2026)
 - Ajout du champ `target_category` (vendeur / acheteur / commun) aux modèles `ServiceCreate` et `ServiceUpdate`
