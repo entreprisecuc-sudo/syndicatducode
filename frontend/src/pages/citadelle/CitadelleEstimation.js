@@ -32,17 +32,17 @@ const AGES = [
 ];
 
 const MULTIPLES = {
-  saas:        { lt1: [18,24], "1-3": [24,36], "3-5": [36,48], "5plus": [42,60] },
-  ecommerce:   { lt1: [15,20], "1-3": [20,30], "3-5": [28,36], "5plus": [32,42] },
-  contenu:     { lt1: [12,18], "1-3": [20,28], "3-5": [26,34], "5plus": [30,42] },
-  application: { lt1: [15,20], "1-3": [22,32], "3-5": [30,40], "5plus": [36,48] },
-  social:      { lt1: [10,14], "1-3": [12,20], "3-5": [18,26], "5plus": [20,30] },
+  saas:        { lt1: [10,15], "1-3": [14,20], "3-5": [18,26], "5plus": [22,30] },
+  ecommerce:   { lt1: [8,12],  "1-3": [12,18], "3-5": [15,22], "5plus": [18,25] },
+  contenu:     { lt1: [8,12],  "1-3": [12,18], "3-5": [14,20], "5plus": [16,24] },
+  application: { lt1: [8,12],  "1-3": [12,18], "3-5": [15,22], "5plus": [18,26] },
+  social:      { lt1: [4,7],   "1-3": [5,9],   "3-5": [7,12],  "5plus": [9,15]  },
 };
 
 const DIVERSIFICATION_OPTIONS = [
-  { value: 1, label: "1 source unique (AdSense, affiliation...)", badge: "-10%" },
-  { value: 2, label: "2 sources combinées", badge: "+5%" },
-  { value: 3, label: "3 sources ou plus", badge: "+15%" },
+  { value: 1, label: "1 source unique (AdSense, affiliation...)", badge: "-7%" },
+  { value: 2, label: "2 sources combinées", badge: "+3%" },
+  { value: 3, label: "3 sources ou plus", badge: "+7%" },
 ];
 
 const formatEur = (n) =>
@@ -60,23 +60,23 @@ function compute({ revenue, siteType, age, seoPercent, growthPercent, diversific
 
   // Ajustement SEO
   let seoMult, seoLabel, seoColor;
-  if (seoPercent >= 60)      { seoMult = 1.15; seoLabel = `SEO dominant ≥ 60%`; seoColor = "#22c55e"; }
-  else if (seoPercent >= 30) { seoMult = 1.07; seoLabel = `SEO solide 30–60%`; seoColor = "#84cc16"; }
+  if (seoPercent >= 60)      { seoMult = 1.07; seoLabel = `SEO dominant ≥ 60%`; seoColor = "#22c55e"; }
+  else if (seoPercent >= 30) { seoMult = 1.03; seoLabel = `SEO solide 30–60%`; seoColor = "#84cc16"; }
   else if (seoPercent >= 20) { seoMult = 1.0;  seoLabel = `SEO modéré 20–30%`; seoColor = CITADELLE_COLORS.gold; }
-  else                       { seoMult = 0.90; seoLabel = `SEO faible < 20%`; seoColor = "#ef4444"; }
+  else                       { seoMult = 0.93; seoLabel = `SEO faible < 20%`; seoColor = "#ef4444"; }
 
   // Ajustement croissance
   let growthMult, growthLabel, growthColor;
-  if (growthPercent > 10)      { growthMult = 1.25; growthLabel = `Forte croissance > 10%/mois`; growthColor = "#22c55e"; }
-  else if (growthPercent >= 5) { growthMult = 1.12; growthLabel = `Bonne croissance 5–10%/mois`; growthColor = "#84cc16"; }
+  if (growthPercent > 10)      { growthMult = 1.10; growthLabel = `Forte croissance > 10%/mois`; growthColor = "#22c55e"; }
+  else if (growthPercent >= 5) { growthMult = 1.05; growthLabel = `Bonne croissance 5–10%/mois`; growthColor = "#84cc16"; }
   else if (growthPercent >= 0) { growthMult = 1.0;  growthLabel = `Stable 0–5%/mois`; growthColor = CITADELLE_COLORS.gold; }
-  else                         { growthMult = 0.80; growthLabel = `Déclin < 0%/mois`; growthColor = "#ef4444"; }
+  else                         { growthMult = 0.88; growthLabel = `Déclin < 0%/mois`; growthColor = "#ef4444"; }
 
   // Ajustement diversification
   let divMult, divLabel, divColor;
-  if (diversification >= 3)      { divMult = 1.15; divLabel = `3+ sources de revenus`; divColor = "#22c55e"; }
-  else if (diversification === 2) { divMult = 1.05; divLabel = `2 sources de revenus`; divColor = "#84cc16"; }
-  else                           { divMult = 0.90; divLabel = `1 seule source`; divColor = "#ef4444"; }
+  if (diversification >= 3)       { divMult = 1.07; divLabel = `3+ sources de revenus`; divColor = "#22c55e"; }
+  else if (diversification === 2) { divMult = 1.03; divLabel = `2 sources de revenus`; divColor = "#84cc16"; }
+  else                            { divMult = 0.93; divLabel = `1 seule source`; divColor = "#ef4444"; }
 
   const baseLowPrice  = revenue * baseLow;
   const baseHighPrice = revenue * baseHigh;
@@ -105,7 +105,7 @@ const PAGE_SCHEMAS = [
       {
         "@type": "Question",
         name: "Comment estimer la valeur de mon site internet en France ?",
-        acceptedAnswer: { "@type": "Answer", text: "La valeur d'un site internet en France se calcule avec la méthode du multiple SDE : Valeur = Bénéfice net mensuel × Multiple (12x à 60x). Ce multiple est ajusté selon le trafic SEO organique, le taux de croissance et la diversification des revenus. Notre outil gratuit intègre ces 5 paramètres pour une estimation précise." }
+        acceptedAnswer: { "@type": "Answer", text: "La valeur d'un site internet en France se calcule avec la méthode du multiple SDE : Valeur = Bénéfice net mensuel × Multiple (8x à 30x). Ce multiple est ajusté selon le trafic SEO organique, le taux de croissance et la diversification des revenus. Notre outil gratuit intègre ces 5 paramètres pour une estimation précise." }
       },
       {
         "@type": "Question",
@@ -115,7 +115,7 @@ const PAGE_SCHEMAS = [
       {
         "@type": "Question",
         name: "Quel est le multiple utilisé pour valoriser un SaaS en France ?",
-        acceptedAnswer: { "@type": "Answer", text: "En France, un SaaS mature (3 à 5 ans) se valorise entre 36 et 48 fois son bénéfice net mensuel, soit 3 à 4 fois l'ARR. Un SaaS avec forte croissance et rétention élevée peut atteindre 60 fois le bénéfice mensuel." }
+        acceptedAnswer: { "@type": "Answer", text: "En France, un SaaS mature (3 à 5 ans) se valorise entre 18 et 26 fois son bénéfice net mensuel. Un SaaS avec une forte rétention et une croissance soutenue peut atteindre 22 à 30 fois le bénéfice mensuel." }
       },
       {
         "@type": "Question",
@@ -780,7 +780,7 @@ export default function CitadelleEstimation() {
             {[
               {
                 question: "Comment estimer la valeur de mon site internet en France ?",
-                answer: "La valeur d'un site internet en France se calcule avec la méthode du multiple SDE : Valeur = Bénéfice net mensuel × Multiple. Ce multiple (12x à 60x) est ajusté selon la qualité du trafic SEO organique, le taux de croissance mensuel et la diversification des revenus. Notre outil intègre ces 5 paramètres pour une fourchette réaliste."
+                answer: "La valeur d'un site internet en France se calcule avec la méthode du multiple SDE : Valeur = Bénéfice net mensuel × Multiple. Ce multiple ( 8x à 30x) est ajusté selon la qualité du trafic SEO organique, le taux de croissance mensuel et la diversification des revenus. Notre outil intègre ces 5 paramètres pour une fourchette réaliste."
               },
               {
                 question: "Combien coûte une estimation professionnelle de site internet ?",
@@ -788,7 +788,7 @@ export default function CitadelleEstimation() {
               },
               {
                 question: "Quel est le multiple pour valoriser un SaaS en France ?",
-                answer: "Un SaaS français mature (3 à 5 ans) se valorise entre 36x et 48x son bénéfice net mensuel. Avec une forte croissance et un faible churn, le multiple peut atteindre 60x. Un SaaS en démarrage (< 1 an) se valorisera plutôt 18x–24x."
+                answer: "Un SaaS français mature (3 à 5 ans) se valorise entre 18x et 26x son bénéfice net mensuel. Avec une forte croissance et un faible churn, le multiple peut atteindre 22x à 30x. Un SaaS en démarrage (< 1 an) se valorisera plutôt 10x–15x."
               },
               {
                 question: "Pourquoi le trafic SEO influence-t-il la valeur de mon site ?",

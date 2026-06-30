@@ -42,13 +42,13 @@ const AGES = [
   { value: "5plus",label: "5 ans et +" },
 ];
 
-// Multiples bas/haut par type × ancienneté (méthode SDE standard)
+// Multiples bas/haut par type × ancienneté — Marché français 2026 (méthode SDE)
 const MULTIPLES = {
-  saas:        { lt1: [18,24], "1-3": [24,36], "3-5": [36,48], "5plus": [42,60] },
-  ecommerce:   { lt1: [15,20], "1-3": [20,30], "3-5": [28,36], "5plus": [32,42] },
-  contenu:     { lt1: [12,18], "1-3": [20,28], "3-5": [26,34], "5plus": [30,42] },
-  application: { lt1: [15,20], "1-3": [22,32], "3-5": [30,40], "5plus": [36,48] },
-  social:      { lt1: [10,14], "1-3": [12,20], "3-5": [18,26], "5plus": [20,30] },
+  saas:        { lt1: [10,15], "1-3": [14,20], "3-5": [18,26], "5plus": [22,30] },
+  ecommerce:   { lt1: [8,12],  "1-3": [12,18], "3-5": [15,22], "5plus": [18,25] },
+  contenu:     { lt1: [8,12],  "1-3": [12,18], "3-5": [14,20], "5plus": [16,24] },
+  application: { lt1: [8,12],  "1-3": [12,18], "3-5": [15,22], "5plus": [18,26] },
+  social:      { lt1: [4,7],   "1-3": [5,9],   "3-5": [7,12],  "5plus": [9,15]  },
 };
 
 const formatEur = (n) =>
@@ -62,17 +62,17 @@ const FAQ_SCHEMA = {
     {
       "@type": "Question",
       name: "Combien vaut mon site internet ?",
-      acceptedAnswer: { "@type": "Answer", text: "La valeur d'un site internet se calcule en multipliant son bénéfice net mensuel moyen par un multiple de marché (12x à 60x selon le type et l'ancienneté). Un site de contenu générant 1 000 €/mois vaut généralement entre 20 000 € et 28 000 € en France." }
+      acceptedAnswer: { "@type": "Answer", text: "La valeur d'un site internet se calcule en multipliant son bénéfice net mensuel moyen par un multiple de marché (8x à 30x selon le type et l'ancienneté). Un site de contenu générant 1 000 €/mois vaut généralement entre 12 000 € et 18 000 € sur le marché français." }
     },
     {
       "@type": "Question",
       name: "Comment estimer la valeur d'un site web en France ?",
-      acceptedAnswer: { "@type": "Answer", text: "En France, la méthode standard est le multiple de SDE (Seller's Discretionary Earnings) : Valeur = Bénéfice net mensuel × Multiple. Ce multiple varie de 12x pour un site récent à 60x pour un SaaS mature. La Citadelle Numérique propose une estimation gratuite et professionnelle." }
+      acceptedAnswer: { "@type": "Answer", text: "En France, la méthode standard est le multiple de SDE : Valeur = Bénéfice net mensuel × Multiple. Ce multiple varie de 8x pour un site récent à 30x pour un SaaS mature bien établi. La Citadelle Numérique propose une estimation gratuite et professionnelle." }
     },
     {
       "@type": "Question",
       name: "Quel est le prix d'un site internet rentable à vendre ?",
-      acceptedAnswer: { "@type": "Answer", text: "Un site rentable se vend entre 24 et 36 fois son bénéfice net mensuel en France. Les SaaS bien établis peuvent atteindre 36 à 60 fois. L'ancienneté, la qualité SEO et la diversification des revenus influencent fortement le multiple de valorisation." }
+      acceptedAnswer: { "@type": "Answer", text: "Un site rentable se vend entre 12 et 22 fois son bénéfice net mensuel en France. Les SaaS bien établis peuvent atteindre 22 à 30 fois. L'ancienneté, la qualité SEO et la diversification des revenus influencent fortement le multiple de valorisation." }
     },
   ]
 };
@@ -296,15 +296,15 @@ const EstimatorSection = () => {
           {[
             {
               q: "Combien vaut mon site internet ?",
-              a: "La valeur de votre site se calcule en multipliant votre bénéfice net mensuel moyen par un multiple de marché (12x à 60x selon le type et l'ancienneté). Un site de contenu générant 1 000 €/mois vaut généralement entre 20 000 € et 28 000 € en France.",
+              a: "La valeur de votre site se calcule en multipliant votre bénéfice net mensuel moyen par un multiple de marché (8x à 30x selon le type et l'ancienneté). Un site de contenu générant 1 000 €/mois vaut généralement entre 12 000 € et 18 000 € sur le marché français.",
             },
             {
               q: "Comment estimer la valeur d'un site web en France ?",
-              a: "La méthode standard en France est le multiple de SDE : Valeur = Bénéfice net mensuel × Multiple. Ce multiple varie de 12x (site récent) à 60x (SaaS mature). Notre équipe réalise des estimations professionnelles gratuites basées sur vos vraies données.",
+              a: "La méthode standard en France est le multiple de SDE : Valeur = Bénéfice net mensuel × Multiple. Ce multiple varie de 8x (site récent) à 30x (SaaS mature). Notre équipe réalise des estimations professionnelles gratuites basées sur vos vraies données.",
             },
             {
               q: "Quel est le prix d'un site internet rentable à vendre ?",
-              a: "Un site rentable se vend entre 24 et 36 fois son bénéfice net mensuel en moyenne sur le marché français. Les SaaS établis atteignent 36 à 60 fois. L'ancienneté, la diversification des revenus et la qualité SEO influencent fortement le multiple.",
+              a: "Un site rentable se vend entre 12 et 22 fois son bénéfice net mensuel en France. Les SaaS bien établis peuvent atteindre 22 à 30 fois. L'ancienneté, la diversification des revenus et la qualité SEO influencent fortement le multiple.",
             },
           ].map(({ q, a }) => (
             <div key={q} itemScope itemProp="mainEntity" itemType="https://schema.org/Question"
