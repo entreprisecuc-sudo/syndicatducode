@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { BookOpen, ChevronRight, Calendar, User, Search, X } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
@@ -71,6 +72,13 @@ export default function CitadelleBlog() {
 
   return (
     <CitadelleLayout pageTitle="Blog">
+      <Helmet>
+        <title>Blog — Achat, vente et valorisation d'actifs numériques | La Citadelle Numérique</title>
+        <meta name="description" content="Conseils, analyses et guides sur l'achat et la vente de sites web, SaaS, boutiques e-commerce. Retrouvez nos articles experts pour maximiser la valeur de vos actifs numériques." />
+        <meta property="og:title" content="Blog La Citadelle Numérique | Actifs numériques & marketplace" />
+        <meta property="og:description" content="Guides, conseils et analyses pour acheter et vendre des actifs numériques. Plus de 56 articles experts." />
+        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/blog" />
+      </Helmet>
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-12" data-testid="citadelle-blog">
 
         {/* Header */}

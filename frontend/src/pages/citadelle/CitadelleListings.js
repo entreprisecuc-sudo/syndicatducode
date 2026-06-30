@@ -10,6 +10,7 @@ import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ListingCard from "@/components/citadelle/ListingCard";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_ALL_CATEGORIES } from "@/config/citadelleConstants";
+import { Helmet } from "react-helmet-async";
 
 const BUDGET_OPTIONS = [
   { value: "", label: "Tous budgets" },
@@ -79,6 +80,13 @@ export default function CitadelleListings() {
 
   return (
     <CitadelleLayout pageTitle="Annonces">
+      <Helmet>
+        <title>Annonces — Sites web, SaaS et actifs numériques | La Citadelle Numérique</title>
+        <meta name="description" content="Parcourez toutes les annonces de vente de sites web, SaaS, boutiques e-commerce et actifs numériques. Trouvez votre prochain actif digital sur La Citadelle Numérique." />
+        <meta property="og:title" content="Annonces d'actifs numériques | La Citadelle Numérique" />
+        <meta property="og:description" content="Sites web, SaaS, boutiques Shopify, Amazon FBA et plus encore. Achetez des actifs numériques rentables." />
+        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/annonces" />
+      </Helmet>
       {/* Header */}
       <div className="py-10 px-4 md:px-6" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
         <div className="max-w-7xl mx-auto">

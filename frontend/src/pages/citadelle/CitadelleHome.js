@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import {
   Shield, TrendingUp, Lock, Globe, ShoppingCart, Cloud,
   Monitor, Users, ArrowRight, Star, Search, SlidersHorizontal,
@@ -775,6 +776,15 @@ const CTASection = () => (
 export default function CitadelleHome() {
   return (
     <CitadelleLayout pageTitle="Accueil">
+      <Helmet>
+        <title>La Citadelle Numérique | Marketplace d'actifs numériques</title>
+        <meta name="description" content="Achetez et vendez des sites web, SaaS, boutiques e-commerce et actifs numériques en toute sécurité. La marketplace française de référence pour les transactions d'actifs digitaux." />
+        <meta property="og:title" content="La Citadelle Numérique | Marketplace d'actifs numériques" />
+        <meta property="og:description" content="Achetez et vendez des sites web, SaaS, boutiques e-commerce et actifs numériques en toute sécurité. La marketplace française de référence." />
+        <meta property="og:url" content="https://lacitadellenumerique.fr/citadelle" />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle" />
+      </Helmet>
       <HeroSection />
       <CategoriesSection />
       <HowItWorksSection />

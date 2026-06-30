@@ -6,6 +6,7 @@
 import "@/App.css";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { HelmetProvider } from "react-helmet-async";
 import { ModalProvider } from "@/context/ModalContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { AdminThemeProvider } from "@/context/AdminThemeContext";
@@ -148,6 +149,7 @@ const PageLayout = ({ children }) => (
  */
 function App() {
   return (
+    <HelmetProvider>
     <AuthProvider>
       <CitadelleAuthProvider>
       <ModalProvider>
@@ -432,6 +434,7 @@ function App() {
       </ModalProvider>
       </CitadelleAuthProvider>
     </AuthProvider>
+    </HelmetProvider>
   );
 }
 

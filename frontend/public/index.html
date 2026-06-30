@@ -3,8 +3,19 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#4A5B4A" />
-        <meta name="description" content="Le Syndicat du Code - Création de sites web modernes, CRM, ERP et solutions IA sur mesure. Notre loi, unis par le code." />
+        <meta name="theme-color" content="#0F2747" />
+
+        <!-- Meta tags par défaut (surchargés dynamiquement par react-helmet-async) -->
+        <meta name="description" content="La Citadelle Numérique — Marketplace française d'achat et de vente de sites web, SaaS, boutiques e-commerce et actifs numériques. Transactions sécurisées, estimations professionnelles." />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="La Citadelle Numérique" />
+        <meta property="og:title" content="La Citadelle Numérique | Marketplace d'actifs numériques" />
+        <meta property="og:description" content="Achetez et vendez des sites web, SaaS, boutiques e-commerce et actifs numériques en toute sécurité. La marketplace française de référence." />
+        <meta property="og:url" content="https://lacitadellenumerique.fr/" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="La Citadelle Numérique | Marketplace d'actifs numériques" />
+        <meta name="twitter:description" content="Achetez et vendez des sites web, SaaS, boutiques e-commerce et actifs numériques en toute sécurité." />
+
         <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16.png" />
         <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.png" />
@@ -12,7 +23,23 @@
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <title>Le Syndicat du Code | Création de sites web, CRM, ERP & IA</title>
+
+        <!-- Titre adapté selon le domaine (avant exécution React) -->
+        <title>La Citadelle Numérique | Marketplace d'actifs numériques</title>
+        <script>
+            (function() {
+                var h = window.location.hostname;
+                if (h.indexOf('syndicatducode') !== -1 || h.indexOf('syndicat') !== -1) {
+                    document.title = 'Le Syndicat du Code | Création de sites web, CRM, ERP & IA';
+                    var desc = document.querySelector('meta[name="description"]');
+                    if (desc) desc.setAttribute('content', 'Le Syndicat du Code — Création de sites web modernes, CRM, ERP et solutions IA sur mesure. Agence française de développement digital.');
+                    var ogTitle = document.querySelector('meta[property="og:title"]');
+                    if (ogTitle) ogTitle.setAttribute('content', 'Le Syndicat du Code | Création de sites web, CRM, ERP & IA');
+                    var ogDesc = document.querySelector('meta[property="og:description"]');
+                    if (ogDesc) ogDesc.setAttribute('content', 'Agence française de développement web, CRM, ERP et IA. Création de sites modernes et solutions sur mesure.');
+                }
+            })();
+        </script>
     </head>
     <body>
         <noscript>Vous devez activer JavaScript pour utiliser ce site.</noscript>

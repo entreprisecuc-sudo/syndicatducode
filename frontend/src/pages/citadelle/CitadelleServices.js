@@ -13,6 +13,7 @@ import ServiceCheckoutModal from "@/components/citadelle/ServiceCheckoutModal";
 import ServiceHeroBanner from "@/components/citadelle/ServiceHeroBanner";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { Helmet } from "react-helmet-async";
 
 // ── Icônes par type de service ─────────────────────────────────────────────────
 const TYPE_ICONS = { paid: Zap, free: Star, partner: Handshake, quote: Shield };
@@ -246,6 +247,13 @@ export default function CitadelleServices() {
 
   return (
     <CitadelleLayout>
+      <Helmet>
+        <title>Services — Estimation, Due Diligence, La Garde | La Citadelle Numérique</title>
+        <meta name="description" content="Services professionnels pour acheteurs et vendeurs d'actifs numériques : estimation gratuite, estimation pro, due diligence technique, mise en dépôt La Garde." />
+        <meta property="og:title" content="Services La Citadelle Numérique | Estimation & Accompagnement" />
+        <meta property="og:description" content="Estimation gratuite ou professionnelle, audit technique, accompagnement à la vente. Tous nos services pour sécuriser votre transaction." />
+        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/services" />
+      </Helmet>
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12" data-testid="citadelle-services">
 
         {/* En-tête */}

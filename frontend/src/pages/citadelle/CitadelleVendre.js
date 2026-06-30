@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { Helmet } from "react-helmet-async";
 
 // ── Données statiques ─────────────────────────────────────────────────────────
 
@@ -229,6 +230,13 @@ export default function CitadelleVendre() {
 
   return (
     <CitadelleLayout>
+      <Helmet>
+        <title>Vendre votre site web ou SaaS | La Citadelle Numérique</title>
+        <meta name="description" content="Vendez votre site web, SaaS, boutique e-commerce ou actif numérique en toute sécurité. Estimation gratuite, accompagnement expert, transaction sécurisée par La Garde." />
+        <meta property="og:title" content="Vendre sur La Citadelle Numérique | Actifs numériques" />
+        <meta property="og:description" content="Obtenez une estimation gratuite de votre actif numérique et vendez en toute sécurité. La marketplace française pour les cessions de sites web et SaaS." />
+        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/vendre" />
+      </Helmet>
 
       {/* ═══════════════════════════════════════════════════════════
           SECTION 1 — HERO
