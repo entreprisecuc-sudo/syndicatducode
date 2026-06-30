@@ -405,8 +405,11 @@ function AdvancedEstimator({ onResult, formRef }) {
             data-testid="adv-calculate-btn"
             className="w-full py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-            Calculer mon estimation
+            Estimer gratuitement — résultat instantané
           </button>
+          <p className="text-center text-xs mt-2" style={{ color: CITADELLE_COLORS.textMuted }}>
+            Sans inscription · Sans engagement · 100% gratuit
+          </p>
         </form>
 
       ) : (

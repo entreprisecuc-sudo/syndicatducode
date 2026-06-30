@@ -128,7 +128,7 @@ const EstimatorSection = () => {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-5 text-xs font-semibold tracking-wider uppercase"
             style={{ background: "rgba(201,164,92,0.15)", border: "1px solid rgba(201,164,92,0.3)", color: CITADELLE_COLORS.gold }}>
             <TrendingUp size={13} />
-            Outil gratuit · Estimation instantanée
+            Outil <strong>GRATUIT</strong> · Estimation instantanée
           </div>
           <h2
             id="estimator-heading"
@@ -219,8 +219,11 @@ const EstimatorSection = () => {
                 data-testid="estimator-calculate-btn"
                 className="w-full py-4 rounded-xl font-bold text-base transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-                Estimer la valeur de mon site
+                Estimer gratuitement — résultat instantané
               </button>
+              <p className="text-center text-xs mt-2" style={{ color: "rgba(255,255,255,0.35)" }}>
+                Sans inscription · Sans engagement · 100% gratuit
+              </p>
             </form>
 
           ) : (
