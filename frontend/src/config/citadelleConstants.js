@@ -145,9 +145,12 @@ const DOCUMENT_EXTENSIONS = [".pdf", ".doc", ".docx"];
 
 /**
  * Détermine si un chemin/URL pointe vers une image
+ * Les URLs externes http(s):// (Unsplash, Pexels, etc.) sont considérées comme images
  */
 export const isImageFile = (path) => {
   if (!path) return false;
+  // URL externe → toujours considérée comme image (Unsplash, Pexels, etc.)
+  if (path.startsWith("http://") || path.startsWith("https://")) return true;
   const ext = path.split("?")[0].split(".").pop()?.toLowerCase();
   return IMAGE_EXTENSIONS.includes(`.${ext}`);
 };
