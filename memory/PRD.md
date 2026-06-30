@@ -76,6 +76,12 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Estimateur de valeur de site** (02/2026) : section interactive sur la page d'accueil, 5 types × 4 anciennetés, fourchette de prix instantanée, FAQ AEO Schema.org, CTA vers service d'estimation professionnel
 - **Page `/citadelle/estimation`** (02/2026) : estimateur avancé 5 paramètres (bénéfice net, type, ancienneté, % SEO organique, taux de croissance, diversification) avec décomposition des ajustements, table comparative des multiples, formulaire de demande d'estimation pro (POST `/api/citadelle/estimation/request`), FAQ accordéon avec microdata Schema.org, JSON-LD FAQPage + Service pour rich snippets Google
 
+### ✅ Bug fix — Articles de blog vides (CORRIGÉ 30/06/2026)
+- **Cause** : Les 15 articles importés (batch 3) avaient leur contenu Markdown dans le champ `content` au lieu de `content_md`
+- **Fix 1 — Frontend** : `CitadelleBlogPost.js` ligne 287 → `post.content_md || post.content` (fallback robuste)
+- **Fix 2 — Migration DB** : Script `migrate_content_to_content_md.py` exécuté → 15 articles mis à jour
+- **Test** : Validé par l'agent de test (100% des cas) — contenu affiché (4353 chars, 15 titres, 14 paragraphes)
+
 ### ✅ Widget estimateur contextuel sur les fiches annonces (TERMINÉ 30/06/2026)
 - Composant `EstimateurSidebar` ajouté dans `CitadelleListingDetail.js` (sidebar droite, après "URL masquée")
 - Pré-rempli automatiquement avec le `monthly_revenue` de l'annonce
