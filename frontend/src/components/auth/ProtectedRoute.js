@@ -74,7 +74,9 @@ export const RoleRoute = ({ children, allowedRoles }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/connexion" state={{ from: location }} replace />;
+    const adminPaths = ["/syndicat-admin"];
+    const isAdminPath = adminPaths.some(p => location.pathname.startsWith(p));
+    return <Navigate to={isAdminPath ? "/papaenmousse1981" : "/connexion"} state={{ from: location }} replace />;
   }
 
   if (needsRoleChoice()) {
@@ -114,7 +116,9 @@ export const PublicRoute = ({ children }) => {
       ? "/espace-commercial" 
       : user?.role === "developer"
         ? "/espace-developpeur"
-        : "/dashboard";
+        : user?.role === "admin"
+          ? "/syndicat-admin"
+          : "/dashboard";
     
     return <Navigate to={redirectPath} replace />;
   }

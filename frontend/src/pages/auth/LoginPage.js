@@ -40,7 +40,9 @@ const LoginPage = () => {
         // Redirige vers l'espace approprié
         const redirectPath = response.user.role === "commercial"
           ? "/espace-commercial"
-          : "/espace-developpeur";
+          : response.user.role === "admin"
+            ? "/syndicat-admin"
+            : "/espace-developpeur";
         navigate(redirectPath);
       }
     } catch (err) {
