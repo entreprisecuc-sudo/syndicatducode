@@ -486,7 +486,50 @@ async def get_user_full_details(
     }
 
 
-@router.get("/users/{user_id}/activity", dependencies=[Depends(admin_only)])
+@router.delete("/users/{user_id}", dependencies=[Depends(admin_only)])
+async def delete_user(
+    user_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Supprimer définitivement un utilisateur et toutes ses données associées.
+    Un admin ne peut pas supprimer son propre compte.
+    """
+    if user_id == current_user["sub"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Vous ne pouvez pas supprimer votre propre compte"
+        )
+
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
+        )
+
+    email = user.get("email", user_id)
+
+    # Suppression de l'utilisateur et de toutes ses données associées
+    await db.users.delete_one({"id": user_id})
+    await db.profiles.delete_many({"user_id": user_id})
+    await db.portfolio.delete_many({"user_id": user_id})
+    await db.notifications.delete_many({"user_id": user_id})
+    await db.user_subscriptions.delete_many({"user_id": user_id})
+    await db.messages.delete_many({"developer_id": user_id})
+
+    await log_admin_action(
+        current_user["sub"],
+        "DELETE_USER",
+        f"Utilisateur supprimé définitivement : {email}"
+    )
+
+    logger.info(f"Admin {current_user['email']} a supprimé définitivement l'utilisateur {email}")
+
+    return {"message": f"Utilisateur {email} supprimé définitivement"}
+
+
+
 async def get_user_activity(
     user_id: str,
     current_user: dict = Depends(get_current_user)

@@ -5,10 +5,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, ChevronRight, UserPlus, X, Eye, EyeOff, Castle } from "lucide-react";
+import { Users, Search, UserCheck, UserX, Shield, Briefcase, Code, ChevronRight, UserPlus, X, Eye, EyeOff, Castle, Trash2, AlertTriangle } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import Pagination from "@/components/shared/Pagination";
 import api from "@/services/api";
+import { useAuth } from "@/context/AuthContext";
 
 // Configuration des rôles
 const ROLE_CONFIG = {
@@ -28,6 +29,7 @@ const STATUS_CONFIG = {
 
 const AdminUsers = () => {
   const navigate = useNavigate();
+  const { user: currentAdmin } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -45,6 +47,11 @@ const AdminUsers = () => {
   const [createLoading, setCreateLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Modal suppression utilisateur
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Vérification de correspondance des mots de passe
   const passwordsMatch = adminForm.confirmPassword === "" || adminForm.password === adminForm.confirmPassword;
@@ -144,6 +151,28 @@ const AdminUsers = () => {
     }
   };
 
+  // Supprimer un utilisateur
+  const confirmDelete = (user, e) => {
+    e.stopPropagation();
+    setUserToDelete(user);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    try {
+      setDeleteLoading(true);
+      await api.delete(`/admin/users/${userToDelete.id}`);
+      setShowDeleteModal(false);
+      setUserToDelete(null);
+      fetchUsers(page);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Erreur lors de la suppression");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   // La recherche se fait désormais côté serveur (plus de filtrage local)
 
   return (
@@ -166,6 +195,50 @@ const AdminUsers = () => {
           <span className="hidden sm:inline">Créer un admin</span>
         </button>
       </div>
+
+      {/* Modal suppression utilisateur */}
+      {showDeleteModal && userToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div
+            className="w-full max-w-sm rounded-xl p-6"
+            style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle size={20} className="text-red-400" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold" style={{ color: "var(--admin-text)" }}>
+                  Supprimer définitivement
+                </h2>
+                <p className="text-xs mt-0.5" style={{ color: "var(--admin-text-muted)" }}>
+                  Cette action est irréversible
+                </p>
+              </div>
+            </div>
+            <p className="text-sm mb-6" style={{ color: "var(--admin-text-secondary)" }}>
+              Voulez-vous supprimer le compte <strong style={{ color: "var(--admin-text)" }}>{userToDelete.email}</strong> ainsi que toutes ses données associées ?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowDeleteModal(false); setUserToDelete(null); }}
+                className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ background: "var(--admin-bg-section)", color: "var(--admin-text-secondary)", border: "1px solid var(--admin-border)" }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDeleteUser}
+                disabled={deleteLoading}
+                className="flex-1 py-2 rounded-lg text-sm font-bold transition-colors bg-red-500 hover:bg-red-600 text-white disabled:opacity-50"
+                data-testid="confirm-delete-user-btn"
+              >
+                {deleteLoading ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal création admin */}
       {showCreateAdmin && (
@@ -509,6 +582,19 @@ const AdminUsers = () => {
                     className="hidden md:block" 
                     style={{ color: "var(--admin-text-muted)" }}
                   />
+
+                  {/* Supprimer — masqué pour son propre compte */}
+                  {user.id !== currentAdmin?.id && (
+                    <button
+                      onClick={(e) => confirmDelete(user, e)}
+                      disabled={actionLoading}
+                      className="p-1.5 rounded text-red-400 hover:bg-red-500/20 transition-colors"
+                      title="Supprimer définitivement"
+                      data-testid={`delete-user-btn-${user.id}`}
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  )}
                 </div>
               </div>
             );
