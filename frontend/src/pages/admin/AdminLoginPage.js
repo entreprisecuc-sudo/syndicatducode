@@ -1,6 +1,6 @@
 /**
  * Page de connexion — Espace Administration
- * Accessible via /admin-access
+ * Accessible via /papaenmousse1981
  * Réservé aux comptes avec role: "admin"
  */
 

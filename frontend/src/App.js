@@ -179,7 +179,7 @@ function App() {
               {/* ============================================ */}
               
               {/* Connexion admin dédiée */}
-              <Route path="/admin-access" element={<AdminLoginPage />} />
+              <Route path="/papaenmousse1981" element={<AdminLoginPage />} />
 
               {/* Routes françaises (principales) */}
               <Route path="/connexion" element={<PublicRoute><LoginPage /></PublicRoute>} />
