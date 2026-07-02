@@ -28,8 +28,8 @@ router = APIRouter(tags=["Citadelle Listings"])
 
 db = None
 
-# Dossier d'upload pour les images d'annonces Citadelle
-CITADELLE_UPLOADS_DIR = Path("/app/backend/uploads/citadelle")
+# Dossier d'upload pour les images d'annonces Citadelle (chemin relatif au fichier)
+CITADELLE_UPLOADS_DIR = Path(__file__).parent.parent.parent / "uploads" / "citadelle"
 CITADELLE_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Types de fichiers autorisés (images + documents) et taille max (10 Mo)
