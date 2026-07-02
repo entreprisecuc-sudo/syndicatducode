@@ -340,9 +340,10 @@ export default function CitadelleCreateListing() {
               <label className="block text-sm font-semibold mb-2" style={labelStyle}>Accroche courte * <span className="font-normal text-xs">(20-300 caractères)</span></label>
               <textarea value={form.short_description} onChange={e => set("short_description", e.target.value)}
                 rows={3} placeholder="Résumé percutant visible dans les résultats de recherche..."
+                maxLength={300}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={inputStyle}
                 data-testid="create-listing-short-desc" />
-              <p className="text-xs mt-1 text-right" style={{ color: CITADELLE_COLORS.textMuted }}>{form.short_description.length}/300</p>
+              <p className="text-xs mt-1 text-right" style={{ color: form.short_description.length >= 290 ? "#ef4444" : CITADELLE_COLORS.textMuted }}>{form.short_description.length}/300</p>
             </div>
           </div>
         )}
