@@ -5,7 +5,7 @@
  */
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { Shield, Eye, EyeOff, Lock, Mail, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
 import { login, forgotPassword } from "@/services/authService";
 import { useAuth } from "@/context/AuthContext";
@@ -35,6 +35,17 @@ export default function AdminLoginPage() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
+
+  // Restriction domaine : accessible uniquement depuis syndicatducode.fr
+  const hostname = window.location.hostname;
+  const isAllowedDomain =
+    hostname.includes("syndicatducode") ||
+    hostname === "localhost" ||
+    hostname === "127.0.0.1";
+
+  if (!isAllowedDomain) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleLoginChange = (e) => {
     setCredentials(prev => ({ ...prev, [e.target.name]: e.target.value }));
