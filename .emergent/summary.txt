@@ -1,46 +1,53 @@
 <analysis>**original_problem_statement**: 
 Création de la plateforme La Citadelle Numérique (Marketplace pour l'achat et la vente de sites web, SaaS, et actifs numériques) et du Syndicat du Code.
-PRODUCT REQUIREMENTS: 
-- Respect strict des 27 RÈGLES DE DÉVELOPPEMENT listées dans  (Principe KISS, Zéro Hardcoding, DRY).
-- **Règle 6 : Interdiction stricte de lancer des tests automatisés (testing subagent) sans validation explicite du client.** *Exception appliquée : le système force l'utilisation du testing agent lors de la résolution de bugs signalés par l'utilisateur.*
+PRODUCT REQUIREMENTS: Respect strict des 27 RÈGLES DE DÉVELOPPEMENT listées dans  (Principe KISS, Zéro Hardcoding, DRY). 
+Règle 6 critique : Interdiction stricte de lancer des tests automatisés (testing subagent) sans validation explicite du client. Exception : Le système force l'utilisation du testing agent lors de la résolution de bugs signalés par l'utilisateur.
 
 **User's preferred language**: French
-⚠️ **CRITICAL INSTRUCTION FOR NEXT AGENT**: The user strictly communicates in French. You MUST instruct your own thoughts, code comments, tool usages, and chat responses to be exclusively in **French**. 
+⚠️ INSTRUCT NEXT AGENT: The user's primary language is French. You MUST respond, comment your code, write your thoughts, and use tools EXCLUSIVELY in French.
 
 **what currently exists?** 
-Une application web très avancée (React 19 / FastAPI). La marketplace gère la vente/achat d'actifs numériques, avec tunnel de paiement Stripe, facturation automatisée en PDF, et envoi d'emails transactionnels. Les balises SEO dynamiques sont désormais gérées via . L'application est prête à être mise à jour sur le VPS de production.
+A full-stack web application (React 19 / FastAPI) in production on a Hostinger VPS. It handles Stripe transactions, escrow, dynamic SEO, and admin validation. Both La Citadelle Numérique and Syndicat du Code share the same backend/frontend. In this session, a complete 6-phase Stripe Connect (KYC, Escrow, and Automated Payouts) flow was successfully implemented. Additionally, several production bugs regarding UI visibility, mocked payment gateways, and hardcoded prices were successfully resolved.
 
 **Last working item**: 
-    - Last item agent was working: Assistance pour le déploiement sur le VPS. L'utilisateur a fourni l'IP de son VPS () et a été guidé sur les commandes PowerShell/SSH à utiliser. L'utilisateur a décidé de réaliser un fork de sauvegarde avant de lancer les commandes de déploiement en production.
-    - Status: BLOCKED (En attente du retour de l'utilisateur après création du fork).
-    - Agent Testing Done: N/A (Déploiement en cours)
-    - Which testing method agent to use?: Manual validation
-    - User Testing Done: N/A
+    - Last item agent was working: The user requested to fork the session to continue resolving new (yet to be specified) bugs. The agent had just finished fixing a hardcoded pricing bug on the Estimation page.
+    - Status: NOT STARTED (waiting for user to provide the next bug).
+    - Agent Testing Done: Y (for the previously completed bug fixes).
+    - Which testing method agent to use?: manual testing by curl/ screenshot tool (or testing agent if explicitly approved).
+    - User Testing Done: N
 
 **All Pending/In progress Issue list**: 
-  (Aucun bug ou problème en attente, tous les dysfonctionnements du système de facturation et de SEO ont été résolus et rigoureusement testés lors de cette session).
+  Issue 1: Awaiting User Input for new bugs (P0)
+     - Attempted fixes: N/A
+     - Next debug checklist: Ask the user to detail the next bugs they want to fix as mentioned right before the fork.
+     - Why fix this issue and what will be achieved with the fix?: Continuous stabilization of the production platform.
+     - Status: NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix?: both
+     - Blocked on other issue: None
 
 **In progress Task List**: 
-  Task 1: Déploiement des dernières fonctionnalités sur le VPS
-     - Where to resume: Demander à l'utilisateur s'il a bien finalisé son fork et s'il a réussi à se connecter en SSH à son VPS () via PowerShell. L'accompagner pas-à-pas pour git pull, yarn build, copie vers nginx, pip install et redémarrage de FastAPI.
-     - What will be achieved with this?: Mise en production du module de factures, des emails automatiques et de la correction SEO.
-     - Status: IN PROGRESS
-     - Should Test frontend/backend/both after fix?: Manual verification post-deploy.
-     - Blocked on something: Attente de l'action utilisateur (le fork).
+  None. 
 
 **Upcoming and Future Tasks**
     - P1: Implémentation des Abonnements pour le Syndicat du Code (mensuel / annuel / bi-annuel avec Stripe).
     - P1: Implémentation des paiements pour les autres Services du Syndicat du Code (refonte, création de site - paiement unique).
     - P2: Phase D — Avis utilisateurs (notation post-transaction sur la Citadelle).
-    - P2: Phase E — Statistiques admin & SEO.
+    - P2: Phase E — Statistiques admin & SEO (Remplacer le sitemap.xml statique généré par une route FastAPI  dynamique).
     - P3: Articles de blog batch 4 (affiliation, dropshipping, podcasts, crypto, NFT).
-    - Future Task: Ajouter le  de l'utilisateur connecté dans la transaction Stripe (pour que les factures soient toujours visibles dans l'espace membre, même en cas de changement d'email).
+    - Future Task: Implémenter GitHub Auth pour Le Syndicat du Code (actuellement seul Google Auth est fait pour La Citadelle).
+    - Future Task: Ajouter le  de l'utilisateur connecté dans la transaction Stripe.
 
 **Completed work in this session**
-- Correction des bugs critiques d'authentification et de routage sur  (FastAPI Request missing, router prefix conflict) (DONE)
-- Correction frontend de l'espace membre et admin pour l'affichage et téléchargement correct des factures PDF avec gestion des layouts (DONE)
-- Ajout d'une fonctionnalité d'envoi automatique d'email (SMTP) avec la facture PDF en pièce jointe dès la confirmation d'un paiement ( & ) (DONE)
-- Résolution du problème d'indexation Google (No information available) par l'installation de , le nettoyage du  et l'ajout de balises meta SEO dynamiques sur 7 pages clés du frontend (DONE)
+- Stripe Connect Phase 1: Added  and  to user profile (DONE)
+- Stripe Connect Phase 2: Added  soft block in transaction details (DONE)
+- Stripe Connect Phase 3: Added Admin Validation Dashboard for KYC (DONE)
+- Stripe Connect Phase 4: Integrated Stripe SDK to create Stripe Connect Express accounts / handle E.164 phone logic (DONE)
+- Stripe Connect Phase 5: Hooked up escrow payout logic to display automated Stripe transfer statuses to Admin and Vendor (DONE)
+- Stripe Connect Phase 6: Published CGU v2.0 with Stripe Connect and Escrow legal clauses (DONE)
+- Admin Services UI Bug: Fixed invisible tab buttons in light theme using correct CSS variables (DONE)
+- Mes services Checkout Bug: Replaced inline mocked checkout form with real  for actual Stripe payments (DONE)
+- Estimation Page Bug: Removed hardcoded  and  values to fetch live service prices from the API dynamically (DONE)
 
 **Earlier issues found/mentioned but not fixed**
 None.
@@ -51,71 +58,81 @@ None.
   - Status: RESOLVED
 
 **Code Architecture**
-- /app/frontend/public/index.html (mis à jour avec meta fallback)
-- /app/frontend/src/App.js (enveloppé avec HelmetProvider)
-- FastAPI gère l'injection des JWT de deux façons distinctes (Citadelle vs Syndicat), faites très attention au prefixage des routes  ou  (admin Syndicat).
+- React 19 frontend, FastAPI backend, MongoDB (Motor).
+- Deployed on VPS, Backend managed by PM2, Frontend served by Nginx.
+- Domains:  and  route to the same instance.
 
 **Key Technical Concepts**
-React 19, FastAPI, MongoDB (Motor), Stripe Checkout, Reportlab (Génération PDF),  (SEO metadata), Python  &  (SMTP).
+React 19 context, FastAPI, MongoDB, Stripe Checkout & Stripe Connect (Escrow & automated Transfers), Nginx, Google OAuth.
 
 **key DB schema**
+  -  (fields: email, role, date_of_birth, phone, kyc_status, stripe_account_id)
+  -  (fields: amount, status, credentials, transfer_group)
   - 
   - 
-  -  (id, invoice_number, stripe_session_id, user_id, client_email, etc.)
 
 **changes in tech stack**
-- Ajout de la dépendance frontend  pour le SEO dynamique.
+-  backend module implemented.
 
 **All files of reference** 
-  -  (Corrigé, annoté, hook email ajouté)
-  -  (Contient )
+  -  
+  -  
+  -  (NEW)
   - 
   - 
   - 
   - 
-  - Fichiers SEO modifiés : , , , , , , 
+  - 
+  - 
 
 **Areas that need refactoring**: 
--  (≈ 1030 lignes) et  (≈ 716 lignes) sont très volumineux. Découpage futur recommandé (noté dans le PRD).
+-  (≈ 1378 lines) and  (≈ 950 lines) are very large. Needs separation of concerns.
 
 **key api endpoints**
+- 
 - 
 - 
 - 
 
 **Critical Info for New Agent** 
 - **LANGUE :** Communiquez EXCLUSIVEMENT en **français**.
-- Lors du déploiement sur le VPS, il est crucial de **ne pas lancer de scripts de réinitialisation/migration de base de données** pour préserver les articles de blogs, services et annonces actuellement en production. Le code backend gère l'indexation MongoDB de façon idempotente au démarrage, ce qui est sûr.
-- Vous reprenez la session exactement au moment où l'utilisateur s'apprêtait à exécuter des commandes SSH/PowerShell pour mettre à jour son VPS. Soyez concis et demandez-lui si le fork est terminé et s'il a besoin d'aide avec son terminal.
+- RÈGLE DE DÉVELOPPEMENT 6 : **Demandez toujours l'autorisation avant de lancer des tests automatisés**, sauf s'il s'agit de résoudre un bug reporté par l'utilisateur.
+- L'application est **EN PRODUCTION LIVE**. N'écrasez jamais les bases de données.
+- Admin URL is .
+- Always prefix backend routes with .
+- When dealing with phone numbers for Stripe Connect, ensure they are converted to the E.164 format (e.g., ).
 
 **documents and test reports created in this job** 
-  -  (Mis à jour rigoureusement)
+  - 
 
 **Last 10 User Messages and any pending HUMAN messages** 
-1. (User) Demande d'ajouter un email auto avec facture PDF.
-2. (User) Demande d'investiguer pourquoi Google n'affiche pas la meta description (No information is available).
-3. (User) Demande de préparer le déploiement sur le VPS tout en préservant le contenu base de données.
-4. (User) Demande les commandes de connexion PowerShell pour le VPS.
-5. (User) Fournit l'IP du VPS : .
-6. (User) Indique : ok on va faire un fork avant installation.
-- *Pending Human Action* : L'utilisateur était en train de forker la session. Le prochain agent doit le saluer, confirmer que la sauvegarde (fork) est faite, et lui demander s'il a réussi à se connecter en SSH pour lancer le script de déploiement (fourni à la fin de la session précédente).
+1. (User) go phase 3
+2. (User) go phase 4
+3. (User) go phase 5
+4. (User) phase 6
+5. (User) Reports bug: Admin Citadelle Services buttons are invisible in light theme.
+6. (User) Reports bug: Mes services page opens a mocked checkout instead of actual Stripe checkout.
+7. (User) Reports bug: Estimation page uses hardcoded 49 EUR prices instead of matching actual dynamic service pricing.
+8. (User) ok on fork et on continue la correction des bug
+ - *Pending Human Action*: Awaiting the user to provide the next specific bug report. You should prompt them asking what they want to fix next.
 
 **Project Health Check:**
 - Broken: None.
-- Mocked: Stripe checkout (Test mode integration running).
+- Mocked: None.
 
 **3rd Party Integrations** 
-- Stripe (Payments) — Requires User API Key 
+- Stripe (Payments & Connect) — Requires User API Key (Available in env)
+- Google Auth (OAuth) — Integrated via internal emergent setup.
+- Google Search Console / Analytics (GA4) 
 
 **Testing status** 
-- Testing agent used after significant changes: NO (Tests menés manuellement via  avec curl / génération de PDF / envoi d'email SMTP / screenshot).
+- Testing agent used after significant changes: NO (Blocked by user rule)
 - Troubleshoot agent used after agent stuck in loop: NO
 - Test files created: None
 - Known regressions: None
 
 **Credentials to test flow:**
 - Admin Syndicat / Citadelle (Prod) :  / 
-- VPS IP (pour accompagnement client) : 
 
 **What agent forgot to execute**
-Rien. Toutes les tâches demandées ont été effectuées. L'utilisateur ayant interrompu le flux pour faire un fork de précaution avant déploiement, il ne reste plus qu'à l'accompagner dans cette mise en production.</analysis>
+Nothing. The agent successfully fulfilled all requests up to the fork command. Ask the user for the next bug to tackle.</analysis>
