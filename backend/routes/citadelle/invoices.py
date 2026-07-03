@@ -50,9 +50,9 @@ SELLER = {
     "email":     os.environ.get("CITADELLE_ADMIN_EMAIL", "lagarde@lacitadellenumerique.fr"),
     "address":   "11 RUE URBAIN IV, 10000 TROYES",
     "siret":     "892 906 728 00019",
+    "siren":     "892906728",
     "tva_intra": "FR12892906728",
     "rcs":       "R.C.S. Troyes — 892 906 728",
-    "forme_jur": "SASU — Capital 250,00 €",
     "operator":  "JOERKE.B",
 }
 
@@ -258,9 +258,7 @@ def _build_pdf(inv: dict) -> bytes:
     c.setFont("Helvetica", 9)
     c.setFillColor(MUTED)
     c.drawString(x(12), y(65), inv.get("seller_email", ""))
-    siret = inv.get("seller_siret", SELLER["siret"])
-    if siret:
-        c.drawString(x(12), y(71), f"SIRET : {siret}")
+    c.drawString(x(12), y(71), f"SIREN : {SELLER['siren']}")
     tva = inv.get("seller_tva", SELLER["tva_intra"])
     if tva:
         c.drawString(x(12), y(77), f"N° TVA : {tva}")
@@ -270,7 +268,7 @@ def _build_pdf(inv: dict) -> bytes:
     # Mention JOERKE.B en très petit
     c.setFont("Helvetica-Oblique", 7)
     c.setFillColor(HexColor("#9CA3AF"))
-    c.drawString(x(12), y(95), f"Exploitée par {SELLER['operator']} — {SELLER['forme_jur']}")
+    c.drawString(x(12), y(95), f"propulsé par {SELLER['operator']}")
 
     # ── Bloc "À" ───────────────────────────────────────────────────────────
     c.setFillColor(NAVY)
@@ -413,7 +411,7 @@ def _build_pdf(inv: dict) -> bytes:
     c.drawCentredString(W / 2, footer_y - x(4), "Document généré automatiquement — valeur légale sous réserve de signature électronique")
     c.setFont("Helvetica-Oblique", 6)
     c.setFillColor(HexColor("#9CA3AF"))
-    c.drawCentredString(W / 2, footer_y - x(8), f"propulsé par {SELLER['operator']} — SASU — SIRET {SELLER['siret']} — {SELLER['tva_intra']}")
+    c.drawCentredString(W / 2, footer_y - x(8), f"propulsé par {SELLER['operator']} — SIREN {SELLER['siren']} — {SELLER['tva_intra']}")
 
     c.save()
     return buf.getvalue()
