@@ -161,6 +161,12 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Footer + `CitadelleVendre.js` mis à jour avec les nouveaux noms
 
 
+### ✅ Phase 5 KYC — Escrow → Payout automatique (TERMINÉ 03/07/2026)
+- **Backend** (`transactions.py`) : `admin_complete_transaction` calcule la commission (5%, min 49€), appelle `stripe.Transfer.create` vers le compte Connect actif du vendeur, fallback gracieux si le compte est en attente ou absent (note manuelle dans le fil de discussion)
+- **Frontend** (`CitadelleTransactionDetail.js`) : vue vendeur après finalisation — montant net, commission, statut du virement (auto ✅ ou manuel ⚠️) + ID Stripe  
+- **Frontend** (`AdminCitadelleTransactions.js`) : synthèse payout dans le panneau de détail — total, commission, net vendeur, statut transfer, ID Stripe
+- Exemple : vente 1 000€ → commission 50€ | net vendeur 950€
+
 ### ✅ Phase 4 KYC — Intégration Stripe Connect Express (TERMINÉ 03/07/2026)
 - **Backend** (`stripe_connect.py`) : `POST /api/citadelle/stripe-connect/onboard` — crée un compte Express Stripe, pré-remplit avec les données KYC (nom, email, téléphone E.164 +33…, date de naissance), génère un Account Link et stocke `stripe_connect_account_id` en base. `GET /api/citadelle/stripe-connect/status` — interroge Stripe et retourne `not_connected | pending | pending_review | active`. `GET /admin/accounts` — liste des comptes Connect créés (admin). Idempotent : 2ème appel = nouveau lien seulement.
 - **Frontend** (`CitadelleProfile.js`) : nouvel onglet "Paiements" — badge de statut en temps réel, bouton "Connecter mon compte Stripe" → redirect vers Stripe onboarding, retour géré via `?stripe_connect=success/refresh`, note légale Stripe Connect

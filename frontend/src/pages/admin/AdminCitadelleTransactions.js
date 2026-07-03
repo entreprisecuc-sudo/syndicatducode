@@ -319,6 +319,40 @@ export default function AdminCitadelleTransactions() {
                   <div><span className="opacity-50">Montant final</span><p className="font-bold">{(selectedTx.payment_amount || selectedTx.offer_amount)?.toLocaleString("fr-FR")} €</p></div>
                 </div>
 
+                {/* Synthèse du virement Stripe après finalisation */}
+                {selectedTx.status === "completed" && (
+                  <div className="p-4 rounded-xl space-y-2"
+                    style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                    <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: "#22C55E" }}>
+                      <CreditCard size={12} /> Virement vendeur
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="opacity-50">Montant total</span>
+                        <p className="font-bold">{(selectedTx.payment_amount || selectedTx.offer_amount)?.toLocaleString("fr-FR")} €</p>
+                      </div>
+                      <div>
+                        <span className="opacity-50">Commission plateforme</span>
+                        <p className="font-medium text-amber-400">{selectedTx.commission_amount != null ? `${selectedTx.commission_amount?.toLocaleString("fr-FR")} €` : "—"}</p>
+                      </div>
+                      <div>
+                        <span className="opacity-50">Net vendeur</span>
+                        <p className="font-bold" style={{ color: "#22C55E" }}>{selectedTx.net_seller_amount != null ? `${selectedTx.net_seller_amount?.toLocaleString("fr-FR")} €` : "—"}</p>
+                      </div>
+                      <div>
+                        <span className="opacity-50">Statut virement</span>
+                        {selectedTx.stripe_transfer_id
+                          ? <p className="font-medium flex items-center gap-1" style={{ color: "#22C55E" }}><CheckCircle size={11} /> Automatique</p>
+                          : <p className="font-medium flex items-center gap-1" style={{ color: "#d97706" }}><AlertTriangle size={11} /> Manuel requis</p>
+                        }
+                      </div>
+                    </div>
+                    {selectedTx.stripe_transfer_id && (
+                      <p className="text-xs opacity-40 font-mono break-all">{selectedTx.stripe_transfer_id}</p>
+                    )}
+                  </div>
+                )}
+
                 {/* Credentials */}
                 {selectedTx.credentials?.data && (
                   <div className="p-4 rounded-xl" style={{ background: "rgba(201,164,92,0.08)", border: "1px solid rgba(201,164,92,0.2)" }}>

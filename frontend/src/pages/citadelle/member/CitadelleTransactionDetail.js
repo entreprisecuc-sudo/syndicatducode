@@ -406,15 +406,45 @@ export default function CitadelleTransactionDetail() {
           {tx.status === "completed" && (
             <div className="p-4 rounded-xl flex items-start gap-3" style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
               <CheckCircle size={16} style={{ color: "#22C55E", flexShrink: 0, marginTop: 2 }} />
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold" style={{ color: "#22C55E" }}>Vente finalisée</p>
-                <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  {isBuyer
-                    ? (tx.credentials_transmitted
+                {isBuyer && (
+                  <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
+                    {tx.credentials_transmitted
                       ? "Les accès vous ont été transmis de manière sécurisée."
-                      : "Les fonds sont en séquestre. L'administrateur va vous transmettre les accès sous peu.")
-                    : "Les fonds ont été libérés."}
-                </p>
+                      : "Les fonds sont en séquestre. L'administrateur va vous transmettre les accès sous peu."}
+                  </p>
+                )}
+                {isSeller && (
+                  <div className="mt-2 space-y-1.5">
+                    {tx.net_seller_amount != null && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Montant net reçu</span>
+                        <span className="font-bold text-sm" style={{ color: "#22C55E" }}>
+                          {tx.net_seller_amount?.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
+                        </span>
+                      </div>
+                    )}
+                    {tx.commission_amount != null && (
+                      <div className="flex items-center justify-between text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
+                        <span>Commission plateforme</span>
+                        <span>{tx.commission_amount?.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
+                      </div>
+                    )}
+                    {tx.stripe_transfer_id ? (
+                      <div className="flex items-center gap-1.5 text-xs" style={{ color: "#22C55E" }}>
+                        <CheckCircle size={11} />
+                        <span>Virement Stripe automatique effectué</span>
+                        <span className="font-mono opacity-50 text-xs">{tx.stripe_transfer_id}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-xs" style={{ color: "#d97706" }}>
+                        <AlertTriangle size={11} />
+                        <span>Virement manuel en cours de traitement par l'équipe</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
