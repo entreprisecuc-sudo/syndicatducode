@@ -161,6 +161,10 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Footer + `CitadelleVendre.js` mis à jour avec les nouveaux noms
 
 
+### ✅ Phase 3 KYC Stripe Connect — Dashboard admin de validation (TERMINÉ 03/07/2026)
+- **Backend** (`auth.py`) : `PATCH /api/citadelle/auth/admin/users/{id}/kyc` — action `validate` ou `reject` (avec motif obligatoire), stocke `kyc_status`, `kyc_validated_at`, `kyc_rejected_by`, `kyc_rejection_reason`
+- **Frontend** (`AdminCitadelleUsers.js`) : colonne KYC avec badge (Validé / Rejeté / En attente) + indicateur documents (CNI, RIB, KBIS) + bouton "Réviser KYC" → modale `KycModal` avec liens vers documents, sélecteur Valider/Rejeter, champ motif, confirmation
+
 ### ✅ Phase 2 KYC Stripe Connect — Bannière vendeur (soft block) (TERMINÉ 03/07/2026)
 - **Frontend** (`CitadelleTransactionDetail.js`) : bannière dorée `KycSellerBanner` affichée au vendeur dès que les fonds arrivent en séquestre (`payment_done`, `credentials_submitted`, `admin_verified`, `disputed`) si `phone` ou `date_of_birth` est absent du profil
 - Bouton **Compléter mon profil** → `/citadelle/espace-membre/profil`

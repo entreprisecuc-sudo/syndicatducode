@@ -888,6 +888,65 @@ from routes.citadelle.dependencies import require_admin
 # _require_admin remplacé par require_admin importé depuis dependencies (DRY)
 
 
+# ── Modèle KYC ────────────────────────────────────────────────────────────────
+
+class KycValidationRequest(BaseModel):
+    """Validation ou rejet KYC par l'admin"""
+    action: str                       # "validate" | "reject"
+    rejection_reason: Optional[str] = None
+
+
+@router.patch("/admin/users/{user_id}/kyc", status_code=200)
+async def admin_update_kyc(
+    user_id: str,
+    data: KycValidationRequest,
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Admin : valider ou rejeter le KYC d'un utilisateur Citadelle.
+    - action "validate" : kyc_status = "validated"
+    - action "reject"   : kyc_status = "rejected" + motif obligatoire
+    """
+    if data.action not in ("validate", "reject"):
+        raise HTTPException(status_code=400, detail="Action invalide. Valeurs acceptées : validate, reject")
+
+    if data.action == "reject" and not (data.rejection_reason or "").strip():
+        raise HTTPException(status_code=400, detail="Un motif de rejet est requis")
+
+    user = await db.users.find_one(
+        {"id": user_id, "platform": "citadelle"},
+        {"_id": 0, "id": 1, "email": 1}
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur Citadelle introuvable")
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    if data.action == "validate":
+        updates = {
+            "kyc_status": "validated",
+            "kyc_validated_at": now,
+            "kyc_validated_by": current_user.get("sub"),
+            "kyc_rejection_reason": None,
+            "updated_at": now,
+        }
+        action_label = "validé"
+    else:
+        updates = {
+            "kyc_status": "rejected",
+            "kyc_rejected_at": now,
+            "kyc_rejected_by": current_user.get("sub"),
+            "kyc_rejection_reason": data.rejection_reason.strip(),
+            "updated_at": now,
+        }
+        action_label = "rejeté"
+
+    await db.users.update_one({"id": user_id, "platform": "citadelle"}, {"$set": updates})
+
+    logger.info(f"[KYC] Admin {current_user.get('email','?')} a {action_label} le KYC de {user['email']}")
+    return {"message": f"KYC {action_label} pour {user['email']}"}
+
+
 @router.get("/admin/users/{user_id}", status_code=200)
 async def admin_get_citadelle_user(
     user_id: str,
