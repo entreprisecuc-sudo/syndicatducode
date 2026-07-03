@@ -4,198 +4,144 @@
  * Support mode sombre/clair
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, Users, BarChart3, 
   FileText, History, Shield, Home, Rocket, Megaphone, Bell, BookOpen,
-  CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare, Database, Globe, ArrowLeftRight, Star
+  CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare, Database,
+  Globe, ArrowLeftRight, Star, LayoutDashboard, ChevronLeft,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminTheme } from "@/context/AdminThemeContext";
 
-// Menu admin organisé en sections avec descriptions pour les tooltips
-const ADMIN_MENU_SECTIONS = [
+const UNIVERSE_KEY = "admin_selected_universe";
+
+// ── Menus par univers ────────────────────────────────────────────────────────
+
+const SYNDICAT_MENU = [
   {
     title: "Tableau de bord",
     items: [
-      { 
-        path: "/syndicat-admin", 
-        label: "Vue d'ensemble", 
-        icon: BarChart3,
-        description: "Statistiques globales et indicateurs clés de la plateforme"
-      }
-    ]
+      { path: "/syndicat-admin", label: "Vue d'ensemble", icon: BarChart3, description: "Statistiques globales" },
+    ],
   },
   {
     title: "Utilisateurs",
     items: [
-      { 
-        path: "/syndicat-admin/utilisateurs", 
-        label: "Gestion utilisateurs", 
-        icon: Users,
-        description: "Gérer les comptes membres : développeurs, commerciaux et admins"
-      },
-      { 
-        path: "/syndicat-admin/contacts", 
-        label: "Demandes contact", 
-        icon: FileText,
-        description: "Consulter et traiter les demandes de contact du formulaire"
-      }
-    ]
+      { path: "/syndicat-admin/utilisateurs", label: "Gestion utilisateurs", icon: Users, description: "Gérer les comptes membres" },
+      { path: "/syndicat-admin/contacts",      label: "Demandes contact",    icon: FileText, description: "Demandes de contact" },
+    ],
   },
   {
     title: "Contenus",
     items: [
-      { 
-        path: "/syndicat-admin/projets", 
-        label: "Projets", 
-        icon: Rocket,
-        description: "Créer et gérer les projets, traiter les candidatures"
-      },
-      { 
-        path: "/syndicat-admin/espaces-projets", 
-        label: "Espaces Projets", 
-        icon: MessageSquare,
-        description: "Participer aux discussions et gérer les espaces collaboratifs"
-      },
-      { 
-        path: "/syndicat-admin/annonces", 
-        label: "Annonces", 
-        icon: Megaphone,
-        description: "Publier des annonces et actualités pour les membres"
-      },
-      { 
-        path: "/syndicat-admin/alertes", 
-        label: "Alertes", 
-        icon: Bell,
-        description: "Créer des alertes et popups pour les membres ou visiteurs"
-      },
-      { 
-        path: "/syndicat-admin/partenaires", 
-        label: "Partenaires", 
-        icon: Handshake,
-        description: "Gérer les partenaires et leurs logos affichés sur le site"
-      },
-      { 
-        path: "/syndicat-admin/validation-books", 
-        label: "Validation Books", 
-        icon: BookCheck,
-        description: "Valider ou refuser les portfolios soumis par les développeurs"
-      }
-    ]
+      { path: "/syndicat-admin/projets",           label: "Projets",           icon: Rocket,       description: "Créer et gérer les projets" },
+      { path: "/syndicat-admin/espaces-projets",   label: "Espaces Projets",   icon: MessageSquare,description: "Espaces collaboratifs" },
+      { path: "/syndicat-admin/annonces",          label: "Annonces",          icon: Megaphone,    description: "Actualités membres" },
+      { path: "/syndicat-admin/alertes",           label: "Alertes",           icon: Bell,         description: "Alertes et popups" },
+      { path: "/syndicat-admin/partenaires",       label: "Partenaires",       icon: Handshake,    description: "Logos partenaires" },
+      { path: "/syndicat-admin/validation-books",  label: "Validation Books",  icon: BookCheck,    description: "Portfolios à valider" },
+    ],
   },
   {
     title: "Abonnements",
     items: [
-      { 
-        path: "/syndicat-admin/abonnements", 
-        label: "Gestion forfaits", 
-        icon: CreditCard,
-        description: "Configurer les forfaits d'abonnement et suivre les paiements"
-      }
-    ]
+      { path: "/syndicat-admin/abonnements", label: "Gestion forfaits", icon: CreditCard, description: "Forfaits et paiements" },
+    ],
   },
   {
     title: "Système",
     items: [
-      { 
-        path: "/syndicat-admin/logs", 
-        label: "Historique actions", 
-        icon: History,
-        description: "Consulter l'historique des actions administratives"
-      },
-      {
-        path: "/syndicat-admin/securite",
-        label: "Anti-Brute Force",
-        icon: Shield,
-        description: "Configurer la protection anti-brute force et gérer les IP bloquées"
-      },
-      {
-        path: "/syndicat-admin/sauvegarde",
-        label: "Sauvegarde données",
-        icon: Database,
-        description: "Exporter les données de la base MongoDB (JSON, Excel) et configurer la sauvegarde automatique"
-      }
-    ]
+      { path: "/syndicat-admin/logs",       label: "Historique actions",  icon: History, description: "Actions administratives" },
+      { path: "/syndicat-admin/securite",   label: "Anti-Brute Force",    icon: Shield,  description: "Protection anti-brute force" },
+      { path: "/syndicat-admin/sauvegarde", label: "Sauvegarde données",  icon: Database,description: "Export données" },
+    ],
   },
-  {
-    title: "La Citadelle Numérique",
-    items: [
-      {
-        path: "/syndicat-admin/citadelle",
-        label: "Tableau de bord",
-        icon: Shield,
-        description: "Gérer la plateforme La Citadelle Numérique — annonces, transactions, services"
-      },
-      {
-        path: "/syndicat-admin/citadelle/annonces",
-        label: "Annonces Citadelle",
-        icon: Globe,
-        description: "Valider, rejeter et mettre en avant les annonces soumises"
-      },
-      {
-        path: "/syndicat-admin/citadelle/transactions",
-        label: "Transactions",
-        icon: ArrowLeftRight,
-        description: "Vérifier les accès, finaliser les ventes, gérer les litiges"
-      },
-      {
-        path: "/syndicat-admin/citadelle/factures",
-        label: "Factures",
-        icon: FileText,
-        description: "Télécharger les factures PDF à l'unité ou en lot pour la comptabilité"
-      },
-      {
-        path: "/syndicat-admin/citadelle/services",
-        label: "Services",
-        icon: Star,
-        description: "Gérer le catalogue de services complémentaires"
-      },
-      {
-        path: "/syndicat-admin/citadelle/commission",
-        label: "Commission ventes",
-        icon: CreditCard,
-        description: "Configurer le taux et le minimum de commission prélevés sur chaque vente"
-      },
-      {
-        path: "/syndicat-admin/citadelle/newsletter",
-        label: "Newsletter",
-        icon: Bell,
-        description: "Alertes annonces, abonnés et configuration du scheduler"
-      },
-      {
-        path: "/syndicat-admin/citadelle/blog",
-        label: "Blog",
-        icon: BookOpen,
-        description: "Rédiger et gérer les articles du blog Citadelle"
-      },
-      {
-        path: "/syndicat-admin/citadelle/utilisateurs",
-        label: "Utilisateurs Citadelle",
-        icon: Users,
-        description: "Liste des membres avec consentement CGU/CGV horodaté et adresse IP"
-      }
-    ]
-  }
 ];
 
-// Liste plate pour la recherche du titre
-const ALL_MENU_ITEMS = ADMIN_MENU_SECTIONS.flatMap(section => section.items);
+const CITADELLE_MENU = [
+  {
+    title: "Tableau de bord",
+    items: [
+      { path: "/syndicat-admin/citadelle", label: "Vue d'ensemble", icon: LayoutDashboard, description: "Dashboard Citadelle" },
+    ],
+  },
+  {
+    title: "Utilisateurs (commun)",
+    items: [
+      { path: "/syndicat-admin/utilisateurs",          label: "Gestion utilisateurs",    icon: Users, description: "Tous les comptes" },
+      { path: "/syndicat-admin/citadelle/utilisateurs",label: "Membres Citadelle",        icon: Users, description: "Membres avec KYC et CGU" },
+    ],
+  },
+  {
+    title: "La Citadelle",
+    items: [
+      { path: "/syndicat-admin/citadelle/annonces",    label: "Annonces",           icon: Globe,          description: "Valider les annonces" },
+      { path: "/syndicat-admin/citadelle/transactions",label: "Transactions",        icon: ArrowLeftRight, description: "Ventes et litiges" },
+      { path: "/syndicat-admin/citadelle/factures",    label: "Factures",            icon: FileText,       description: "Factures PDF" },
+      { path: "/syndicat-admin/citadelle/services",    label: "Services",            icon: Star,           description: "Catalogue services" },
+      { path: "/syndicat-admin/citadelle/commission",  label: "Commission ventes",   icon: CreditCard,     description: "Taux de commission" },
+      { path: "/syndicat-admin/citadelle/newsletter",  label: "Newsletter",          icon: Bell,           description: "Abonnés et scheduler" },
+      { path: "/syndicat-admin/citadelle/blog",        label: "Blog",                icon: BookOpen,       description: "Articles Citadelle" },
+    ],
+  },
+  {
+    title: "Système",
+    items: [
+      { path: "/syndicat-admin/logs",       label: "Historique actions", icon: History, description: "Actions administratives" },
+      { path: "/syndicat-admin/securite",   label: "Anti-Brute Force",   icon: Shield,  description: "Protection anti-brute force" },
+      { path: "/syndicat-admin/sauvegarde", label: "Sauvegarde données", icon: Database,description: "Export données" },
+    ],
+  },
+];
+
+// Tous les items (pour retrouver le titre de page dans le header)
+const ALL_MENU_ITEMS = [...SYNDICAT_MENU, ...CITADELLE_MENU].flatMap(s => s.items);
+
 
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [universe, setUniverse] = useState(() => localStorage.getItem(UNIVERSE_KEY));
   const { user, logout } = useAuth();
   const { theme, currentTheme, toggleTheme } = useAdminTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
+  // Écouter les changements d'univers (depuis le sélecteur)
+  useEffect(() => {
+    const handler = () => setUniverse(localStorage.getItem(UNIVERSE_KEY));
+    window.addEventListener("admin_universe_changed", handler);
+    return () => window.removeEventListener("admin_universe_changed", handler);
+  }, []);
+
+  // Auto-détecter l'univers depuis l'URL pour la cohérence
+  useEffect(() => {
+    if (location.pathname.startsWith("/syndicat-admin/citadelle") && universe !== "citadelle") {
+      localStorage.setItem(UNIVERSE_KEY, "citadelle");
+      setUniverse("citadelle");
+    }
+  }, [location.pathname, universe]);
+
+  const handleLogout = () => { logout(); navigate("/"); };
+
+  // Changer d'univers → retour au sélecteur
+  const changeUniverse = () => {
+    localStorage.removeItem(UNIVERSE_KEY);
+    setUniverse(null);
+    navigate("/syndicat-admin");
+    window.dispatchEvent(new Event("admin_universe_changed"));
   };
 
   const isDark = theme === "dark";
+  const isCitadelle = universe === "citadelle";
+
+  // Couleurs Citadelle spécifiques pour la sidebar
+  const sidebarAccent = isCitadelle ? "#C9A45C" : currentTheme.accent;
+  const sidebarBg     = isCitadelle ? "#0a1628"  : currentTheme.bgSidebar;
+  const sidebarBorder = isCitadelle ? "rgba(201,164,92,0.2)" : currentTheme.border;
+
+  const menuSections = isCitadelle ? CITADELLE_MENU : SYNDICAT_MENU;
 
   return (
     <div 
@@ -218,77 +164,61 @@ const AdminLayout = ({ children }) => {
           lg:transform-none
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
-        style={{ 
-          background: currentTheme.bgSidebar, 
-          borderRight: `1px solid ${currentTheme.border}` 
-        }}
+        style={{ background: sidebarBg, borderRight: `1px solid ${sidebarBorder}` }}
       >
-        {/* Logo */}
-        <div 
-          className="p-4 border-b transition-colors duration-300" 
-          style={{ borderColor: currentTheme.border }}
-        >
+        {/* Logo + univers */}
+        <div className="p-4 border-b" style={{ borderColor: sidebarBorder }}>
           <div className="flex items-center gap-3">
-            <Shield size={28} style={{ color: currentTheme.accent }} />
+            <Shield size={28} style={{ color: sidebarAccent }} />
             <div>
-              <p style={{ color: currentTheme.text }} className="font-bold text-sm">ADMIN</p>
-              <p style={{ color: currentTheme.textSecondary }} className="text-xs">Le Syndicat du Code</p>
+              <p style={{ color: isCitadelle ? "#C9A45C" : currentTheme.text }} className="font-bold text-sm">ADMIN</p>
+              <p style={{ color: isCitadelle ? "rgba(255,255,255,0.5)" : currentTheme.textSecondary }} className="text-xs">
+                {isCitadelle ? "La Citadelle Numérique" : "Le Syndicat du Code"}
+              </p>
             </div>
           </div>
+          {/* Bouton changer d'univers */}
+          {universe && (
+            <button onClick={changeUniverse} data-testid="change-universe-btn"
+              className="mt-3 w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
+              style={{ background: `${sidebarAccent}18`, color: sidebarAccent, border: `1px solid ${sidebarAccent}30` }}>
+              <ChevronLeft size={13} />
+              Changer d'univers
+            </button>
+          )}
         </div>
 
         {/* Info admin */}
-        <div 
-          className="p-4 border-b transition-colors duration-300" 
-          style={{ borderColor: currentTheme.border }}
-        >
-          <p 
-            className="text-sm font-medium truncate"
-            style={{ color: currentTheme.text }}
-          >
+        <div className="p-4 border-b" style={{ borderColor: sidebarBorder }}>
+          <p className="text-sm font-medium truncate" style={{ color: isCitadelle ? "rgba(255,255,255,0.85)" : currentTheme.text }}>
             {user?.email}
           </p>
-          <p 
-            className="text-xs mt-1"
-            style={{ color: currentTheme.accent }}
-          >
-            Administrateur
-          </p>
+          <p className="text-xs mt-1" style={{ color: sidebarAccent }}>Administrateur</p>
         </div>
 
         {/* Navigation */}
-        <nav 
-          className="p-4 space-y-4 overflow-y-auto" 
-          style={{ maxHeight: "calc(100vh - 280px)" }}
-        >
-          {ADMIN_MENU_SECTIONS.map((section, sectionIndex) => (
-            <div key={sectionIndex}>
-              {/* Titre de section */}
-              <p 
-                className="text-xs font-semibold uppercase tracking-wider mb-2 px-3"
-                style={{ color: currentTheme.textMuted }}
-              >
+        <nav className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: "calc(100vh - 280px)" }}>
+          {menuSections.map((section, idx) => (
+            <div key={idx}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2 px-3"
+                style={{ color: isCitadelle ? "rgba(255,255,255,0.3)" : currentTheme.textMuted }}>
                 {section.title}
               </p>
-              
-              {/* Items de la section */}
               <div className="space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
-                  
                   return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
+                    <Link key={item.path} to={item.path}
                       onClick={() => setSidebarOpen(false)}
                       title={item.description}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
-                      style={{ 
-                        background: isActive ? currentTheme.bgSection : "transparent",
-                        color: isActive ? currentTheme.text : currentTheme.textSecondary
-                      }}
-                    >
+                      style={{
+                        background: isActive ? (isCitadelle ? "rgba(201,164,92,0.12)" : currentTheme.bgSection) : "transparent",
+                        color: isActive
+                          ? (isCitadelle ? "#C9A45C" : currentTheme.text)
+                          : (isCitadelle ? "rgba(255,255,255,0.6)" : currentTheme.textSecondary),
+                      }}>
                       <Icon size={18} />
                       {item.label}
                     </Link>
@@ -301,28 +231,19 @@ const AdminLayout = ({ children }) => {
 
         {/* Retour au site */}
         <div className="absolute bottom-16 left-0 right-0 px-4">
-          <Link
-            to="/"
-            title="Retourner sur le site public Le Syndicat du Code"
+          <Link to="/" title="Retourner sur le site public"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors hover:opacity-80"
-            style={{ color: currentTheme.textSecondary }}
-          >
+            style={{ color: isCitadelle ? "rgba(255,255,255,0.4)" : currentTheme.textSecondary }}>
             <Home size={18} />
             Retour au site
           </Link>
         </div>
 
         {/* Déconnexion */}
-        <div 
-          className="absolute bottom-0 left-0 right-0 p-4 border-t transition-colors duration-300" 
-          style={{ borderColor: currentTheme.border }}
-        >
-          <button
-            onClick={handleLogout}
-            title="Se déconnecter de l'espace administration"
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t" style={{ borderColor: sidebarBorder }}>
+          <button onClick={handleLogout} title="Se déconnecter"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors"
-            style={{ color: currentTheme.accent }}
-          >
+            style={{ color: sidebarAccent }}>
             <LogOut size={18} />
             Déconnexion
           </button>

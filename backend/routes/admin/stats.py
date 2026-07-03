@@ -156,6 +156,78 @@ async def get_admin_stats(current_user: dict = Depends(get_current_user)):
     }
 
 
+@router.get("/citadelle-stats", dependencies=[Depends(admin_only)])
+async def get_citadelle_stats(current_user: dict = Depends(get_current_user)):
+    """Statistiques globales de La Citadelle Numérique pour le dashboard admin."""
+
+    # Annonces
+    listings_total    = await db.citadelle_listings.count_documents({})
+    listings_active   = await db.citadelle_listings.count_documents({"status": "active"})
+    listings_pending  = await db.citadelle_listings.count_documents({"status": "pending"})
+
+    # Transactions
+    tx_active_statuses = ["payment_done", "credentials_submitted", "admin_verified", "disputed"]
+    transactions_total         = await db.citadelle_transactions.count_documents({})
+    transactions_active        = await db.citadelle_transactions.count_documents({"status": {"$in": tx_active_statuses}})
+    transactions_awaiting_admin = await db.citadelle_transactions.count_documents({"status": "credentials_submitted"})
+
+    # Utilisateurs Citadelle (plateforme = citadelle)
+    citadelle_users = await db.users.count_documents({"platform": "citadelle"})
+    kyc_pending     = await db.users.count_documents({
+        "platform": "citadelle",
+        "kyc_status": {"$in": ["pending", None]},
+        "stripe_connect_account_id": {"$exists": True, "$ne": None},
+    })
+
+    # Commandes de services en attente
+    service_orders_pending = await db.citadelle_service_orders.count_documents({"status": "en_attente"})
+    service_orders_total   = await db.citadelle_service_orders.count_documents({})
+
+    # Factures et CA total
+    invoices_total = await db.citadelle_invoices.count_documents({})
+    ca_result = await db.citadelle_invoices.aggregate([
+        {"$group": {"_id": None, "total": {"$sum": "$amount_ttc"}}}
+    ]).to_list(1)
+    ca_total = ca_result[0]["total"] if ca_result else 0.0
+
+    # Newsletter abonnés actifs
+    newsletter_subs = await db.citadelle_newsletter_subscriptions.count_documents({"active": True})
+
+    # Blog articles publiés
+    blog_published = await db.citadelle_blog_posts.count_documents({"is_published": True})
+
+    return {
+        "listings": {
+            "total":              listings_total,
+            "active":             listings_active,
+            "pending_validation": listings_pending,
+        },
+        "transactions": {
+            "total":          transactions_total,
+            "active":         transactions_active,
+            "awaiting_admin": transactions_awaiting_admin,
+        },
+        "users": {
+            "total":       citadelle_users,
+            "kyc_pending": kyc_pending,
+        },
+        "services": {
+            "orders_total":   service_orders_total,
+            "orders_pending": service_orders_pending,
+        },
+        "invoices": {
+            "total":    invoices_total,
+            "ca_total": ca_total,
+        },
+        "newsletter": {
+            "subscribers": newsletter_subs,
+        },
+        "blog": {
+            "published": blog_published,
+        },
+    }
+
+
 @router.get("/logs", dependencies=[Depends(admin_only)])
 async def get_admin_logs(
     limit: int = 50,
