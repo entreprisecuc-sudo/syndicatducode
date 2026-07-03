@@ -67,6 +67,14 @@ def _check_db():
         raise HTTPException(status_code=500, detail="Base de données non initialisée.")
 
 
+async def _get_billing_config() -> dict:
+    """Retourne la config de facturation (doc unique). Défaut : franchise TVA désactivée."""
+    if _db is None:
+        return {"tva_enabled": False}
+    cfg = await _db.citadelle_billing_config.find_one({"_id": "default"})
+    return cfg or {"tva_enabled": False}
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Numérotation séquentielle des factures
 # ─────────────────────────────────────────────────────────────────────────────
@@ -104,9 +112,20 @@ async def create_invoice_for_payment(transaction: dict) -> str:
     if existing:
         return str(existing.get("_id", ""))
 
+    # Lire la config TVA active au moment du paiement
+    config     = await _get_billing_config()
+    tva_enabled = config.get("tva_enabled", False)
+
     amount_ttc = float(transaction.get("amount", 0))
-    amount_ht  = round(amount_ttc / (1 + TVA_RATE), 2)
-    vat_amount = round(amount_ttc - amount_ht, 2)
+    if tva_enabled:
+        amount_ht  = round(amount_ttc / (1 + TVA_RATE), 2)
+        vat_amount = round(amount_ttc - amount_ht, 2)
+        vat_rate   = TVA_RATE
+    else:
+        # Franchise TVA — Art. 293 B du CGI
+        amount_ht  = amount_ttc
+        vat_amount = 0.0
+        vat_rate   = 0.0
 
     invoice_number = await _next_invoice_number()
     invoice_id     = str(uuid.uuid4())
@@ -136,11 +155,12 @@ async def create_invoice_for_payment(transaction: dict) -> str:
         "service_title":   transaction.get("service_title", "Prestation La Citadelle Numérique"),
         "description":     transaction.get("client_message") or "",
 
-        # Montants (prix affichés TTC → calcul HT inversé)
+        # Montants
         "amount_ttc":      amount_ttc,
         "amount_ht":       amount_ht,
-        "vat_rate":        TVA_RATE,
+        "vat_rate":        vat_rate,
         "vat_amount":      vat_amount,
+        "tva_enabled":     tva_enabled,
 
         # Références
         "stripe_session_id": session_id,
@@ -294,6 +314,7 @@ def _build_pdf(inv: dict) -> bytes:
     if len(service_title) > 55:
         service_title = service_title[:52] + "..."
 
+    tva_enabled = inv.get("tva_enabled", inv.get("vat_rate", TVA_RATE) > 0)
     amount_ht  = inv.get("amount_ht", 0)
     vat_rate   = inv.get("vat_rate", TVA_RATE)
     amount_ttc = inv.get("amount_ttc", 0)
@@ -301,8 +322,14 @@ def _build_pdf(inv: dict) -> bytes:
     row_mid = table_y - x(4.8)
     c.drawString(col_x[0] + 3, row_mid, service_title)
     c.drawCentredString(col_x[1] + col_widths[1] / 2, row_mid, "1")
-    c.drawCentredString(col_x[2] + col_widths[2] / 2, row_mid, f"{amount_ht:,.2f} €")
-    c.drawCentredString(col_x[3] + col_widths[3] / 2, row_mid, f"{int(vat_rate * 100)}%")
+    if tva_enabled:
+        c.drawCentredString(col_x[2] + col_widths[2] / 2, row_mid, f"{amount_ht:,.2f} €")
+        c.drawCentredString(col_x[3] + col_widths[3] / 2, row_mid, f"{int(vat_rate * 100)}%")
+    else:
+        c.drawCentredString(col_x[2] + col_widths[2] / 2, row_mid, f"{amount_ttc:,.2f} €")
+        c.setFillColor(MUTED)
+        c.drawCentredString(col_x[3] + col_widths[3] / 2, row_mid, "—")
+        c.setFillColor(NAVY)
     c.setFont("Helvetica-Bold", 9)
     c.drawCentredString(col_x[4] + col_widths[4] / 2, row_mid, f"{amount_ttc:,.2f} €")
 
@@ -325,15 +352,24 @@ def _build_pdf(inv: dict) -> bytes:
     c.setLineWidth(0.5)
     c.line(totals_x, table_y - x(2), W - x(12), table_y - x(2))
 
-    draw_total_row("Sous-total HT", f"{amount_ht:,.2f} €")
-    draw_total_row(f"TVA {int(vat_rate * 100)}%", f"{inv.get('vat_amount', 0):,.2f} €")
+    if tva_enabled:
+        draw_total_row("Sous-total HT", f"{amount_ht:,.2f} €")
+        draw_total_row(f"TVA {int(vat_rate * 100)}%", f"{inv.get('vat_amount', 0):,.2f} €")
 
     totals_y -= 2
     c.setStrokeColor(GOLD)
     c.setLineWidth(1)
     c.line(totals_x, totals_y + x(4), W - x(12), totals_y + x(4))
     totals_y -= x(3)
-    draw_total_row("TOTAL TTC", f"{amount_ttc:,.2f} €", bold=True)
+
+    label_total = "TOTAL TTC" if tva_enabled else "TOTAL"
+    draw_total_row(label_total, f"{amount_ttc:,.2f} €", bold=True)
+
+    if not tva_enabled:
+        c.setFont("Helvetica-Oblique", 7.5)
+        c.setFillColor(MUTED)
+        c.drawString(totals_x, totals_y, "TVA non applicable — Art. 293 B du CGI")
+        totals_y -= x(5)
 
     # ── Référence paiement ─────────────────────────────────────────────────
     ref_y = totals_y - x(14)
@@ -545,3 +581,32 @@ async def admin_bulk_download_invoices(request: Request):
         media_type="application/zip",
         headers={"Content-Disposition": f'attachment; filename="factures-citadelle-{today}.zip"'},
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Routes admin — Configuration TVA
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/admin/billing-config")
+async def admin_get_billing_config(request: Request):
+    """Retourne la configuration de facturation (TVA activée / franchise)."""
+    _check_db()
+    await _get_admin_user(request)
+    config = await _get_billing_config()
+    return {"tva_enabled": config.get("tva_enabled", False)}
+
+
+@router.patch("/admin/billing-config")
+async def admin_update_billing_config(request: Request):
+    """Active ou désactive la TVA sur les nouvelles factures."""
+    _check_db()
+    await _get_admin_user(request)
+    body = await request.json()
+    tva_enabled = bool(body.get("tva_enabled", False))
+    await _db.citadelle_billing_config.update_one(
+        {"_id": "default"},
+        {"$set": {"tva_enabled": tva_enabled, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    logger.info(f"Config TVA mise à jour : tva_enabled={tva_enabled}")
+    return {"tva_enabled": tva_enabled}

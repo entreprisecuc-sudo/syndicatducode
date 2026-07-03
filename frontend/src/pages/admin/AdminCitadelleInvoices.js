@@ -1,9 +1,10 @@
 /**
  * Admin — Gestion des factures Citadelle
  * Téléchargement unitaire (PDF) et en lot (ZIP)
+ * Config TVA (franchise / assujetti)
  */
 import { useState, useEffect, useCallback } from "react";
-import { FileText, Download, Search, CheckSquare, Square, Package, AlertCircle, RefreshCw } from "lucide-react";
+import { FileText, Download, Search, CheckSquare, Square, Package, AlertCircle, RefreshCw, Settings, ToggleLeft, ToggleRight } from "lucide-react";
 import api from "@/services/api";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -11,13 +12,16 @@ import AdminLayout from "@/components/admin/AdminLayout";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export default function AdminCitadelleInvoices() {
-  const [invoices,  setInvoices]  = useState([]);
-  const [total,     setTotal]     = useState(0);
-  const [loading,   setLoading]   = useState(true);
-  const [search,    setSearch]    = useState("");
-  const [selected,  setSelected]  = useState(new Set());
+  const [invoices,    setInvoices]    = useState([]);
+  const [total,       setTotal]       = useState(0);
+  const [loading,     setLoading]     = useState(true);
+  const [search,      setSearch]      = useState("");
+  const [selected,    setSelected]    = useState(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
-  const [error,     setError]     = useState("");
+  const [error,       setError]       = useState("");
+  const [tvaEnabled,  setTvaEnabled]  = useState(false);
+  const [tvaLoading,  setTvaLoading]  = useState(false);
+  const [tvaMsg,      setTvaMsg]      = useState("");
 
   const fetchInvoices = useCallback(async () => {
     setLoading(true); setError("");
@@ -33,7 +37,31 @@ export default function AdminCitadelleInvoices() {
     }
   }, [search]);
 
+  const fetchTvaConfig = useCallback(async () => {
+    try {
+      const res = await api.get("/citadelle/admin/billing-config");
+      setTvaEnabled(res.data.tva_enabled ?? false);
+    } catch { /* silencieux */ }
+  }, []);
+
   useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
+  useEffect(() => { fetchTvaConfig(); }, [fetchTvaConfig]);
+
+  const toggleTva = async () => {
+    setTvaLoading(true); setTvaMsg("");
+    try {
+      const res = await api.patch("/citadelle/admin/billing-config", { tva_enabled: !tvaEnabled });
+      setTvaEnabled(res.data.tva_enabled);
+      setTvaMsg(res.data.tva_enabled
+        ? "TVA 20% activée — s'applique aux nouvelles factures."
+        : "Franchise TVA activée — Art. 293 B du CGI.");
+    } catch {
+      setTvaMsg("Erreur lors de la mise à jour.");
+    } finally {
+      setTvaLoading(false);
+      setTimeout(() => setTvaMsg(""), 4000);
+    }
+  };
 
   const toggleSelect = (id) => {
     setSelected(prev => {
@@ -125,6 +153,46 @@ export default function AdminCitadelleInvoices() {
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
             {bulkLoading ? <RefreshCw size={14} className="animate-spin" /> : <Package size={14} />}
             {bulkLoading ? "En cours…" : `Télécharger ZIP${selected.size > 0 ? ` (${selected.size})` : ""}`}
+          </button>
+        </div>
+      </div>
+
+      {/* Bloc configuration TVA */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl mb-6"
+        style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
+        <div className="flex items-center gap-3">
+          <Settings size={16} style={{ color: CITADELLE_COLORS.gold }} />
+          <div>
+            <p className="text-sm font-bold" style={{ color: CITADELLE_COLORS.blue }}>
+              Régime TVA — Factures
+            </p>
+            <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
+              {tvaEnabled
+                ? "TVA 20% appliquée sur les nouvelles factures"
+                : "Franchise TVA en cours — Art. 293 B du CGI"}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {tvaMsg && (
+            <span className="text-xs font-medium" style={{ color: tvaEnabled ? CITADELLE_COLORS.blue : CITADELLE_COLORS.textMuted }}>
+              {tvaMsg}
+            </span>
+          )}
+          <button onClick={toggleTva} disabled={tvaLoading} data-testid="toggle-tva-btn"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02] disabled:opacity-50"
+            style={{
+              background: tvaEnabled ? CITADELLE_COLORS.blue : "rgba(201,164,92,0.12)",
+              color: tvaEnabled ? "white" : CITADELLE_COLORS.gold,
+              border: `1px solid ${tvaEnabled ? CITADELLE_COLORS.blue : CITADELLE_COLORS.gold}`,
+            }}>
+            {tvaLoading
+              ? <RefreshCw size={14} className="animate-spin" />
+              : tvaEnabled
+                ? <ToggleRight size={16} />
+                : <ToggleLeft size={16} />}
+            {tvaEnabled ? "TVA 20% active" : "Franchise TVA"}
           </button>
         </div>
       </div>
