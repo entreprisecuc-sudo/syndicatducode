@@ -1,0 +1,58 @@
+{
+  "summary": "Iteration 10 — Full validation of 8 review items: prix services sync, checkout Stripe estimation, bouton Changer d'univers (depuis Citadelle ET Syndicat), dashboard bipolaire + activity-feed, footer admin link, notes de dev retirées, PDF factures (JOERKE.B / SIREN 892906728 / mentions interdites absentes), destinataire particulier/pro. Backend: 8/8 tests pytest passent. Frontend: tous les flux UI validés via Playwright.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration_10.py",
+    "/app/test_reports/pytest/iter10.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend PATCH /admin/services/{id} update reflected immediately on public GET /services — sync OK",
+    "Estimation page loads services via GET /services and matches by TITLE (resilient to re-seed) — code CitadelleEstimation.js line 554-572 correct",
+    "AdminLayout.changeUniverse clears localStorage + navigates to /syndicat-admin — auto-detect useEffect (line 122) only re-imposes 'citadelle' if URL starts with /syndicat-admin/citadelle AND localStorage != 'citadelle', which correctly avoids re-imposing after manual change",
+    "Activity-feed endpoint returns { syndicat: [...], citadelle: [...] } — structure valid, requires admin auth",
+    "Invoice PDF (reportlab) correctly displays 'propulsé par JOERKE.B' and 'SIREN : 892906728'. Verified via pypdf extraction — mentions interdites (Exploitée, SASU, Capital, immatriculation) absentes",
+    "Note: Stripe est en mode LIVE (cs_live_...) — payment non complété conformément aux instructions"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration_10.py"
+  ],
+  "success_rate": {
+    "backend": "100% (8/8 tests pass)",
+    "frontend": "100% (7/7 UI flows validated)"
+  },
+  "test_credentials": {
+    "admin": "bigpapa1981@asar.com / Josiane03@@@!1981"
+  },
+  "seed_data_creation": "Test transaction created via POST /citadelle/payments/service/checkout (Estimation Standard, non complété)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 8 review items PASS. Prix 'Estimation Standard' remis à 49 € automatiquement en fin de test (fixture finally). Le test test_price_update_reflects_in_public_endpoint utilise try/finally pour restaurer le prix, donc idempotent. Testé également que le bouton 'Changer d'univers' fonctionne depuis les DEUX univers (Citadelle → sélecteur, Syndicat → sélecteur). Le dashboard bipolaire affiche 12 items Citadelle et 6 items Syndicat. Footer 'footer-admin-access-provisoire' redirige bien vers /papaenmousse1981 après fermeture de la modale promo. PDF facture: mentions JOERKE.B + SIREN 892906728 présentes, mentions interdites (Exploitée/SASU/Capital/immatriculation) absentes — extraction pypdf confirmée.",
+  "test_results": {
+    "test_estimation_standard_exists": "PASS",
+    "test_price_update_reflects_in_public_endpoint": "PASS — Prix mis à 3 puis restauré à 49",
+    "test_checkout_service_returns_url": "PASS — checkout_url returned, service_id correct",
+    "test_activity_feed_requires_auth": "PASS — 401/403 without auth",
+    "test_activity_feed_returns_two_lists": "PASS — syndicat + citadelle keys, items structured",
+    "test_list_admin_invoices": "PASS",
+    "test_invoice_pdf_contains_correct_mentions": "PASS — 'propulsé par JOERKE.B' + '892906728' présents, mentions interdites absentes",
+    "test_invoice_recipient_block_present": "PASS — DESTINATAIRE + ÉMETTEUR présents",
+    "ui_login_admin": "PASS",
+    "ui_universe_selector_shows_both_buttons": "PASS",
+    "ui_activity_feeds_load": "PASS — 12 Citadelle items, 6 Syndicat items",
+    "ui_change_universe_from_citadelle": "PASS — returns to /syndicat-admin selector",
+    "ui_change_universe_from_syndicat": "PASS — returns to /syndicat-admin selector",
+    "ui_no_dev_notes_on_admincitadelle": "PASS — Phase A/B/Socle/Feuille absents",
+    "ui_estimation_page_prices": "PASS — 49 € Standard, 149 € Expert affichés",
+    "ui_estimation_checkout_stripe": "PASS — POST /payments/service/checkout returns 200, checkout_url reçu (Stripe live non complété)",
+    "ui_footer_admin_link": "PASS — redirige vers /papaenmousse1981"
+  }
+}
