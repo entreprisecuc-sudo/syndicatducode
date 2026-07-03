@@ -250,6 +250,7 @@ async def create_admin(
         "password_hash": hash_password(data.password),
         "role": UserRole.ADMIN,
         "status": UserStatus.ACTIVE,
+        "platform": "syndicat",
         "created_at": now,
         "updated_at": now,
         "first_login": False
