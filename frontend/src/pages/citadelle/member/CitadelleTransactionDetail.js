@@ -360,7 +360,7 @@ export default function CitadelleTransactionDetail() {
               <button onClick={() => doAction("pay")} disabled={actionLoading}
                 className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }} data-testid="btn-pay">
-                <CreditCard size={15} /> Payer {finalAmount?.toLocaleString("fr-FR")} € (simulé)
+                <CreditCard size={15} /> Payer {finalAmount?.toLocaleString("fr-FR")} €
               </button>
             </div>
           )}
