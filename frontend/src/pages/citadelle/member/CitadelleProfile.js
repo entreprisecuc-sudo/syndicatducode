@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   User, Lock, Save, CheckCircle, AlertCircle,
   Eye, EyeOff, ChevronLeft, Calendar, Mail, Shield,
-  Building, Landmark, CreditCard, Upload
+  Building, Landmark, CreditCard, Upload, Phone, Info
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
@@ -139,10 +139,45 @@ export default function CitadelleProfile() {
   );
 }
 
+// ── Calcul de la date max (18 ans en arrière) ─────────────────────────────────
+const getMaxDob = () => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 18);
+  return d.toISOString().split("T")[0];
+};
+
+// ── Indicateur de complétude KYC ─────────────────────────────────────────────
+function KycBanner({ user }) {
+  const hasPhone = !!(user?.phone);
+  const hasDob   = !!(user?.date_of_birth);
+  if (hasPhone && hasDob) return null;
+
+  const missing = [];
+  if (!hasPhone) missing.push("numéro de téléphone");
+  if (!hasDob)   missing.push("date de naissance");
+
+  return (
+    <div className="flex items-start gap-3 p-3 rounded-xl text-xs"
+      style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.25)", color: CITADELLE_COLORS.gold }}
+      data-testid="kyc-banner">
+      <Info size={14} className="flex-shrink-0 mt-0.5" />
+      <span>
+        <strong>Profil incomplet pour la réception des paiements.</strong>{" "}
+        Renseignez votre {missing.join(" et votre ")} pour activer les virements automatiques lors de vos ventes.
+      </span>
+    </div>
+  );
+}
+
 // ── Onglet Informations ───────────────────────────────────────────────────────
 
 function TabInfos({ user, updateUser, inputStyle, labelStyle }) {
-  const [form, setForm]       = useState({ first_name: user?.first_name || "", last_name: user?.last_name || "" });
+  const [form, setForm] = useState({
+    first_name:    user?.first_name    || "",
+    last_name:     user?.last_name     || "",
+    phone:         user?.phone         || "",
+    date_of_birth: user?.date_of_birth || "",
+  });
   const [saving, setSaving]   = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError]     = useState("");
@@ -154,10 +189,13 @@ function TabInfos({ user, updateUser, inputStyle, labelStyle }) {
     setError("");
     setSuccess(false);
     try {
-      const res = await citadelleApi.patch("/auth/profile", {
+      const payload = {
         first_name: form.first_name.trim(),
         last_name:  form.last_name.trim(),
-      });
+        phone:      form.phone.trim(),
+        date_of_birth: form.date_of_birth,
+      };
+      const res = await citadelleApi.patch("/auth/profile", payload);
       if (updateUser) updateUser(res.data.user);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
@@ -171,6 +209,8 @@ function TabInfos({ user, updateUser, inputStyle, labelStyle }) {
   return (
     <div className="space-y-5">
       <h2 className="font-bold text-base" style={{ color: CITADELLE_COLORS.white }}>Informations personnelles</h2>
+
+      <KycBanner user={{ ...user, phone: form.phone, date_of_birth: form.date_of_birth }} />
 
       {success && (
         <div className="flex items-center gap-2 p-3 rounded-xl text-sm"
@@ -186,6 +226,7 @@ function TabInfos({ user, updateUser, inputStyle, labelStyle }) {
         </div>
       )}
 
+      {/* Prénom / Nom */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-2" style={labelStyle}>Prénom *</label>
@@ -209,6 +250,48 @@ function TabInfos({ user, updateUser, inputStyle, labelStyle }) {
         <input value={user?.email || ""} readOnly
           className="w-full px-4 py-3 rounded-xl text-sm outline-none cursor-not-allowed"
           style={{ ...inputStyle, opacity: 0.5 }} />
+      </div>
+
+      {/* Téléphone */}
+      <div>
+        <label className="block text-sm font-medium mb-2" style={labelStyle}>
+          <span className="flex items-center gap-1.5">
+            <Phone size={13} /> Téléphone
+            <span className="text-xs font-normal opacity-50">(recommandé pour les virements)</span>
+          </span>
+        </label>
+        <input
+          value={form.phone}
+          onChange={e => { setForm(p => ({ ...p, phone: e.target.value })); setError(""); }}
+          placeholder="0612345678 ou +33612345678"
+          className="w-full px-4 py-3 rounded-xl text-sm outline-none font-mono"
+          style={inputStyle}
+          data-testid="profile-phone-input"
+          inputMode="tel"
+          maxLength={16}
+        />
+      </div>
+
+      {/* Date de naissance */}
+      <div>
+        <label className="block text-sm font-medium mb-2" style={labelStyle}>
+          <span className="flex items-center gap-1.5">
+            <Calendar size={13} /> Date de naissance
+            <span className="text-xs font-normal opacity-50">(requis pour recevoir des paiements)</span>
+          </span>
+        </label>
+        <input
+          type="date"
+          value={form.date_of_birth}
+          onChange={e => { setForm(p => ({ ...p, date_of_birth: e.target.value })); setError(""); }}
+          max={getMaxDob()}
+          className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+          style={{ ...inputStyle, colorScheme: "dark" }}
+          data-testid="profile-dob-input"
+        />
+        <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+          Vous devez avoir au moins 18 ans. Utilisée uniquement pour la vérification d'identité des paiements.
+        </p>
       </div>
 
       <button onClick={handleSave} disabled={saving}

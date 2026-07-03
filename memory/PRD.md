@@ -161,6 +161,11 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Footer + `CitadelleVendre.js` mis à jour avec les nouveaux noms
 
 
+### ✅ Phase 1 KYC Stripe Connect — Champs DoB & Téléphone (TERMINÉ 03/07/2026)
+- **Backend** (`auth.py`) : `PATCH /api/citadelle/auth/profile` accepte désormais `phone` (format 0XXXXXXXXX ou +33...) et `date_of_birth` (YYYY-MM-DD, âge ≥ 18 ans vérifiés serveur)
+- **Frontend** (`CitadelleProfile.js`) : onglet "Informations" — champ Téléphone + champ Date de naissance + bannière KYC dorée si l'un des deux champs est manquant
+- **Objectif** : pré-remplissage futur du formulaire Stripe Connect Express lors de l'onboarding vendeur
+
 ### ✅ Consentement CGU/CGV à l'inscription (TERMINÉ 15/06/2026)
 - Modale bloquante `CGUAcceptanceModal` affichée avant création du compte (2 cases à cocher distinctes : CGU + CGV)
 - À l'inscription : la modale s'affiche après validation du formulaire, la création du compte n'a lieu qu'après acceptation

@@ -565,6 +565,8 @@ async def citadelle_update_profile(request: Request):
     Mise à jour du profil — utilisateur Citadelle connecté.
     Permet de modifier :
     - Prénom et/ou nom
+    - Téléphone (format international ou FR)
+    - Date de naissance (YYYY-MM-DD, âge ≥ 18 ans) — requis pour Stripe Connect KYC
     - Mot de passe (avec vérification de l'actuel)
     """
     payload = await request.json()
@@ -598,6 +600,51 @@ async def citadelle_update_profile(request: Request):
         updates["first_name"] = first_name
     if last_name and len(last_name) >= 2:
         updates["last_name"] = last_name
+
+    # Téléphone (optionnel — stocké pour pré-remplissage Stripe Connect)
+    phone = payload.get("phone", None)
+    if phone is not None:
+        phone = str(phone).strip()
+        if phone:
+            import re as _re
+            phone_clean = _re.sub(r'[\s\-\.\(\)]', '', phone)
+            if not _re.match(r'^(\+\d{7,15}|0\d{9})$', phone_clean):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Numéro de téléphone invalide. Format accepté : 0612345678 ou +33612345678"
+                )
+            updates["phone"] = phone_clean
+        else:
+            updates["phone"] = ""
+
+    # Date de naissance (optionnelle — requise pour Stripe Connect KYC, âge ≥ 18 ans)
+    date_of_birth = payload.get("date_of_birth", None)
+    if date_of_birth is not None:
+        date_of_birth = str(date_of_birth).strip()
+        if date_of_birth:
+            try:
+                from datetime import date as _date
+                dob = _date.fromisoformat(date_of_birth)
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Format de date invalide. Utilisez YYYY-MM-DD"
+                )
+            today = datetime.now(timezone.utc).date()
+            age_days = (today - dob).days
+            if age_days < 18 * 365:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Vous devez avoir au moins 18 ans pour utiliser La Citadelle Numérique"
+                )
+            if age_days > 120 * 365:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Date de naissance invalide"
+                )
+            updates["date_of_birth"] = date_of_birth
+        else:
+            updates["date_of_birth"] = ""
 
     # Changement de mot de passe (optionnel)
     current_password = payload.get("current_password", "")
