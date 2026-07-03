@@ -18,6 +18,8 @@
 - **Facture — destinataire dynamique** : bloc DESTINATAIRE alimenté par le profil (`_recipient_from_user`) : pro → raison sociale + SIRET + N° TVA + adresse société ; particulier → nom + adresse. Snapshot à la création + enrichissement au rendu pour anciennes factures (`_enrich_recipient`).
 - **Page estimation reliée aux prix services** (`CitadelleEstimation.js`) : correspondance service ↔ prix par **titre** (résiste au re-seed) + utilisation de l'ID/prix réels API pour affichage et checkout Stripe.
 - **Validation** : agent de test iteration_10 → Backend 8/8, Frontend 7/7, 100% PASS, aucun bug.
+- **OFFRE PROMO GLOBALE** (nouvelle feature) : réduction % pilotable depuis l'admin (`components/admin/PromoConfigCard.js` dans onglet Services) — on/off, %, texte du badge, date de fin optionnelle. Backend `routes/citadelle/services.py` (helpers `get_promo_config`/`is_promo_active`/`apply_promo`, routes `GET /promo`, `GET|PATCH /admin/promo`). Affichage : bannière + prix barré/réduit + pastille (`utils/promo.js`) sur pages Services, Estimation et modal checkout. **Prix réduit réellement facturé** au checkout Stripe (`payments.py` : `original_amount` + `promo_percent` stockés). S'applique à tous les services payants. Validé iteration_11 → Backend 10/10, Frontend 100%. Promo laissée DÉSACTIVÉE.
+
 
 
 ## Phases Citadelle
