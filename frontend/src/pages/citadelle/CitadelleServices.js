@@ -13,6 +13,7 @@ import ServiceCheckoutModal from "@/components/citadelle/ServiceCheckoutModal";
 import ServiceHeroBanner from "@/components/citadelle/ServiceHeroBanner";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { PriceDisplay, PromoBanner } from "@/utils/promo";
 import { Helmet } from "react-helmet-async";
 
 // ── Icônes par type de service ─────────────────────────────────────────────────
@@ -23,7 +24,7 @@ const isPayable = (svc) => svc.service_type === "paid" && svc.price > 0;
 
 // ── Carte pour la zone VENDEURS (fond sombre) ─────────────────────────────────
 
-function DarkServiceCard({ svc, index, onDetails, onBuy }) {
+function DarkServiceCard({ svc, index, onDetails, onBuy, promo }) {
   const TypeIcon = TYPE_ICONS[svc.service_type] || Star;
   const payable = isPayable(svc);
 
@@ -61,7 +62,7 @@ function DarkServiceCard({ svc, index, onDetails, onBuy }) {
             border: "1px solid rgba(201,164,92,0.2)",
           }}
         >
-          {svc.price_label || (svc.price > 0 ? `${svc.price.toLocaleString("fr-FR")} €` : svc.price === 0 ? "Gratuit" : "Sur devis")}
+          <PriceDisplay svc={svc} promo={promo} />
         </span>
       </div>
 
@@ -114,7 +115,7 @@ function DarkServiceCard({ svc, index, onDetails, onBuy }) {
 
 // ── Carte pour la zone ACHETEURS (fond clair) ─────────────────────────────────
 
-function LightServiceCard({ svc, index, onDetails, onBuy }) {
+function LightServiceCard({ svc, index, onDetails, onBuy, promo }) {
   const TypeIcon = TYPE_ICONS[svc.service_type] || Star;
   const payable = isPayable(svc);
 
@@ -153,7 +154,7 @@ function LightServiceCard({ svc, index, onDetails, onBuy }) {
             border: `1px solid ${CITADELLE_COLORS.border}`,
           }}
         >
-          {svc.price_label || (svc.price > 0 ? `${svc.price.toLocaleString("fr-FR")} €` : svc.price === 0 ? "Gratuit" : "Sur devis")}
+          <PriceDisplay svc={svc} promo={promo} />
         </span>
       </div>
 
@@ -223,6 +224,7 @@ function SkeletonLoading() {
 
 export default function CitadelleServices() {
   const [services, setServices] = useState([]);
+  const [promo, setPromo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState(null);
   const [checkoutService, setCheckoutService] = useState(null);
@@ -233,6 +235,7 @@ export default function CitadelleServices() {
       .then((res) => setServices(res.data.services || []))
       .catch(() => {})
       .finally(() => setLoading(false));
+    citadelleApi.get("/promo").then((res) => setPromo(res.data)).catch(() => {});
   }, []);
 
   const commonService  = services.find((s) => s.target_category === "commun" && s.service_type !== "free");
@@ -254,6 +257,7 @@ export default function CitadelleServices() {
         <meta property="og:description" content="Estimation gratuite ou professionnelle, audit technique, accompagnement à la vente. Tous nos services pour sécuriser votre transaction." />
         <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/services" />
       </Helmet>
+      <PromoBanner promo={promo} />
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12" data-testid="citadelle-services">
 
         {/* En-tête */}
@@ -318,6 +322,7 @@ export default function CitadelleServices() {
                       index={i}
                       onDetails={setSelectedService}
                       onBuy={openBuy}
+                      promo={promo}
                     />
                   ))}
                 </div>
@@ -378,6 +383,7 @@ export default function CitadelleServices() {
                       index={i}
                       onDetails={setSelectedService}
                       onBuy={openBuy}
+                      promo={promo}
                     />
                   ))}
                 </div>

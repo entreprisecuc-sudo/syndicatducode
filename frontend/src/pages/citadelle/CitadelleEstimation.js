@@ -14,6 +14,7 @@ import {
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { isPromoOn, promoDiscounted } from "@/utils/promo";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { Helmet } from "react-helmet-async";
 
@@ -539,6 +540,7 @@ function ContactForm({ prefillType }) {
 
   // Prices loaded dynamically from API — ESTIMATION_SERVICES as fallback
   const [liveServices, setLiveServices] = useState(ESTIMATION_SERVICES);
+  const [promo, setPromo] = useState(null);
   const [selectedService, setSelectedService] = useState(ESTIMATION_SERVICES[0].id);
   const [form, setForm] = useState({
     nom: user ? `${user.first_name || ""} ${user.last_name || ""}`.trim() : "",
@@ -569,6 +571,7 @@ function ContactForm({ prefillType }) {
         return (match || merged[0]).id;
       });
     }).catch(() => { /* fallback sur ESTIMATION_SERVICES déjà en state */ });
+    citadelleApi.get("/promo").then(res => setPromo(res.data)).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -681,12 +684,26 @@ function ContactForm({ prefillType }) {
                       {svc.badge}
                     </span>
                   )}
+                  {isPromoOn(promo, svc.price) && (
+                    <span className="absolute -top-2.5 left-3 px-2.5 py-0.5 rounded-full text-xs font-black"
+                      data-testid={`promo-pill-${svc.slug}`}
+                      style={{ background: "#16a34a", color: "white" }}>
+                      -{promo.discount_percent}%
+                    </span>
+                  )}
                   <div className="flex items-center gap-2 mb-2">
                     <Icon size={16} style={{ color: active ? CITADELLE_COLORS.gold : CITADELLE_COLORS.textMuted }} />
                     <span className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue }}>{svc.title}</span>
                   </div>
                   <div className="text-xl font-black mb-1" style={{ color: active ? CITADELLE_COLORS.gold : CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                    {svc.price} €
+                    {isPromoOn(promo, svc.price) ? (
+                      <span className="inline-flex items-baseline gap-2">
+                        <span style={{ textDecoration: "line-through", opacity: 0.45, fontSize: "0.7em" }}>{svc.price} €</span>
+                        <span>{promoDiscounted(svc.price, promo)} €</span>
+                      </span>
+                    ) : (
+                      <>{svc.price} €</>
+                    )}
                   </div>
                   <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>{svc.delay}</p>
                   <ul className="space-y-1">
@@ -782,7 +799,11 @@ function ContactForm({ prefillType }) {
             {status === "loading" ? (
               <><div className="w-4 h-4 border-2 border-night/30 border-t-night rounded-full animate-spin" /> Redirection vers le paiement…</>
             ) : (
-              <><CreditCard size={16} /> Procéder au paiement — {liveServices.find(s => s.id === selectedService)?.price} €</>
+              <><CreditCard size={16} /> Procéder au paiement — {(() => {
+                const sel = liveServices.find(s => s.id === selectedService);
+                const p = sel?.price;
+                return isPromoOn(promo, p) ? promoDiscounted(p, promo) : p;
+              })()} €</>
             )}
           </button>
 

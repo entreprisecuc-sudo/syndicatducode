@@ -203,6 +203,13 @@ async def create_service_checkout(payload: ServiceCheckoutRequest):
             detail="Ce service ne nécessite pas de paiement en ligne (devis ou gratuit)."
         )
 
+    # Application de la promo globale (réduction % réellement facturée)
+    from routes.citadelle.services import get_promo_config, apply_promo, is_promo_active
+    promo = await get_promo_config(_db)
+    original_price = price
+    price = apply_promo(price, promo)
+    promo_percent = promo.get("discount_percent", 0) if is_promo_active(promo) else 0
+
     # Construction des URLs de retour
     origin = payload.origin_url.rstrip("/")
     success_url = f"{origin}/citadelle/paiement/confirmation?session_id={{CHECKOUT_SESSION_ID}}"
@@ -244,6 +251,8 @@ async def create_service_checkout(payload: ServiceCheckoutRequest):
         "client_message": payload.client_message or "",
         "amount": price,
         "currency": "eur",
+        "original_amount": original_price,
+        "promo_percent": promo_percent,
         "payment_status": "pending",
         "status": "initiated",
         "user_id": payload.user_id or "",   # Lié au compte si l'utilisateur est connecté

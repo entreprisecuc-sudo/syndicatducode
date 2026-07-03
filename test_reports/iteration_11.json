@@ -1,0 +1,32 @@
+{
+  "summary": "Iteration 11 — OFFRE PROMO GLOBALE fully validated. Backend: 10/10 pytest pass (admin GET/PATCH promo, public GET /promo, checkout applies discount 20% (amount=39.2, original_amount=49, promo_percent=20), deactivation restores 49€, expired ends_at renders active:false). Frontend: promo card visible on /syndicat-admin/citadelle/services, toggle+percent+label+ends inputs work, save shows 'Promotion enregistrée ✓', public banner appears with correct text on /citadelle/services, promo pills (-20%) shown on /citadelle/estimation, 'Procéder au paiement' button displays reduced price 39.2€, deactivation via UI hides banner. Promo LEFT DEACTIVATED at end (verified: GET /api/citadelle/promo returns active:false, discount_percent:0).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "CitadelleEstimation & admin services", "issues": ["Console: React hydration warnings — <span> as child of <select>/<option>/<tr>/<td>/<tbody>. Pre-existing, not related to promo feature. Should be cleaned up when time permits."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_promo_globale.py",
+    "/app/test_reports/pytest/iter11.xml"
+  ],
+  "action_items": [
+    "(Optional) Fix pre-existing React hydration warnings (span inside select/option/tr/td/tbody) surfaced during test run"
+  ],
+  "critical_code_review_comments": [
+    "apply_promo() correctly rounds to 2 decimals; checkout persists original_amount + promo_percent for audit — invoice generation can trust these fields",
+    "PromoUpdate.ends_at accepts empty string and PATCH handler converts to None — clean",
+    "is_promo_active parses ends_at as date-only string ('YYYY-MM-DD') → converted to end-of-day UTC — correct semantics",
+    "Public GET /promo returns discount_percent:0 when inactive → frontend safely renders no banner",
+    "payments.py checkout imports apply_promo lazily inside handler — avoids circular import"
+  ],
+  "updated_files": ["/app/backend/tests/test_promo_globale.py"],
+  "success_rate": {"backend": "100% (10/10)", "frontend": "100% (all UI checks pass)"},
+  "test_credentials": {"admin": "bigpapa1981@asar.com / Josiane03@@@!1981"},
+  "seed_data_creation": "2 TEST_ payment_transactions created (Estimation Standard checkout, Stripe LIVE NOT completed). Kept for audit. Promo config doc left with enabled:false.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Feature promo globale validée de bout en bout. La promo est laissée DÉSACTIVÉE (enabled:false, discount_percent:0, ends_at conservé à 2026-12-31 par défaut). Le fichier /app/backend/tests/test_promo_globale.py utilise une fixture 'cleanup_promo' (autouse, scope module) qui garantit désactivation à la fin. Test de checkout vérifie la transaction en BDD via pymongo (dotenv chargé). Stripe LIVE — pas de finalisation."
+}

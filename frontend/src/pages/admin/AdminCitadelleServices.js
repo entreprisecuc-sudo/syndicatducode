@@ -10,6 +10,7 @@ import {
   ShoppingBag, CheckCircle, Clock, AlertCircle, Ban
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import PromoConfigCard from "@/components/admin/PromoConfigCard";
 import api from "@/services/api";
 
 // ── Configuration ──────────────────────────────────────────────────────────────
@@ -216,6 +217,7 @@ export default function AdminCitadelleServices() {
         {/* ── Onglet Services ── */}
         {activeTab === "services" && (
           <>
+            <PromoConfigCard />
             {loadingServices ? (
               <div className="space-y-3">
                 {[1, 2, 3].map(i => (

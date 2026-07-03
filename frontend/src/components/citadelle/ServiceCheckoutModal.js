@@ -9,6 +9,7 @@ import { X, ShoppingCart, Loader, CreditCard } from "lucide-react";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import citadelleApi from "@/services/citadelleApi";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
+import { isPromoOn, promoDiscounted } from "@/utils/promo";
 
 const FORM_INITIAL = { client_name: "", client_email: "", client_message: "" };
 
@@ -17,6 +18,11 @@ export default function ServiceCheckoutModal({ service, onClose }) {
   const [form, setForm] = useState(FORM_INITIAL);
   const [step, setStep] = useState("form"); // form | redirecting
   const [error, setError] = useState("");
+  const [promo, setPromo] = useState(null);
+
+  useEffect(() => {
+    citadelleApi.get("/promo").then((res) => setPromo(res.data)).catch(() => {});
+  }, []);
 
   // Pré-remplir avec les infos du compte si connecté
   useEffect(() => {
@@ -108,8 +114,22 @@ export default function ServiceCheckoutModal({ service, onClose }) {
             Montant
           </p>
           <p className="text-3xl font-black" style={{ color: CITADELLE_COLORS.gold, fontFamily: "'Montserrat', sans-serif" }}>
-            {service.price.toLocaleString("fr-FR")} €
+            {isPromoOn(promo, service.price) ? (
+              <span className="inline-flex items-baseline gap-2">
+                <span style={{ textDecoration: "line-through", opacity: 0.5, fontSize: "0.6em", color: "rgba(255,255,255,0.6)" }}>
+                  {service.price.toLocaleString("fr-FR")} €
+                </span>
+                <span>{promoDiscounted(service.price, promo).toLocaleString("fr-FR")} €</span>
+              </span>
+            ) : (
+              <>{service.price.toLocaleString("fr-FR")} €</>
+            )}
           </p>
+          {isPromoOn(promo, service.price) && (
+            <p className="text-xs mt-1 font-bold" style={{ color: "#22C55E" }}>
+              {promo.label} · -{promo.discount_percent}%
+            </p>
+          )}
         </div>
 
         {/* Formulaire */}
@@ -184,7 +204,7 @@ export default function ServiceCheckoutModal({ service, onClose }) {
           ) : (
             <>
               <CreditCard size={14} />
-              Payer {service.price.toLocaleString("fr-FR")} € via Stripe
+              Payer {(isPromoOn(promo, service.price) ? promoDiscounted(service.price, promo) : service.price).toLocaleString("fr-FR")} € via Stripe
             </>
           )}
         </button>

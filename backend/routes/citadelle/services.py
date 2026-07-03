@@ -23,6 +23,53 @@ def set_database(database):
     db = database
 
 
+# ── Promotion globale (offre de lancement) ────────────────────────────────────
+# Réduction en % appliquée à TOUS les services payants (affichage + facturation).
+
+DEFAULT_PROMO = {
+    "id": "default",
+    "enabled": False,
+    "label": "Offre de lancement",
+    "discount_percent": 0,
+    "ends_at": None,
+}
+
+
+async def get_promo_config(database) -> dict:
+    """Retourne la config promo (doc unique 'default')."""
+    doc = await database.citadelle_promo_config.find_one({"id": "default"}, {"_id": 0})
+    return {**DEFAULT_PROMO, **doc} if doc else dict(DEFAULT_PROMO)
+
+
+def is_promo_active(promo: dict) -> bool:
+    """Une promo est active si activée, avec un % > 0, et non expirée."""
+    if not promo.get("enabled"):
+        return False
+    if (promo.get("discount_percent") or 0) <= 0:
+        return False
+    ends = promo.get("ends_at")
+    if ends:
+        try:
+            iso = ends if len(ends) > 10 else f"{ends}T23:59:59+00:00"
+            end_dt = datetime.fromisoformat(iso)
+            if end_dt.tzinfo is None:
+                end_dt = end_dt.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > end_dt:
+                return False
+        except Exception:
+            pass
+    return True
+
+
+def apply_promo(price, promo: dict):
+    """Applique la réduction au prix si la promo est active (arrondi 2 déc.)."""
+    if price and price > 0 and is_promo_active(promo):
+        return round(float(price) * (1 - promo["discount_percent"] / 100), 2)
+    return price
+
+
+
+
 # ── Helpers d'authentification ─────────────────────────────────────────────────
 
 # require_citadelle_user / require_admin importés depuis routes/citadelle/dependencies (DRY)
@@ -63,6 +110,47 @@ class ServiceUpdate(BaseModel):
     cta_url: Optional[str] = Field(None, max_length=500)
     is_active: Optional[bool] = None
     display_order: Optional[int] = None
+
+
+
+class PromoUpdate(BaseModel):
+    enabled: Optional[bool] = None
+    label: Optional[str] = Field(None, max_length=60)
+    discount_percent: Optional[int] = Field(None, ge=0, le=90)
+    ends_at: Optional[str] = None  # date ISO "YYYY-MM-DD" ou "" pour effacer
+
+
+@router.get("/promo", summary="Promotion active (public)")
+async def get_public_promo():
+    """Retourne la promo active pour l'affichage public (badge + %)."""
+    promo = await get_promo_config(db)
+    active = is_promo_active(promo)
+    return {
+        "active": active,
+        "label": promo.get("label", ""),
+        "discount_percent": promo.get("discount_percent", 0) if active else 0,
+        "ends_at": promo.get("ends_at"),
+    }
+
+
+@router.get("/admin/promo", summary="Admin — Config promo")
+async def admin_get_promo(current_user: dict = Depends(require_admin)):
+    return await get_promo_config(db)
+
+
+@router.patch("/admin/promo", summary="Admin — Modifier la promo")
+async def admin_update_promo(data: PromoUpdate, current_user: dict = Depends(require_admin)):
+    promo = await get_promo_config(db)
+    updates = data.model_dump(exclude_unset=True)
+    if "ends_at" in updates and not updates["ends_at"]:
+        updates["ends_at"] = None
+    promo.update(updates)
+    promo["id"] = "default"
+    promo["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.citadelle_promo_config.update_one({"id": "default"}, {"$set": promo}, upsert=True)
+    logger.info(f"[Citadelle Admin] Promo: enabled={promo.get('enabled')} pct={promo.get('discount_percent')}")
+    return promo
+
 
 
 # ── Routes publiques ───────────────────────────────────────────────────────────
