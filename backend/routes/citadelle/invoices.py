@@ -26,6 +26,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.colors import HexColor, white, black
 from reportlab.lib.units import mm
 
+# Chemin vers le logo de La Citadelle Numérique (utilisé dans le PDF)
+LOGO_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "static", "citadelle-logo-pdf.png")
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["invoices"])
@@ -40,14 +43,17 @@ GREEN  = HexColor("#22C55E")
 
 TVA_RATE = 0.20  # TVA standard 20%
 
-# Infos vendeur (La Citadelle Numérique)
+# Infos vendeur (La Citadelle Numérique — exploitée par JOERKE.B)
 SELLER = {
-    "name":    "La Citadelle Numérique",
-    "slogan":  "Marketplace d'actifs numériques",
-    "email":   os.environ.get("CITADELLE_ADMIN_EMAIL", "lagarde@lacitadellenumerique.fr"),
-    "address": "France",
-    "siret":   os.environ.get("CITADELLE_SIRET", "En cours d'immatriculation"),
-    "tva_intra": os.environ.get("CITADELLE_TVA", ""),
+    "name":      "La Citadelle Numérique",
+    "slogan":    "Marketplace d'actifs numériques",
+    "email":     os.environ.get("CITADELLE_ADMIN_EMAIL", "lagarde@lacitadellenumerique.fr"),
+    "address":   "11 RUE URBAIN IV, 10000 TROYES",
+    "siret":     "892 906 728 00019",
+    "tva_intra": "FR12892906728",
+    "rcs":       "R.C.S. Troyes — 892 906 728",
+    "forme_jur": "SASU — Capital 250,00 €",
+    "operator":  "JOERKE.B",
 }
 
 
@@ -117,6 +123,9 @@ async def create_invoice_for_payment(transaction: dict) -> str:
         "seller_email":    SELLER["email"],
         "seller_siret":    SELLER["siret"],
         "seller_tva":      SELLER["tva_intra"],
+        "seller_address":  SELLER["address"],
+        "seller_rcs":      SELLER["rcs"],
+        "seller_operator": SELLER["operator"],
 
         # Client
         "client_name":     transaction.get("client_name", ""),
@@ -177,14 +186,24 @@ def _build_pdf(inv: dict) -> bytes:
     c.setFillColor(NAVY)
     c.rect(0, H - 42 * mm, W, 42 * mm, fill=1, stroke=0)
 
+    # Logo Citadelle (coin gauche de la bande)
+    logo_x = x(12)
+    logo_y = H - 38 * mm
+    logo_size = 30 * mm
+    if os.path.exists(LOGO_PATH):
+        c.drawImage(LOGO_PATH, logo_x, logo_y, width=logo_size, height=logo_size, mask="auto")
+        text_offset_x = x(48)  # texte décalé après le logo
+    else:
+        text_offset_x = x(12)
+
     # Nom vendeur
     c.setFillColor(GOLD)
     c.setFont("Helvetica-Bold", 16)
-    c.drawString(x(12), y(16), "La Citadelle Numérique")
+    c.drawString(text_offset_x, y(16), "La Citadelle Numérique")
 
     c.setFillColor(white)
     c.setFont("Helvetica", 9)
-    c.drawString(x(12), y(23), "Marketplace d'actifs numériques")
+    c.drawString(text_offset_x, y(23), "Marketplace d'actifs numériques")
 
     # Numéro facture (droite)
     c.setFillColor(white)
@@ -219,12 +238,19 @@ def _build_pdf(inv: dict) -> bytes:
     c.setFont("Helvetica", 9)
     c.setFillColor(MUTED)
     c.drawString(x(12), y(65), inv.get("seller_email", ""))
-    siret = inv.get("seller_siret", "")
+    siret = inv.get("seller_siret", SELLER["siret"])
     if siret:
         c.drawString(x(12), y(71), f"SIRET : {siret}")
-    tva = inv.get("seller_tva", "")
+    tva = inv.get("seller_tva", SELLER["tva_intra"])
     if tva:
-        c.drawString(x(12), y(77), f"N° TVA intracommunautaire : {tva}")
+        c.drawString(x(12), y(77), f"N° TVA : {tva}")
+    c.drawString(x(12), y(83), SELLER["address"])
+    c.drawString(x(12), y(89), SELLER["rcs"])
+
+    # Mention JOERKE.B en très petit
+    c.setFont("Helvetica-Oblique", 7)
+    c.setFillColor(HexColor("#9CA3AF"))
+    c.drawString(x(12), y(95), f"Exploitée par {SELLER['operator']} — {SELLER['forme_jur']}")
 
     # ── Bloc "À" ───────────────────────────────────────────────────────────
     c.setFillColor(NAVY)
@@ -239,7 +265,7 @@ def _build_pdf(inv: dict) -> bytes:
     c.drawString(x(110), y(65), inv.get("client_email", ""))
 
     # ── Tableau des prestations ────────────────────────────────────────────
-    table_top  = y(93)
+    table_top  = y(110)
     table_y    = table_top
     col_widths = [x(100), x(18), x(27), x(17), x(28)]  # Désignation, Qté, PU HT, TVA, TTC
     col_x      = [x(12), x(112), x(130), x(157), x(174)]
@@ -349,6 +375,9 @@ def _build_pdf(inv: dict) -> bytes:
     c.setFillColor(MUTED)
     c.drawCentredString(W / 2, footer_y, "La Citadelle Numérique — lacitadellenumerique.fr")
     c.drawCentredString(W / 2, footer_y - x(4), "Document généré automatiquement — valeur légale sous réserve de signature électronique")
+    c.setFont("Helvetica-Oblique", 6)
+    c.setFillColor(HexColor("#9CA3AF"))
+    c.drawCentredString(W / 2, footer_y - x(8), f"propulsé par {SELLER['operator']} — SASU — SIRET {SELLER['siret']} — {SELLER['tva_intra']}")
 
     c.save()
     return buf.getvalue()
