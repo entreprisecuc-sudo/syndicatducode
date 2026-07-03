@@ -1,0 +1,31 @@
+{
+  "name": "Papa en Mousse",
+  "short_name": "PEM Admin",
+  "description": "Application d'alertes admin — La Citadelle Numérique & Le Syndicat du Code",
+  "start_url": "/admin-live",
+  "display": "standalone",
+  "background_color": "#0a0f1e",
+  "theme_color": "#C9A45C",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/pem-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pem-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pem-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "apple touch icon"
+    }
+  ]
+}

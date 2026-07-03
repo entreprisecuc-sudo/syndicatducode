@@ -241,6 +241,7 @@ async def get_contacts():
 
 from routes.auth import router as auth_router, set_database as set_auth_db
 from routes.admin import router as admin_router, set_database as set_admin_db
+from routes.admin.push_alerts import router as push_alerts_router, set_database as set_push_alerts_db
 from routes.projects import router as projects_router, set_database as set_projects_db
 from routes.announcements import router as announcements_router, set_database as set_announcements_db
 from routes.alerts import router as alerts_router, set_database as set_alerts_db
@@ -258,6 +259,7 @@ from routes.sitemaps import router as sitemaps_router
 # Injecter la base de données dans les modules
 set_auth_db(db)
 set_admin_db(db)
+set_push_alerts_db(db)
 set_projects_db(db)
 set_announcements_db(db)
 set_alerts_db(db)
@@ -274,6 +276,7 @@ set_citadelle_db(db)
 # Inclure les routes
 api_router.include_router(auth_router)
 api_router.include_router(admin_router)
+api_router.include_router(push_alerts_router)
 api_router.include_router(projects_router)
 api_router.include_router(announcements_router)
 api_router.include_router(alerts_router)
@@ -367,6 +370,20 @@ async def startup_event():
     # Démarrage du scheduler newsletter
     from services.newsletter_scheduler import init_newsletter_scheduler
     await init_newsletter_scheduler()
+
+    # Démarrage de la surveillance des alertes push (Papa en Mousse)
+    from services.newsletter_scheduler import scheduler
+    from services.push_service import check_and_notify
+    if not scheduler.running:
+        scheduler.start()
+    scheduler.add_job(
+        check_and_notify,
+        trigger="interval",
+        seconds=60,
+        id="push_alert_check",
+        replace_existing=True,
+        max_instances=1,
+    )
     logger.info("Scheduler newsletter démarré")
 
 

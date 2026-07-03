@@ -10,10 +10,11 @@ import {
   Menu, X, LogOut, Users, BarChart3, 
   FileText, History, Shield, Home, Rocket, Megaphone, Bell, BookOpen,
   CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare, Database,
-  Globe, ArrowLeftRight, Star, LayoutDashboard, ChevronLeft,
+  Globe, ArrowLeftRight, Star, LayoutDashboard, ChevronLeft, Sword,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminTheme } from "@/context/AdminThemeContext";
+import api from "@/services/api";
 
 const UNIVERSE_KEY = "admin_selected_universe";
 
@@ -103,25 +104,40 @@ const ALL_MENU_ITEMS = [...SYNDICAT_MENU, ...CITADELLE_MENU].flatMap(s => s.item
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [universe, setUniverse] = useState(() => localStorage.getItem(UNIVERSE_KEY));
+  const [alertCount, setAlertCount] = useState(0);
   const { user, logout } = useAuth();
   const { theme, currentTheme, toggleTheme } = useAdminTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Écouter les changements d'univers (depuis le sélecteur)
+  // Écouter les changements d'univers
   useEffect(() => {
     const handler = () => setUniverse(localStorage.getItem(UNIVERSE_KEY));
     window.addEventListener("admin_universe_changed", handler);
     return () => window.removeEventListener("admin_universe_changed", handler);
   }, []);
 
-  // Auto-détecter l'univers depuis l'URL pour la cohérence
+  // Auto-détecter l'univers depuis l'URL
   useEffect(() => {
     if (location.pathname.startsWith("/syndicat-admin/citadelle") && universe !== "citadelle") {
       localStorage.setItem(UNIVERSE_KEY, "citadelle");
       setUniverse("citadelle");
     }
   }, [location.pathname, universe]);
+
+  // Badge alertes — polling 60s
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const res = await api.get("/admin/push-alerts/summary");
+        const total = Object.values(res.data).reduce((s, v) => s + (v.count || 0), 0);
+        setAlertCount(total);
+      } catch { /* silencieux */ }
+    };
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => { logout(); navigate("/"); };
 
@@ -228,6 +244,24 @@ const AdminLayout = ({ children }) => {
             </div>
           ))}
         </nav>
+
+        {/* Lien Papa en Mousse — App alertes */}
+        <div className="absolute bottom-28 left-0 right-0 px-4">
+          <Link to="/admin-live" title="App d'alertes admin"
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all hover:opacity-90"
+            style={{ background: "rgba(201,164,92,0.12)", border: "1px solid rgba(201,164,92,0.2)" }}>
+            <div className="flex items-center gap-2">
+              <Sword size={16} style={{ color: "#C9A45C" }} />
+              <span className="font-semibold" style={{ color: "#C9A45C" }}>Papa en Mousse</span>
+            </div>
+            {alertCount > 0 && (
+              <span className="min-w-[20px] h-5 rounded-full flex items-center justify-center text-xs font-black"
+                style={{ background: "#ef4444", color: "white" }}>
+                {alertCount > 9 ? "9+" : alertCount}
+              </span>
+            )}
+          </Link>
+        </div>
 
         {/* Retour au site */}
         <div className="absolute bottom-16 left-0 right-0 px-4">
