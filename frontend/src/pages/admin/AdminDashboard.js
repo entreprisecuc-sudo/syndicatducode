@@ -149,20 +149,23 @@ const AdminDashboard = () => {
     const handler = () => {
       const u = localStorage.getItem(UNIVERSE_KEY);
       setUniverse(u);
-      if (u === "citadelle") navigate("/syndicat-admin/citadelle");
     };
     window.addEventListener("admin_universe_changed", handler);
     return () => window.removeEventListener("admin_universe_changed", handler);
-  }, [navigate]);
+  }, []);
+
+  // Redirection vers Citadelle dans un effect (jamais pendant le render)
+  useEffect(() => {
+    if (universe === "citadelle") {
+      navigate("/syndicat-admin/citadelle");
+    }
+  }, [universe, navigate]);
 
   // Si aucun univers → sélecteur plein écran
   if (!universe) return <AdminUniverseSelector />;
 
-  // Si citadelle sélectionné depuis le dashboard → rediriger
-  if (universe === "citadelle") {
-    navigate("/syndicat-admin/citadelle");
-    return null;
-  }
+  // En attente de redirection vers Citadelle
+  if (universe === "citadelle") return null;
 
   // Dashboard Syndicat
   return (
