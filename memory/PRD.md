@@ -10,10 +10,15 @@
 
 ## 🔧 Session 03/07/2026 — Preview (fork de récupération)
 - **Bouton provisoire d'accès admin** ajouté en bas de la page d'accueil Syndicat (`Footer.js`, `data-testid="footer-admin-access-provisoire"`) → `/papaenmousse1981`. ⚠️ À RETIRER avant mise en prod.
-- **Bug bloquant corrigé** : `AdminLoginPage.js` redirigeait vers `/` sur le preview (liste blanche domaine limitée à `syndicatducode`/`localhost`). Ajout de `emergentagent.com` à la liste blanche ; restriction prod `syndicatducode.fr` intacte.
-- **Dashboard bipolaire enrichi** (`AdminUniverseSelector.js`) : cartes agrandies (max-w-6xl, stats plus grandes) + **flux dynamique auto-défilant** (ascenseur bas→haut, plus récent en haut) des éléments NON TRAITÉS, chaque item cliquable → route de traitement directe.
-  - Nouveau endpoint : `GET /api/admin/activity-feed` (`routes/admin/stats.py`) — agrège contacts en attente, comptes à valider (Syndicat) + annonces à valider, transactions à traiter, commandes de services non livrées, KYC en attente (Citadelle). Trié par date décroissante.
-  - Testé (curl + parcours UI) : connexion admin OK, flux affiché, clic → `/syndicat-admin/citadelle/annonces` onglet En attente.
+- **Bug bloquant corrigé** : `AdminLoginPage.js` redirigeait vers `/` sur le preview (liste blanche domaine limitée à `syndicatducode`/`localhost`). Ajout de `emergentagent.com` ; restriction prod `syndicatducode.fr` intacte.
+- **Dashboard bipolaire enrichi** (`AdminUniverseSelector.js`) : cartes agrandies + **flux dynamique auto-défilant** (ascenseur bas→haut) des éléments NON TRAITÉS, items cliquables → route de traitement. Endpoint `GET /api/admin/activity-feed` (`routes/admin/stats.py`).
+- **Bug 'Changer d'univers' corrigé** (`AdminLayout.js`) : l'effet d'auto-détection d'univers ne dépend plus que du `pathname` (ne ré-imposait plus 'citadelle' lors d'un changement manuel). Retour au sélecteur OK depuis les 2 univers.
+- **Notes de dev retirées** (`AdminCitadelle.js`) : bannière 'Phase A', section 'Feuille de route', badges de phase → 'Actif'.
+- **Factures PDF** (`invoices.py`) : 'Exploitée par JOERKE.B — SASU — Capital 250€' → **'propulsé par JOERKE.B'** ; 'SIRET : En cours d'immatriculation' → **'SIREN : 892906728'** ; footer harmonisé. `forme_jur` retiré.
+- **Facture — destinataire dynamique** : bloc DESTINATAIRE alimenté par le profil (`_recipient_from_user`) : pro → raison sociale + SIRET + N° TVA + adresse société ; particulier → nom + adresse. Snapshot à la création + enrichissement au rendu pour anciennes factures (`_enrich_recipient`).
+- **Page estimation reliée aux prix services** (`CitadelleEstimation.js`) : correspondance service ↔ prix par **titre** (résiste au re-seed) + utilisation de l'ID/prix réels API pour affichage et checkout Stripe.
+- **Validation** : agent de test iteration_10 → Backend 8/8, Frontend 7/7, 100% PASS, aucun bug.
+
 
 ## Phases Citadelle
 
