@@ -7,9 +7,10 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Star, Handshake, Zap, Shield, ExternalLink, ArrowRight,
-  ShoppingCart, CheckCircle, X, Loader, Clock, AlertCircle, Ban, Package
+  ShoppingCart, CheckCircle, Clock, AlertCircle, Ban, Package
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
+import ServiceCheckoutModal from "@/components/citadelle/ServiceCheckoutModal";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
@@ -26,8 +27,6 @@ const ORDER_STATUS = {
   annule:     { label: "Annulé",     color: "#DC2626", bg: "rgba(220,38,38,0.1)",   Icon: Ban },
 };
 
-const FORM_INITIAL = { client_name: "", client_email: "", client_message: "" };
-
 // Un service est achetable directement s'il est payant et a un prix positif
 const isPayable = (svc) => svc.service_type === "paid" && svc.price > 0;
 
@@ -40,12 +39,8 @@ export default function CitadelleMyServices() {
   const [loadingServices, setLoadingServices] = useState(true);
   const [loadingOrders, setLoadingOrders]     = useState(true);
 
-  // Checkout
+  // Checkout — délégué à ServiceCheckoutModal (Stripe réel)
   const [checkoutService, setCheckoutService] = useState(null);
-  const [checkoutForm, setCheckoutForm]       = useState(FORM_INITIAL);
-  const [checkoutStep, setCheckoutStep]       = useState("form"); // "form" | "processing" | "success"
-  const [checkoutOrderId, setCheckoutOrderId] = useState("");
-  const [checkoutError, setCheckoutError]     = useState("");
 
   useEffect(() => {
     // Chargement parallèle : services publics + commandes de l'utilisateur
@@ -62,53 +57,8 @@ export default function CitadelleMyServices() {
 
   // ── Fonctions checkout ────────────────────────────────────────────────────────
 
-  const openCheckout = (svc) => {
-    setCheckoutService(svc);
-    // Pré-remplir avec les données de l'utilisateur connecté
-    setCheckoutForm({
-      client_name: `${user?.first_name || ""} ${user?.last_name || ""}`.trim() || "",
-      client_email: user?.email || "",
-      client_message: "",
-    });
-    setCheckoutStep("form");
-    setCheckoutError("");
-    setCheckoutOrderId("");
-  };
-
-  const closeCheckout = () => {
-    if (checkoutStep === "processing") return;
-    setCheckoutService(null);
-  };
-
-  const handleCheckoutSubmit = async () => {
-    const { client_name, client_email } = checkoutForm;
-    if (!client_name.trim() || client_name.trim().length < 2) {
-      setCheckoutError("Veuillez renseigner votre nom complet (min. 2 caractères).");
-      return;
-    }
-    if (!client_email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client_email.trim())) {
-      setCheckoutError("Veuillez renseigner une adresse email valide.");
-      return;
-    }
-    setCheckoutError("");
-    setCheckoutStep("processing");
-
-    try {
-      const res = await citadelleApi.post(`/services/${checkoutService.id}/buy`, {
-        client_name: client_name.trim(),
-        client_email: client_email.trim(),
-        client_message: checkoutForm.client_message.trim(),
-      });
-      setCheckoutOrderId(res.data.order_id || "");
-      setCheckoutStep("success");
-      // Recharger les commandes pour afficher la nouvelle
-      const ordersRes = await citadelleApi.get("/services/my-orders");
-      setOrders(ordersRes.data.orders || []);
-    } catch (err) {
-      setCheckoutError(err.response?.data?.detail || "Une erreur est survenue. Veuillez réessayer.");
-      setCheckoutStep("form");
-    }
-  };
+  const openCheckout  = (svc) => setCheckoutService(svc);
+  const closeCheckout = ()    => setCheckoutService(null);
 
   const formatDate = (isoStr) => {
     if (!isoStr) return "—";
@@ -307,151 +257,12 @@ export default function CitadelleMyServices() {
         </section>
       </div>
 
-      {/* ── Modale checkout ──────────────────────────────────────────────── */}
+      {/* ── Modale checkout Stripe (réel) ──────────────────────────────── */}
       {checkoutService && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.7)" }}>
-          <div className="w-full max-w-md p-6 rounded-2xl"
-            style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}
-            data-testid="checkout-modal">
-
-            {/* ── Succès ── */}
-            {checkoutStep === "success" && (
-              <div className="text-center py-4" data-testid="checkout-success">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                  style={{ background: "rgba(34,197,94,0.1)" }}>
-                  <CheckCircle size={32} style={{ color: "#22C55E" }} />
-                </div>
-                <h3 className="font-black text-xl mb-2"
-                  style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                  Commande enregistrée !
-                </h3>
-                <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  Notre équipe va vous contacter très prochainement.
-                </p>
-                {checkoutOrderId && (
-                  <p className="text-xs font-mono mt-2 px-3 py-1.5 rounded-lg inline-block"
-                    style={{ background: "rgba(201,164,92,0.1)", color: CITADELLE_COLORS.gold }}>
-                    Réf. {checkoutOrderId.slice(0, 8).toUpperCase()}
-                  </p>
-                )}
-                <p className="text-xs mt-3 mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  Un email de confirmation vous a été envoyé. La commande apparaît maintenant dans votre historique.
-                </p>
-                <button onClick={closeCheckout}
-                  className="px-8 py-2.5 rounded-xl text-sm font-bold"
-                  style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
-                  data-testid="checkout-close-success">
-                  Fermer
-                </button>
-              </div>
-            )}
-
-            {/* ── Formulaire / traitement ── */}
-            {(checkoutStep === "form" || checkoutStep === "processing") && (
-              <>
-                <div className="flex items-start justify-between mb-5">
-                  <div>
-                    <h3 className="font-black text-lg"
-                      style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                      Commander ce service
-                    </h3>
-                    <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      {checkoutService.title}
-                    </p>
-                  </div>
-                  <button onClick={closeCheckout} disabled={checkoutStep === "processing"}
-                    className="p-1 rounded-lg disabled:opacity-40"
-                    style={{ color: CITADELLE_COLORS.textMuted }}>
-                    <X size={18} />
-                  </button>
-                </div>
-
-                {/* Montant */}
-                <div className="p-4 rounded-xl mb-5 text-center" style={{ background: CITADELLE_COLORS.blue }}>
-                  <p className="text-xs mb-1"
-                    style={{ color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "1px" }}>
-                    Montant
-                  </p>
-                  <p className="text-3xl font-black"
-                    style={{ color: CITADELLE_COLORS.gold, fontFamily: "'Montserrat', sans-serif" }}>
-                    {checkoutService.price.toLocaleString("fr-FR")} €
-                  </p>
-                </div>
-
-                <div className="space-y-3 mb-4">
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      Nom complet *
-                    </label>
-                    <input
-                      value={checkoutForm.client_name}
-                      onChange={e => setCheckoutForm(p => ({ ...p, client_name: e.target.value }))}
-                      disabled={checkoutStep === "processing"}
-                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                      style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
-                      data-testid="checkout-name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      Adresse email *
-                    </label>
-                    <input
-                      type="email"
-                      value={checkoutForm.client_email}
-                      onChange={e => setCheckoutForm(p => ({ ...p, client_email: e.target.value }))}
-                      disabled={checkoutStep === "processing"}
-                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                      style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
-                      data-testid="checkout-email"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      Message / précisions (optionnel)
-                    </label>
-                    <textarea
-                      value={checkoutForm.client_message}
-                      onChange={e => setCheckoutForm(p => ({ ...p, client_message: e.target.value }))}
-                      placeholder="Décrivez votre projet ou vos besoins..."
-                      rows={3}
-                      disabled={checkoutStep === "processing"}
-                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
-                      style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
-                      data-testid="checkout-message"
-                    />
-                  </div>
-                </div>
-
-                {checkoutError && (
-                  <div className="p-3 rounded-xl text-xs mb-3"
-                    style={{ background: "rgba(220,38,38,0.08)", color: "#DC2626" }}
-                    data-testid="checkout-error">
-                    {checkoutError}
-                  </div>
-                )}
-
-                <button
-                  onClick={handleCheckoutSubmit}
-                  disabled={checkoutStep === "processing"}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold disabled:opacity-70 transition-all hover:scale-[1.01]"
-                  style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
-                  data-testid="checkout-submit">
-                  {checkoutStep === "processing" ? (
-                    <><Loader size={15} className="animate-spin" /> Traitement en cours…</>
-                  ) : (
-                    <>Confirmer ma commande — {checkoutService.price.toLocaleString("fr-FR")} €</>
-                  )}
-                </button>
-
-                <p className="text-center text-xs mt-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  Paiement en ligne bientôt disponible · Vous serez contacté directement
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+        <ServiceCheckoutModal
+          service={checkoutService}
+          onClose={closeCheckout}
+        />
       )}
     </CitadelleLayout>
   );
