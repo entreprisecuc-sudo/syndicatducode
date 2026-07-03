@@ -161,6 +161,16 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Footer + `CitadelleVendre.js` mis à jour avec les nouveaux noms
 
 
+### ✅ Phase 6 KYC — Mise à jour des CGU (TERMINÉ 03/07/2026)
+- **`CitadelleCGU.js`** passé en v2.0 — 3 nouvelles sections légales ajoutées :
+  - **Art. 5 — Transaction Sécurisée & Séquestre** : étapes de la vente, délais de traitement (3 j. ouvrables), gestion des litiges
+  - **Art. 6 — Commission & Frais** : 5% du montant total, min. 49€, frais Stripe inclus, facturation automatique
+  - **Art. 7 — KYC & Stripe Connect** : obligations vendeur (DoB, téléphone), processus Stripe Express, délais de virement (2-7 j. ouvrables si compte actif / 5-10 j. si manuel)
+- Bandeau "Mise à jour v2.0" visible en haut de page
+- Sections 5-10 anciennes renumérotées 8-13
+
+**→ Les 6 phases du pipeline KYC → Stripe Connect → Payout sont entièrement implémentées.**
+
 ### ✅ Phase 5 KYC — Escrow → Payout automatique (TERMINÉ 03/07/2026)
 - **Backend** (`transactions.py`) : `admin_complete_transaction` calcule la commission (5%, min 49€), appelle `stripe.Transfer.create` vers le compte Connect actif du vendeur, fallback gracieux si le compte est en attente ou absent (note manuelle dans le fil de discussion)
 - **Frontend** (`CitadelleTransactionDetail.js`) : vue vendeur après finalisation — montant net, commission, statut du virement (auto ✅ ou manuel ⚠️) + ID Stripe  
