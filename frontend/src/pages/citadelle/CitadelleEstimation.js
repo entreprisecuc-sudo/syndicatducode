@@ -537,6 +537,8 @@ const ESTIMATION_SERVICES = [
 function ContactForm({ prefillType }) {
   const { user } = useCitadelleAuth();
 
+  // Prices loaded dynamically from API — ESTIMATION_SERVICES as fallback
+  const [liveServices, setLiveServices] = useState(ESTIMATION_SERVICES);
   const [selectedService, setSelectedService] = useState(ESTIMATION_SERVICES[0].id);
   const [form, setForm] = useState({
     nom: user ? `${user.first_name || ""} ${user.last_name || ""}`.trim() : "",
@@ -548,6 +550,17 @@ function ContactForm({ prefillType }) {
   const [status, setStatus]   = useState("idle"); // idle | loading | error
   const [erreur, setErreur]   = useState("");
 
+  // Charger les prix réels depuis l'API à chaque affichage
+  useEffect(() => {
+    citadelleApi.get("/services").then(res => {
+      const apiServices = res.data?.services || [];
+      setLiveServices(ESTIMATION_SERVICES.map(svc => {
+        const found = apiServices.find(s => s.id === svc.id);
+        return found && found.price != null ? { ...svc, price: found.price } : svc;
+      }));
+    }).catch(() => { /* fallback sur ESTIMATION_SERVICES déjà en state */ });
+  }, []);
+
   useEffect(() => {
     if (prefillType) setForm(f => ({ ...f, type_site: prefillType }));
   }, [prefillType]);
@@ -558,7 +571,7 @@ function ContactForm({ prefillType }) {
     e.preventDefault();
     setStatus("loading"); setErreur("");
 
-    const svc = ESTIMATION_SERVICES.find(s => s.id === selectedService);
+    const svc = liveServices.find(s => s.id === selectedService);
     const typeSiteLabel = SITE_TYPES.find(t => t.value === form.type_site)?.label || form.type_site;
 
     // Résumé du dossier transmis dans le message (stocké en DB + email)
@@ -638,7 +651,7 @@ function ContactForm({ prefillType }) {
             Choisissez votre formule
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {ESTIMATION_SERVICES.map(svc => {
+            {liveServices.map(svc => {
               const active = selectedService === svc.id;
               const Icon   = svc.icon;
               return (
@@ -759,7 +772,7 @@ function ContactForm({ prefillType }) {
             {status === "loading" ? (
               <><div className="w-4 h-4 border-2 border-night/30 border-t-night rounded-full animate-spin" /> Redirection vers le paiement…</>
             ) : (
-              <><CreditCard size={16} /> Procéder au paiement — {ESTIMATION_SERVICES.find(s => s.id === selectedService)?.price} €</>
+              <><CreditCard size={16} /> Procéder au paiement — {liveServices.find(s => s.id === selectedService)?.price} €</>
             )}
           </button>
 
