@@ -4,11 +4,12 @@ Inscription, connexion, reset mot de passe INDÉPENDANTS du Syndicat du Code
 platform: "citadelle" — isolation stricte
 """
 
+import httpx
+from pathlib import Path as FilePath
 from fastapi import APIRouter, HTTPException, status, Request, UploadFile, File, Depends
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime, timezone, timedelta
-from pathlib import Path as FilePath
 import logging
 import re
 import uuid
@@ -105,6 +106,7 @@ class CitadelleUserResponse(BaseModel):
     seller_verified: bool = False
     seller_score: float = 0.0
     buyer_score: float = 0.0
+    cgu_accepted: bool = False
 
 
 class CitadelleTokenResponse(BaseModel):
@@ -112,6 +114,11 @@ class CitadelleTokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: CitadelleUserResponse
+
+
+class CitadelleGoogleCallbackRequest(BaseModel):
+    """Échange du session_id Google OAuth → JWT Citadelle"""
+    session_id: str
 
 
 # ============================================
@@ -330,7 +337,109 @@ async def citadelle_login(credentials: CitadelleLogin, request: Request):
             created_at=user["created_at"],
             seller_verified=user.get("seller_verified", False),
             seller_score=user.get("seller_score", 0.0),
-            buyer_score=user.get("buyer_score", 0.0)
+            buyer_score=user.get("buyer_score", 0.0),
+            cgu_accepted=user.get("cgu_accepted", False)
+        )
+    )
+
+
+@router.post("/google/callback", response_model=CitadelleTokenResponse)
+async def google_callback(data: CitadelleGoogleCallbackRequest):
+    """
+    Échange le session_id Google OAuth (Emergent Auth) contre un JWT Citadelle.
+    Crée le compte si inexistant, sinon met à jour les données Google.
+    """
+    # Récupérer les données utilisateur depuis Emergent Auth (appel backend uniquement)
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+            headers={"X-Session-ID": data.session_id},
+            timeout=10.0
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session Google invalide ou expirée"
+        )
+
+    google_data = resp.json()
+    email = google_data.get("email", "").lower()
+    name = google_data.get("name", "")
+    picture = google_data.get("picture", "")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Email Google non disponible")
+
+    # Extraire prénom et nom depuis le nom complet Google
+    name_parts = name.split(" ", 1)
+    first_name = name_parts[0] if name_parts else email.split("@")[0]
+    last_name = name_parts[1] if len(name_parts) > 1 else ""
+
+    now = datetime.now(timezone.utc)
+
+    # Chercher l'utilisateur existant sur la Citadelle
+    user = await db.users.find_one({"email": email, "platform": "citadelle"}, {"_id": 0})
+
+    if not user:
+        # Créer un nouveau compte Citadelle via Google
+        user_id = generate_user_id()
+        user = {
+            "id": user_id,
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+            "platform": "citadelle",
+            "auth_provider": "google",
+            "google_picture": picture,
+            "role": "citadelle_user",
+            "status": "active",
+            "cgu_accepted": False,
+            "seller_verified": False,
+            "seller_score": 0.0,
+            "buyer_score": 0.0,
+            "created_at": now.isoformat(),
+            "updated_at": now.isoformat()
+        }
+        await db.users.insert_one({**user})
+        logger.info(f"[Citadelle] Nouveau compte Google créé: {email}")
+    else:
+        # Mettre à jour la photo Google
+        await db.users.update_one(
+            {"email": email, "platform": "citadelle"},
+            {"$set": {"google_picture": picture, "updated_at": now.isoformat()}}
+        )
+        logger.info(f"[Citadelle] Connexion Google: {email}")
+
+    # Vérifier statut
+    if user.get("status") == "suspended":
+        raise HTTPException(status_code=403, detail="Votre compte a été suspendu. Contactez le support.")
+
+    # Créer le token JWT (même structure que le login classique)
+    token_data = {
+        "sub": user["id"],
+        "email": user["email"],
+        "role": user.get("role", "citadelle_user"),
+        "platform": "citadelle",
+        "status": user.get("status", "active")
+    }
+    access_token = create_access_token(token_data, timedelta(days=7))
+
+    return CitadelleTokenResponse(
+        access_token=access_token,
+        user=CitadelleUserResponse(
+            id=user["id"],
+            email=user["email"],
+            first_name=user.get("first_name", ""),
+            last_name=user.get("last_name", ""),
+            role=user.get("role", "citadelle_user"),
+            platform="citadelle",
+            status=user.get("status", "active"),
+            created_at=user["created_at"],
+            seller_verified=user.get("seller_verified", False),
+            seller_score=user.get("seller_score", 0.0),
+            buyer_score=user.get("buyer_score", 0.0),
+            cgu_accepted=user.get("cgu_accepted", False)
         )
     )
 

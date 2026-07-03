@@ -83,6 +83,7 @@ import AdminCitadelle from "@/pages/admin/AdminCitadelle";
 import CitadelleHome from "@/pages/citadelle/CitadelleHome";
 import CitadelleServices from "@/pages/citadelle/CitadelleServices";
 import CitadelleLogin from "@/pages/citadelle/CitadelleLogin";
+import CitadelleGoogleCallback from "@/pages/citadelle/CitadelleGoogleCallback";
 import CitadelleRegister from "@/pages/citadelle/CitadelleRegister";
 import CitadelleForgotPassword from "@/pages/citadelle/CitadelleForgotPassword";
 import CitadelleResetPassword from "@/pages/citadelle/CitadelleResetPassword";
@@ -349,6 +350,7 @@ function App() {
               {/* Citadelle — Pages publiques */}
               <Route path="/citadelle" element={<CitadelleHome />} />
               <Route path="/citadelle/connexion" element={<CitadelleLogin />} />
+              <Route path="/citadelle/auth/google/callback" element={<CitadelleGoogleCallback />} />
               <Route path="/citadelle/inscription" element={<CitadelleRegister />} />
               <Route path="/citadelle/mot-de-passe-oublie" element={<CitadelleForgotPassword />} />
               <Route path="/citadelle/reinitialiser-mot-de-passe" element={<CitadelleResetPassword />} />

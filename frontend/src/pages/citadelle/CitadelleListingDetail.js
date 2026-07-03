@@ -12,6 +12,7 @@ import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { CITADELLE_COLORS, getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@/config/citadelleConstants";
+import CitadelleAuthModal from "@/components/citadelle/CitadelleAuthModal";
 
 // ── Hook : compte à rebours ──────────────────────────────────────────────────
 
@@ -58,6 +59,7 @@ export default function CitadelleListingDetail() {
   const [offerLoading, setOfferLoading] = useState(false);
   const [offerError, setOfferError] = useState("");
   const [contactModal, setContactModal] = useState(false);
+  const [authModal, setAuthModal] = useState(false);
   const [contactMessage, setContactMessage] = useState("");
   const [contactLoading, setContactLoading] = useState(false);
   const [contactError, setContactError] = useState("");
@@ -349,11 +351,13 @@ export default function CitadelleListingDetail() {
                   ) : listing.status === "sold" ? (
                     <AnnonceSoldee listing={listing} user={user} />
                   ) : !isAuthenticated ? (
-                    <Link to="/citadelle/connexion"
-                      className="block w-full py-3 rounded-xl font-bold text-sm text-center mt-4 transition-all hover:scale-[1.02]"
-                      style={{ background: "#DC2626", color: "white" }}>
+                    <button
+                      onClick={() => setAuthModal(true)}
+                      className="block w-full py-3 rounded-xl font-bold text-sm text-center transition-all hover:scale-[1.02]"
+                      style={{ background: "#DC2626", color: "white" }}
+                      data-testid="btn-auth-encherir">
                       Se connecter pour enchérir
-                    </Link>
+                    </button>
                   ) : null}
                 </div>
               ) : (
@@ -390,11 +394,13 @@ export default function CitadelleListingDetail() {
                         </button>
                       </>
                     ) : !isAuthenticated ? (
-                      <Link to="/citadelle/connexion"
-                        className="block w-full py-3 rounded-xl font-bold text-sm text-center transition-all hover:scale-[1.02]"
-                        style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
+                      <button
+                        onClick={() => setAuthModal(true)}
+                        className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"
+                        style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                        data-testid="btn-auth-offre">
                         Se connecter pour faire une offre
-                      </Link>
+                      </button>
                     ) : null}
                   </div>
                 </div>
@@ -563,6 +569,14 @@ export default function CitadelleListingDetail() {
           </div>
         </div>
       )}
+
+      {/* Modal d'authentification contextuel */}
+      <CitadelleAuthModal
+        isOpen={authModal}
+        onClose={() => setAuthModal(false)}
+        onSuccess={() => setAuthModal(false)}
+        listingTitle={listing?.title}
+      />
     </CitadelleLayout>
   );
 }
