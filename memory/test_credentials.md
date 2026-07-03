@@ -5,10 +5,13 @@
 - **Mot de passe** : Josiane03@@@!1981
 - **URL admin** : /papaenmousse1981
 
-## Utilisateur test Citadelle (client)
-- À créer depuis la page /citadelle/connexion si besoin de tester l'achat de service connecté
+## Utilisateur test Citadelle (client — créé par le testing agent)
+- **Email** : marie.testui@citadelle-test.fr
+- **Mot de passe** : TestUI2026!
+- **ID** : 26c042ac-fbdc-471e-b791-edd15325de7e
 
 ## Notes
 - Route admin dashboard : /syndicat-admin
-- App alertes admin : /admin-live
-- Stripe en mode TEST — utiliser carte 4242 4242 4242 4242
+- App alertes admin : /admin-live (Papa en Mousse)
+- Stripe en mode LIVE (production) — cs_live_... sessions
+- Page Services : /citadelle/services
