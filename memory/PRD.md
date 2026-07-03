@@ -7,6 +7,14 @@
 
 ---
 
+
+## 🔧 Session 03/07/2026 — Preview (fork de récupération)
+- **Bouton provisoire d'accès admin** ajouté en bas de la page d'accueil Syndicat (`Footer.js`, `data-testid="footer-admin-access-provisoire"`) → `/papaenmousse1981`. ⚠️ À RETIRER avant mise en prod.
+- **Bug bloquant corrigé** : `AdminLoginPage.js` redirigeait vers `/` sur le preview (liste blanche domaine limitée à `syndicatducode`/`localhost`). Ajout de `emergentagent.com` à la liste blanche ; restriction prod `syndicatducode.fr` intacte.
+- **Dashboard bipolaire enrichi** (`AdminUniverseSelector.js`) : cartes agrandies (max-w-6xl, stats plus grandes) + **flux dynamique auto-défilant** (ascenseur bas→haut, plus récent en haut) des éléments NON TRAITÉS, chaque item cliquable → route de traitement directe.
+  - Nouveau endpoint : `GET /api/admin/activity-feed` (`routes/admin/stats.py`) — agrège contacts en attente, comptes à valider (Syndicat) + annonces à valider, transactions à traiter, commandes de services non livrées, KYC en attente (Citadelle). Trié par date décroissante.
+  - Testé (curl + parcours UI) : connexion admin OK, flux affiché, clic → `/syndicat-admin/citadelle/annonces` onglet En attente.
+
 ## Phases Citadelle
 
 ### ✅ Phase A — Socle (TERMINÉ)

@@ -1,29 +1,36 @@
 /**
  * AdminUniverseSelector
  * Écran de sélection d'univers admin : Le Syndicat du Code | La Citadelle Numérique
- * Affiche les stats clés + actions en attente de chaque univers.
+ * Affiche les stats clés + un flux dynamique (ascenseur) des éléments non traités.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight, Users, Briefcase, Mail, CreditCard,
-  Globe, ArrowLeftRight, FileText, Bell, AlertCircle,
+  Globe, ArrowLeftRight, FileText, Bell, AlertCircle, Inbox,
 } from "lucide-react";
 import api from "@/services/api";
 
 const UNIVERSE_KEY = "admin_selected_universe";
 
+// Couleurs par niveau d'urgence
+const LEVEL_COLORS = {
+  urgent:  "#f87171",
+  warning: "#fbbf24",
+  info:    "#60a5fa",
+};
+
 // ── Mini carte de stat ──────────────────────────────────────────────────────
 const Stat = ({ icon: Icon, label, value, color }) => (
-  <div className="flex items-center gap-3 p-3 rounded-xl"
+  <div className="flex items-center gap-3 p-4 rounded-xl"
     style={{ background: "rgba(255,255,255,0.06)" }}>
-    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
       style={{ background: `${color}22` }}>
-      <Icon size={15} style={{ color }} />
+      <Icon size={18} style={{ color }} />
     </div>
     <div>
       <p className="text-xs opacity-60 text-white">{label}</p>
-      <p className="text-base font-black text-white leading-tight">{value ?? "—"}</p>
+      <p className="text-xl font-black text-white leading-tight">{value ?? "—"}</p>
     </div>
   </div>
 );
@@ -42,19 +49,107 @@ const ActionBadge = ({ count, label, urgent }) => {
   );
 };
 
+// ── Temps relatif ────────────────────────────────────────────────────────────
+const timeAgo = (iso) => {
+  if (!iso) return "";
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 60) return "à l'instant";
+  if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
+  return `il y a ${Math.floor(diff / 86400)} j`;
+};
+
+// ── Flux dynamique auto-défilant (ascenseur bas → haut) ──────────────────────
+const FeedTicker = ({ items, accent, onSelect, testidPrefix }) => {
+  const scrollRef = useRef(null);
+  const pausedRef = useRef(false);
+
+  // Défilement automatique : le contenu remonte doucement, puis reboucle.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || items.length === 0) return;
+    let raf;
+    const step = () => {
+      if (!pausedRef.current && el.scrollHeight > el.clientHeight) {
+        el.scrollTop += 0.4;
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 1) {
+          el.scrollTop = 0;
+        }
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [items]);
+
+  if (items.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-2 py-8 rounded-xl"
+        style={{ background: "rgba(255,255,255,0.03)" }}>
+        <Inbox size={22} style={{ color: "rgba(255,255,255,0.25)" }} />
+        <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+          Aucun élément en attente 🎉
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={scrollRef}
+      onMouseEnter={() => { pausedRef.current = true; }}
+      onMouseLeave={() => { pausedRef.current = false; }}
+      data-testid={`${testidPrefix}-feed`}
+      className="flex flex-col gap-2 overflow-y-auto pr-1"
+      style={{ maxHeight: "200px", scrollbarWidth: "thin" }}
+    >
+      {items.map((item) => (
+        <button
+          key={`${item.type}-${item.id}`}
+          onClick={() => onSelect(item.route)}
+          data-testid={`${testidPrefix}-feed-item-${item.type}-${item.id}`}
+          className="flex items-center gap-3 p-3 rounded-lg text-left transition-all hover:scale-[1.01]"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <span className="w-2 h-2 rounded-full flex-shrink-0"
+            style={{ background: LEVEL_COLORS[item.level] || accent }} />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-white truncate">{item.label}</p>
+            <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.5)" }}>
+              {item.sublabel}
+            </p>
+          </div>
+          <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(255,255,255,0.35)" }}>
+            {timeAgo(item.created_at)}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+};
+
 export default function AdminUniverseSelector() {
   const navigate = useNavigate();
   const [syndicatStats, setSyndicatStats] = useState(null);
   const [citadelleStats, setCitadelleStats] = useState(null);
+  const [feed, setFeed] = useState({ syndicat: [], citadelle: [] });
 
   useEffect(() => {
     api.get("/admin/stats").then(r => setSyndicatStats(r.data)).catch(() => {});
     api.get("/admin/citadelle-stats").then(r => setCitadelleStats(r.data)).catch(() => {});
+    api.get("/admin/activity-feed").then(r => setFeed(r.data)).catch(() => {});
   }, []);
 
   const goTo = (universe, path) => {
     localStorage.setItem(UNIVERSE_KEY, universe);
     window.dispatchEvent(new Event("admin_universe_changed"));
+    navigate(path);
+  };
+
+  // Navigation directe depuis le flux : mémorise l'univers sans déclencher
+  // la redirection générique d'AdminDashboard (qui écraserait la sous-route).
+  const goToFeed = (universe, path) => {
+    localStorage.setItem(UNIVERSE_KEY, universe);
     navigate(path);
   };
 
@@ -75,7 +170,7 @@ export default function AdminUniverseSelector() {
       </div>
 
       {/* Deux panneaux */}
-      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
 
         {/* ── Panneau Le Syndicat du Code ───────────────────────────────── */}
         <div className="flex flex-col rounded-2xl overflow-hidden"
@@ -83,22 +178,22 @@ export default function AdminUniverseSelector() {
                    border: "1px solid rgba(233,69,96,0.25)", boxShadow: "0 8px 40px rgba(233,69,96,0.12)" }}>
 
           {/* Header */}
-          <div className="p-6 pb-4"
+          <div className="p-7 pb-5"
             style={{ background: "linear-gradient(135deg, rgba(233,69,96,0.2) 0%, rgba(31,64,104,0.3) 100%)" }}>
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center"
                 style={{ background: "rgba(233,69,96,0.25)" }}>
-                <Briefcase size={18} style={{ color: "#e94560" }} />
+                <Briefcase size={20} style={{ color: "#e94560" }} />
               </div>
               <div>
-                <h2 className="text-lg font-black text-white leading-tight">Le Syndicat du Code</h2>
+                <h2 className="text-xl font-black text-white leading-tight">Le Syndicat du Code</h2>
                 <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Plateforme développeurs & commerciaux</p>
               </div>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="p-5 grid grid-cols-2 gap-3 flex-1">
+          <div className="p-6 grid grid-cols-2 gap-4">
             <Stat icon={Users}      label="Utilisateurs actifs"   value={syndicatStats?.users?.active}                  color="#e94560" />
             <Stat icon={Briefcase}  label="Projets ouverts"       value={syndicatStats?.projects?.open}                 color="#6366f1" />
             <Stat icon={Mail}       label="Contacts en attente"   value={syndicatStats?.contacts?.pending}              color="#f59e0b" />
@@ -106,14 +201,23 @@ export default function AdminUniverseSelector() {
           </div>
 
           {/* Actions à faire */}
-          <div className="px-5 pb-4 flex flex-wrap gap-2">
+          <div className="px-6 pb-4 flex flex-wrap gap-2">
             <ActionBadge count={syndicatStats?.contacts?.pending}            label="contact(s) en attente"   urgent={false} />
             <ActionBadge count={syndicatStats?.projects?.candidatures}       label="candidature(s)"          urgent={false} />
             <ActionBadge count={syndicatStats?.users?.pending}               label="compte(s) à valider"     urgent={true}  />
           </div>
 
+          {/* Flux dynamique */}
+          <div className="px-6 pb-5">
+            <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+              À traiter — le plus récent en haut
+            </p>
+            <FeedTicker items={feed.syndicat} accent="#e94560" testidPrefix="syndicat"
+              onSelect={(route) => goToFeed("syndicat", route)} />
+          </div>
+
           {/* CTA */}
-          <div className="p-5 pt-0">
+          <div className="p-6 pt-0 mt-auto">
             <button
               onClick={() => goTo("syndicat", "/syndicat-admin/syndicat-home")}
               data-testid="access-syndicat-btn"
@@ -131,22 +235,22 @@ export default function AdminUniverseSelector() {
                    border: "1px solid rgba(201,164,92,0.3)", boxShadow: "0 8px 40px rgba(201,164,92,0.1)" }}>
 
           {/* Header */}
-          <div className="p-6 pb-4"
+          <div className="p-7 pb-5"
             style={{ background: "linear-gradient(135deg, rgba(201,164,92,0.15) 0%, rgba(15,39,71,0.4) 100%)" }}>
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center"
                 style={{ background: "rgba(201,164,92,0.2)" }}>
-                <Globe size={18} style={{ color: "#C9A45C" }} />
+                <Globe size={20} style={{ color: "#C9A45C" }} />
               </div>
               <div>
-                <h2 className="text-lg font-black text-white leading-tight">La Citadelle Numérique</h2>
+                <h2 className="text-xl font-black text-white leading-tight">La Citadelle Numérique</h2>
                 <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Marketplace d'actifs numériques</p>
               </div>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="p-5 grid grid-cols-2 gap-3 flex-1">
+          <div className="p-6 grid grid-cols-2 gap-4">
             <Stat icon={Globe}          label="Annonces actives"        value={citadelleStats?.listings?.active}              color="#C9A45C" />
             <Stat icon={ArrowLeftRight} label="Transactions en cours"   value={citadelleStats?.transactions?.active}          color="#60a5fa" />
             <Stat icon={Bell}           label="Abonnés newsletter"      value={citadelleStats?.newsletter?.subscribers}       color="#a78bfa" />
@@ -154,14 +258,23 @@ export default function AdminUniverseSelector() {
           </div>
 
           {/* Actions à faire */}
-          <div className="px-5 pb-4 flex flex-wrap gap-2">
+          <div className="px-6 pb-4 flex flex-wrap gap-2">
             <ActionBadge count={citadelleStats?.listings?.pending_validation}   label="annonce(s) à valider"         urgent={false} />
             <ActionBadge count={citadelleStats?.transactions?.awaiting_admin}   label="transaction(s) en attente"    urgent={true}  />
             <ActionBadge count={citadelleStats?.services?.orders_pending}       label="commande(s) service en att."  urgent={false} />
           </div>
 
+          {/* Flux dynamique */}
+          <div className="px-6 pb-5">
+            <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+              À traiter — le plus récent en haut
+            </p>
+            <FeedTicker items={feed.citadelle} accent="#C9A45C" testidPrefix="citadelle"
+              onSelect={(route) => goToFeed("citadelle", route)} />
+          </div>
+
           {/* CTA */}
-          <div className="p-5 pt-0">
+          <div className="p-6 pt-0 mt-auto">
             <button
               onClick={() => goTo("citadelle", "/syndicat-admin/citadelle")}
               data-testid="access-citadelle-btn"

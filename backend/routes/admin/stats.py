@@ -228,6 +228,121 @@ async def get_citadelle_stats(current_user: dict = Depends(get_current_user)):
     }
 
 
+def _iso(value) -> str:
+    """Normalise une date (datetime ou str) en chaîne ISO pour tri/affichage."""
+    if isinstance(value, datetime):
+        return value.isoformat()
+    return str(value) if value else ""
+
+
+@router.get("/activity-feed", dependencies=[Depends(admin_only)])
+async def get_activity_feed(limit: int = 30, current_user: dict = Depends(get_current_user)):
+    """
+    Flux dynamique des éléments NON TRAITÉS des deux univers.
+    Chaque élément renvoie un libellé cliquable + la route de traitement.
+    Trié du plus récent (haut) au plus ancien (bas).
+    """
+    syndicat: list = []
+    citadelle: list = []
+
+    # ── Syndicat : contacts en attente ──────────────────────────────────────
+    async for c in db.contacts.find({"status": "pending"}).sort("created_at", -1).limit(limit):
+        syndicat.append({
+            "id": c.get("id"),
+            "type": "contact",
+            "label": c.get("name") or c.get("email") or "Contact",
+            "sublabel": "Demande de contact à traiter",
+            "created_at": _iso(c.get("created_at")),
+            "route": "/syndicat-admin/contacts",
+            "level": "warning",
+        })
+
+    # ── Syndicat : comptes à valider ────────────────────────────────────────
+    async for u in db.users.find({"status": "pending"}).sort("created_at", -1).limit(limit):
+        role = u.get("role") or ""
+        syndicat.append({
+            "id": u.get("id"),
+            "type": "user",
+            "label": u.get("email") or "Nouveau compte",
+            "sublabel": (f"Compte {role} à valider" if role else "Compte à valider"),
+            "created_at": _iso(u.get("created_at")),
+            "route": "/syndicat-admin/utilisateurs",
+            "level": "urgent",
+        })
+
+    # ── Citadelle : annonces à valider ──────────────────────────────────────
+    async for l in db.citadelle_listings.find({"status": "pending"}).sort("created_at", -1).limit(limit):
+        citadelle.append({
+            "id": l.get("id"),
+            "type": "listing",
+            "label": l.get("title") or "Annonce",
+            "sublabel": "Annonce à valider",
+            "created_at": _iso(l.get("created_at")),
+            "route": "/syndicat-admin/citadelle/annonces",
+            "level": "warning",
+        })
+
+    # ── Citadelle : transactions nécessitant une action admin ───────────────
+    tx_labels = {
+        "credentials_submitted": ("Accès à vérifier", "urgent"),
+        "disputed": ("Litige en cours", "urgent"),
+        "payment_done": ("Paiement reçu — en attente vendeur", "info"),
+    }
+    async for t in db.citadelle_transactions.find(
+        {"status": {"$in": list(tx_labels.keys())}}
+    ).sort("created_at", -1).limit(limit):
+        sub, level = tx_labels.get(t.get("status"), ("Transaction à traiter", "warning"))
+        citadelle.append({
+            "id": t.get("id"),
+            "type": "transaction",
+            "label": t.get("listing_title") or "Transaction",
+            "sublabel": sub,
+            "created_at": _iso(t.get("updated_at") or t.get("created_at")),
+            "route": "/syndicat-admin/citadelle/transactions",
+            "level": level,
+        })
+
+    # ── Citadelle : commandes de services non livrées ───────────────────────
+    order_labels = {"en_attente": ("Service non livré — à démarrer", "warning"),
+                    "en_cours": ("Service en cours de livraison", "info")}
+    async for o in db.citadelle_service_orders.find(
+        {"status": {"$in": list(order_labels.keys())}}
+    ).sort("created_at", -1).limit(limit):
+        sub, level = order_labels.get(o.get("status"), ("Commande à traiter", "warning"))
+        citadelle.append({
+            "id": o.get("id"),
+            "type": "service_order",
+            "label": o.get("service_title") or "Commande de service",
+            "sublabel": f"{sub} · {o.get('client_name', '')}".strip(" ·"),
+            "created_at": _iso(o.get("created_at")),
+            "route": "/syndicat-admin/citadelle/services",
+            "level": level,
+        })
+
+    # ── Citadelle : KYC vendeurs en attente ─────────────────────────────────
+    async for u in db.users.find({
+        "platform": "citadelle",
+        "kyc_status": {"$in": ["pending", None]},
+        "stripe_connect_account_id": {"$exists": True, "$ne": None},
+    }).sort("created_at", -1).limit(limit):
+        citadelle.append({
+            "id": u.get("id"),
+            "type": "kyc",
+            "label": u.get("email") or "Vendeur",
+            "sublabel": "KYC vendeur à réviser",
+            "created_at": _iso(u.get("updated_at") or u.get("created_at")),
+            "route": "/syndicat-admin/citadelle/utilisateurs",
+            "level": "warning",
+        })
+
+    # Tri décroissant : le plus récent en haut
+    syndicat.sort(key=lambda x: x["created_at"], reverse=True)
+    citadelle.sort(key=lambda x: x["created_at"], reverse=True)
+
+    return {"syndicat": syndicat[:limit], "citadelle": citadelle[:limit]}
+
+
+
 @router.get("/logs", dependencies=[Depends(admin_only)])
 async def get_admin_logs(
     limit: int = 50,
