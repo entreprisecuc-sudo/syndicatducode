@@ -161,6 +161,12 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Footer + `CitadelleVendre.js` mis à jour avec les nouveaux noms
 
 
+### ✅ Phase 2 KYC Stripe Connect — Bannière vendeur (soft block) (TERMINÉ 03/07/2026)
+- **Frontend** (`CitadelleTransactionDetail.js`) : bannière dorée `KycSellerBanner` affichée au vendeur dès que les fonds arrivent en séquestre (`payment_done`, `credentials_submitted`, `admin_verified`, `disputed`) si `phone` ou `date_of_birth` est absent du profil
+- Bouton **Compléter mon profil** → `/citadelle/espace-membre/profil`
+- Bouton ✕ pour fermer (soft — la transaction peut continuer)
+- Aucun blocage fonctionnel : le vendeur peut toujours transmettre les accès même sans KYC complet
+
 ### ✅ Phase 1 KYC Stripe Connect — Champs DoB & Téléphone (TERMINÉ 03/07/2026)
 - **Backend** (`auth.py`) : `PATCH /api/citadelle/auth/profile` accepte désormais `phone` (format 0XXXXXXXXX ou +33...) et `date_of_birth` (YYYY-MM-DD, âge ≥ 18 ans vérifiés serveur)
 - **Frontend** (`CitadelleProfile.js`) : onglet "Informations" — champ Téléphone + champ Date de naissance + bannière KYC dorée si l'un des deux champs est manquant

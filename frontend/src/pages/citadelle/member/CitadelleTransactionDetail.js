@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, Send, CheckCircle, XCircle, CreditCard, Shield, Lock,
-  AlertTriangle, Clock, ArrowRight, MessageSquare, Scale, Ban
+  AlertTriangle, Clock, ArrowRight, MessageSquare, Scale, Ban, Info, X
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
@@ -61,6 +61,9 @@ export default function CitadelleTransactionDetail() {
   const [sellerCancelModal, setSellerCancelModal] = useState(false);
   const [sellerCancelInfo, setSellerCancelInfo] = useState(null);
   const [sellerCancelInfoLoading, setSellerCancelInfoLoading] = useState(false);
+
+  // Bannière KYC vendeur (soft block — peut être fermée)
+  const [kycBannerDismissed, setKycBannerDismissed] = useState(false);
 
   const fetchSellerCancelInfo = async () => {
     setSellerCancelInfoLoading(true);
@@ -363,6 +366,14 @@ export default function CitadelleTransactionDetail() {
                 <CreditCard size={15} /> Payer {finalAmount?.toLocaleString("fr-FR")} €
               </button>
             </div>
+          )}
+
+          {/* Bannière KYC vendeur — soft block, fonds en séquestre + profil incomplet */}
+          {isSeller && STATUTS_SEQUESTRE.includes(tx.status) && !kycBannerDismissed && (!user?.phone || !user?.date_of_birth) && (
+            <KycSellerBanner
+              user={user}
+              onDismiss={() => setKycBannerDismissed(true)}
+            />
           )}
 
           {/* Vendeur : transmettre les accès */}
@@ -887,5 +898,50 @@ export default function CitadelleTransactionDetail() {
         )}
       </div>
     </CitadelleLayout>
+  );
+}
+
+
+// ── Bannière KYC vendeur (soft block) ─────────────────────────────────────────
+function KycSellerBanner({ user, onDismiss }) {
+  const missing = [];
+  if (!user?.phone)         missing.push("numéro de téléphone");
+  if (!user?.date_of_birth) missing.push("date de naissance");
+  if (!missing.length)      return null;
+
+  return (
+    <div
+      className="p-4 rounded-xl flex items-start gap-3 relative"
+      style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.3)" }}
+      data-testid="kyc-seller-banner"
+    >
+      <Info size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0, marginTop: 2 }} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold" style={{ color: CITADELLE_COLORS.gold }}>
+          Complétez votre profil pour recevoir vos fonds
+        </p>
+        <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
+          Votre {missing.join(" et votre ")} {missing.length > 1 ? "sont manquants" : "est manquant"}.
+          Ces informations sont requises pour vous virer les fonds à la finalisation de la vente.
+        </p>
+        <Link
+          to="/citadelle/espace-membre/profil"
+          className="inline-flex items-center gap-1.5 mt-2.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-80"
+          style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+          data-testid="kyc-banner-profile-link"
+        >
+          Compléter mon profil
+        </Link>
+      </div>
+      <button
+        onClick={onDismiss}
+        className="flex-shrink-0 p-1 rounded-lg opacity-50 hover:opacity-100 transition-opacity"
+        style={{ color: CITADELLE_COLORS.textMuted }}
+        data-testid="kyc-banner-dismiss"
+        title="Fermer"
+      >
+        <X size={14} />
+      </button>
+    </div>
   );
 }
