@@ -4,11 +4,12 @@
  */
 
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   User, Lock, Save, CheckCircle, AlertCircle,
   Eye, EyeOff, ChevronLeft, Calendar, Mail, Shield,
-  Building, Landmark, CreditCard, Upload, Phone, Info
+  Building, Landmark, CreditCard, Upload, Phone, Info,
+  ExternalLink, Loader, RefreshCw, Zap
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
@@ -22,6 +23,7 @@ const TABS = [
   { id: "infos",    label: "Informations",    icon: User },
   { id: "banking",  label: "Coordonnées bancaires", icon: Landmark },
   { id: "pro",      label: "Statut",          icon: Building },
+  { id: "payments", label: "Paiements",       icon: CreditCard },
   { id: "password", label: "Mot de passe",    icon: Lock },
 ];
 
@@ -31,8 +33,17 @@ export default function CitadelleProfile() {
   const { user, updateUser, isAuthenticated, loading } = useCitadelleAuth();
   const [activeTab, setActiveTab] = useState("infos");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useCitadellePageMeta("Mon profil");
+
+  // Retour depuis Stripe Connect → ouvrir automatiquement l'onglet Paiements
+  useEffect(() => {
+    const stripeReturn = searchParams.get("stripe_connect");
+    if (stripeReturn) {
+      setActiveTab("payments");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -130,6 +141,7 @@ export default function CitadelleProfile() {
             {activeTab === "infos" && <TabInfos user={user} updateUser={updateUser} inputStyle={inputStyle} labelStyle={labelStyle} />}
             {activeTab === "banking" && <TabBanking inputStyle={inputStyle} labelStyle={labelStyle} />}
             {activeTab === "pro" && <TabProfessional inputStyle={inputStyle} labelStyle={labelStyle} />}
+            {activeTab === "payments" && <TabStripeConnect user={user} />}
             {activeTab === "password" && <TabPassword inputStyle={inputStyle} labelStyle={labelStyle} />}
           </div>
 
@@ -729,6 +741,218 @@ function TabPassword({ inputStyle, labelStyle }) {
           : <><Lock size={15} /> Changer le mot de passe</>
         }
       </button>
+    </div>
+  );
+}
+
+
+// ── Onglet Stripe Connect Paiements ──────────────────────────────────────────
+
+const STATUS_CONFIG = {
+  not_connected:  { label: "Non connecté",        color: "#9ca3af",   bg: "rgba(156,163,175,0.08)"  },
+  pending:        { label: "En attente",           color: "#d97706",   bg: "rgba(217,119,6,0.08)"   },
+  pending_review: { label: "En cours de vérif.",  color: "#2563eb",   bg: "rgba(37,99,235,0.08)"   },
+  active:         { label: "Actif — paiements activés", color: "#16a34a", bg: "rgba(22,163,74,0.08)" },
+  restricted:     { label: "Restreint",            color: "#dc2626",   bg: "rgba(220,38,38,0.08)"   },
+};
+
+function TabStripeConnect({ user }) {
+  const [status, setStatus]     = useState(null);
+  const [loadingStatus, setLoadingStatus] = useState(true);
+  const [connecting, setConnecting] = useState(false);
+  const [error, setError]       = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const stripeReturn = searchParams.get("stripe_connect");
+
+  // Charger le statut au montage (et après retour Stripe)
+  useEffect(() => {
+    loadStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const loadStatus = async () => {
+    setLoadingStatus(true);
+    try {
+      const res = await citadelleApi.get("/stripe-connect/status");
+      setStatus(res.data);
+    } catch {
+      setStatus({ status: "not_connected" });
+    } finally {
+      setLoadingStatus(false);
+    }
+  };
+
+  const handleConnect = async () => {
+    setConnecting(true);
+    setError("");
+    const origin = window.location.origin;
+    const base   = `${origin}/citadelle/espace-membre/profil`;
+    try {
+      const res = await citadelleApi.post("/stripe-connect/onboard", {
+        return_url:  `${base}?stripe_connect=success`,
+        refresh_url: `${base}?stripe_connect=refresh`,
+      });
+      // Redirection vers Stripe Connect
+      window.location.href = res.data.onboarding_url;
+    } catch (err) {
+      setError(err.response?.data?.detail || "Impossible de se connecter à Stripe");
+      setConnecting(false);
+    }
+  };
+
+  // Nettoyer le param URL après affichage
+  const dismissReturn = () => {
+    setSearchParams({});
+  };
+
+  const cfg = STATUS_CONFIG[status?.status] || STATUS_CONFIG.not_connected;
+  const kycMissing = !user?.phone || !user?.date_of_birth;
+
+  return (
+    <div className="space-y-5">
+      <h2 className="font-bold text-base" style={{ color: CITADELLE_COLORS.white }}>
+        Réception des paiements (Stripe)
+      </h2>
+
+      {/* Message retour Stripe */}
+      {stripeReturn === "success" && (
+        <div className="flex items-start justify-between gap-3 p-4 rounded-xl"
+          style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)" }}>
+          <div className="flex items-start gap-2">
+            <CheckCircle size={15} style={{ color: "#22C55E", flexShrink: 0, marginTop: 1 }} />
+            <p className="text-sm" style={{ color: "#22C55E" }}>
+              <strong>Onboarding terminé !</strong> Votre compte Stripe est en cours de vérification.
+              Le statut ci-dessous sera mis à jour sous 24–48 h.
+            </p>
+          </div>
+          <button onClick={dismissReturn} className="opacity-40 hover:opacity-100 transition-opacity flex-shrink-0" style={{ color: "#22C55E" }}>
+            <Shield size={14} />
+          </button>
+        </div>
+      )}
+
+      {stripeReturn === "refresh" && (
+        <div className="flex items-center gap-2 p-4 rounded-xl text-sm"
+          style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", color: "#d97706" }}>
+          <RefreshCw size={14} /> Le lien d'onboarding a expiré. Cliquez sur le bouton ci-dessous pour en générer un nouveau.
+        </div>
+      )}
+
+      {/* Avertissement KYC manquant */}
+      {kycMissing && (
+        <div className="flex items-start gap-2 p-3 rounded-xl text-xs"
+          style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.25)", color: CITADELLE_COLORS.gold }}>
+          <Info size={13} className="flex-shrink-0 mt-0.5" />
+          <span>
+            Complétez votre <strong>téléphone</strong> et <strong>date de naissance</strong> dans l'onglet{" "}
+            <button className="underline font-semibold">Informations</button>{" "}
+            pour pré-remplir le formulaire Stripe et accélérer la vérification.
+          </span>
+        </div>
+      )}
+
+      {/* Carte statut */}
+      <div className="p-5 rounded-2xl space-y-4"
+        style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+
+        {loadingStatus ? (
+          <div className="flex items-center gap-2 text-sm opacity-50">
+            <Loader size={14} className="animate-spin" /> Vérification du statut…
+          </div>
+        ) : (
+          <>
+            {/* Badge statut */}
+            <div className="flex items-center gap-3">
+              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ background: cfg.color, boxShadow: `0 0 6px ${cfg.color}` }} />
+              <span className="text-sm font-semibold px-3 py-1 rounded-full"
+                style={{ background: cfg.bg, color: cfg.color }}
+                data-testid="stripe-connect-status">
+                {cfg.label}
+              </span>
+              {status?.account_id && (
+                <span className="text-xs opacity-30 font-mono">{status.account_id}</span>
+              )}
+              <button onClick={loadStatus} className="ml-auto opacity-30 hover:opacity-70 transition-opacity"
+                title="Actualiser" data-testid="stripe-status-refresh">
+                <RefreshCw size={13} />
+              </button>
+            </div>
+
+            {/* Infos détail */}
+            {status?.account_id && (
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Détails soumis",       value: status.details_submitted },
+                  { label: "Virements activés",     value: status.payouts_enabled   },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex items-center gap-2 text-xs"
+                    style={{ color: "rgba(255,255,255,0.5)" }}>
+                    {value
+                      ? <CheckCircle size={12} style={{ color: "#22C55E" }} />
+                      : <AlertCircle size={12} style={{ color: "#d97706" }} />
+                    }
+                    {label}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Explications selon statut */}
+            {status?.status === "not_connected" && (
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Connectez votre compte Stripe pour recevoir automatiquement les fonds lors de la finalisation de vos ventes.
+              </p>
+            )}
+            {(status?.status === "pending" || status?.status === "pending_review") && (
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Votre compte est en cours de vérification par Stripe. Ce processus peut prendre 24 à 48 h.
+                Vous pouvez compléter ou corriger vos informations en cliquant sur le bouton ci-dessous.
+              </p>
+            )}
+            {status?.status === "active" && (
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Votre compte est vérifié. Les fonds seront virés automatiquement lors de la validation de vos ventes.
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-2 p-3 rounded-xl text-sm"
+          style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#dc2626" }}>
+          <AlertCircle size={14} /> {error}
+        </div>
+      )}
+
+      {/* Bouton principal */}
+      {status?.status !== "active" && (
+        <button
+          onClick={handleConnect}
+          disabled={connecting || loadingStatus}
+          className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm disabled:opacity-60 transition-all hover:scale-[1.02]"
+          style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+          data-testid="stripe-connect-btn">
+          {connecting
+            ? <><Loader size={14} className="animate-spin" /> Redirection vers Stripe…</>
+            : <><Zap size={14} />
+                {status?.status === "not_connected" ? "Connecter mon compte Stripe" : "Compléter l'onboarding Stripe"}
+                <ExternalLink size={12} className="ml-1 opacity-60" />
+              </>
+          }
+        </button>
+      )}
+
+      {/* Note légale */}
+      <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+        La Citadelle Numérique utilise Stripe Connect pour les virements. En continuant, vous acceptez les{" "}
+        <a href="https://stripe.com/fr/connect-account/legal" target="_blank" rel="noopener noreferrer"
+          className="underline opacity-60 hover:opacity-100 transition-opacity">
+          Conditions d'utilisation Stripe
+        </a>.
+      </p>
     </div>
   );
 }
