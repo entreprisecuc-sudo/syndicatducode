@@ -122,7 +122,8 @@ class ServiceCheckoutRequest(BaseModel):
     client_email: EmailStr
     client_message: Optional[str] = ""
     origin_url: str
-    cancel_path: Optional[str] = "/citadelle/services"  # chemin de retour si annulation
+    cancel_path: Optional[str] = "/citadelle/services"
+    user_id: Optional[str] = None       # ID de l'utilisateur connecté (si disponible)
 
 
 # ── Utilitaire Stripe ─────────────────────────────────────────────────────────
@@ -245,6 +246,7 @@ async def create_service_checkout(payload: ServiceCheckoutRequest):
         "currency": "eur",
         "payment_status": "pending",
         "status": "initiated",
+        "user_id": payload.user_id or "",   # Lié au compte si l'utilisateur est connecté
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }

@@ -1,19 +1,33 @@
 /**
  * ServiceCheckoutModal — La Citadelle Numérique
  * Modale de commande avec paiement Stripe
+ * Pré-remplit les champs si l'utilisateur est connecté + lie la facture à son compte.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, ShoppingCart, Loader, CreditCard } from "lucide-react";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import citadelleApi from "@/services/citadelleApi";
+import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 
 const FORM_INITIAL = { client_name: "", client_email: "", client_message: "" };
 
 export default function ServiceCheckoutModal({ service, onClose }) {
+  const { user } = useCitadelleAuth();
   const [form, setForm] = useState(FORM_INITIAL);
   const [step, setStep] = useState("form"); // form | redirecting
   const [error, setError] = useState("");
+
+  // Pré-remplir avec les infos du compte si connecté
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        client_name:  prev.client_name  || `${user.first_name || ""} ${user.last_name || ""}`.trim() || user.username || "",
+        client_email: prev.client_email || user.email || "",
+      }));
+    }
+  }, [user]);
 
   const handleClose = () => {
     if (step === "redirecting") return;
@@ -43,6 +57,7 @@ export default function ServiceCheckoutModal({ service, onClose }) {
         client_email: client_email.trim(),
         client_message: form.client_message.trim(),
         origin_url: window.location.origin,
+        user_id: user?.id || null,   // Lie la facture au compte de l'utilisateur connecté
       });
       // Redirection vers Stripe Checkout
       window.location.href = res.data.checkout_url;
