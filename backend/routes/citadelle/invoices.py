@@ -91,6 +91,73 @@ async def _next_invoice_number() -> str:
     return f"FAC-{year}-{str(seq).zfill(5)}"
 
 
+def _recipient_from_user(user: dict, fallback_name: str = "", fallback_email: str = "") -> dict:
+    """
+    Construit le bloc destinataire d'une facture à partir du profil utilisateur.
+    - Professionnel : raison sociale, contact, SIREN/SIRET, TVA, adresse société.
+    - Particulier   : nom + prénom, adresse personnelle.
+    Retombe sur les infos de la transaction si le profil est incomplet.
+    """
+    user = user or {}
+    prof = user.get("professional", {}) or {}
+    is_pro = bool(prof.get("is_professional"))
+    full_name = f"{user.get('first_name', '')} {user.get('last_name', '')}".strip()
+
+    if is_pro and prof.get("company_name"):
+        return {
+            "client_type":    "professionnel",
+            "client_name":    prof.get("company_name"),
+            "client_contact": full_name or fallback_name,
+            "client_siren":   prof.get("siren", ""),
+            "client_siret":   prof.get("siret", ""),
+            "client_vat":     prof.get("vat_number", ""),
+            "client_address": prof.get("company_address") or user.get("address", ""),
+            "client_email":   user.get("email") or fallback_email,
+        }
+    return {
+        "client_type":    "particulier",
+        "client_name":    full_name or fallback_name,
+        "client_contact": "",
+        "client_siren":   "",
+        "client_siret":   "",
+        "client_vat":     "",
+        "client_address": user.get("address", ""),
+        "client_email":   user.get("email") or fallback_email,
+    }
+
+
+def _wrap_address(addr: str, width: int = 42) -> list:
+    """Découpe une adresse en lignes affichables (retours ligne + césure douce)."""
+    if not addr:
+        return []
+    lines = []
+    for raw in addr.replace("\r", "").split("\n"):
+        raw = raw.strip()
+        while len(raw) > width:
+            cut = raw.rfind(" ", 0, width)
+            if cut <= 0:
+                cut = width
+            lines.append(raw[:cut].strip())
+            raw = raw[cut:].strip()
+        if raw:
+            lines.append(raw)
+    return lines
+
+
+async def _enrich_recipient(inv: dict) -> dict:
+    """
+    Enrichit une facture existante avec les infos destinataire du profil
+    (utile pour les factures créées avant l'ajout du snapshot destinataire).
+    """
+    if inv.get("client_type") or not inv.get("user_id") or _db is None:
+        return inv
+    user = await _db.users.find_one({"id": inv["user_id"], "platform": "citadelle"}, {"_id": 0})
+    if user:
+        inv.update(_recipient_from_user(user, inv.get("client_name", ""), inv.get("client_email", "")))
+    return inv
+
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Création automatique d'une facture après paiement confirmé
 # ─────────────────────────────────────────────────────────────────────────────
@@ -170,6 +237,13 @@ async def create_invoice_for_payment(transaction: dict) -> str:
         "pdp_status":      "not_required",   # "not_required" | "pending" | "submitted"
         "pdp_reference":   None,
     }
+
+    # Snapshot destinataire depuis le profil (pro → infos société / particulier → nom + adresse)
+    user_id = transaction.get("user_id")
+    if user_id and _db is not None:
+        client_user = await _db.users.find_one({"id": user_id, "platform": "citadelle"}, {"_id": 0})
+        if client_user:
+            doc.update(_recipient_from_user(client_user, doc["client_name"], doc["client_email"]))
 
     await _db.citadelle_invoices.insert_one(doc)
     logger.info(f"Facture créée : {invoice_number} — {transaction.get('client_email')}")
@@ -270,17 +344,41 @@ def _build_pdf(inv: dict) -> bytes:
     c.setFillColor(HexColor("#9CA3AF"))
     c.drawString(x(12), y(95), f"propulsé par {SELLER['operator']}")
 
-    # ── Bloc "À" ───────────────────────────────────────────────────────────
+    # ── Bloc "À" (DESTINATAIRE) ─────────────────────────────────────────────
     c.setFillColor(NAVY)
     c.setFont("Helvetica-Bold", 8)
     c.drawString(x(110), y(52), "DESTINATAIRE")
 
+    is_pro = inv.get("client_type") == "professionnel"
+
+    c.setFillColor(NAVY)
     c.setFont("Helvetica-Bold", 10)
     c.drawString(x(110), y(59), inv.get("client_name", ""))
 
+    yy = 65
     c.setFont("Helvetica", 9)
     c.setFillColor(MUTED)
-    c.drawString(x(110), y(65), inv.get("client_email", ""))
+
+    # Contact (dirigeant) pour les professionnels
+    if is_pro and inv.get("client_contact"):
+        c.drawString(x(110), y(yy), inv["client_contact"]); yy += 5
+
+    # Email
+    if inv.get("client_email"):
+        c.drawString(x(110), y(yy), inv["client_email"]); yy += 5
+
+    # Adresse (particulier ou société)
+    for line in _wrap_address(inv.get("client_address", "")):
+        c.drawString(x(110), y(yy), line); yy += 5
+
+    # Identifiants professionnels (facture pro conforme)
+    if is_pro:
+        if inv.get("client_siret"):
+            c.drawString(x(110), y(yy), f"SIRET : {inv['client_siret']}"); yy += 5
+        elif inv.get("client_siren"):
+            c.drawString(x(110), y(yy), f"SIREN : {inv['client_siren']}"); yy += 5
+        if inv.get("client_vat"):
+            c.drawString(x(110), y(yy), f"N° TVA : {inv['client_vat']}"); yy += 5
 
     # ── Tableau des prestations ────────────────────────────────────────────
     table_top  = y(110)
@@ -482,6 +580,7 @@ async def download_invoice_pdf(invoice_id: str, request: Request):
     if not user.get("is_admin") and inv.get("client_email") != email and inv.get("user_id") != user_id:
         raise HTTPException(status_code=403, detail="Accès refusé.")
 
+    inv = await _enrich_recipient(inv)
     pdf_bytes = _build_pdf(inv)
     filename  = f"{inv.get('invoice_number', 'facture')}.pdf"
     return StreamingResponse(
@@ -540,6 +639,7 @@ async def admin_download_invoice_pdf(invoice_id: str, request: Request):
     if not inv:
         raise HTTPException(status_code=404, detail="Facture introuvable.")
 
+    inv = await _enrich_recipient(inv)
     pdf_bytes = _build_pdf(inv)
     filename  = f"{inv.get('invoice_number', 'facture')}.pdf"
     return StreamingResponse(
@@ -568,6 +668,7 @@ async def admin_bulk_download_invoices(request: Request):
             inv = await _db.citadelle_invoices.find_one({"_id": inv_id})
             if not inv:
                 continue
+            inv = await _enrich_recipient(inv)
             pdf_bytes = _build_pdf(inv)
             filename  = f"{inv.get('invoice_number', inv_id)}.pdf"
             zf.writestr(filename, pdf_bytes)
