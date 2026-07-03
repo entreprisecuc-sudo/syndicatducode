@@ -554,10 +554,20 @@ function ContactForm({ prefillType }) {
   useEffect(() => {
     citadelleApi.get("/services").then(res => {
       const apiServices = res.data?.services || [];
-      setLiveServices(ESTIMATION_SERVICES.map(svc => {
-        const found = apiServices.find(s => s.id === svc.id);
-        return found && found.price != null ? { ...svc, price: found.price } : svc;
-      }));
+      // Correspondance stable par titre (résiste à un re-seed des services → nouveaux UUID)
+      const merged = ESTIMATION_SERVICES.map(svc => {
+        const found = apiServices.find(s => s.title === svc.title);
+        return found
+          ? { ...svc, id: found.id, price: found.price != null ? found.price : svc.price }
+          : svc;
+      });
+      setLiveServices(merged);
+      // Aligner l'ID sélectionné sur l'ID réel renvoyé par l'API (par titre)
+      setSelectedService(prev => {
+        const prevSvc = ESTIMATION_SERVICES.find(s => s.id === prev);
+        const match = prevSvc && merged.find(s => s.title === prevSvc.title);
+        return (match || merged[0]).id;
+      });
     }).catch(() => { /* fallback sur ESTIMATION_SERVICES déjà en state */ });
   }, []);
 
