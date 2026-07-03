@@ -117,13 +117,15 @@ const AdminLayout = ({ children }) => {
     return () => window.removeEventListener("admin_universe_changed", handler);
   }, []);
 
-  // Auto-détecter l'univers depuis l'URL
+  // Auto-détecter l'univers depuis l'URL (uniquement sur changement de route,
+  // pour ne pas ré-imposer "citadelle" lors d'un changement d'univers manuel)
   useEffect(() => {
-    if (location.pathname.startsWith("/syndicat-admin/citadelle") && universe !== "citadelle") {
+    if (location.pathname.startsWith("/syndicat-admin/citadelle")
+        && localStorage.getItem(UNIVERSE_KEY) !== "citadelle") {
       localStorage.setItem(UNIVERSE_KEY, "citadelle");
       setUniverse("citadelle");
     }
-  }, [location.pathname, universe]);
+  }, [location.pathname]);
 
   // Badge alertes — polling 60s
   useEffect(() => {
