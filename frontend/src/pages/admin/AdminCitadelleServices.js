@@ -186,12 +186,12 @@ export default function AdminCitadelleServices() {
 
         {/* Onglets */}
         <div className="flex gap-1 p-1 rounded-xl w-fit"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
           <button onClick={() => setActiveTab("services")}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
             style={{
               background: activeTab === "services" ? "rgba(201,164,92,0.15)" : "transparent",
-              color: activeTab === "services" ? "#C9A45C" : "rgba(255,255,255,0.5)"
+              color: activeTab === "services" ? "#C9A45C" : "var(--admin-text-muted)"
             }}
             data-testid="tab-services">
             <Star size={14} /> Services
@@ -200,7 +200,7 @@ export default function AdminCitadelleServices() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
             style={{
               background: activeTab === "orders" ? "rgba(201,164,92,0.15)" : "transparent",
-              color: activeTab === "orders" ? "#C9A45C" : "rgba(255,255,255,0.5)"
+              color: activeTab === "orders" ? "#C9A45C" : "var(--admin-text-muted)"
             }}
             data-testid="tab-orders">
             <ShoppingBag size={14} /> Commandes
@@ -300,9 +300,9 @@ export default function AdminCitadelleServices() {
                 <button key={opt.value} onClick={() => setFilterStatus(opt.value)}
                   className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all"
                   style={{
-                    background: filterStatus === opt.value ? "rgba(201,164,92,0.2)" : "rgba(255,255,255,0.05)",
-                    color: filterStatus === opt.value ? "#C9A45C" : "rgba(255,255,255,0.6)",
-                    border: filterStatus === opt.value ? "1px solid rgba(201,164,92,0.4)" : "1px solid rgba(255,255,255,0.08)"
+                    background: filterStatus === opt.value ? "rgba(201,164,92,0.2)" : "var(--admin-bg-card)",
+                    color: filterStatus === opt.value ? "#C9A45C" : "var(--admin-text-muted)",
+                    border: filterStatus === opt.value ? "1px solid rgba(201,164,92,0.4)" : "1px solid var(--admin-border)"
                   }}>
                   {opt.label}
                 </button>
