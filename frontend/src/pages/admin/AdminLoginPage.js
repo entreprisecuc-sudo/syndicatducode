@@ -36,10 +36,11 @@ export default function AdminLoginPage() {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
 
-  // Restriction domaine : accessible uniquement depuis syndicatducode.fr
+  // Restriction domaine : accessible depuis syndicatducode.fr, le preview Emergent et le local
   const hostname = window.location.hostname;
   const isAllowedDomain =
     hostname.includes("syndicatducode") ||
+    hostname.includes("emergentagent.com") ||
     hostname === "localhost" ||
     hostname === "127.0.0.1";
 
