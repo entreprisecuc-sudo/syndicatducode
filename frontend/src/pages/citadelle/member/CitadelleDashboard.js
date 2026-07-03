@@ -86,17 +86,6 @@ export default function CitadelleDashboard() {
             </div>
           </div>
 
-          {/* Message Phase A */}
-          <div className="mb-8 p-5 rounded-xl flex items-start gap-3" style={{ background: "rgba(201,164,92,0.08)", border: `1px solid rgba(201,164,92,0.25)` }}>
-            <Shield size={20} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0, marginTop: 2 }} />
-            <div>
-              <p className="font-semibold text-sm" style={{ color: CITADELLE_COLORS.blue }}>Plateforme en cours de développement</p>
-              <p className="text-sm mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                La Citadelle Numérique est en construction. Les fonctionnalités de publication d'annonces et de transaction seront disponibles très prochainement.
-              </p>
-            </div>
-          </div>
-
           {/* Menu */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {menuItems.map(({ icon: Icon, label, desc, href, active, badge, unread }) => {
