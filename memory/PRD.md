@@ -30,6 +30,14 @@
 - **Contrôle déploiement (deployment_agent)** : PRÊT. Compilation OK, secrets/URLs en .env, ports & supervisor conformes. Seul avertissement : CORS listé par domaines (conservé tel quel — adapté au VPS à domaines fixes du client).
 - **Déploiement** : consignes projet = pas de commandes VPS fournies par l'agent. Options Emergent (bouton Deploy, 50 crédits/mois, domaine perso, Save to GitHub) relayées via support_agent.
 
+## 🚀 Déploiement VPS — Mise à jour 04/07/2026 (branche main-projet-7)
+- Bascule VPS `main-projet-4` → **`main-projet-7`** (commit `75126cd`) via git fetch/checkout.
+- `emergentintegrations==0.1.0` retiré de `backend/requirements.txt` sur le VPS (non installable hors Emergent, code Stripe = SDK officiel `_StripeClient`). Toutes deps déjà satisfaites (stripe 14.4.0).
+- Backend redémarré via PM2 (`syndicat-backend`) — démarrage propre (Uvicorn 127.0.0.1:8001, scheduler + index OK).
+- Frontend rebuild `yarn build` → nouveau bundle `main.61bbecf3.js` servi par Nginx (build/ statique).
+- Vérifs prod OK : HOME 200, /api/citadelle/blog 200, /api/citadelle/services 200 (/api/alerts/ = 403 attendu, auth admin).
+- ⚠️ Cache PWA : SW met à jour l'UI au prochain chargement. Ancienne branche locale `main-projet-4` conserve 26 commits non poussés (sans impact).
+
 ## Phases Citadelle
 
 ### ✅ Phase A — Socle (TERMINÉ)
