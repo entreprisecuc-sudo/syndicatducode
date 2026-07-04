@@ -23,6 +23,13 @@
 
 
 
+## 🔧 Session 04/07/2026 — Preview (fork)
+- **Décision Google Auth (P1, EN PAUSE)** : la page Google Auth managée par Emergent NE PEUT PAS être white-labelée ("secured by emergent" imposé). Solution = OAuth Google custom avec identifiants du client. Playbook `integration_expert` récupéré (authlib backend + `@react-oauth/google` frontend ; redirect `{origin}/auth/google` ; JS Origins + Redirect URIs à ajouter dans Google Cloud Console). **En attente que le client fournisse Client ID + Secret.**
+- **Données de démo testpapajoseph@gmail.com** créées puis PURGÉES (script idempotent `backend/scripts/seed_demo_testpapajoseph.py`, marqueur `demo_seed`) — servait à visualiser les panneaux dashboard ("À traiter", "Mes gains", messagerie). Vérifié via API (activity 4 items, earnings 16 625€ encaissé / 19 950€ séquestre).
+- **Bouton admin provisoire RETIRÉ** du footer Syndicat (`Footer.js`, `data-testid="footer-admin-access-provisoire"`). Confirmé absent du bundle servi (grep=0). Route `/papaenmousse1981` (connexion admin) conservée. Le bloc DEV_MODE de connexion rapide reste (invisible hors dev).
+- **Contrôle déploiement (deployment_agent)** : PRÊT. Compilation OK, secrets/URLs en .env, ports & supervisor conformes. Seul avertissement : CORS listé par domaines (conservé tel quel — adapté au VPS à domaines fixes du client).
+- **Déploiement** : consignes projet = pas de commandes VPS fournies par l'agent. Options Emergent (bouton Deploy, 50 crédits/mois, domaine perso, Save to GitHub) relayées via support_agent.
+
 ## Phases Citadelle
 
 ### ✅ Phase A — Socle (TERMINÉ)
