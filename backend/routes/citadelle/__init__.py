@@ -18,6 +18,7 @@ from routes.citadelle.connect import router as citadelle_connect_router, set_dat
 from routes.citadelle.estimation import router as citadelle_estimation_router, set_database as set_citadelle_estimation_db
 from routes.citadelle.invoices import router as citadelle_invoices_router, set_database as set_citadelle_invoices_db
 from routes.citadelle.stripe_connect import router as citadelle_stripe_connect_router, set_database as set_citadelle_stripe_connect_db
+from routes.citadelle.transmissions import router as citadelle_transmissions_router, set_database as set_citadelle_transmissions_db
 
 router = APIRouter(prefix="/citadelle", tags=["La Citadelle Numérique"])
 router.include_router(citadelle_auth_router)
@@ -34,6 +35,7 @@ router.include_router(citadelle_connect_router)
 router.include_router(citadelle_estimation_router)
 router.include_router(citadelle_invoices_router)
 router.include_router(citadelle_stripe_connect_router)
+router.include_router(citadelle_transmissions_router)
 
 _db = None
 
@@ -53,3 +55,4 @@ def set_database(database):
     set_citadelle_estimation_db(database)
     set_citadelle_invoices_db(database)
     set_citadelle_stripe_connect_db(database)
+    set_citadelle_transmissions_db(database)

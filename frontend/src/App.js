@@ -121,6 +121,9 @@ import CitadelleCGU from "@/pages/citadelle/CitadelleCGU";
 import CitadelleCGV from "@/pages/citadelle/CitadelleCGV";
 import CitadelleConfidentialite from "@/pages/citadelle/CitadelleConfidentialite";
 import AdminCitadelleBlog from "@/pages/admin/AdminCitadelleBlog";
+import AdminCitadelleTransmission from "@/pages/admin/AdminCitadelleTransmission";
+import CitadelleMyTransmissions from "@/pages/citadelle/member/CitadelleMyTransmissions";
+import CitadelleVerifyTransmission from "@/pages/citadelle/CitadelleVerifyTransmission";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import AdminLiveApp from "@/pages/admin/AdminLiveApp";
 
@@ -376,6 +379,7 @@ function App() {
               <Route path="/citadelle/blog" element={<CitadelleBlog />} />
               <Route path="/citadelle/blog/:slug" element={<CitadelleBlogPost />} />
               <Route path="/citadelle/contact" element={<CitadelleContact />} />
+              <Route path="/verifier-transmission/:dossier" element={<CitadelleVerifyTransmission />} />
 
               {/* Citadelle — Espace membre (routes spécifiques avant le wildcard) */}
               <Route path="/citadelle/espace-membre/mes-annonces/creer" element={<CitadelleCreateListing />} />
@@ -383,6 +387,7 @@ function App() {
               <Route path="/citadelle/espace-membre/mes-annonces" element={<CitadelleMyListings />} />
               <Route path="/citadelle/espace-membre/transactions/:id" element={<CitadelleTransactionDetail />} />
               <Route path="/citadelle/espace-membre/transactions" element={<CitadelleMyTransactions />} />
+              <Route path="/citadelle/espace-membre/transmissions" element={<CitadelleMyTransmissions />} />
               <Route path="/citadelle/espace-membre/factures" element={<CitadelleMyInvoices />} />
               <Route path="/citadelle/espace-membre/messages/:id" element={<CitadelleConversationDetail />} />
               <Route path="/citadelle/espace-membre/messages" element={<CitadelleMyMessages />} />
@@ -403,6 +408,10 @@ function App() {
               <Route
                 path="/syndicat-admin/citadelle/transactions"
                 element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleTransactions /></RoleRoute>}
+              />
+              <Route
+                path="/syndicat-admin/citadelle/transmission/:transactionId"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleTransmission /></RoleRoute>}
               />
               <Route
                 path="/syndicat-admin/citadelle/factures"

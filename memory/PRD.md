@@ -30,6 +30,16 @@
 - **Contrôle déploiement (deployment_agent)** : PRÊT. Compilation OK, secrets/URLs en .env, ports & supervisor conformes. Seul avertissement : CORS listé par domaines (conservé tel quel — adapté au VPS à domaines fixes du client).
 - **Déploiement** : consignes projet = pas de commandes VPS fournies par l'agent. Options Emergent (bouton Deploy, 50 crédits/mois, domaine perso, Save to GitHub) relayées via support_agent.
 
+## 🛡️ Module Transmission d'actif — La Garde (ajouté 04/07/2026, PREVIEW uniquement)
+Processus professionnel de cession + génération de l'« Attestation de Transmission » (PDF premium).
+- **Backend** : `routes/citadelle/transmissions.py` (endpoints admin CRUD + membre + vérif publique), `routes/citadelle/transmission_schema.py` (registre dynamique type→sections→champs, extensible), `services/transmission_pdf.py` (2 rendus : Attestation complète acheteur/admin + Titre de Cession vendeur SANS accès), `utils/crypto.py` (chiffrement Fernet des champs sensibles).
+- **Sécurité** : champs sensibles chiffrés au repos (Fernet), jamais loggés. Clé `.env` `TRANSMISSION_ENC_KEY`. Vendeur ne reçoit JAMAIS les codes.
+- **Frontend** : `AdminCitadelleTransmission.js` (assistant 7 étapes, barre progression, champs dynamiques, brouillon, contrôles de cohérence), `CitadelleMyTransmissions.js` (espace membre), `CitadelleVerifyTransmission.js` (page publique QR). Bouton « Créer une transmission » sur transaction admin (statut admin_verified/completed).
+- **Routes** : `/syndicat-admin/citadelle/transmission/:txId`, `/citadelle/espace-membre/transmissions`, `/verifier-transmission/:dossier`.
+- **Email** : acheteur notifié à la finalisation (document prêt).
+- **Vérifié** : chiffrement (Fernet en base + déchiffrement admin), PDF premium (sceau La Garde + QR + n° dossier), wizard UI dynamique, flux create→patch→finalize→pdf→verify (curl + screenshots).
+- ⚠️ **DÉPLOIEMENT VPS** : ajouter `TRANSMISSION_ENC_KEY` au `.env` backend VPS + s'assurer que `backend/static/sceau-la-garde.png` est bien poussé.
+
 ## 🚀 Déploiement VPS — Mise à jour 04/07/2026 (branche main-projet-7)
 - Bascule VPS `main-projet-4` → **`main-projet-7`** (commit `75126cd`) via git fetch/checkout.
 - `emergentintegrations==0.1.0` retiré de `backend/requirements.txt` sur le VPS (non installable hors Emergent, code Stripe = SDK officiel `_StripeClient`). Toutes deps déjà satisfaites (stripe 14.4.0).

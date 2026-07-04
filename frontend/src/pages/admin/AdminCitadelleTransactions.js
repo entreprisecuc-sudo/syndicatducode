@@ -409,6 +409,15 @@ export default function AdminCitadelleTransactions() {
                       <Lock size={14} /> Transmettre les accès à l'acheteur
                     </button>
                   )}
+                  {/* Créer / ouvrir l'assistant de Transmission d'actif (La Garde) */}
+                  {["admin_verified", "completed"].includes(selectedTx.status) && (
+                    <Link to={`/syndicat-admin/citadelle/transmission/${selectedTx.id}`}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
+                      style={{ background: "#0F2747", color: "#C9A45C", border: "1px solid #C9A45C" }}
+                      data-testid="admin-create-transmission-btn">
+                      <Shield size={14} /> Créer une transmission
+                    </Link>
+                  )}
                   {!["completed", "cancelled", "offer_refused"].includes(selectedTx.status) && (
                     <button onClick={() => {
                       const reason = prompt("Motif du litige :");
