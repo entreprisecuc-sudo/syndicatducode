@@ -1,0 +1,30 @@
+{
+  "summary": "Iteration 13 — Stripe Connect ESCROW, webhooks sécurisés, commission max(5%, 49€), doublon /connect/* supprimé, garde-fous statut. 15/15 pytest PASS. Aucun paiement Stripe ni onboarding réel effectué. Seed direct MongoDB (TESTESC_) + nettoyage complet vérifié (0 restant, champs stripe_connect_* de Marie restaurés).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_stripe_connect_escrow.py",
+    "/app/test_reports/pytest/iter13.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "BUG PRÉ-EXISTANT (non lié à cette session mais critique) — routes/citadelle/transactions.py::cancel_purchase (~ligne 1104): utilise les variables `now` et `mock_fee_id` sans les définir dans le scope de la fonction. NameError garanti à l'exécution. À corriger d'urgence (comparer avec cancel_as_seller qui les définit correctement lignes 1147-1148).",
+    "connect.py webhook: exige STRIPE_CONNECT_WEBHOOK_SECRET défini (sinon 400). Comportement correct en production. Attention: si le secret est retiré, tous les webhooks tombent en 400 — pas de fallback dev, ce qui est OK pour LIVE.",
+    "stripe_connect.py::/status ligne ~221: `active` = payouts_enabled uniquement (charges_enabled non requis). Cohérent avec l'usage escrow (le compte reçoit uniquement des transfers).",
+    "transactions.py::admin_complete_transaction: le fallback 'virement manuel requis' est bien géré lorsque Transfer.create échoue OU lorsque le compte n'est pas 'active'. Commission et net_seller_amount sont persistés dans TOUS les cas — comportement escrow correct.",
+    "_calculate_commission: lit citadelle_settings.key='commission' (rate/minimum_eur) avec fallback en dur (0.05, 49.0). Test validé avec la config par défaut."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_stripe_connect_escrow.py"
+  ],
+  "success_rate": {"backend": "100% (15/15)", "frontend": "N/A (backend-only test)"},
+  "test_credentials": {
+    "admin": "bigpapa1981@asar.com / Josiane03@@@!1981",
+    "member": "marie.testui@citadelle-test.fr / TestUI2026!"
+  },
+  "seed_data_creation": "Transactions TESTESC_* seed via motor puis DELETE (regex ^TESTESC_) — 0 restant. Champs stripe_connect_account_id/status ajoutés temporairement sur Marie (id 26c042ac...) puis restaurés à leur état initial via $unset (vérifié en BDD).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Tests couvrent: (a) webhooks Connect + Payments rejettent 400 sans signature valide, (b) 3 anciennes routes /connect/onboard|/status|/relink retournent bien 404, (c) /stripe-connect/status renvoie not_connected pour membre sans compte, (d) commission percentage (5000€->250€/4750€) et minimum (150€->49€/101€) via seed+admin/complete, (e) statuts non-admin_verified refusés en 400 pour finalize (offer_accepted, credentials_submitted, payment_done), (f) admin endpoints refusent membre/non-authentifié. Le transfer Stripe vers acct_FAKE_TEST échoue comme prévu -> stripe_transfer_id=None, note 'virement manuel requis' -> comportement escrow OK. BUG PRÉ-EXISTANT signalé dans cancel_purchase (NameError sur `now`/`mock_fee_id`).",
+  "rca of the issue": "N/A — aucune régression détectée dans cette session."
+}
