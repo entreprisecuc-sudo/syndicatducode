@@ -9,6 +9,7 @@ import { Shield, Plus, MessageSquare, ArrowLeftRight, FileText, User, LogOut, Tr
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import MemberActivityPanel from "@/components/citadelle/MemberActivityPanel";
+import MemberEarningsPanel from "@/components/citadelle/MemberEarningsPanel";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 
@@ -89,6 +90,9 @@ export default function CitadelleDashboard() {
 
           {/* Panneau "À traiter" — vue directe des interactions */}
           <MemberActivityPanel />
+
+          {/* Encart "Mes gains" — récap vendeur + virement */}
+          <MemberEarningsPanel />
 
           {/* Menu */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

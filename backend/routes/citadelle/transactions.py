@@ -1100,6 +1100,8 @@ async def cancel_purchase(
 
     payment_amount = tx.get("payment_amount") or 0
     frais = await get_dispute_fee(payment_amount, role="buyer")
+    mock_fee_id = f"mock_fee_buyer_{uuid.uuid4().hex[:16]}"
+    now = datetime.now(timezone.utc).isoformat()
 
     await db.citadelle_transactions.update_one(
         {"id": transaction_id},
@@ -1375,3 +1377,54 @@ async def admin_update_dispute_config(
         upsert=True
     )
     return config
+
+
+
+@router.get("/member/earnings", summary="Membre — Récapitulatif des gains vendeur")
+async def member_earnings(current_user: dict = Depends(require_citadelle_user)):
+    """
+    Récapitulatif des gains du vendeur :
+    - total encaissé (ventes finalisées, net après commission)
+    - en attente / séquestre (ventes payées mais non finalisées)
+    - détail par vente
+    """
+    user_id = current_user.get("sub")
+    pending_statuses = ["payment_done", "credentials_submitted", "admin_verified", "disputed"]
+
+    total_received = 0.0
+    total_pending = 0.0
+    sales = []
+
+    cursor = db.citadelle_transactions.find(
+        {"seller_id": user_id, "status": {"$in": pending_statuses + ["completed"]}},
+        {"_id": 0, "credentials": 0}
+    ).sort("updated_at", -1)
+
+    async for tx in cursor:
+        gross = float(tx.get("payment_amount") or 0)
+        status = tx.get("status")
+        if status == "completed":
+            net = float(tx.get("net_seller_amount") or 0)
+            commission = float(tx.get("commission_amount") or 0)
+            total_received += net
+        else:
+            commission, net = await _calculate_commission(gross)
+            total_pending += net
+
+        sales.append({
+            "id": tx.get("id"),
+            "title": tx.get("listing_title") or "Vente",
+            "gross": gross,
+            "commission": round(commission, 2),
+            "net": round(net, 2),
+            "status": status,
+            "date": tx.get("updated_at") or tx.get("created_at"),
+            "route": f"/citadelle/espace-membre/transactions/{tx.get('id')}",
+        })
+
+    return {
+        "total_received": round(total_received, 2),
+        "total_pending": round(total_pending, 2),
+        "sales_count": len(sales),
+        "sales": sales,
+    }

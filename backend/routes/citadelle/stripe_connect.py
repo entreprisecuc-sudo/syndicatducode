@@ -259,3 +259,69 @@ async def admin_list_connect_accounts(
     ).sort("stripe_connect_created_at", -1)
     accounts = [doc async for doc in cursor]
     return {"accounts": accounts, "total": len(accounts)}
+
+
+
+async def _get_available_eur(account_id: str) -> float:
+    """Retourne le solde disponible (EUR) du compte connecté, en euros."""
+    balance = await asyncio.to_thread(
+        stripe_sdk.Balance.retrieve, api_key=STRIPE_API_KEY, stripe_account=account_id
+    )
+    cents = sum(b.get("amount", 0) for b in balance.get("available", []) if b.get("currency") == "eur")
+    return round(cents / 100, 2)
+
+
+@router.get("/balance", status_code=200)
+async def stripe_connect_balance(request: Request):
+    """Solde Stripe disponible du vendeur (fonds prêts à être versés sur sa banque)."""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Clé Stripe non configurée")
+    user_id = _get_authenticated_user_id(request)
+    user = await _db.users.find_one({"id": user_id, "platform": "citadelle"}, {"_id": 0})
+    account_id = (user or {}).get("stripe_connect_account_id")
+    if not account_id:
+        return {"available": 0.0, "connected": False}
+    try:
+        available = await _get_available_eur(account_id)
+    except stripe_sdk.error.StripeError as e:
+        logger.error(f"[Stripe Connect] Erreur balance: {e}")
+        raise HTTPException(status_code=400, detail=f"Erreur Stripe : {e.user_message or str(e)}")
+    return {"available": available, "connected": True}
+
+
+@router.post("/payout", status_code=200)
+async def stripe_connect_payout(request: Request):
+    """
+    Déclenche un virement (payout) du solde disponible du vendeur vers son compte bancaire.
+    Requiert un compte Connect actif et un solde disponible > 0.
+    """
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Clé Stripe non configurée")
+    user_id = _get_authenticated_user_id(request)
+    user = await _db.users.find_one({"id": user_id, "platform": "citadelle"}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+
+    account_id = user.get("stripe_connect_account_id")
+    if not account_id or user.get("stripe_connect_status") != "active":
+        raise HTTPException(status_code=400, detail="Votre compte de paiement n'est pas encore prêt.")
+
+    try:
+        available = await _get_available_eur(account_id)
+        if available <= 0:
+            raise HTTPException(status_code=400, detail="Aucun fonds disponible pour le moment.")
+        payout = await asyncio.to_thread(
+            stripe_sdk.Payout.create,
+            api_key=STRIPE_API_KEY,
+            stripe_account=account_id,
+            amount=int(round(available * 100)),
+            currency="eur",
+        )
+    except HTTPException:
+        raise
+    except stripe_sdk.error.StripeError as e:
+        logger.error(f"[Stripe Connect] Erreur payout: {e}")
+        raise HTTPException(status_code=400, detail=f"Erreur Stripe : {e.user_message or str(e)}")
+
+    logger.info(f"[Stripe Connect] Payout {payout['id']} de {available} € pour {user['email']}")
+    return {"success": True, "amount": available, "payout_id": payout["id"]}
