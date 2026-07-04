@@ -1,0 +1,30 @@
+{
+  "summary": "Iteration 12 — Feature 'À traiter' (panneau + cloche + endpoint /member/activity) fully validated. Backend: 11/11 pytest pass (security 401/403, empty state, unread message appears/disappears after read, offer seller urgent, counter-offer buyer warning, payment buyer, delivery seller, dispute, sorting desc). Frontend: bell hidden for visitor, visible for member; empty state 'Tout est à jour'; after seeding 1 unread conversation + 1 offer_sent tx (as seller): bell shows '2', panel renders 2 items, message item links to /citadelle/espace-membre/messages/TESTACT_convUI, offer item links to /citadelle/espace-membre/transactions/TESTACT_txOfferUI. Clicking bell routes to /citadelle/espace-membre. All TESTACT_ seed data cleaned up (verified 0 remaining).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "CitadelleHome (pré-existant, non lié)", "issues": ["React hydration warnings: <span> comme enfant de <select>/<option> — déjà signalé iter 11, non lié à cette feature."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_member_activity.py",
+    "/app/test_reports/pytest/iter12.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Endpoint /member/activity: tri final desc par created_at OK; utilise updated_at fallback pour tx sans created_at — correct.",
+    "MemberActivityPanel: catch() silencieux masque erreurs API — acceptable pour polling non-critique mais envisager logging côté client.",
+    "CitadelleNav bell: polling 30s indépendant du panel (20s) — deux appels distincts au même endpoint, envisager un contexte partagé pour économiser les requêtes réseau.",
+    "Le comptage 'unread' d'un message compte 1 par conversation (bien documenté), cohérent avec /messages-unread-count.",
+    "Sécurité OK: require_citadelle_user rejette 403 pour non-citadelle et 401 pour token absent/invalide."
+  ],
+  "updated_files": ["/app/backend/tests/test_member_activity.py"],
+  "success_rate": {"backend": "100% (11/11)", "frontend": "100% (bell + panel + routing all pass)"},
+  "test_credentials": {"member": "marie.testui@citadelle-test.fr / TestUI2026!"},
+  "seed_data_creation": "2 TESTACT_ docs créés (1 conv + 1 tx) puis supprimés — vérifié 0 restant en BDD.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Feature 'À traiter' validée bout en bout. Fixture cleanup_test_docs (autouse) dans test_member_activity.py garantit nettoyage. La cloche partage l'endpoint /member/activity avec le panneau — attention à ne pas dupliquer la logique si refactoring."
+}
