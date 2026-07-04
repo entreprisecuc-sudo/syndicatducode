@@ -44,6 +44,21 @@ def set_database(database):
     db = database
 
 
+# Valeur par défaut du minimum de commission (aligné sur settings.py)
+_COMMISSION_MIN_DEFAULT = 49
+
+
+async def get_min_sale_price() -> float:
+    """
+    Prix de vente minimum autorisé = minimum de commission + 1 €.
+    Garantit un net vendeur positif. Lit dynamiquement la config admin
+    (citadelle_settings, clé "commission").
+    """
+    doc = await db.citadelle_settings.find_one({"key": "commission"}, {"_id": 0, "minimum_eur": 1})
+    minimum_eur = doc.get("minimum_eur", _COMMISSION_MIN_DEFAULT) if doc else _COMMISSION_MIN_DEFAULT
+    return float(minimum_eur) + 1
+
+
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 def generate_slug(title: str) -> str:
@@ -300,6 +315,13 @@ async def create_listing(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+    # Prix de vente / réserve minimum dynamique (frais min + 1 €) — net vendeur positif garanti
+    min_price = await get_min_sale_price()
+    if data.price < min_price:
+        raise HTTPException(status_code=400, detail=f"Le prix de vente minimum est de {min_price:.0f} € (frais de traitement minimum).")
+    if data.auction_buy_now_price is not None and data.auction_buy_now_price < min_price:
+        raise HTTPException(status_code=400, detail=f"Le prix d'achat immédiat minimum est de {min_price:.0f} €.")
+
     now = datetime.now(timezone.utc).isoformat()
     listing_id = generate_listing_id()
     slug = generate_slug(data.title)
@@ -379,6 +401,14 @@ async def update_listing(
     if not updates:
         return listing
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Prix de vente / réserve + achat immédiat minimum dynamique (frais min + 1 €)
+    if data.price is not None or data.auction_buy_now_price is not None:
+        min_price = await get_min_sale_price()
+        if data.price is not None and data.price < min_price:
+            raise HTTPException(status_code=400, detail=f"Le prix de vente minimum est de {min_price:.0f} € (frais de traitement minimum).")
+        if data.auction_buy_now_price is not None and data.auction_buy_now_price < min_price:
+            raise HTTPException(status_code=400, detail=f"Le prix d'achat immédiat minimum est de {min_price:.0f} €.")
 
     # Traçabilité baisse de prix : on conserve original_price lors de la première baisse
     nouveau_prix = updates.get("price")

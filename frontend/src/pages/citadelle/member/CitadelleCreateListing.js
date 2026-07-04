@@ -95,6 +95,8 @@ export default function CitadelleCreateListing() {
   // Calcul indicateur commission en temps réel
   const priceNum = parseFloat(form.price);
   const commissionEst = priceNum > 0 ? Math.max(priceNum * commission.rate, commission.minimum_eur) : null;
+  // Prix de vente minimum = frais minimum + 1 € (garantit un net vendeur positif)
+  const minPrice = (commission.minimum_eur || 0) + 1;
 
   if (!isAuthenticated) {
     return (
@@ -127,6 +129,8 @@ export default function CitadelleCreateListing() {
     }
     if (step === 1) {
       if (!form.price || parseFloat(form.price) <= 0) return "Saisissez un prix valide (> 0)";
+      if (parseFloat(form.price) < minPrice) return `Le prix ${form.is_auction ? "de départ / réserve" : "de vente"} minimum est de ${minPrice} € (frais de traitement minimum de ${commission.minimum_eur} €).`;
+      if (form.is_auction && form.auction_buy_now_price && parseFloat(form.auction_buy_now_price) < minPrice) return `Le prix d'achat immédiat minimum est de ${minPrice} € (frais de traitement minimum de ${commission.minimum_eur} €).`;
     }
     if (step === 2) {
       if (form.description.trim().length < 50) return "La description détaillée doit contenir au moins 50 caractères";
@@ -358,8 +362,11 @@ export default function CitadelleCreateListing() {
                 </label>
                 <input type="number" value={form.price} onChange={e => set("price", e.target.value)}
                   onFocus={handlePriceFocus}
-                  placeholder="5000" min="1" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle}
+                  placeholder="5000" min={minPrice} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle}
                   data-testid="create-listing-price" />
+                <p className="text-xs mt-1.5 px-1" style={{ color: CITADELLE_COLORS.textMuted }}>
+                  Minimum&nbsp;: <strong style={{ color: CITADELLE_COLORS.blue }}>{minPrice} €</strong> (frais de traitement min. {commission.minimum_eur} €)
+                </p>
                 {commissionEst !== null && (
                   <p className="text-xs mt-1.5 px-1" style={{ color: CITADELLE_COLORS.textMuted }}>
                     Commission estimée&nbsp;: <strong>{commissionEst.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
@@ -408,8 +415,8 @@ export default function CitadelleCreateListing() {
                       <label className="block text-sm font-semibold mb-2" style={labelStyle}>Prix d'achat immédiat (€) <span className="font-normal">(optionnel)</span></label>
                       <input type="number" value={form.auction_buy_now_price}
                         onChange={e => set("auction_buy_now_price", e.target.value)}
-                        placeholder="Ex: 12000" min="1" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
-                      <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>Permet un achat direct sans enchère</p>
+                        placeholder="Ex: 12000" min={minPrice} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+                      <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>Permet un achat direct sans enchère (min. {minPrice} €)</p>
                     </div>
                   </div>
                 </div>

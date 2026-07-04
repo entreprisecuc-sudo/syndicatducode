@@ -100,10 +100,13 @@ export default function CitadelleEditListing() {
     setError("");
   };
 
+  const minPrice = (commission.minimum_eur || 0) + 1;
+
   const validate = () => {
     if (form.title.trim().length < 5) return "Le titre doit contenir au moins 5 caractères";
     if (form.short_description.trim().length < 20) return "L'accroche doit contenir au moins 20 caractères";
     if (!form.price || parseFloat(form.price) <= 0) return "Prix invalide (doit être > 0)";
+    if (parseFloat(form.price) < minPrice) return `Le prix de vente minimum est de ${minPrice} € (frais de traitement minimum de ${commission.minimum_eur} €).`;
     if (form.description.trim().length < 50) return "La description doit contenir au moins 50 caractères";
     return null;
   };
@@ -253,11 +256,14 @@ export default function CitadelleEditListing() {
                 value={form.price}
                 onChange={e => set("price", e.target.value)}
                 onFocus={handlePriceFocus}
-                placeholder="5000" min="1"
+                placeholder="5000" min={minPrice}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none"
                 style={inputStyle}
                 data-testid="edit-listing-price"
               />
+              <p className="text-xs mt-1.5 px-1" style={{ color: CITADELLE_COLORS.textMuted }}>
+                Minimum&nbsp;: <strong style={{ color: CITADELLE_COLORS.blue }}>{minPrice} €</strong> (frais de traitement min. {commission.minimum_eur} €)
+              </p>
               {(() => {
                 const p = parseFloat(form.price);
                 if (!p || p <= 0) return null;
