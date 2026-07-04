@@ -4,16 +4,17 @@
  * Couleurs: Bleu Citadelle #0F2747, Or #C9A45C
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Shield, ExternalLink, Menu, X, LogIn, LogOut,
   ChevronRight, Globe, ShoppingCart, Cloud, Monitor, Users,
-  Mail, Phone
+  Mail, Phone, Bell
 } from "lucide-react";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { CITADELLE_CONFIG, CITADELLE_NAV_LINKS, CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
+import citadelleApi from "@/services/citadelleApi";
 import CitadelleChatWidget from "@/components/citadelle/CitadelleChatWidget";
 
 // ── Navigation ───────────────────────────────────────────────────────────────
@@ -23,6 +24,19 @@ const CitadelleNav = () => {
   const { isAuthenticated, user, logout } = useCitadelleAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [activityCount, setActivityCount] = useState(0);
+
+  useEffect(() => {
+    if (!isAuthenticated) { setActivityCount(0); return; }
+    const fetchCount = () => {
+      citadelleApi.get("/member/activity")
+        .then(res => setActivityCount(res.data.count || 0))
+        .catch(() => {});
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -67,6 +81,24 @@ const CitadelleNav = () => {
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <>
+                <Link
+                  to="/citadelle/espace-membre"
+                  className="relative p-2 rounded-lg transition-all hover:bg-black/5"
+                  style={{ color: CITADELLE_COLORS.blue }}
+                  data-testid="citadelle-nav-bell"
+                  title="Mes notifications"
+                >
+                  <Bell size={20} />
+                  {activityCount > 0 && (
+                    <span
+                      className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white rounded-full px-1"
+                      style={{ background: "#DC2626" }}
+                      data-testid="citadelle-nav-bell-count"
+                    >
+                      {activityCount > 9 ? "9+" : activityCount}
+                    </span>
+                  )}
+                </Link>
                 <Link
                   to="/citadelle/espace-membre"
                   className="text-sm font-semibold px-4 py-2 rounded-lg transition-all"

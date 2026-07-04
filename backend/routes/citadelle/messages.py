@@ -252,3 +252,74 @@ async def unread_count(
                 break  # 1 conversation non lue = +1 (pas le nb de messages)
 
     return {"unread": total_unread}
+
+
+@router.get("/member/activity", summary="Flux d'activité du membre (à traiter)")
+async def member_activity(current_user: dict = Depends(require_citadelle_user)):
+    """
+    Agrège les interactions à traiter par le membre :
+    - messages non lus, propositions d'achat reçues, contre-offres,
+      paiements à faire, accès à transmettre, litiges.
+    Trié du plus récent au plus ancien.
+    """
+    user_id = current_user.get("sub")
+    items = []
+
+    # 1. Messages non lus (conversations pré-vente)
+    convs = await db.citadelle_conversations.find(
+        {"$or": [{"buyer_id": user_id}, {"seller_id": user_id}]},
+        {"_id": 0}
+    ).sort("updated_at", -1).to_list(100)
+    for conv in convs:
+        last_read = conv.get("last_read", {}).get(user_id, "1970-01-01T00:00:00")
+        unread = [m for m in (conv.get("messages") or [])
+                  if m.get("sender_id") != user_id and m.get("sent_at", "") > last_read]
+        if unread:
+            last = unread[-1]
+            items.append({
+                "type": "message",
+                "level": "info",
+                "title": conv.get("listing_title") or "Conversation",
+                "preview": (last.get("content", "") or "")[:80],
+                "count": len(unread),
+                "created_at": last.get("sent_at", conv.get("updated_at", "")),
+                "route": f"/citadelle/espace-membre/messages/{conv.get('id')}",
+            })
+
+    # 2 & 3. Transactions nécessitant une action
+    txs = await db.citadelle_transactions.find(
+        {"$or": [{"buyer_id": user_id}, {"seller_id": user_id}]},
+        {"_id": 0, "credentials": 0}
+    ).sort("updated_at", -1).to_list(100)
+    for tx in txs:
+        is_seller = tx.get("seller_id") == user_id
+        status = tx.get("status")
+        route = f"/citadelle/espace-membre/transactions/{tx.get('id')}"
+        title = tx.get("listing_title") or "Transaction"
+        t = tx.get("updated_at", tx.get("created_at", ""))
+        item = None
+
+        if status == "offer_sent":
+            if tx.get("counter_amount") and not is_seller:
+                item = {"type": "offer", "level": "warning", "title": title,
+                        "preview": f"Contre-offre de {tx['counter_amount']} € à examiner"}
+            elif not tx.get("counter_amount") and is_seller:
+                item = {"type": "offer", "level": "urgent", "title": title,
+                        "preview": f"Proposition d'achat reçue : {tx.get('offer_amount')} €"}
+        elif status == "offer_accepted":
+            if not is_seller and not tx.get("payment_id"):
+                item = {"type": "payment", "level": "urgent", "title": title,
+                        "preview": "Offre acceptée — paiement à effectuer"}
+            elif is_seller and tx.get("payment_id") and not tx.get("credentials_transmitted"):
+                item = {"type": "delivery", "level": "urgent", "title": title,
+                        "preview": "Paiement reçu — transmettez les accès à l'acheteur"}
+        elif status == "disputed":
+            item = {"type": "dispute", "level": "urgent", "title": title,
+                    "preview": "Litige en cours"}
+
+        if item:
+            item.update({"created_at": t, "route": route})
+            items.append(item)
+
+    items.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    return {"items": items, "count": len(items)}

@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Shield, Plus, MessageSquare, ArrowLeftRight, FileText, User, LogOut, TrendingUp } from "lucide-react";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
+import MemberActivityPanel from "@/components/citadelle/MemberActivityPanel";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 
@@ -85,6 +86,9 @@ export default function CitadelleDashboard() {
               </button>
             </div>
           </div>
+
+          {/* Panneau "À traiter" — vue directe des interactions */}
+          <MemberActivityPanel />
 
           {/* Menu */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
