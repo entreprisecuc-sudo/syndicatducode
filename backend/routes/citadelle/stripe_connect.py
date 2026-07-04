@@ -215,7 +215,10 @@ async def stripe_connect_status(request: Request):
     payouts_enabled   = account.get("payouts_enabled", False)
     charges_enabled   = account.get("charges_enabled", False)
 
-    if payouts_enabled and charges_enabled:
+    # Le vendeur est "active" dès qu'il peut RECEVOIR des fonds (payouts_enabled).
+    # On n'exige PAS charges_enabled : ce compte sert uniquement à recevoir des
+    # virements (escrow), pas à encaisser des cartes lui-même.
+    if payouts_enabled:
         computed_status = "active"
     elif details_submitted:
         computed_status = "pending_review"

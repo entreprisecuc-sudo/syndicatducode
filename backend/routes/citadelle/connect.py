@@ -58,7 +58,9 @@ async def stripe_connect_webhook(request: Request):
         charges_enabled = account_data.get("charges_enabled", False)
         payouts_enabled = account_data.get("payouts_enabled", False)
         details_submitted = account_data.get("details_submitted", False)
-        new_status = "active" if (charges_enabled and payouts_enabled) else "pending"
+        # "active" dès que le vendeur peut RECEVOIR des fonds (payouts_enabled).
+        # charges_enabled n'est pas requis : compte destiné à recevoir des virements (escrow).
+        new_status = "active" if payouts_enabled else "pending"
 
         await db.users.update_one(
             {"stripe_connect_account_id": stripe_account_id},
