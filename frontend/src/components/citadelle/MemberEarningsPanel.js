@@ -129,8 +129,8 @@ export default function MemberEarningsPanel() {
                 </p>
               </div>
               <span className="text-sm font-black flex-shrink-0"
-                style={{ color: s.status === "completed" ? "#16A34A" : "#D97706" }}>
-                {s.status === "completed" ? "+" : ""}{eur(s.net)} €
+                style={{ color: s.status === "completed" ? (s.net >= 0 ? "#16A34A" : "#DC2626") : "#D97706" }}>
+                {s.status === "completed" && s.net > 0 ? "+" : ""}{eur(s.net)} €
               </span>
             </Link>
           ))}
