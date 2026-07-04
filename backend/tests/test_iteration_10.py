@@ -17,7 +17,7 @@ def _extract_pdf_text(pdf_bytes: bytes) -> str:
     reader = PdfReader(io.BytesIO(pdf_bytes))
     return "\n".join(p.extract_text() or "" for p in reader.pages)
 
-BASE_URL = (os.environ.get("REACT_APP_BACKEND_URL") or "https://code-union.preview.emergentagent.com").rstrip("/")
+BASE_URL = (os.environ.get("REACT_APP_BACKEND_URL") or "https://syndicat-code.preview.emergentagent.com").rstrip("/")
 ADMIN_EMAIL = "bigpapa1981@asar.com"
 ADMIN_PASSWORD = "Josiane03@@@!1981"
 
@@ -103,7 +103,7 @@ class TestEstimationCheckout:
                 "client_name": "TEST Estimation",
                 "client_email": "test-iter10@example.com",
                 "client_message": "Test iteration 10",
-                "origin_url": "https://code-union.preview.emergentagent.com",
+                "origin_url": "https://syndicat-code.preview.emergentagent.com",
                 "cancel_path": "/citadelle/estimation",
             },
         )
