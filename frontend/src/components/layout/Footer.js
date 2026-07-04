@@ -224,19 +224,6 @@ const Footer = () => {
               {CONFIG.email}
             </p>
           </div>
-
-          {/* ⚠️ PROVISOIRE — bouton d'accès admin (à RETIRER avant la mise en production) */}
-          <div className="mt-6 flex justify-center">
-            <Link
-              to="/papaenmousse1981"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all hover:scale-105"
-              style={{ background: "rgba(233, 69, 96, 0.12)", border: "1px dashed #e94560", color: "#e94560", textDecoration: "none" }}
-              data-testid="footer-admin-access-provisoire"
-            >
-              <Shield size={14} />
-              Accès Admin (provisoire)
-            </Link>
-          </div>
         </div>
       </div>
     </footer>
