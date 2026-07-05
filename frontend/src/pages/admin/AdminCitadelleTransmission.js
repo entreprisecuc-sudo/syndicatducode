@@ -157,12 +157,12 @@ export default function AdminCitadelleTransmission() {
             <div className="flex justify-between mt-3 overflow-x-auto gap-1">
               {STEPS.map((s, i) => {
                 const Icon = s.icon; const active = i === step; const done = i < step;
+                const stepColor = active ? C.gold : done ? C.success : "rgba(255,255,255,0.75)";
                 return (
                   <button key={s.key} onClick={() => setStep(i)} data-testid={`transmission-step-${s.key}`}
-                    className="flex flex-col items-center gap-1 px-2 flex-shrink-0 transition-opacity"
-                    style={{ opacity: active || done ? 1 : 0.5 }}>
-                    <Icon size={16} style={{ color: active ? C.gold : done ? C.success : "#fff" }} />
-                    <span className="text-[10px]" style={{ color: active ? C.gold : "#fff" }}>{s.label}</span>
+                    className="flex flex-col items-center gap-1 px-2 flex-shrink-0 transition-opacity">
+                    <Icon size={16} style={{ color: stepColor }} />
+                    <span className="text-[10px] font-medium" style={{ color: stepColor }}>{s.label}</span>
                   </button>
                 );
               })}
