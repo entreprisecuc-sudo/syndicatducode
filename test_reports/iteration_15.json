@@ -1,0 +1,25 @@
+{
+  "summary": "Validated new buyer-counter endpoint + removal of refuse-counter across backend (pytest 13/13) and frontend (Playwright). Ping-pong negotiation OK: offer_sent→counter→buyer-counter→counter→accept-counter transitions verified with correct amounts. Backend regressions (withdraw-offer, accept-counter, seller refuse) still pass. Frontend on offer_countered shows btn-accept-counter + btn-buyer-counter (no btn-refuse-counter); clicking btn-buyer-counter opens modal 'Nouvelle proposition' with counter-amount/counter-message/counter-submit; submitting flips backend to offer_sent with new offer_amount.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_citadelle_buyer_counter.py",
+    "/app/test_reports/pytest/buyer_counter.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "CitadelleTransactionDetail.js is still ~1040 lines — should be split (>700 line guideline). Not blocking.",
+    "buyer_counter_offer overwrites offer_message with the new proposition message (fine, but there's no historical trace of the first buyer message beyond what's already in messages[])—current behavior is acceptable because full history is preserved in messages array.",
+    "Consider adding a unit assertion in backend that offer_amount > 0 explicitly returns 422 (currently CounterOffer Pydantic validator handles it — verified indirectly)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_citadelle_buyer_counter.py (new)",
+    "/app/backend/tests/test_citadelle_withdraw_refuse.py (deleted — obsolete refuse-counter tests replaced)"
+  ],
+  "success_rate": {"backend": "100% (13/13)", "frontend": "100% (all UI + integration checks pass)"},
+  "test_credentials": "Acheteur: test.acheteur@citadelle.fr / DemoAcheteur2026! ; Vendeur: test.vendeur@citadelle.fr / DemoVendeur2026! ; login endpoint POST /api/citadelle/auth/login returns {access_token,user}.",
+  "seed_data_creation": "Ran /app/backend/scripts/seed_test_transactions.py before and after each test (fixture-scoped) and finally to restore a clean state.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Frontend auth via localStorage keys 'citadelle_token' + 'citadelle_user' (JSON string). Seed prints tx ids per status; parse '→ <uuid>'. buyer-counter payload {amount>0, message>=10 chars}; only allowed from offer_countered."
+}
