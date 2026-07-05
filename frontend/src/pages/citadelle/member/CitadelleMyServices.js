@@ -170,7 +170,7 @@ export default function CitadelleMyServices() {
 
   return (
     <CitadelleLayout>
-      <div className="max-w-5xl mx-auto px-4 md:px-6 py-10" data-testid="citadelle-my-services">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-10" data-testid="citadelle-my-services">
 
         {/* Fil d'Ariane */}
         <div className="flex items-center gap-2 mb-8 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
@@ -231,10 +231,10 @@ export default function CitadelleMyServices() {
                       Fonctionnalités accessibles sans frais pour tout membre inscrit.
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     {services.filter(s => s.service_type === "free").map((svc) => (
                       <div key={svc.id}
-                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
+                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap"
                         style={{ background: "rgba(22,163,74,0.07)", border: "1px solid rgba(22,163,74,0.22)", color: "#15803d" }}>
                         <Check size={13} />
                         {svc.title}
