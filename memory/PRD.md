@@ -426,4 +426,10 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Nouveau compteur "Annonces actives" via `/api/citadelle/listings/my` (status === "active")
 - Vérifié via screenshot desktop + mobile (Règle 6 : pas de testing_agent sans accord client)
 
+**Corrections UX Espace membre (05/07/2026) — FAIT :**
+- Refonte tableau de bord (`CitadelleDashboard.js`) : en-tête Navy conservé, CTA "Publier une annonce" en tête à gauche, KPI cliquables, blocs Administration (encadré bleu, gauche) + Gestion & Services (droite).
+- Panneau "À traiter" intégré dans l'en-tête bleu (typo claire), limité aux 3 dernières notifs, bouton "Voir tout" → nouvelle page `/citadelle/espace-membre/notifications` (`CitadelleNotifications.js`). Chaque notif = lien vers l'action ; disparaît au traitement (recalcul backend `/member/activity`).
+- Page "Mes services" (`CitadelleMyServices.js`) : services regroupés par `target_category` en encarts "Pour les vendeurs" (clair) et "Pour les acheteurs" (encart bleu, cartes sombres), aligné sur la page Services publique.
+- Vérifié via screenshots (Règle 6 respectée : pas de testing_agent).
+
 *Mise à jour : 15/06/2026*

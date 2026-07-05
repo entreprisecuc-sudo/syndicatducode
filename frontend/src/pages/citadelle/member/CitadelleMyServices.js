@@ -60,19 +60,22 @@ export default function CitadelleMyServices() {
   const openCheckout  = (svc) => setCheckoutService(svc);
   const closeCheckout = ()    => setCheckoutService(null);
 
-  // Carte service réutilisable
-  const renderServiceCard = (svc) => {
+  // Carte service réutilisable (variante claire ou sombre)
+  const renderServiceCard = (svc, dark = false) => {
     const TypeIcon = TYPE_ICONS[svc.service_type] || Star;
     const payable = isPayable(svc);
     return (
       <div key={svc.id}
         className="p-5 rounded-2xl flex flex-col transition-all hover:-translate-y-1"
-        style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}
+        style={{
+          background: dark ? "rgba(255,255,255,0.06)" : "white",
+          border: `1px solid ${dark ? "rgba(201,164,92,0.18)" : CITADELLE_COLORS.border}`,
+        }}
         data-testid={`my-service-card-${svc.id}`}>
 
         <div className="flex items-start justify-between mb-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: "rgba(201,164,92,0.1)" }}>
+            style={{ background: dark ? "rgba(201,164,92,0.12)" : "rgba(201,164,92,0.1)" }}>
             <TypeIcon size={18} style={{ color: CITADELLE_COLORS.gold }} />
           </div>
           {svc.service_type === "partner" && svc.partner_name && (
@@ -83,26 +86,28 @@ export default function CitadelleMyServices() {
           )}
         </div>
 
-        <h3 className="font-bold text-sm mb-1.5" style={{ color: CITADELLE_COLORS.blue }}>
+        <h3 className="font-bold text-sm mb-1.5" style={{ color: dark ? "white" : CITADELLE_COLORS.blue }}>
           {svc.title}
         </h3>
-        <p className="text-xs flex-1 mb-3 leading-relaxed" style={{ color: CITADELLE_COLORS.textMuted }}>
+        <p className="text-xs flex-1 mb-3 leading-relaxed"
+          style={{ color: dark ? "rgba(255,255,255,0.5)" : CITADELLE_COLORS.textMuted }}>
           {svc.short_description || svc.description?.substring(0, 100)}
         </p>
 
         {/* Prix */}
         <div className="mb-3">
           {svc.price_label ? (
-            <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.blue }}>
+            <span className="text-sm font-bold" style={{ color: dark ? "white" : CITADELLE_COLORS.blue }}>
               {svc.price_label}
             </span>
           ) : svc.price != null ? (
             <span className="text-lg font-black"
-              style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+              style={{ color: dark ? "white" : CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
               {svc.price > 0 ? `${svc.price.toLocaleString("fr-FR")} €` : "Gratuit"}
             </span>
           ) : (
-            <span className="text-xs font-medium" style={{ color: CITADELLE_COLORS.textMuted }}>
+            <span className="text-xs font-medium"
+              style={{ color: dark ? "rgba(255,255,255,0.5)" : CITADELLE_COLORS.textMuted }}>
               {TYPE_LABELS[svc.service_type]}
             </span>
           )}
@@ -120,13 +125,17 @@ export default function CitadelleMyServices() {
         ) : svc.cta_url ? (
           <a href={svc.cta_url} target="_blank" rel="noopener noreferrer"
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-            style={{ border: `1px solid ${CITADELLE_COLORS.gold}`, color: CITADELLE_COLORS.gold }}>
+            style={dark
+              ? { border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.8)" }
+              : { border: `1px solid ${CITADELLE_COLORS.gold}`, color: CITADELLE_COLORS.gold }}>
             {svc.cta_label || "En savoir plus"} <ExternalLink size={12} />
           </a>
         ) : (
           <a href={`mailto:atelier@syndicatducode.fr?subject=Service: ${svc.title}`}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-            style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
+            style={dark
+              ? { border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.8)" }
+              : { border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
             {svc.cta_label || "Nous contacter"} <ArrowRight size={12} />
           </a>
         )}
@@ -134,23 +143,32 @@ export default function CitadelleMyServices() {
     );
   };
 
-  // Sous-section catégorisée (titre + grille de cartes)
-  const renderCategory = (title, subtitle, Icon, list) => {
+  // Encart catégorisé (clair pour vendeurs/communs, bleu pour acheteurs)
+  const renderCategory = (title, subtitle, Icon, list, dark = false) => {
     if (!list.length) return null;
     return (
-      <div key={title}>
-        <div className="flex items-center gap-3 mb-1">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: "rgba(201,164,92,0.1)" }}>
-            <Icon size={18} style={{ color: CITADELLE_COLORS.gold }} />
+      <div key={title} className="rounded-2xl overflow-hidden"
+        style={dark
+          ? { background: CITADELLE_COLORS.blue }
+          : { background: "#FAFBFD", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+        <div className="px-6 md:px-8 py-6"
+          style={{ borderBottom: dark ? "1px solid rgba(201,164,92,0.2)" : `1px solid ${CITADELLE_COLORS.border}` }}>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: dark ? "rgba(201,164,92,0.15)" : "rgba(201,164,92,0.1)" }}>
+              <Icon size={18} style={{ color: CITADELLE_COLORS.gold }} />
+            </div>
+            <h3 className="text-lg font-black"
+              style={{ color: dark ? "white" : CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+              {title}
+            </h3>
           </div>
-          <h3 className="text-lg font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-            {title}
-          </h3>
+          <p className="text-xs pl-12" style={{ color: dark ? "rgba(255,255,255,0.45)" : CITADELLE_COLORS.textMuted }}>
+            {subtitle}
+          </p>
         </div>
-        <p className="text-xs pl-12 mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>{subtitle}</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {list.map(renderServiceCard)}
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {list.map((svc) => renderServiceCard(svc, dark))}
         </div>
       </div>
     );
@@ -217,7 +235,8 @@ export default function CitadelleMyServices() {
                 "Pour les acheteurs",
                 "Sécurisez votre investissement avant et après l'acquisition.",
                 Search,
-                services.filter(s => s.target_category === "acheteur")
+                services.filter(s => s.target_category === "acheteur"),
+                true
               )}
               {renderCategory(
                 "Services communs",
