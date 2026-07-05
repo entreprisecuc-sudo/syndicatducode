@@ -142,6 +142,12 @@ export default function AdminCitadelleTransmission() {
               data-testid="transmission-status">
               {tx.status === "finalized" ? "Finalisée" : "Brouillon"}
             </span>
+            {tx.status === "finalized" && (
+              <button onClick={downloadPdf} data-testid="transmission-header-download-btn"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold" style={{ background: C.gold, color: "#fff" }}>
+                <Download size={15} /> Télécharger l'Attestation
+              </button>
+            )}
           </div>
           {/* Barre de progression */}
           <div className="mt-5">

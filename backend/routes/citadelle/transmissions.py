@@ -201,6 +201,18 @@ async def list_transmissions(request: Request, limit: int = 100, skip: int = 0):
     return {"transmissions": items, "total": total}
 
 
+@router.get("/admin/transmissions/by-transaction/{transaction_id}")
+async def transmission_by_transaction(transaction_id: str, request: Request):
+    await _admin(request)
+    doc = await db.citadelle_transmissions.find_one(
+        {"transaction_id": transaction_id},
+        {"_id": 0, "id": 1, "status": 1, "dossier_number": 1},
+    )
+    if not doc:
+        return {"exists": False}
+    return {"exists": True, **doc}
+
+
 @router.get("/admin/transmissions/{tid}")
 async def get_transmission(tid: str, request: Request):
     await _admin(request)

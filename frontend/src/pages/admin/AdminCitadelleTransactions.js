@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   Shield, CheckCircle, XCircle, Eye, AlertTriangle, Clock,
-  CreditCard, ChevronRight, Send, Lock, Scale, Ban, Settings, RefreshCw
+  CreditCard, ChevronRight, Send, Lock, Scale, Ban, Settings, RefreshCw, Download
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
@@ -45,6 +45,7 @@ export default function AdminCitadelleTransactions() {
   const [showConfig, setShowConfig] = useState(false);
   const [disputeConfig, setDisputeConfig] = useState(null);
   const [configLoading, setConfigLoading] = useState(false);
+  const [transmissionInfo, setTransmissionInfo] = useState(null);
 
   useEffect(() => { fetchTransactions(); }, [activeTab]);
   useEffect(() => { disputeEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [disputeMessages.length]);
@@ -63,6 +64,7 @@ export default function AdminCitadelleTransactions() {
   const openDetail = async (txId) => {
     setDetailLoading(true);
     setDisputeMessages([]);
+    setTransmissionInfo(null);
     try {
       const res = await api.get(`/citadelle/admin/transactions/${txId}`);
       setSelectedTx(res.data);
@@ -70,8 +72,21 @@ export default function AdminCitadelleTransactions() {
       if (res.data.status === "disputed") {
         fetchDisputeMessages(txId);
       }
+      // État de la transmission d'actif liée
+      try {
+        const t = await api.get(`/citadelle/admin/transmissions/by-transaction/${txId}`);
+        setTransmissionInfo(t.data);
+      } catch { setTransmissionInfo(null); }
     } catch { alert("Erreur chargement détail"); }
     finally { setDetailLoading(false); }
+  };
+
+  const downloadTransmissionPdf = async (tid, dossier) => {
+    const res = await api.get(`/citadelle/admin/transmissions/${tid}/pdf`, { responseType: "blob" });
+    const url = URL.createObjectURL(res.data);
+    const a = document.createElement("a");
+    a.href = url; a.download = `attestation-${dossier || tid}.pdf`; a.click();
+    URL.revokeObjectURL(url);
   };
 
   const fetchDisputeMessages = async (txId) => {
@@ -409,14 +424,33 @@ export default function AdminCitadelleTransactions() {
                       <Lock size={14} /> Transmettre les accès à l'acheteur
                     </button>
                   )}
-                  {/* Créer / ouvrir l'assistant de Transmission d'actif (La Garde) */}
+                  {/* Transmission d'actif (La Garde) — état dynamique */}
                   {["admin_verified", "completed"].includes(selectedTx.status) && (
-                    <Link to={`/syndicat-admin/citadelle/transmission/${selectedTx.id}`}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
-                      style={{ background: "#0F2747", color: "#C9A45C", border: "1px solid #C9A45C" }}
-                      data-testid="admin-create-transmission-btn">
-                      <Shield size={14} /> Créer une transmission
-                    </Link>
+                    <div className="space-y-2">
+                      {transmissionInfo?.exists && transmissionInfo.status === "finalized" ? (
+                        <>
+                          <button onClick={() => downloadTransmissionPdf(transmissionInfo.id, transmissionInfo.dossier_number)}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white"
+                            style={{ background: "#16A34A" }}
+                            data-testid="admin-download-transmission-btn">
+                            <Download size={14} /> Télécharger l'Attestation ({transmissionInfo.dossier_number})
+                          </button>
+                          <Link to={`/syndicat-admin/citadelle/transmission/${selectedTx.id}`}
+                            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-medium"
+                            style={{ background: "#0F2747", color: "#C9A45C", border: "1px solid #C9A45C" }}
+                            data-testid="admin-open-transmission-btn">
+                            <Shield size={13} /> Ouvrir le dossier de transmission
+                          </Link>
+                        </>
+                      ) : (
+                        <Link to={`/syndicat-admin/citadelle/transmission/${selectedTx.id}`}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
+                          style={{ background: "#0F2747", color: "#C9A45C", border: "1px solid #C9A45C" }}
+                          data-testid="admin-create-transmission-btn">
+                          <Shield size={14} /> {transmissionInfo?.exists ? "Poursuivre la transmission (brouillon)" : "Créer une transmission"}
+                        </Link>
+                      )}
+                    </div>
                   )}
                   {!["completed", "cancelled", "offer_refused"].includes(selectedTx.status) && (
                     <button onClick={() => {
