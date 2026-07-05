@@ -276,7 +276,7 @@ export default function CitadelleServices() {
         {loading ? (
           <SkeletonLoading />
         ) : (
-          <div className="space-y-12">
+          <div className="space-y-16">
 
             {/* 1. Transaction Sécurisée — hero pleine largeur */}
             {commonService && (
@@ -289,7 +289,7 @@ export default function CitadelleServices() {
             {/* 2. Inclus gratuitement — placé sous la Transaction Sécurisée */}
             {freeServices.length > 0 && (
               <div
-                className="rounded-2xl px-8 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+                className="rounded-2xl px-8 py-6 mb-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
                 style={{ background: "rgba(22,163,74,0.04)", border: "1px solid rgba(22,163,74,0.18)" }}
                 data-testid="free-services-section"
               >
@@ -326,7 +326,7 @@ export default function CitadelleServices() {
             {/* 3. Vendeurs (light) — pleine largeur */}
             {vendorServices.length > 0 && (
               <div
-                className="rounded-2xl overflow-hidden"
+                className="rounded-2xl overflow-hidden mb-16"
                 style={{ background: "#FAFBFD", border: `1px solid ${CITADELLE_COLORS.border}` }}
               >
                 <div
@@ -368,7 +368,7 @@ export default function CitadelleServices() {
 
             {/* Séparateur entre les deux zones */}
             {vendorServices.length > 0 && buyerServices.length > 0 && (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 mb-16">
                 <div className="flex-1 h-px" style={{ background: CITADELLE_COLORS.border }} />
                 <div
                   className="px-4 py-1.5 rounded-full text-xs font-semibold"
