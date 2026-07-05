@@ -325,8 +325,9 @@ def send_conversation_reminder_email(
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def send_citadelle_offer_auto_cancelled_email(buyer_email: str, buyer_name: str, listing_title: str) -> bool:
-    """Prévient un acheteur que son offre a été annulée car le bien a trouvé acquéreur."""
+def send_citadelle_offer_auto_cancelled_email(buyer_email: str, buyer_name: str, listing_title: str, suggestions: list = None) -> bool:
+    """Prévient un acheteur que son offre a été annulée car le bien a trouvé acquéreur.
+    Inclut jusqu'à 3 suggestions d'annonces similaires (title, price, url)."""
     try:
         annonces_url = f"{CITADELLE_URL}/citadelle/annonces"
 
@@ -335,11 +336,24 @@ def send_citadelle_offer_auto_cancelled_email(buyer_email: str, buyer_name: str,
         msg['To'] = buyer_email
         msg['Subject'] = f"Votre offre — {listing_title} — La Citadelle Numérique"
 
+        bloc_suggestions = ""
+        if suggestions:
+            lignes = "\n".join(
+                f"  • {s.get('title', '')}"
+                + (f" — {s['price']:,.0f} €" if s.get("price") is not None else "")
+                + f"\n    {s.get('url', '')}"
+                for s in suggestions
+            )
+            bloc_suggestions = f"""
+Quelques annonces similaires qui pourraient vous plaire :
+{lignes}
+"""
+
         body = f"""Bonjour {buyer_name or ''},
 
 Navré, le bien numérique « {listing_title} » vient de trouver acquéreur.
 Votre offre a donc été automatiquement clôturée.
-
+{bloc_suggestions}
 N'hésitez pas à consulter les autres annonces pour trouver la perle rare :
 {annonces_url}
 

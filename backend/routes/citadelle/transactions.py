@@ -146,13 +146,46 @@ def system_message(content: str) -> dict:
 
 async def _annuler_offres_concurrentes(listing_id: str, accepted_tx_id: str, now: str):
     """Annule automatiquement les autres offres en cours sur la même annonce
-    dès qu'une offre est acceptée (le bien a trouvé acquéreur). Notifie chaque acheteur."""
+    dès qu'une offre est acceptée (le bien a trouvé acquéreur). Notifie chaque acheteur
+    avec des suggestions d'annonces similaires (même catégorie)."""
     from services.email_service import send_citadelle_offer_auto_cancelled_email
+    from config.settings import CITADELLE_URL
 
-    message_navre = (
+    listing = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0, "type": 1})
+    listing_type = listing.get("type") if listing else None
+
+    # Suggestions : jusqu'à 3 annonces actives de la même catégorie (hors annonce vendue, hors adulte)
+    suggestions = []
+    if listing_type:
+        cursor_sug = db.citadelle_listings.find({
+            "type": listing_type,
+            "status": "active",
+            "id": {"$ne": listing_id},
+            "is_adult": {"$ne": True},
+        }, {"_id": 0, "title": 1, "slug": 1, "price": 1}).sort("created_at", -1).limit(3)
+        async for s in cursor_sug:
+            suggestions.append({
+                "title": s.get("title", ""),
+                "slug": s.get("slug", ""),
+                "price": s.get("price"),
+                "url": f"{CITADELLE_URL}/citadelle/annonces/{s.get('slug', '')}",
+            })
+
+    base_message = (
         "Navré, le bien numérique vient de trouver acquéreur. "
         "N'hésitez pas à consulter les autres annonces pour trouver la perle rare."
     )
+    if suggestions:
+        lignes = "\n".join(
+            f"• {s['title']}"
+            + (f" — {s['price']:,.0f} €" if s.get("price") is not None else "")
+            + f" : {s['url']}"
+            for s in suggestions
+        )
+        message_navre = f"{base_message}\n\nQuelques annonces similaires qui pourraient vous intéresser :\n{lignes}"
+    else:
+        message_navre = base_message
+
     cursor = db.citadelle_transactions.find({
         "listing_id": listing_id,
         "id": {"$ne": accepted_tx_id},
@@ -175,6 +208,7 @@ async def _annuler_offres_concurrentes(listing_id: str, accepted_tx_id: str, now
                 buyer_email=other.get("buyer_email", ""),
                 buyer_name=other.get("buyer_name", ""),
                 listing_title=other.get("listing_title", ""),
+                suggestions=suggestions,
             )
         except Exception as e:
             logger.warning(f"[Citadelle] Échec email annulation offre concurrente {other['id']}: {e}")
