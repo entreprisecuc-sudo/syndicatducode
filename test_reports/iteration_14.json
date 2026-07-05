@@ -1,0 +1,26 @@
+{
+  "summary": "Validated new Citadelle transaction endpoints (withdraw-offer & refuse-counter) across backend (pytest) and frontend (Playwright). All required scenarios pass: buyer can withdraw in offer_sent/offer_countered/offer_accepted (→ cancelled + cancelled_by_buyer=true); seller gets 403; payment_done/completed → 400. refuse-counter succeeds only in offer_countered (→ offer_refused); 400 otherwise; 403 for seller. Frontend shows btn-accept-counter + btn-refuse-counter side-by-side (same y=160) on offer_countered, and btn-withdraw-offer + modal + withdraw-confirm-btn on offer_accepted; both confirm flows correctly transition backend state.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": [
+    {"screen": "CitadelleHome (search bar)", "issues": ["React hydration warnings: <span> inside <select>/<option> (ve-dynamic wrappers). Pre-existing, unrelated to this PR — but worth cleaning up as it clutters console."]}
+  ]},
+  "test_report_links": [
+    "/app/backend/tests/test_citadelle_withdraw_refuse.py",
+    "/app/test_reports/pytest/withdraw_refuse.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "CitadelleTransactionDetail.js is 1040 lines — should be split (>700 line guideline).",
+    "refuse_counter_offer uses window.confirm() via handler; UX would be better with a proper modal like withdraw flow (consistency).",
+    "e2e flow tests (create offer via POST /transactions/offer) were skipped because seeded listings have status='sold' — consider seeding at least one 'published' listing owned by test.vendeur for full e2e coverage."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_citadelle_withdraw_refuse.py (new)"
+  ],
+  "success_rate": {"backend": "100% (9/9 targeted tests pass; 2 flow tests skipped due to listing state)", "frontend": "100% (all 3 UI scenarios pass)"},
+  "test_credentials": "Acheteur: test.acheteur@citadelle.fr / DemoAcheteur2026! ; Vendeur: test.vendeur@citadelle.fr / DemoVendeur2026!  ; Login returns access_token (not token).",
+  "seed_data_creation": "Ran /app/backend/scripts/seed_test_transactions.py before and after tests to restore clean state. Idempotent (test_scenario_seed marker).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Frontend auth via localStorage keys: 'citadelle_token' (access_token string) and 'citadelle_user' (JSON-stringified user object from login response). Backend login endpoint POST /api/citadelle/auth/login returns {access_token, user}. Seed script prints tx IDs by status; parse '→ <uuid>' from stdout. Listings API returns {listings:[...]} (not items:[])."
+}
