@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
-  Star, Handshake, Zap, Shield, ExternalLink, ArrowRight,
+  Star, Handshake, Zap, Shield, ExternalLink, ArrowRight, TrendingUp, Search,
   ShoppingCart, CheckCircle, Clock, AlertCircle, Ban, Package
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
@@ -60,6 +60,102 @@ export default function CitadelleMyServices() {
   const openCheckout  = (svc) => setCheckoutService(svc);
   const closeCheckout = ()    => setCheckoutService(null);
 
+  // Carte service réutilisable
+  const renderServiceCard = (svc) => {
+    const TypeIcon = TYPE_ICONS[svc.service_type] || Star;
+    const payable = isPayable(svc);
+    return (
+      <div key={svc.id}
+        className="p-5 rounded-2xl flex flex-col transition-all hover:-translate-y-1"
+        style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}
+        data-testid={`my-service-card-${svc.id}`}>
+
+        <div className="flex items-start justify-between mb-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: "rgba(201,164,92,0.1)" }}>
+            <TypeIcon size={18} style={{ color: CITADELLE_COLORS.gold }} />
+          </div>
+          {svc.service_type === "partner" && svc.partner_name && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{ background: "rgba(59,130,246,0.1)", color: "#3B82F6" }}>
+              {svc.partner_name}
+            </span>
+          )}
+        </div>
+
+        <h3 className="font-bold text-sm mb-1.5" style={{ color: CITADELLE_COLORS.blue }}>
+          {svc.title}
+        </h3>
+        <p className="text-xs flex-1 mb-3 leading-relaxed" style={{ color: CITADELLE_COLORS.textMuted }}>
+          {svc.short_description || svc.description?.substring(0, 100)}
+        </p>
+
+        {/* Prix */}
+        <div className="mb-3">
+          {svc.price_label ? (
+            <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.blue }}>
+              {svc.price_label}
+            </span>
+          ) : svc.price != null ? (
+            <span className="text-lg font-black"
+              style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+              {svc.price > 0 ? `${svc.price.toLocaleString("fr-FR")} €` : "Gratuit"}
+            </span>
+          ) : (
+            <span className="text-xs font-medium" style={{ color: CITADELLE_COLORS.textMuted }}>
+              {TYPE_LABELS[svc.service_type]}
+            </span>
+          )}
+        </div>
+
+        {/* Bouton CTA */}
+        {payable ? (
+          <button onClick={() => openCheckout(svc)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
+            style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+            data-testid={`my-service-buy-btn-${svc.id}`}>
+            <ShoppingCart size={13} />
+            Acheter — {svc.price.toLocaleString("fr-FR")} €
+          </button>
+        ) : svc.cta_url ? (
+          <a href={svc.cta_url} target="_blank" rel="noopener noreferrer"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
+            style={{ border: `1px solid ${CITADELLE_COLORS.gold}`, color: CITADELLE_COLORS.gold }}>
+            {svc.cta_label || "En savoir plus"} <ExternalLink size={12} />
+          </a>
+        ) : (
+          <a href={`mailto:atelier@syndicatducode.fr?subject=Service: ${svc.title}`}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
+            style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
+            {svc.cta_label || "Nous contacter"} <ArrowRight size={12} />
+          </a>
+        )}
+      </div>
+    );
+  };
+
+  // Sous-section catégorisée (titre + grille de cartes)
+  const renderCategory = (title, subtitle, Icon, list) => {
+    if (!list.length) return null;
+    return (
+      <div key={title}>
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ background: "rgba(201,164,92,0.1)" }}>
+            <Icon size={18} style={{ color: CITADELLE_COLORS.gold }} />
+          </div>
+          <h3 className="text-lg font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+            {title}
+          </h3>
+        </div>
+        <p className="text-xs pl-12 mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>{subtitle}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {list.map(renderServiceCard)}
+        </div>
+      </div>
+    );
+  };
+
   const formatDate = (isoStr) => {
     if (!isoStr) return "—";
     return new Date(isoStr).toLocaleDateString("fr-FR", {
@@ -93,9 +189,9 @@ export default function CitadelleMyServices() {
           </p>
         </div>
 
-        {/* ── Section 1 : Catalogue ────────────────────────────────────────── */}
+        {/* ── Section 1 : Catalogue par catégorie ──────────────────────────── */}
         <section className="mb-12">
-          <h2 className="text-base font-bold mb-5" style={{ color: CITADELLE_COLORS.blue }}>
+          <h2 className="text-base font-bold mb-6" style={{ color: CITADELLE_COLORS.blue }}>
             Services disponibles
           </h2>
 
@@ -110,79 +206,25 @@ export default function CitadelleMyServices() {
               Aucun service disponible pour le moment.
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {services.map(svc => {
-                const TypeIcon = TYPE_ICONS[svc.service_type] || Star;
-                const payable = isPayable(svc);
-                return (
-                  <div key={svc.id}
-                    className="p-5 rounded-2xl flex flex-col transition-all hover:-translate-y-1"
-                    style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}
-                    data-testid={`my-service-card-${svc.id}`}>
-
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                        style={{ background: "rgba(201,164,92,0.1)" }}>
-                        <TypeIcon size={18} style={{ color: CITADELLE_COLORS.gold }} />
-                      </div>
-                      {svc.service_type === "partner" && svc.partner_name && (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                          style={{ background: "rgba(59,130,246,0.1)", color: "#3B82F6" }}>
-                          {svc.partner_name}
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="font-bold text-sm mb-1.5" style={{ color: CITADELLE_COLORS.blue }}>
-                      {svc.title}
-                    </h3>
-                    <p className="text-xs flex-1 mb-3 leading-relaxed" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      {svc.short_description || svc.description?.substring(0, 100)}
-                    </p>
-
-                    {/* Prix */}
-                    <div className="mb-3">
-                      {svc.price_label ? (
-                        <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.blue }}>
-                          {svc.price_label}
-                        </span>
-                      ) : svc.price != null ? (
-                        <span className="text-lg font-black"
-                          style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                          {svc.price > 0 ? `${svc.price.toLocaleString("fr-FR")} €` : "Gratuit"}
-                        </span>
-                      ) : (
-                        <span className="text-xs font-medium" style={{ color: CITADELLE_COLORS.textMuted }}>
-                          {TYPE_LABELS[svc.service_type]}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Bouton CTA */}
-                    {payable ? (
-                      <button onClick={() => openCheckout(svc)}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
-                        style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
-                        data-testid={`my-service-buy-btn-${svc.id}`}>
-                        <ShoppingCart size={13} />
-                        Acheter — {svc.price.toLocaleString("fr-FR")} €
-                      </button>
-                    ) : svc.cta_url ? (
-                      <a href={svc.cta_url} target="_blank" rel="noopener noreferrer"
-                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-                        style={{ border: `1px solid ${CITADELLE_COLORS.gold}`, color: CITADELLE_COLORS.gold }}>
-                        {svc.cta_label || "En savoir plus"} <ExternalLink size={12} />
-                      </a>
-                    ) : (
-                      <a href={`mailto:atelier@syndicatducode.fr?subject=Service: ${svc.title}`}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-                        style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-                        {svc.cta_label || "Nous contacter"} <ArrowRight size={12} />
-                      </a>
-                    )}
-                  </div>
-                );
-              })}
+            <div className="space-y-10">
+              {renderCategory(
+                "Pour les vendeurs",
+                "Évaluez, optimisez et valorisez votre projet avant la vente.",
+                TrendingUp,
+                services.filter(s => s.target_category === "vendeur")
+              )}
+              {renderCategory(
+                "Pour les acheteurs",
+                "Sécurisez votre investissement avant et après l'acquisition.",
+                Search,
+                services.filter(s => s.target_category === "acheteur")
+              )}
+              {renderCategory(
+                "Services communs",
+                "Des services essentiels pour toutes vos transactions.",
+                Shield,
+                services.filter(s => !["vendeur", "acheteur"].includes(s.target_category))
+              )}
             </div>
           )}
         </section>
