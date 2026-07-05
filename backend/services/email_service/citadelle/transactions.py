@@ -19,6 +19,7 @@ from config.settings import (
     BACKEND_PUBLIC_URL,
 )
 from services.email_service.core import _envoyer_email, _build_notification_base
+from services.email_service.citadelle.newsletter import _get_listing_image_url_for_email
 
 logger = logging.getLogger(__name__)
 
@@ -327,40 +328,87 @@ def send_conversation_reminder_email(
 
 def send_citadelle_offer_auto_cancelled_email(buyer_email: str, buyer_name: str, listing_title: str, suggestions: list = None) -> bool:
     """Prévient un acheteur que son offre a été annulée car le bien a trouvé acquéreur.
-    Inclut jusqu'à 3 suggestions d'annonces similaires (title, price, url)."""
+    Email HTML premium avec jusqu'à 3 vignettes d'annonces similaires (image, titre, prix)."""
     try:
         annonces_url = f"{CITADELLE_URL}/citadelle/annonces"
 
-        msg = MIMEMultipart()
+        # Cartes de suggestions (tables pour compatibilité email)
+        cartes_html = ""
+        if suggestions:
+            cards = []
+            for s in suggestions:
+                img = _get_listing_image_url_for_email({"images": s.get("images")})
+                if img:
+                    img_cell = (
+                        f'<img src="{img}" width="88" height="66" alt="" '
+                        f'style="display:block;border-radius:8px;object-fit:cover;width:88px;height:66px;" />'
+                    )
+                else:
+                    img_cell = (
+                        '<div style="width:88px;height:66px;border-radius:8px;background:#0F2747;'
+                        'color:#C9A45C;font-size:22px;text-align:center;line-height:66px;">&#127984;</div>'
+                    )
+                prix = f"{s['price']:,.0f} &#8364;".replace(",", " ") if s.get("price") is not None else ""
+                cards.append(f"""
+                <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;">
+                  <tr>
+                    <td width="88" style="padding:10px;">{img_cell}</td>
+                    <td style="padding:10px 12px 10px 0;vertical-align:middle;">
+                      <a href="{s.get('url', '')}" style="color:#0F2747;font-size:14px;font-weight:700;text-decoration:none;">{s.get('title', '')}</a>
+                      <p style="color:#C9A45C;font-size:13px;font-weight:700;margin:6px 0 0 0;">{prix}</p>
+                    </td>
+                    <td width="70" style="padding:10px;text-align:right;vertical-align:middle;">
+                      <a href="{s.get('url', '')}" style="display:inline-block;padding:8px 12px;background:#0F2747;color:#FFFFFF;text-decoration:none;border-radius:6px;font-size:12px;font-weight:700;">Voir</a>
+                    </td>
+                  </tr>
+                </table>""")
+            cartes_html = (
+                '<p style="color:#0F2747;font-size:14px;font-weight:700;margin:24px 0 12px 0;">'
+                'Ces annonces pourraient vous plaire :</p>' + "".join(cards)
+            )
+
+        body_html = f"""
+            <p style="color:#0F2747;font-size:15px;line-height:1.6;margin:0 0 8px 0;">
+              Bonjour {buyer_name or ''},
+            </p>
+            <p style="color:#4A5568;font-size:14px;line-height:1.7;margin:0 0 8px 0;">
+              Navr&#233;, le bien num&#233;rique <strong style="color:#0F2747;">&laquo; {listing_title} &raquo;</strong>
+              vient de trouver acqu&#233;reur. Votre offre a donc &#233;t&#233; automatiquement cl
+              &#244;tur&#233;e — aucun frais ne vous est appliqu&#233;.
+            </p>
+            <p style="color:#4A5568;font-size:14px;line-height:1.7;margin:0;">
+              Ne baissez pas les bras : la perle rare vous attend peut-&#234;tre parmi nos autres annonces.
+            </p>
+            {cartes_html}
+        """
+
+        html = _build_notification_base(
+            title="Le bien a trouv&#233; acqu&#233;reur",
+            subtitle=listing_title,
+            badge_color="#C9A45C",
+            body_html=body_html,
+            cta_url=annonces_url,
+            cta_label="Voir toutes les annonces",
+        )
+
+        # Fallback texte
+        lignes_txt = ""
+        if suggestions:
+            lignes_txt = "\n\nAnnonces similaires :\n" + "\n".join(
+                f"• {s.get('title','')}" + (f" — {s['price']:,.0f} €" if s.get("price") is not None else "") + f" : {s.get('url','')}"
+                for s in suggestions
+            )
+        texte = (f"Bonjour {buyer_name or ''},\n\n"
+                 f"Navré, le bien numérique « {listing_title} » vient de trouver acquéreur. "
+                 f"Votre offre a été automatiquement clôturée.{lignes_txt}\n\n"
+                 f"Voir toutes les annonces : {annonces_url}\n\nLa Citadelle Numérique")
+
+        msg = MIMEMultipart("alternative")
         msg['From'] = CITADELLE_FROM_EMAIL
         msg['To'] = buyer_email
         msg['Subject'] = f"Votre offre — {listing_title} — La Citadelle Numérique"
-
-        bloc_suggestions = ""
-        if suggestions:
-            lignes = "\n".join(
-                f"  • {s.get('title', '')}"
-                + (f" — {s['price']:,.0f} €" if s.get("price") is not None else "")
-                + f"\n    {s.get('url', '')}"
-                for s in suggestions
-            )
-            bloc_suggestions = f"""
-Quelques annonces similaires qui pourraient vous plaire :
-{lignes}
-"""
-
-        body = f"""Bonjour {buyer_name or ''},
-
-Navré, le bien numérique « {listing_title} » vient de trouver acquéreur.
-Votre offre a donc été automatiquement clôturée.
-{bloc_suggestions}
-N'hésitez pas à consulter les autres annonces pour trouver la perle rare :
-{annonces_url}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-La Citadelle Numérique — Marketplace d'actifs numériques
-"""
-        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        msg.attach(MIMEText(texte, 'plain', 'utf-8'))
+        msg.attach(MIMEText(html, 'html', 'utf-8'))
         _envoyer_email(msg)
         return True
     except Exception as e:

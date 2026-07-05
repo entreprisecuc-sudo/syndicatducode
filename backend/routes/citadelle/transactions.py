@@ -162,12 +162,13 @@ async def _annuler_offres_concurrentes(listing_id: str, accepted_tx_id: str, now
             "status": "active",
             "id": {"$ne": listing_id},
             "is_adult": {"$ne": True},
-        }, {"_id": 0, "title": 1, "slug": 1, "price": 1}).sort("created_at", -1).limit(3)
+        }, {"_id": 0, "title": 1, "slug": 1, "price": 1, "images": 1}).sort("created_at", -1).limit(3)
         async for s in cursor_sug:
             suggestions.append({
                 "title": s.get("title", ""),
                 "slug": s.get("slug", ""),
                 "price": s.get("price"),
+                "images": s.get("images") or [],
                 "url": f"{CITADELLE_URL}/citadelle/annonces/{s.get('slug', '')}",
             })
 
