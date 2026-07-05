@@ -144,6 +144,45 @@ def system_message(content: str) -> dict:
     }
 
 
+async def _annuler_offres_concurrentes(listing_id: str, accepted_tx_id: str, now: str):
+    """Annule automatiquement les autres offres en cours sur la même annonce
+    dès qu'une offre est acceptée (le bien a trouvé acquéreur). Notifie chaque acheteur."""
+    from services.email_service import send_citadelle_offer_auto_cancelled_email
+
+    message_navre = (
+        "Navré, le bien numérique vient de trouver acquéreur. "
+        "N'hésitez pas à consulter les autres annonces pour trouver la perle rare."
+    )
+    cursor = db.citadelle_transactions.find({
+        "listing_id": listing_id,
+        "id": {"$ne": accepted_tx_id},
+        "status": {"$in": ["offer_sent", "offer_countered"]},
+    }, {"_id": 0})
+
+    concurrentes = await cursor.to_list(500)
+    for other in concurrentes:
+        await db.citadelle_transactions.update_one(
+            {"id": other["id"]},
+            {"$set": {
+                "status": "cancelled",
+                "cancelled_at": now,
+                "cancelled_reason": "concurrent_offer_accepted",
+                "updated_at": now,
+            }, "$push": {"messages": system_message(message_navre)}}
+        )
+        try:
+            send_citadelle_offer_auto_cancelled_email(
+                buyer_email=other.get("buyer_email", ""),
+                buyer_name=other.get("buyer_name", ""),
+                listing_title=other.get("listing_title", ""),
+            )
+        except Exception as e:
+            logger.warning(f"[Citadelle] Échec email annulation offre concurrente {other['id']}: {e}")
+
+    if concurrentes:
+        logger.info(f"[Citadelle] {len(concurrentes)} offre(s) concurrente(s) annulée(s) sur l'annonce {listing_id}")
+
+
 # ── Routes Acheteur ───────────────────────────────────────────────────────────
 
 @router.post("/transactions/offer", status_code=201, summary="Faire une offre sur une annonce")
@@ -614,6 +653,7 @@ async def accept_offer(
             "updated_at": now
         }, "$push": {"messages": system_message(f"Offre acceptée par le vendeur. Montant convenu : {final_amount:,.0f} €. En attente du paiement.")}}
     )
+    await _annuler_offres_concurrentes(tx["listing_id"], transaction_id, now)
     logger.info(f"[Citadelle] Offre acceptée: {transaction_id}")
     return {"message": "Offre acceptée", "payment_amount": final_amount}
 
@@ -704,6 +744,7 @@ async def accept_counter_offer(
             "updated_at": now
         }, "$push": {"messages": system_message(f"Contre-offre acceptée. Montant convenu : {tx['counter_amount']:,.0f} €. En attente du paiement.")}}
     )
+    await _annuler_offres_concurrentes(tx["listing_id"], transaction_id, now)
     return {"message": "Contre-offre acceptée", "payment_amount": tx["counter_amount"]}
 
 

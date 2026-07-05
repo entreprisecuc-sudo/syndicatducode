@@ -1,0 +1,33 @@
+{
+  "summary": "Backend-only tests pour l'annulation automatique des offres concurrentes Citadelle (POST /accept et /accept-counter). 9 tests écrits, 9/9 PASS.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_citadelle_concurrent_offers_cancel.py",
+    "/app/test_reports/pytest/concurrent_offers_cancel.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "OK — _annuler_offres_concurrentes() est correctement appelée après update_one dans accept_offer et accept_counter_offer, avec filtre listing_id + $ne accepted_tx + status $in [offer_sent, offer_countered].",
+    "OK — Statut 'cancelled' + cancelled_reason='concurrent_offer_accepted' + cancelled_at + message système contenant 'vient de trouver acquéreur' et 'la perle rare' vérifiés en base.",
+    "OK — Les transactions déjà 'cancelled' ou 'completed' ne sont pas touchées (filtre status $in strict). Les offres sur d'autres annonces non plus (filtre listing_id).",
+    "OK — Envoi email send_citadelle_offer_auto_cancelled_email encapsulé try/except → aucune exception ne remonte (SMTP prod MOCKED en preview, comme attendu).",
+    "Note (non-bloquant) : la boucle for concurrentes fait N update_one + N envoi email séquentiels ; sous forte charge, envisager update_many + fan-out asyncio pour les emails (non demandé par le ticket)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_citadelle_concurrent_offers_cancel.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "N/A (skipped per request)"},
+  "test_credentials": "test.vendeur@citadelle.fr / DemoVendeur2026! ; test.acheteur@citadelle.fr / DemoAcheteur2026!",
+  "seed_data_creation": "Seed direct MongoDB tagué qa_seed_concurrent_offers=True (ids préfixés QA-). Nettoyage automatique en teardown du fixture 'mongo' (delete_many). Vérifié : 0 doc résiduel après run.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Suite pytest complète pour la règle d'annulation concurrente : /app/backend/tests/test_citadelle_concurrent_offers_cancel.py — 4 classes (accept, accept-counter, access-control 403/400/404, non-régression create/counter/buyer-counter/refuse/withdraw). Idempotente, cleanup fiable."
+}

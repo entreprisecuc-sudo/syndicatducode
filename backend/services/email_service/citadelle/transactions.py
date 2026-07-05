@@ -324,3 +324,32 @@ def send_conversation_reminder_email(
 # COMMANDES DE SERVICES — Confirmation client + Notification admin
 # ─────────────────────────────────────────────────────────────────────────────
 
+
+def send_citadelle_offer_auto_cancelled_email(buyer_email: str, buyer_name: str, listing_title: str) -> bool:
+    """Prévient un acheteur que son offre a été annulée car le bien a trouvé acquéreur."""
+    try:
+        annonces_url = f"{CITADELLE_URL}/citadelle/annonces"
+
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = buyer_email
+        msg['Subject'] = f"Votre offre — {listing_title} — La Citadelle Numérique"
+
+        body = f"""Bonjour {buyer_name or ''},
+
+Navré, le bien numérique « {listing_title} » vient de trouver acquéreur.
+Votre offre a donc été automatiquement clôturée.
+
+N'hésitez pas à consulter les autres annonces pour trouver la perle rare :
+{annonces_url}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+La Citadelle Numérique — Marketplace d'actifs numériques
+"""
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        _envoyer_email(msg)
+        return True
+    except Exception as e:
+        logger.error(f"[Citadelle] Erreur email annulation offre concurrente: {e}")
+        return False
+
