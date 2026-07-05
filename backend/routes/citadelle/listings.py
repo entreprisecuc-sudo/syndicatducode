@@ -13,6 +13,7 @@ import logging
 
 from routes.citadelle.dependencies import require_admin, require_citadelle_user
 from services.auth_service import decode_access_token
+from utils.notif_prefs import email_notifications_enabled
 from services.email_service import (
     send_citadelle_listing_approved_email,
     send_citadelle_listing_rejected_email,
@@ -739,20 +740,22 @@ async def place_bid(
     )
 
     # Email de confirmation à l'enchérisseur
-    send_citadelle_auction_bid_email(
-        bidder_email=current_user.get("email"),
-        bidder_name=bidder_name or current_user.get("email"),
-        listing_title=listing["title"],
-        listing_slug=listing["slug"],
-        amount=data.amount,
-        auction_ends_at=auction_ends_at,
-    )
+    if await email_notifications_enabled(db, current_user.get("email")):
+        send_citadelle_auction_bid_email(
+            bidder_email=current_user.get("email"),
+            bidder_name=bidder_name or current_user.get("email"),
+            listing_title=listing["title"],
+            listing_slug=listing["slug"],
+            amount=data.amount,
+            auction_ends_at=auction_ends_at,
+        )
 
     # Notification "vous avez été surenchéri" à l'ancien meilleur enchérisseur
     prev_bidder_id = listing.get("auction_current_bidder_id")
     prev_bidder_email = listing.get("auction_current_bidder_email")
     prev_amount = listing.get("auction_current_bid")
-    if prev_bidder_id and prev_bidder_email and prev_bidder_id != bidder_id:
+    if prev_bidder_id and prev_bidder_email and prev_bidder_id != bidder_id \
+            and await email_notifications_enabled(db, prev_bidder_email):
         send_citadelle_auction_outbid_email(
             bidder_email=prev_bidder_email,
             bidder_name=listing.get("auction_current_bidder_name") or prev_bidder_email,
@@ -889,13 +892,14 @@ async def admin_delete_bid(
 
     # Notification à l'enchérisseur dont l'enchère a été annulée
     try:
-        send_citadelle_auction_bid_removed_email(
-            bidder_email=cible.get("bidder_email"),
-            bidder_name=cible.get("bidder_name") or cible.get("bidder_email"),
-            listing_title=listing.get("title", ""),
-            listing_slug=listing.get("slug", ""),
-            amount=cible.get("amount", 0),
-        )
+        if await email_notifications_enabled(db, cible.get("bidder_email")):
+            send_citadelle_auction_bid_removed_email(
+                bidder_email=cible.get("bidder_email"),
+                bidder_name=cible.get("bidder_name") or cible.get("bidder_email"),
+                listing_title=listing.get("title", ""),
+                listing_slug=listing.get("slug", ""),
+                amount=cible.get("amount", 0),
+            )
     except Exception as e:
         logger.warning(f"[Citadelle Enchère] Échec email annulation enchère: {e}")
 

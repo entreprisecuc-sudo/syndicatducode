@@ -9,7 +9,7 @@ import {
   User, Lock, Save, CheckCircle, AlertCircle,
   Eye, EyeOff, ChevronLeft, Calendar, Mail, Shield,
   Building, Landmark, CreditCard, Upload, Phone, Info,
-  ExternalLink, Loader, RefreshCw, Zap
+  ExternalLink, Loader, RefreshCw, Zap, Bell
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
@@ -189,6 +189,7 @@ function TabInfos({ user, updateUser, inputStyle, labelStyle }) {
     last_name:     user?.last_name     || "",
     phone:         user?.phone         || "",
     date_of_birth: user?.date_of_birth || "",
+    email_notifications: user?.email_notifications !== false,
   });
   const [saving, setSaving]   = useState(false);
   const [success, setSuccess] = useState(false);
@@ -206,6 +207,7 @@ function TabInfos({ user, updateUser, inputStyle, labelStyle }) {
         last_name:  form.last_name.trim(),
         phone:      form.phone.trim(),
         date_of_birth: form.date_of_birth,
+        email_notifications: form.email_notifications,
       };
       const res = await citadelleApi.patch("/auth/profile", payload);
       if (updateUser) updateUser(res.data.user);
@@ -304,6 +306,35 @@ function TabInfos({ user, updateUser, inputStyle, labelStyle }) {
         <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
           Vous devez avoir au moins 18 ans. Utilisée uniquement pour la vérification d'identité des paiements.
         </p>
+      </div>
+
+      {/* Préférence notifications email — bouton on/off */}
+      <div className="flex items-center justify-between gap-4 p-4 rounded-xl"
+        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
+        <div>
+          <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: CITADELLE_COLORS.white }}>
+            <Bell size={14} /> Notifications par email
+          </p>
+          <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Enchère surenchérie, dernière chance, offre clôturée… (les emails essentiels restent envoyés)
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={form.email_notifications}
+          onClick={() => setForm(p => ({ ...p, email_notifications: !p.email_notifications }))}
+          data-testid="profile-email-notifications-toggle"
+          className="relative shrink-0 rounded-full transition-colors"
+          style={{
+            width: 48, height: 26,
+            background: form.email_notifications ? CITADELLE_COLORS.gold : "rgba(255,255,255,0.2)",
+          }}>
+          <span className="absolute rounded-full bg-white transition-all" style={{
+            width: 20, height: 20, top: 3,
+            left: form.email_notifications ? 25 : 3,
+          }} />
+        </button>
       </div>
 
       <button onClick={handleSave} disabled={saving}

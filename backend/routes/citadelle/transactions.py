@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 from routes.citadelle.dependencies import require_admin, require_citadelle_user
 from services.email_service import send_citadelle_credentials_email, send_new_offer_notification_email
 from utils.attachments import Attachment, validate_attachments
+from utils.notif_prefs import email_notifications_enabled
 
 logger = logging.getLogger(__name__)
 
@@ -205,12 +206,13 @@ async def _annuler_offres_concurrentes(listing_id: str, accepted_tx_id: str, now
             }, "$push": {"messages": system_message(message_navre)}}
         )
         try:
-            send_citadelle_offer_auto_cancelled_email(
-                buyer_email=other.get("buyer_email", ""),
-                buyer_name=other.get("buyer_name", ""),
-                listing_title=other.get("listing_title", ""),
-                suggestions=suggestions,
-            )
+            if await email_notifications_enabled(db, other.get("buyer_email", "")):
+                send_citadelle_offer_auto_cancelled_email(
+                    buyer_email=other.get("buyer_email", ""),
+                    buyer_name=other.get("buyer_name", ""),
+                    listing_title=other.get("listing_title", ""),
+                    suggestions=suggestions,
+                )
         except Exception as e:
             logger.warning(f"[Citadelle] Échec email annulation offre concurrente {other['id']}: {e}")
 
@@ -623,14 +625,15 @@ async def confirm_second_chance(
 
     try:
         from services.email_service import send_citadelle_second_chance_offer_email
-        send_citadelle_second_chance_offer_email(
-            bidder_email=prochain.get("bidder_email", ""),
-            bidder_name=prochain.get("bidder_name") or prochain.get("bidder_email", ""),
-            listing_title=listing["title"],
-            listing_slug=listing.get("slug", ""),
-            amount=amount,
-            transaction_id=new_tx_id,
-        )
+        if await email_notifications_enabled(db, prochain.get("bidder_email", "")):
+            send_citadelle_second_chance_offer_email(
+                bidder_email=prochain.get("bidder_email", ""),
+                bidder_name=prochain.get("bidder_name") or prochain.get("bidder_email", ""),
+                listing_title=listing["title"],
+                listing_slug=listing.get("slug", ""),
+                amount=amount,
+                transaction_id=new_tx_id,
+            )
     except Exception as e:
         logger.warning(f"[Citadelle Enchère] Échec email offre seconde chance: {e}")
 

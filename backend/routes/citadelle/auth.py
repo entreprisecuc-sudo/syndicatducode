@@ -691,6 +691,11 @@ async def citadelle_update_profile(request: Request):
             )
         updates["password_hash"] = hash_password(new_password)
 
+    # Préférence de notifications email (bouton on/off dans le profil)
+    email_notifications = payload.get("email_notifications", None)
+    if email_notifications is not None:
+        updates["email_notifications"] = bool(email_notifications)
+
     if not updates:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Aucune modification fournie")
 
