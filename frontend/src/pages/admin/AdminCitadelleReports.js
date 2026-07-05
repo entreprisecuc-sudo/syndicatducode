@@ -9,6 +9,7 @@ import { Flag, ArrowLeft, ShoppingCart, MessageSquare, ExternalLink } from "luci
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
 import { MemberModerationActions } from "@/components/admin/MemberModerationActions";
+import { MessageAttachments } from "@/components/citadelle/messageAttachments";
 
 const STATUS_META = {
   open: { label: "Ouvert", color: "#DC2626", bg: "rgba(220,38,38,0.12)" },
@@ -28,6 +29,9 @@ export default function AdminCitadelleReports() {
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState({});
+  const [convModal, setConvModal] = useState(null);
+  const [convData, setConvData] = useState(null);
+  const [convLoading, setConvLoading] = useState(false);
 
   useEffect(() => { load(); }, [filter]);
 
@@ -50,6 +54,18 @@ export default function AdminCitadelleReports() {
   };
 
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleString("fr-FR"); } catch { return iso; } };
+
+  const openConversation = async (report) => {
+    setConvModal(report);
+    setConvData(null);
+    setConvLoading(true);
+    try {
+      const res = await api.get(`/citadelle/admin/reports/${report.id}/conversation`);
+      setConvData(res.data);
+    } catch {
+      setConvData({ found: false, messages: [] });
+    } finally { setConvLoading(false); }
+  };
 
   return (
     <AdminLayout>
@@ -115,12 +131,20 @@ export default function AdminCitadelleReports() {
                     {r.message}
                   </div>
 
-                  {r.conversation_type === "transaction" && (
-                    <Link to={`/syndicat-admin/citadelle/transactions?tx=${r.conversation_id}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium mb-3" style={{ color: "#C9A45C" }} data-testid="report-open-conversation">
-                      <ExternalLink size={12} /> Ouvrir la transaction
-                    </Link>
-                  )}
+                  <div className="flex items-center gap-4 mb-3 flex-wrap">
+                    <button onClick={() => openConversation(r)}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg"
+                      style={{ background: "rgba(201,164,92,0.12)", color: "#C9A45C", border: "1px solid rgba(201,164,92,0.3)" }}
+                      data-testid="report-view-conversation">
+                      <MessageSquare size={12} /> Voir la conversation
+                    </button>
+                    {r.conversation_type === "transaction" && (
+                      <Link to={`/syndicat-admin/citadelle/transactions?tx=${r.conversation_id}`}
+                        className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: "#C9A45C" }} data-testid="report-open-conversation">
+                        <ExternalLink size={12} /> Ouvrir la transaction
+                      </Link>
+                    )}
+                  </div>
 
                   {(r.buyer_id || r.seller_id) && (
                     <div className="p-3 rounded-lg mb-3" style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)" }}>
@@ -169,6 +193,47 @@ export default function AdminCitadelleReports() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Modal — conversation signalée complète */}
+        {convModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
+            <div className="w-full max-w-2xl rounded-2xl flex flex-col" style={{ background: "var(--admin-bg-card, #16213e)", border: "1px solid var(--admin-border, rgba(255,255,255,0.12))", color: "var(--admin-text)", maxHeight: "85vh" }} data-testid="conversation-modal">
+              <div className="flex items-center justify-between gap-3 p-4" style={{ borderBottom: "1px solid var(--admin-border, rgba(255,255,255,0.1))" }}>
+                <div>
+                  <h3 className="font-bold text-base flex items-center gap-2"><MessageSquare size={16} style={{ color: "#C9A45C" }} /> Conversation signalée</h3>
+                  <p className="text-xs opacity-60">{convModal.reason_label} · {convModal.listing_title || "—"}</p>
+                </div>
+                <button onClick={() => setConvModal(null)} className="text-sm px-3 py-1.5 rounded-lg" style={{ border: "1px solid var(--admin-border, rgba(255,255,255,0.2))", color: "inherit" }} data-testid="conversation-close-btn">Fermer</button>
+              </div>
+
+              <div className="p-4 overflow-y-auto space-y-3">
+                {convLoading ? (
+                  <p className="text-sm opacity-50">Chargement de la conversation…</p>
+                ) : !convData?.found ? (
+                  <p className="text-sm opacity-60" data-testid="conversation-not-found">Conversation introuvable ou vide (aucun message enregistré).</p>
+                ) : (
+                  <>
+                    {[...(convData.messages || []), ...(convData.dispute_messages || [])]
+                      .filter(m => m.type !== "system")
+                      .map((m, idx) => (
+                      <div key={idx} className="p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--admin-border, rgba(255,255,255,0.08))" }} data-testid="conversation-message">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="text-xs font-semibold" style={{ color: "#C9A45C" }}>{m.sender_email || m.sender_id}</span>
+                          <span className="text-xs opacity-40">{fmtDate(m.sent_at)}</span>
+                        </div>
+                        {m.content && <p className="text-sm whitespace-pre-wrap">{m.content}</p>}
+                        <MessageAttachments attachments={m.attachments} mine={false} />
+                      </div>
+                    ))}
+                    {[...(convData.messages || []), ...(convData.dispute_messages || [])].filter(m => m.type !== "system").length === 0 && (
+                      <p className="text-sm opacity-60">Aucun message dans cette conversation.</p>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>

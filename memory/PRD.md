@@ -486,3 +486,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Signalements** enrichis avec `buyer_id`/`seller_id` (pour cibler les sanctions).
 - **Frontend** : sidebar admin → entrée « Signalements » avec **badge rouge** du nombre de signalements ouverts (polling 60s). Composant réutilisable `components/admin/MemberModerationActions.js` (Sanctionner : avertissement / suspension 1-2 sem / bannissement + Réactiver, modal motif+note). Câblé dans `AdminCitadelleReports.js` (par participant) et `AdminCitadelleUsers.js` (statut 3 états actif/suspendu/banni + compteur d'avertissements + actions). Fix contraste : conteneur page = `color: var(--admin-text)`.
 - **Validé (curl + capture)** : warn/suspend/ban/reactivate OK ; login suspendu→403, réactivé→200 ; page Signalements lisible, badge « 2 », 8 boutons Sanctionner.
+
+## 🔧 Session 06/2026 — Lecture de la conversation signalée (PREVIEW)
+- **Backend** : `GET /api/citadelle/admin/reports/{id}/conversation` (require_admin) → renvoie messages (+ dispute_messages pour les transactions) avec pièces jointes, participants, titre annonce. Renvoie `found:false` si la conversation n'existe plus.
+- **Frontend** : bouton « Voir la conversation » (`report-view-conversation`) sur chaque carte de signalement → modal (`conversation-modal`) affichant l'échange complet (expéditeur, date, contenu, **pièces jointes** via `MessageAttachments` réutilisé). Messages système filtrés.
+- **Validé (curl + capture)** : endpoint renvoie 4 messages, modal affiche les messages acheteur/vendeur lisibles.

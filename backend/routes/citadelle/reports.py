@@ -118,6 +118,37 @@ async def create_report(data: ReportCreate, current_user: dict = Depends(require
     return {"success": True, "message": "Signalement transmis à notre équipe. Nous traitons votre demande sous 48h."}
 
 
+@router.get("/admin/reports/{report_id}/conversation", summary="Admin — Voir la conversation signalée")
+async def admin_report_conversation(report_id: str, current_user: dict = Depends(require_admin)):
+    r = await db.citadelle_reports.find_one({"id": report_id}, {"_id": 0})
+    if not r:
+        raise HTTPException(status_code=404, detail="Signalement introuvable")
+
+    if r["conversation_type"] == "transaction":
+        conv = await db.citadelle_transactions.find_one(
+            {"id": r["conversation_id"]},
+            {"_id": 0, "messages": 1, "dispute_messages": 1, "listing_title": 1, "buyer_email": 1, "seller_email": 1},
+        )
+    else:
+        conv = await db.citadelle_conversations.find_one(
+            {"id": r["conversation_id"]},
+            {"_id": 0, "messages": 1, "listing_title": 1, "buyer_email": 1, "seller_email": 1},
+        )
+
+    if not conv:
+        return {"found": False, "messages": [], "dispute_messages": []}
+
+    return {
+        "found": True,
+        "conversation_type": r["conversation_type"],
+        "listing_title": conv.get("listing_title", ""),
+        "buyer_email": conv.get("buyer_email", ""),
+        "seller_email": conv.get("seller_email", ""),
+        "messages": conv.get("messages", []),
+        "dispute_messages": conv.get("dispute_messages", []),
+    }
+
+
 # ── Routes admin ───────────────────────────────────────────────────────────────
 @router.get("/admin/reports", summary="Admin — Liste des signalements")
 async def admin_list_reports(status: str = None, current_user: dict = Depends(require_admin)):
