@@ -178,12 +178,12 @@ export default function CitadelleDashboard() {
               </div>
             </div>
 
-            {/* Administration — bloc encadré bleu */}
-            <div className="rounded-2xl p-5 md:p-6" style={{ border: `2px solid ${C.blue}`, background: "rgba(15,39,71,0.02)" }}>
+            {/* Administration — bloc encadré bleu, aligné à gauche */}
+            <div className="rounded-2xl p-5 md:p-6 lg:w-1/2" style={{ border: `2px solid ${C.blue}`, background: "rgba(15,39,71,0.02)" }}>
               <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: C.blue }}>
                 Administration
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-3">
                 <SectionLink icon={User} title="Mon profil" desc="Modifier mes informations"
                   href="/citadelle/espace-membre/profil" testId="nav-mon-profil" />
                 <SectionLink icon={FileText} title="Mes factures" desc="Téléchargez vos PDF"
