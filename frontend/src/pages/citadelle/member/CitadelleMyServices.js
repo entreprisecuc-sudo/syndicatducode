@@ -133,7 +133,7 @@ export default function CitadelleMyServices() {
   const renderCategory = (title, subtitle, Icon, list, dark = false) => {
     if (!list.length) return null;
     return (
-      <div key={title} className="rounded-2xl overflow-hidden"
+      <div key={title} className="rounded-2xl overflow-hidden mb-16"
         style={dark
           ? { background: CITADELLE_COLORS.blue }
           : { background: "#FAFBFD", border: `1px solid ${CITADELLE_COLORS.border}` }}>

@@ -432,4 +432,9 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Page "Mes services" (`CitadelleMyServices.js`) : services regroupés par `target_category` en encarts "Pour les vendeurs" (clair) et "Pour les acheteurs" (encart bleu, cartes sombres), aligné sur la page Services publique.
 - Vérifié via screenshots (Règle 6 respectée : pas de testing_agent).
 
+**Ajustements Services (05/07/2026) — FAIT :**
+- Section "Mes commandes" retirée de "Mes services" et déplacée dans l'onglet transmissions, renommé "Transmissions & Commandes" (2 sections séparées). Libellé dashboard mis à jour.
+- Services gratuits ("Inclus gratuitement") affichés en tête, sous la Transaction Sécurisée sur la page publique.
+- Espacement des zones services corrigé : `space-y` ne s'appliquait pas → remplacé par marges explicites `mb-16` sur chaque encart (page publique `CitadelleServices.js` + espace membre `CitadelleMyServices.js`).
+
 *Mise à jour : 15/06/2026*
