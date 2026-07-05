@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Star, Handshake, Zap, Shield, ExternalLink, ArrowRight, TrendingUp, Search,
-  ShoppingCart
+  ShoppingCart, Check
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ServiceCheckoutModal from "@/components/citadelle/ServiceCheckoutModal";
@@ -215,11 +215,33 @@ export default function CitadelleMyServices() {
                   <ServiceHeroBanner service={commonService} onDetails={setSelectedService} />
                 </div>
               )}
-              {renderCategory(
-                "Inclus gratuitement",
-                "Services accessibles sans frais pour tout membre inscrit.",
-                Star,
-                services.filter(s => s.service_type === "free")
+              {/* Inclus gratuitement — léger bandeau avec pills */}
+              {services.filter(s => s.service_type === "free").length > 0 && (
+                <div
+                  className="rounded-2xl px-8 py-6 mb-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+                  style={{ background: "rgba(22,163,74,0.04)", border: "1px solid rgba(22,163,74,0.18)" }}
+                  data-testid="my-free-services-section"
+                >
+                  <div className="flex-shrink-0">
+                    <h3 className="text-base font-black"
+                      style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                      Inclus gratuitement
+                    </h3>
+                    <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
+                      Fonctionnalités accessibles sans frais pour tout membre inscrit.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {services.filter(s => s.service_type === "free").map((svc) => (
+                      <div key={svc.id}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
+                        style={{ background: "rgba(22,163,74,0.07)", border: "1px solid rgba(22,163,74,0.22)", color: "#15803d" }}>
+                        <Check size={13} />
+                        {svc.title}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
               {renderCategory(
                 "Pour les vendeurs",
