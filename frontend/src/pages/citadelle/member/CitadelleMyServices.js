@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ServiceCheckoutModal from "@/components/citadelle/ServiceCheckoutModal";
+import ServiceDetailModal from "@/components/citadelle/ServiceDetailModal";
+import ServiceHeroBanner from "@/components/citadelle/ServiceHeroBanner";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
@@ -32,6 +34,7 @@ export default function CitadelleMyServices() {
 
   // Checkout — délégué à ServiceCheckoutModal (Stripe réel)
   const [checkoutService, setCheckoutService] = useState(null);
+  const [selectedService, setSelectedService] = useState(null);
 
   useEffect(() => {
     // Chargement des services publics
@@ -45,6 +48,9 @@ export default function CitadelleMyServices() {
 
   const openCheckout  = (svc) => setCheckoutService(svc);
   const closeCheckout = ()    => setCheckoutService(null);
+  const openBuy = (svc) => { setSelectedService(null); setCheckoutService(svc); };
+
+  const commonService = services.find(s => s.target_category === "commun" && s.service_type !== "free");
 
   // Carte service réutilisable (variante claire ou sombre)
   const renderServiceCard = (svc, dark = false) => {
@@ -203,7 +209,12 @@ export default function CitadelleMyServices() {
               Aucun service disponible pour le moment.
             </p>
           ) : (
-            <div className="space-y-10">
+            <div>
+              {commonService && (
+                <div className="mb-16">
+                  <ServiceHeroBanner service={commonService} onDetails={setSelectedService} />
+                </div>
+              )}
               {renderCategory(
                 "Inclus gratuitement",
                 "Services accessibles sans frais pour tout membre inscrit.",
@@ -223,18 +234,17 @@ export default function CitadelleMyServices() {
                 services.filter(s => s.target_category === "acheteur" && s.service_type !== "free"),
                 true
               )}
-              {renderCategory(
-                "Services communs",
-                "Des services essentiels pour toutes vos transactions.",
-                Shield,
-                services.filter(s => s.service_type !== "free" && !["vendeur", "acheteur"].includes(s.target_category))
-              )}
             </div>
           )}
         </section>
       </div>
 
-      {/* ── Modale checkout Stripe (réel) ──────────────────────────────── */}
+      {/* ── Modales ──────────────────────────────────────────────────── */}
+      <ServiceDetailModal
+        service={selectedService}
+        onClose={() => setSelectedService(null)}
+        onBuy={openBuy}
+      />
       {checkoutService && (
         <ServiceCheckoutModal
           service={checkoutService}

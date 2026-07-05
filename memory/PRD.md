@@ -437,4 +437,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Services gratuits ("Inclus gratuitement") affichés en tête, sous la Transaction Sécurisée sur la page publique.
 - Espacement des zones services corrigé : `space-y` ne s'appliquait pas → remplacé par marges explicites `mb-16` sur chaque encart (page publique `CitadelleServices.js` + espace membre `CitadelleMyServices.js`).
 
+**Uniformisation page Services membre (05/07/2026) — FAIT :**
+- La page "Mes services" (espace membre) réutilise désormais `ServiceHeroBanner` pour afficher la Transaction Sécurisée Premium en bandeau bleu (ruban obligatoire + étapes "Comment ça fonctionne"), comme la page Services publique.
+- Catégorie "Services communs" supprimée (le service commun devient le hero). `ServiceDetailModal` ("En savoir plus") + `ServiceCheckoutModal` intégrés. Espacement `mb-16` cohérent.
+
 *Mise à jour : 15/06/2026*
