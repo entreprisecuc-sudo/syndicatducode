@@ -11,6 +11,7 @@ import { CONFIG, DEV_MODE, TEST_ACCOUNTS, API_URL } from "@/config/constants";
 import { useAuth } from "@/context/AuthContext";
 import { setAuthData } from "@/services/authService";
 import api from "@/services/api";
+import citadelleApi from "@/services/citadelleApi";
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -48,9 +49,53 @@ const Footer = () => {
     }
   };
 
+  // ⚠️ PROVISOIRE — accès rapide compte utilisateur Citadelle de test (à retirer avant déploiement)
+  const provisionalCitadelleLogin = async () => {
+    setLoading("citadelle");
+    try {
+      const { data } = await citadelleApi.post("/auth/login", {
+        email: "marie.testui@citadelle-test.fr",
+        password: "TestUI2026!",
+      });
+      localStorage.setItem("citadelle_token", data.access_token);
+      localStorage.setItem("citadelle_user", JSON.stringify(data.user));
+      window.location.href = "/citadelle/espace-membre";
+    } catch (err) {
+      alert("Erreur connexion Citadelle: " + (err.response?.data?.detail || err.message));
+      setLoading(null);
+    }
+  };
+
   return (
     <footer className="footer" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
+
+        {/* ⚠️ PROVISOIRE — accès de test (à retirer avant déploiement) */}
+        <div className="mb-8 p-4 rounded-xl" style={{ background: "rgba(233, 69, 96, 0.08)", border: "1px dashed #e94560" }}>
+          <p className="text-xs text-center mb-3" style={{ color: "#e94560" }}>
+            ⚠️ ACCÈS PROVISOIRES DE TEST — à retirer avant déploiement
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              to="/papaenmousse1981"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105"
+              style={{ background: "#ef4444", color: "white", textDecoration: "none" }}
+              data-testid="prov-admin-access"
+            >
+              <Shield size={16} /> Accès Admin
+            </Link>
+            <button
+              onClick={provisionalCitadelleLogin}
+              disabled={loading !== null}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 disabled:opacity-50"
+              style={{ background: "#C9A45C", color: "white" }}
+              data-testid="prov-citadelle-access"
+            >
+              {loading === "citadelle" ? <Loader2 size={16} className="animate-spin" /> : <Shield size={16} />}
+              Accès Citadelle (test)
+            </button>
+          </div>
+        </div>
         
         {/* Boutons de test - Uniquement en mode DEV */}
         {DEV_MODE && (
