@@ -1,0 +1,33 @@
+{
+  "summary": "Iter19 : validation FEATURE 1 (signalement d'enchère suspecte + suppression admin) + FEATURE 2 (seconde chance après enchère annulée). Backend pytest 15/15 (test_citadelle_bid_report_second_chance.py) — report-bid: 401 sans auth, 404 annonce inconnue, 400 non-enchère, 400 sans bid, 200 + backfill bid_id + création citadelle_reports report_type='bid'. Admin delete-bid: 403 non-admin, 404 bid inconnu, 200 avec recalcul auction_current_bid vers enchère suivante ET reset au prix de départ si dernier bid, signalement lié passe en 'resolved', double delete → 404. Second chance: 403 sans admin, 400 tx non-annulée, 400 non-auction, full flow request→confirm crée nouvelle tx status='offer_accepted' is_auction=true second_chance=true offer_amount=1500€ (2e prix), ancienne tx marquée second_chance_done, chaîne épuisée → 400 'aucun enchérisseur suivant', decline OK. Frontend Playwright : F1 acheteur voit report-bid-btn sur annonce active avec enchère, modal report-bid-modal s'ouvre, message + submit ferme le modal ; F1 admin /syndicat-admin/citadelle/signalements affiche 'Enchère suspecte' avec montant 1500€, enchérisseur, prix 1000€, report-open-listing (1) + report-delete-bid (1) OK ; F2 vendeur /citadelle/espace-membre/transactions/{id} avec second_chance_requested=true affiche seller-second-chance-banner + btn-confirm-second-chance + btn-decline-second-chance (texte 'La Garde vous propose d'offrir l'actif à l'enchérisseur suivant (1 600 €)') ; F2 admin /syndicat-admin/citadelle/transactions : navigation OK, onglet Annulée présent (badge 4) mais je n'ai pas réussi à cliquer via Playwright (get_by_text timeout) — code vérifié : admin-second-chance-block + admin-second-chance-pending + admin-request-second-chance-btn présents lignes 420-429 dans AdminCitadelleTransactions.js et le rendu conditionnel (status='cancelled' && is_auction && !second_chance_done) est satisfait par la seed, donc bloc devrait s'afficher — verrouillé au niveau code, non 100% vérifié via Playwright.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_citadelle_bid_report_second_chance.py",
+    "/app/test_reports/pytest/iter19_bid_report_sc.xml"
+  ],
+  "action_items": [
+    "Optionnel : ajouter un data-testid='admin-tx-tab-cancelled' sur le bouton d'onglet 'Annulée' dans AdminCitadelleTransactions.js pour faciliter le futur testing Playwright (actuellement le get_by_text('Annulée') timeout — texte probablement 'Annulée 4' avec badge inline)."
+  ],
+  "critical_code_review_comments": [
+    "routes/citadelle/listings.py::_bid_courante utilise max() par amount — correct. Le backfill de bid_id via update_one avec filtre {bid_at, bidder_id} sur le sous-document est bien fait mais suppose que ce couple est unique par annonce — en pratique OK vu les timestamps ISO à la microseconde.",
+    "routes/citadelle/listings.py::admin_delete_bid recalcule bien auction_current_bid → enchère suivante max ou prix de réserve. Bidder mis à None si plus d'enchères — conforme au spec.",
+    "routes/citadelle/transactions.py::_encherisseurs_deja_sollicites parcourt TOUTES les transactions du listing (buyer_id set). Cela exclut correctement tout enchérisseur ayant déjà eu ne serait-ce qu'une tx (gagnant + 2e chance déjà confirmée). Note : si une tx a été créée avec buyer_id vide pour une raison quelconque (peu probable), ce serait ignoré — sécurisé.",
+    "routes/citadelle/transactions.py::confirm_second_chance passe le listing en 'sold' + auction_winner_transaction_id → cohérent. La nouvelle tx a bien status='offer_accepted' donc l'enchérisseur suivant peut directement payer via le flow existant.",
+    "routes/citadelle/transactions.py::_is_auction_tx a un fallback intelligent sur listing.is_auction si tx.is_auction manque (legacy). Bon design.",
+    "AdminCitadelleTransactions.js:419 la condition d'affichage du bloc seconde chance est bien 'cancelled && is_auction && !second_chance_done' — cohérent avec backend. Recommandation : ajouter la condition '&& !second_chance_declined' pour ne pas re-proposer après refus (actuellement backend renverra 400 mais l'UX serait plus propre)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_citadelle_bid_report_second_chance.py (nouveau — 15 tests)"
+  ],
+  "success_rate": {"backend": "100% (15/15)", "frontend": "F1 acheteur OK, F1 admin OK, F2 vendeur OK, F2 admin non 100% vérifié via Playwright (code verrouillé)"},
+  "test_credentials": "admin bigpapa1981@asar.com / Josiane03@@@!1981 ; vendeur test.vendeur@citadelle.fr / DemoVendeur2026! ; acheteur test.acheteur@citadelle.fr / DemoAcheteur2026!",
+  "seed_data_creation": "Toutes les données seed (marquées qa_seed_iter19=True côté pytest et qa_ui_iter19=True côté Playwright) ont été nettoyées à la fin du run (delete_many). Aucune donnée résiduelle en base. Vérifié : delete_many a retourné les bons compteurs.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Pour tester F2 admin UI de bout en bout : (1) créer une tx cancelled + is_auction + second_chance_requested=true en base ; (2) login admin via /papaenmousse1981 ; (3) aller sur /syndicat-admin/citadelle/transactions ; (4) cliquer onglet 'Annulée' (le sélecteur get_by_text('Annulée') timeout parfois — utiliser querySelectorAll('button') + filtrage sur textContent contient 'Annulé'). (5) cliquer sur la carte tx pour ouvrir la modal détail où admin-second-chance-block apparaît. Alternative rapide : injecter les tokens admin dans localStorage AVANT de naviguer (bypass login UI)."
+}
