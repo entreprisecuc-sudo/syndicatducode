@@ -278,7 +278,15 @@ export default function CitadelleServices() {
         ) : (
           <div className="space-y-12">
 
-            {/* 0. Inclus gratuitement — placé en haut */}
+            {/* 1. Transaction Sécurisée — hero pleine largeur */}
+            {commonService && (
+              <ServiceHeroBanner
+                service={commonService}
+                onDetails={setSelectedService}
+              />
+            )}
+
+            {/* 2. Inclus gratuitement — placé sous la Transaction Sécurisée */}
             {freeServices.length > 0 && (
               <div
                 className="rounded-2xl px-8 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
@@ -315,15 +323,7 @@ export default function CitadelleServices() {
               </div>
             )}
 
-            {/* 1. Transaction Sécurisée — hero pleine largeur */}
-            {commonService && (
-              <ServiceHeroBanner
-                service={commonService}
-                onDetails={setSelectedService}
-              />
-            )}
-
-            {/* 2. Vendeurs (light) — pleine largeur */}
+            {/* 3. Vendeurs (light) — pleine largeur */}
             {vendorServices.length > 0 && (
               <div
                 className="rounded-2xl overflow-hidden"
