@@ -46,3 +46,10 @@ def sanitiser_message(texte: str) -> tuple[str, bool]:
             modifie = True
             texte = nouveau
     return texte, modifie
+
+
+def contient_contact(texte: str) -> bool:
+    """Retourne True si le texte contient une adresse email ou un numéro de téléphone."""
+    if not texte:
+        return False
+    return any(pattern.search(texte) for pattern in _PATTERNS)

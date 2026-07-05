@@ -47,7 +47,7 @@ export function AttachmentButton({ attachments, setAttachments, disabled, color 
       for (const f of files.slice(0, slots)) {
         if (f.size > MAX_SIZE) { alert(`« ${f.name} » dépasse 25 Mo.`); continue; }
         try { uploaded.push(await uploadAttachment(f)); }
-        catch { alert(`Échec de l'envoi de « ${f.name} ».`); }
+        catch (err) { alert(err?.response?.data?.detail || `Échec de l'envoi de « ${f.name} ».`); }
       }
       if (uploaded.length) setAttachments([...attachments, ...uploaded]);
     } finally { setUploading(false); }

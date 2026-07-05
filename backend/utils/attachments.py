@@ -2,12 +2,18 @@
 Pièces jointes des messageries — La Citadelle Numérique.
 Formats acceptés : images (JPG, PNG, WebP) + PDF. Taille max : 25 Mo. Max 5 par message.
 """
+import io
 import uuid
+import logging
 from pathlib import Path
 from typing import List, Optional
 
 from fastapi import HTTPException, UploadFile, status
 from pydantic import BaseModel
+
+from utils.message_sanitizer import contient_contact
+
+logger = logging.getLogger(__name__)
 
 ATTACHMENTS_DIR = Path(__file__).parent.parent / "uploads" / "citadelle" / "attachments"
 ATTACHMENTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -26,6 +32,19 @@ class Attachment(BaseModel):
     size: int = 0
 
 
+def _pdf_contient_contact(content: bytes) -> bool:
+    """Extrait le texte d'un PDF et détecte la présence de coordonnées (email/téléphone).
+    En cas de PDF illisible/chiffré, renvoie False (ne bloque pas par défaut)."""
+    try:
+        import pypdf
+        reader = pypdf.PdfReader(io.BytesIO(content))
+        texte = " ".join((page.extract_text() or "") for page in reader.pages)
+        return contient_contact(texte)
+    except Exception as e:
+        logger.warning(f"[Attachments] Analyse PDF impossible, contrôle contact ignoré : {e}")
+        return False
+
+
 async def save_attachment(file: UploadFile) -> dict:
     """Valide et enregistre un fichier joint. Retourne ses métadonnées (url, name, content_type, size)."""
     if file.content_type not in ALLOWED_ATTACHMENT_TYPES:
@@ -38,6 +57,14 @@ async def save_attachment(file: UploadFile) -> dict:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="Fichier trop volumineux. Taille maximale : 25 Mo.",
+        )
+    # Anti-contournement : refuser un PDF contenant des coordonnées (email/téléphone)
+    if file.content_type == "application/pdf" and _pdf_contient_contact(content):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ce PDF contient des coordonnées (email ou téléphone). "
+                   "Les échanges de coordonnées doivent rester sur La Citadelle. "
+                   "Merci de retirer ces informations avant l'envoi.",
         )
     ext = _EXT_MAP.get(file.content_type, ".bin")
     filename = f"msg_{uuid.uuid4().hex}{ext}"
