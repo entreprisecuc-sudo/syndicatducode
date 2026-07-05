@@ -166,28 +166,32 @@ export default function CitadelleDashboard() {
             <MemberActivityPanel />
             <MemberEarningsPanel />
 
-            <div>
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: C.blue }}>
-                Gestion & Services
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <SectionLink icon={ShieldCheck} title="Mes transmissions" desc="Vos attestations de La Garde"
-                  href="/citadelle/espace-membre/transmissions" testId="nav-mes-transmissions" />
-                <SectionLink icon={Briefcase} title="Mes services" desc="Évaluations et audits"
-                  href="/citadelle/espace-membre/mes-services" testId="nav-mes-services" />
+            {/* Administration (gauche) + Gestion & Services (droite) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              {/* Administration — encadré bleu */}
+              <div className="rounded-2xl p-5 md:p-6" style={{ border: `2px solid ${C.blue}`, background: "rgba(15,39,71,0.02)" }}>
+                <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: C.blue }}>
+                  Administration
+                </h2>
+                <div className="flex flex-col gap-3">
+                  <SectionLink icon={User} title="Mon profil" desc="Modifier mes informations"
+                    href="/citadelle/espace-membre/profil" testId="nav-mon-profil" />
+                  <SectionLink icon={FileText} title="Mes factures" desc="Téléchargez vos PDF"
+                    href="/citadelle/espace-membre/factures" testId="nav-mes-factures" />
+                </div>
               </div>
-            </div>
 
-            {/* Administration — bloc encadré bleu, aligné à gauche */}
-            <div className="rounded-2xl p-5 md:p-6 lg:w-1/2" style={{ border: `2px solid ${C.blue}`, background: "rgba(15,39,71,0.02)" }}>
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: C.blue }}>
-                Administration
-              </h2>
-              <div className="flex flex-col gap-3">
-                <SectionLink icon={User} title="Mon profil" desc="Modifier mes informations"
-                  href="/citadelle/espace-membre/profil" testId="nav-mon-profil" />
-                <SectionLink icon={FileText} title="Mes factures" desc="Téléchargez vos PDF"
-                  href="/citadelle/espace-membre/factures" testId="nav-mes-factures" />
+              {/* Gestion & Services */}
+              <div>
+                <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: C.blue }}>
+                  Gestion & Services
+                </h2>
+                <div className="flex flex-col gap-3">
+                  <SectionLink icon={ShieldCheck} title="Mes transmissions" desc="Vos attestations de La Garde"
+                    href="/citadelle/espace-membre/transmissions" testId="nav-mes-transmissions" />
+                  <SectionLink icon={Briefcase} title="Mes services" desc="Évaluations et audits"
+                    href="/citadelle/espace-membre/mes-services" testId="nav-mes-services" />
+                </div>
               </div>
             </div>
           </div>
