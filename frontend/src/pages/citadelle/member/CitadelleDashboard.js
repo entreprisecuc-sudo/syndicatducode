@@ -136,14 +136,7 @@ export default function CitadelleDashboard() {
 
           {/* ── Rangée KPI + CTA ─────────────────────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-            <KpiCard icon={LayoutList} label="Annonces actives" value={activeListings}
-              href="/citadelle/espace-membre/mes-annonces" testId="kpi-annonces-actives" />
-            <KpiCard icon={ArrowRightLeft} label="Transactions en cours" value={unreadTransactions}
-              href="/citadelle/espace-membre/transactions" testId="kpi-transactions" />
-            <KpiCard icon={MessageSquare} label="Messages non lus" value={unreadMessages}
-              href="/citadelle/espace-membre/messages" testId="kpi-messages" />
-
-            {/* CTA principal — fond Navy plein */}
+            {/* CTA principal — fond Navy plein, placé en tête à gauche */}
             <Link
               to="/citadelle/espace-membre/mes-annonces/creer"
               data-testid="cta-publier-annonce"
@@ -159,42 +152,44 @@ export default function CitadelleDashboard() {
                 <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>Mettez votre actif en vente</p>
               </div>
             </Link>
+
+            <KpiCard icon={LayoutList} label="Annonces actives" value={activeListings}
+              href="/citadelle/espace-membre/mes-annonces" testId="kpi-annonces-actives" />
+            <KpiCard icon={ArrowRightLeft} label="Transactions en cours" value={unreadTransactions}
+              href="/citadelle/espace-membre/transactions" testId="kpi-transactions" />
+            <KpiCard icon={MessageSquare} label="Messages non lus" value={unreadMessages}
+              href="/citadelle/espace-membre/messages" testId="kpi-messages" />
           </div>
 
-          {/* ── Contenu principal : 3 colonnes ───────────────── */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* ── Contenu principal : pleine largeur ───────────── */}
+          <div className="space-y-8">
+            <MemberActivityPanel />
+            <MemberEarningsPanel />
 
-            {/* Colonne gauche */}
-            <div className="lg:col-span-2 space-y-8">
-              <MemberActivityPanel />
-              <MemberEarningsPanel />
-
-              <div>
-                <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: C.blue }}>
-                  Gestion & Services
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <SectionLink icon={ShieldCheck} title="Mes transmissions" desc="Vos attestations de La Garde"
-                    href="/citadelle/espace-membre/transmissions" testId="nav-mes-transmissions" />
-                  <SectionLink icon={Briefcase} title="Mes services" desc="Évaluations et audits"
-                    href="/citadelle/espace-membre/mes-services" testId="nav-mes-services" />
-                </div>
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: C.blue }}>
+                Gestion & Services
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <SectionLink icon={ShieldCheck} title="Mes transmissions" desc="Vos attestations de La Garde"
+                  href="/citadelle/espace-membre/transmissions" testId="nav-mes-transmissions" />
+                <SectionLink icon={Briefcase} title="Mes services" desc="Évaluations et audits"
+                  href="/citadelle/espace-membre/mes-services" testId="nav-mes-services" />
               </div>
             </div>
 
-            {/* Colonne droite — Administration */}
-            <div className="lg:col-span-1">
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: C.blue }}>
+            {/* Administration — bloc encadré bleu */}
+            <div className="rounded-2xl p-5 md:p-6" style={{ border: `2px solid ${C.blue}`, background: "rgba(15,39,71,0.02)" }}>
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: C.blue }}>
                 Administration
               </h2>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <SectionLink icon={User} title="Mon profil" desc="Modifier mes informations"
                   href="/citadelle/espace-membre/profil" testId="nav-mon-profil" />
                 <SectionLink icon={FileText} title="Mes factures" desc="Téléchargez vos PDF"
                   href="/citadelle/espace-membre/factures" testId="nav-mes-factures" />
               </div>
             </div>
-
           </div>
         </div>
       </div>
