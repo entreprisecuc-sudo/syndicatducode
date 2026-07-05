@@ -337,6 +337,45 @@ async def get_transaction(
 
 # ── Routes Vendeur ────────────────────────────────────────────────────────────
 
+@router.post("/transactions/{transaction_id}/withdraw-offer", summary="Retirer une offre (acheteur, avant paiement)")
+async def withdraw_offer(
+    transaction_id: str,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """
+    Acheteur : abandonne sa proposition d'achat tant qu'aucun paiement n'a eu lieu.
+    Autorisé même si le vendeur a déjà accepté l'offre (statut offer_accepted).
+    Aucun frais : aucun fonds n'est engagé avant le paiement.
+    """
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx["buyer_id"] != current_user.get("sub"):
+        raise HTTPException(status_code=403, detail="Seul l'acheteur peut retirer son offre")
+
+    statuts_autorises = ("offer_sent", "offer_countered", "offer_accepted")
+    if tx["status"] not in statuts_autorises:
+        raise HTTPException(
+            status_code=400,
+            detail="Le retrait n'est possible qu'avant le paiement (offre envoyée, contre-offre ou offre acceptée)"
+        )
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {
+            "status": "cancelled",
+            "cancelled_at": now,
+            "cancelled_by_buyer": True,
+            "updated_at": now,
+        }, "$push": {"messages": system_message(
+            "Proposition retirée par l'acheteur. Aucun paiement n'a été effectué, aucun frais n'est appliqué."
+        )}}
+    )
+    logger.info(f"[Citadelle] Offre retirée par l'acheteur: {transaction_id}")
+    return {"message": "Proposition retirée. Aucun frais appliqué."}
+
+
 @router.post("/transactions/{transaction_id}/accept", summary="Accepter une offre")
 async def accept_offer(
     transaction_id: str,

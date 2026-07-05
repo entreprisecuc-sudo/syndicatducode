@@ -65,6 +65,9 @@ export default function CitadelleTransactionDetail() {
   // Bannière KYC vendeur (soft block — peut être fermée)
   const [kycBannerDismissed, setKycBannerDismissed] = useState(false);
 
+  // Retrait de proposition (acheteur, avant paiement)
+  const [withdrawModal, setWithdrawModal] = useState(false);
+
   const fetchSellerCancelInfo = async () => {
     setSellerCancelInfoLoading(true);
     try {
@@ -227,6 +230,9 @@ export default function CitadelleTransactionDetail() {
   // Statuts où les fonds sont en séquestre
   const STATUTS_SEQUESTRE = ["payment_done", "credentials_submitted", "admin_verified", "disputed"];
 
+  // Statuts avant paiement où l'acheteur peut retirer sa proposition
+  const STATUTS_RETRAIT = ["offer_sent", "offer_countered", "offer_accepted"];
+
   return (
     <CitadelleLayout>
       <div className="max-w-3xl mx-auto px-4 md:px-6 py-8" data-testid="transaction-detail">
@@ -366,6 +372,17 @@ export default function CitadelleTransactionDetail() {
                 <CreditCard size={15} /> Payer {finalAmount?.toLocaleString("fr-FR")} €
               </button>
             </div>
+          )}
+
+          {/* Acheteur : retirer sa proposition — avant paiement (offre envoyée / contre-offre / acceptée) */}
+          {isBuyer && STATUTS_RETRAIT.includes(tx.status) && (
+            <button
+              onClick={() => setWithdrawModal(true)}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
+              style={{ color: CITADELLE_COLORS.textMuted, border: `1px solid ${CITADELLE_COLORS.border}`, background: CITADELLE_COLORS.bg }}
+              data-testid="btn-withdraw-offer">
+              <Ban size={13} /> Abandonner ma proposition
+            </button>
           )}
 
           {/* Bannière KYC vendeur — soft block, fonds en séquestre + profil incomplet */}
@@ -849,6 +866,46 @@ export default function CitadelleTransactionDetail() {
               ) : (
                 <p className="text-sm text-center py-4" style={{ color: CITADELLE_COLORS.textMuted }}>Impossible de charger les informations.</p>
               )}
+            </div>
+          </div>
+        )}
+        {/* Modal retrait de proposition — acheteur, avant paiement */}
+        {withdrawModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)" }}>
+            <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Ban size={18} style={{ color: CITADELLE_COLORS.blue }} />
+                <h3 className="font-bold text-lg" style={{ color: CITADELLE_COLORS.blue }}>Abandonner ma proposition</h3>
+              </div>
+              <div className="p-4 rounded-xl mb-4 flex items-start gap-3" style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                <Info size={16} style={{ color: "#22C55E", flexShrink: 0, marginTop: 2 }} />
+                <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
+                  Aucun paiement n'a encore été effectué : votre proposition sera retirée <strong>sans aucun frais</strong>.
+                  {tx.status === "offer_accepted" && " Même si le vendeur a accepté, vous n'êtes pas engagé tant que vous n'avez pas payé."}
+                </p>
+              </div>
+              <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
+                Cette action est définitive. Vous pourrez soumettre une nouvelle offre plus tard si l'annonce est toujours disponible.
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setWithdrawModal(false)}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium"
+                  style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
+                  data-testid="withdraw-cancel-btn">
+                  Ne pas retirer
+                </button>
+                <button
+                  onClick={async () => {
+                    await doAction("withdraw-offer");
+                    setWithdrawModal(false);
+                  }}
+                  disabled={actionLoading}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
+                  style={{ background: "#DC2626", color: "white" }}
+                  data-testid="withdraw-confirm-btn">
+                  Confirmer le retrait
+                </button>
+              </div>
             </div>
           </div>
         )}

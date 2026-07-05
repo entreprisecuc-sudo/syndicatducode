@@ -442,3 +442,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Catégorie "Services communs" supprimée (le service commun devient le hero). `ServiceDetailModal` ("En savoir plus") + `ServiceCheckoutModal` intégrés. Espacement `mb-16` cohérent.
 
 *Mise à jour : 15/06/2026*
+
+## 🔧 Session 06/2026 — Retrait de proposition acheteur (PREVIEW)
+- **Nouvelle route** `POST /api/citadelle/transactions/{id}/withdraw-offer` (`routes/citadelle/transactions.py`) : l'acheteur peut abandonner sa proposition tant qu'aucun paiement n'a eu lieu — statuts autorisés `offer_sent`, `offer_countered`, `offer_accepted` (donc **même après acceptation du vendeur**). Aucun frais (aucun fonds engagé). Passe la transaction en `cancelled` + `cancelled_by_buyer=True` + message système.
+- **Frontend** (`CitadelleTransactionDetail.js`) : bouton « Abandonner ma proposition » (`data-testid="btn-withdraw-offer"`) visible pour l'acheteur sur ces 3 statuts + modal de confirmation (`withdraw-confirm-btn`).
+- **Validé (curl)** : retrait en `offer_sent` OK ; blocage 400 sur statut non autorisé (tx déjà annulée). Le cas `offer_accepted` emprunte le même chemin (statut explicitement autorisé). Règle 6 respectée (pas de testing_agent).
