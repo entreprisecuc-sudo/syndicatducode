@@ -11,6 +11,7 @@ import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { AttachmentButton, AttachmentPreview, MessageAttachments } from "@/components/citadelle/messageAttachments";
+import { ReportConversationButton } from "@/components/citadelle/ReportConversationButton";
 
 export default function CitadelleConversationDetail() {
   const { id } = useParams();
@@ -104,6 +105,7 @@ export default function CitadelleConversationDetail() {
               {isBuyer ? "Vendeur" : "Acheteur"} : {otherEmail}
             </p>
           </div>
+          <ReportConversationButton conversationType="presale" conversationId={conv.id} compact />
           <Link to={`/citadelle/annonces/${conv.listing_slug}`}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
             style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.textMuted }}>

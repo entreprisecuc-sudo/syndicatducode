@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Shield, Globe, ShoppingCart, Cloud, Monitor, Users, Settings, ExternalLink, Bell, FileText } from "lucide-react";
+import { Shield, Globe, ShoppingCart, Cloud, Monitor, Users, Settings, ExternalLink, Bell, FileText, Flag } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
 
@@ -32,6 +32,7 @@ export default function AdminCitadelle() {
   const modules = [
     { icon: Globe, label: "Annonces", desc: "Gérer et valider les annonces de vente", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/annonces" },
     { icon: ShoppingCart, label: "Transactions", desc: "Suivre les transactions en cours", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/transactions" },
+    { icon: Flag, label: "Signalements", desc: "Conversations signalées par les utilisateurs", status: "Actif", count: null, href: "/syndicat-admin/citadelle/signalements" },
     { icon: Users, label: "Utilisateurs", desc: "Membres inscrits sur La Citadelle", status: "Actif", count: null, href: null },
     { icon: Cloud, label: "Services", desc: "Catalogue des services complémentaires", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/services" },
     { icon: FileText, label: "Factures", desc: "Factures PDF générées après paiement", status: "Actif", count: null, href: "/syndicat-admin/citadelle/factures" },

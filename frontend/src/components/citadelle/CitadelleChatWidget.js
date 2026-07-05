@@ -13,6 +13,7 @@ import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { AttachmentButton, AttachmentPreview, MessageAttachments } from "@/components/citadelle/messageAttachments";
+import { ReportConversationButton } from "@/components/citadelle/ReportConversationButton";
 
 // Clé localStorage pour les conversations masquées
 const MASQUEES_KEY = "citadelle_conv_masquees";
@@ -117,6 +118,9 @@ function VueChat({ tx, mode, onRetour, user, jouerSon }) {
             {estLitige ? "La Garde — Confidentiel" : "Conversation"}
           </p>
         </div>
+        {!estLitige && (
+          <ReportConversationButton conversationType="transaction" conversationId={tx.id} compact color="rgba(255,255,255,0.9)" />
+        )}
       </div>
 
       {/* Messages */}

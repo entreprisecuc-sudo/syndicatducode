@@ -14,6 +14,7 @@ import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { AttachmentButton, AttachmentPreview, MessageAttachments } from "@/components/citadelle/messageAttachments";
+import { ReportConversationButton } from "@/components/citadelle/ReportConversationButton";
 
 const STATUS_CONFIG = {
   offer_sent:            { label: "Offre envoyée",     color: "#F59E0B" },
@@ -509,6 +510,7 @@ export default function CitadelleTransactionDetail() {
             <MessageSquare size={15} style={{ color: CITADELLE_COLORS.gold }} />
             <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>Conversation</span>
             <span className="text-xs ml-auto" style={{ color: CITADELLE_COLORS.textMuted }}>{tx.messages?.length || 0} messages</span>
+            <ReportConversationButton conversationType="transaction" conversationId={tx.id} compact />
           </div>
           <div className="p-4 space-y-3 max-h-96 overflow-y-auto" style={{ background: "white" }}>
             {tx.messages?.map(msg => (
