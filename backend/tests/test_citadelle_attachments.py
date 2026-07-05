@@ -24,6 +24,16 @@ _PNG_BYTES = (
 _PDF_BYTES = b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF"
 
 
+def _make_pdf(text: str) -> bytes:
+    """Génère un PDF avec reportlab contenant `text`."""
+    from reportlab.pdfgen import canvas
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf)
+    c.drawString(100, 750, text)
+    c.save()
+    return buf.getvalue()
+
+
 def _login(email, password):
     r = requests.post(f"{API}/auth/login", json={"email": email, "password": password})
     assert r.status_code == 200, r.text
@@ -99,6 +109,69 @@ class TestUploadAttachment:
         files = {"file": ("test.png", io.BytesIO(_PNG_BYTES), "image/png")}
         r = requests.post(f"{API}/messages/upload-attachment", files=files)
         assert r.status_code in (401, 403)
+
+
+# ── Anti-contournement PDF : refus si coordonnées ─────────────────────────────
+
+class TestPdfAntiContact:
+    def test_pdf_with_email_rejected(self, buyer_headers):
+        pdf = _make_pdf("Ecrivez moi a jean.dupont@gmail.com")
+        files = {"file": ("email.pdf", io.BytesIO(pdf), "application/pdf")}
+        r = requests.post(f"{API}/messages/upload-attachment", files=files, headers=buyer_headers)
+        assert r.status_code == 400, r.text
+        detail = (r.json().get("detail") or "").lower()
+        assert "coordonn" in detail, detail
+
+    def test_pdf_with_phone_spaces_rejected(self, buyer_headers):
+        pdf = _make_pdf("Appelez le 06 12 34 56 78 pour info")
+        files = {"file": ("tel.pdf", io.BytesIO(pdf), "application/pdf")}
+        r = requests.post(f"{API}/messages/upload-attachment", files=files, headers=buyer_headers)
+        assert r.status_code == 400, r.text
+        assert "coordonn" in (r.json().get("detail") or "").lower()
+
+    def test_pdf_with_phone_compact_rejected(self, buyer_headers):
+        pdf = _make_pdf("Numero: 0612345678")
+        files = {"file": ("tel2.pdf", io.BytesIO(pdf), "application/pdf")}
+        r = requests.post(f"{API}/messages/upload-attachment", files=files, headers=buyer_headers)
+        assert r.status_code == 400, r.text
+        assert "coordonn" in (r.json().get("detail") or "").lower()
+
+    def test_pdf_clean_accepted(self, buyer_headers):
+        pdf = _make_pdf("Document propre sans aucune information de contact.")
+        files = {"file": ("clean.pdf", io.BytesIO(pdf), "application/pdf")}
+        r = requests.post(f"{API}/messages/upload-attachment", files=files, headers=buyer_headers)
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data["content_type"] == "application/pdf"
+        assert data["size"] == len(pdf)
+        assert data["url"].startswith("/uploads/citadelle/attachments/")
+        assert data["name"] == "clean.pdf"
+
+    def test_image_with_contact_visual_accepted(self, buyer_headers):
+        """Une image n'est PAS analysée (pas d'OCR) : toujours acceptée."""
+        files = {"file": ("photo.png", io.BytesIO(_PNG_BYTES), "image/png")}
+        r = requests.post(f"{API}/messages/upload-attachment", files=files, headers=buyer_headers)
+        assert r.status_code == 200, r.text
+
+    def test_pdf_corrupted_accepted(self, buyer_headers):
+        """PDF illisible : le contrôle contact est ignoré, upload accepté."""
+        files = {"file": ("bad.pdf", io.BytesIO(_PDF_BYTES), "application/pdf")}
+        r = requests.post(f"{API}/messages/upload-attachment", files=files, headers=buyer_headers)
+        assert r.status_code == 200, r.text
+
+    def test_message_with_clean_pdf_still_works(self, buyer_headers, transaction_id):
+        pdf = _make_pdf("Rapport propre.")
+        files = {"file": ("ok.pdf", io.BytesIO(pdf), "application/pdf")}
+        up = requests.post(f"{API}/messages/upload-attachment", files=files, headers=buyer_headers)
+        assert up.status_code == 200
+        att = up.json()
+        r = requests.post(
+            f"{API}/transactions/{transaction_id}/message",
+            json={"content": "", "attachments": [att]},
+            headers=buyer_headers,
+        )
+        assert r.status_code == 200, r.text
+        assert r.json()["attachments"][0]["content_type"] == "application/pdf"
 
 
 # ── Helper: upload et retourne l'objet Attachment ─────────────────────────────

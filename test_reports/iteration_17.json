@@ -1,0 +1,25 @@
+{
+  "summary": "Anti-contournement PDF (pièces jointes messagerie) — validation exhaustive backend + frontend. Backend pytest: 25/25 dont 7 nouveaux cas anti-contournement PDF (email seul, téléphone espacé '06 12 34 56 78', téléphone compact '0612345678', PDF propre 200, image PNG toujours acceptée sans OCR, PDF corrompu accepté, envoi message avec PDF propre OK). Régressions upload conservées (PNG/PDF ok, TXT 400, >25 Mo 413, sans auth 401/403) et les 3 messageries (transaction/pré-vente/litige) restent fonctionnelles. Frontend (Playwright, /citadelle/espace-membre/transactions/{id}, acheteur connecté): upload PDF avec email → alerte navigateur reprenant EXACTEMENT le detail serveur ('Ce PDF contient des coordonnées (email ou téléphone). Les échanges de coordonnées doivent rester sur La Citadelle...') + aperçu vide; upload PDF propre → apparaît dans data-testid='attachment-preview'.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_citadelle_attachments.py",
+    "/app/test_reports/pytest/attachments_iter17.xml",
+    "/app/test_reports/pytest/attachments_iter17_full.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "utils/attachments.py::_pdf_contient_contact — bonne pratique: try/except large qui renvoie False sur PDF illisible/chiffré, évite de bloquer par erreur. RAS.",
+    "utils/message_sanitizer.py::contient_contact réutilise _PATTERNS existants: DRY respecté.",
+    "messageAttachments.js::AttachmentButton onSelect affiche bien err.response.data.detail via alert() — cohérent avec la spec. Note UX (préexistante, non bloquante): un toast custom serait plus élégant qu'un alert() natif, mais fonctionnel."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_citadelle_attachments.py (+ classe TestPdfAntiContact avec 7 tests + helper _make_pdf via reportlab)"
+  ],
+  "success_rate": {"backend": "100% (25/25)", "frontend": "100% (2/2 scénarios PDF)"},
+  "test_credentials": "Acheteur test.acheteur@citadelle.fr / DemoAcheteur2026! ; Vendeur test.vendeur@citadelle.fr / DemoVendeur2026!",
+  "seed_data_creation": "seed_test_transactions.py réexécuté avant et après tests (idempotent, marqueur test_scenario_seed). État final propre.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Génération de PDF de test via reportlab: from reportlab.pdfgen import canvas; c=canvas.Canvas(buf); c.drawString(100,750,'texte'); c.save(). Le helper _make_pdf() dans test_citadelle_attachments.py est réutilisable. Le PDF _PDF_BYTES statique (b'%PDF-1.4...') est un cas 'illisible' qui passe l'analyse via except → utile pour tester le fallback."
+}
