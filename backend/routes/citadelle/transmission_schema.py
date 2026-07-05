@@ -48,7 +48,7 @@ SECTIONS = {
     "cms": {
         "title": "CMS / Framework",
         "fields": [
-            _f("platform", "Plateforme (WordPress, Prestashop, Laravel…)"),
+            _f("platform", "Plateforme CMS/Framework"),
             _f("version", "Version"),
             _f("admin_account", "Compte administrateur", sensitive=True, type="textarea"),
         ],
@@ -56,7 +56,7 @@ SECTIONS = {
     "ecommerce": {
         "title": "Boutique / E-commerce",
         "fields": [
-            _f("shop_platform", "Plateforme (Shopify, WooCommerce, Amazon…)"),
+            _f("shop_platform", "Plateforme e-commerce"),
             _f("admin_account", "Compte administrateur", sensitive=True, type="textarea"),
             _f("payment_gateways", "Passerelles de paiement", sensitive=True, type="textarea"),
             _f("suppliers", "Fournisseurs / logistique", type="textarea"),
