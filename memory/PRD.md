@@ -491,3 +491,9 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Backend** : `GET /api/citadelle/admin/reports/{id}/conversation` (require_admin) → renvoie messages (+ dispute_messages pour les transactions) avec pièces jointes, participants, titre annonce. Renvoie `found:false` si la conversation n'existe plus.
 - **Frontend** : bouton « Voir la conversation » (`report-view-conversation`) sur chaque carte de signalement → modal (`conversation-modal`) affichant l'échange complet (expéditeur, date, contenu, **pièces jointes** via `MessageAttachments` réutilisé). Messages système filtrés.
 - **Validé (curl + capture)** : endpoint renvoie 4 messages, modal affiche les messages acheteur/vendeur lisibles.
+
+## 🔧 Session 06/2026 — Annonces « contenu adulte » (PREVIEW)
+- **Choix client** : case « Contenu adulte » à la création/édition ; si cochée → aucune image ni lien du site (jamais affichés) ; carte visible par tous avec badge « Contenu adulte 18+ » ; ouverture du détail réservée aux comptes **connectés**.
+- **Backend** (`listings.py`) : champ `is_adult` sur ListingCreate/Update. À la création et à l'édition, si adulte → `images=[]` et `url_preview=None` forcés. Le champ `is_adult` est renvoyé par la liste et le détail.
+- **Frontend** : case à cocher dans `CitadelleCreateListing.js` et `CitadelleEditListing.js` (masque les champs URL + upload images quand cochée). `ListingCard.js` : cover sombre « 18+ » + badge rouge « Contenu adulte 18+ » (pas d'image). `CitadelleListingDetail.js` : si `is_adult && !isAuthenticated` → écran de restriction (`adult-restricted`) « consultation réservée aux comptes vérifiés » + bouton connexion ; sinon cover « 18+ » à la place de la galerie.
+- **Validé (curl + capture)** : création adulte purge images/url (is_adult=true, images=[], url=None), liste renvoie is_adult ; écran de restriction confirmé (non connecté).

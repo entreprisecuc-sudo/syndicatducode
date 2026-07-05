@@ -159,6 +159,7 @@ class ListingCreate(BaseModel):
     technologies: Optional[List[str]] = []
     url_preview: Optional[str] = Field(None, max_length=500)
     images: Optional[List[str]] = []
+    is_adult: bool = False
     # Enchères
     is_auction: bool = False
     auction_show_reserve: bool = False
@@ -183,6 +184,7 @@ class ListingUpdate(BaseModel):
     technologies: Optional[List[str]] = None
     url_preview: Optional[str] = None
     images: Optional[List[str]] = None
+    is_adult: Optional[bool] = None
     # Enchères
     is_auction: Optional[bool] = None
     auction_show_reserve: Optional[bool] = None
@@ -343,8 +345,9 @@ async def create_listing(
         "age_months": data.age_months,
         "niche": data.niche,
         "technologies": data.technologies or [],
-        "url_preview": data.url_preview,
-        "images": data.images or [],
+        "url_preview": None if data.is_adult else data.url_preview,
+        "images": [] if data.is_adult else (data.images or []),
+        "is_adult": data.is_adult,
         "is_featured": False,
         "is_verified": False,
         "views_count": 0,
@@ -401,6 +404,12 @@ async def update_listing(
     if not updates:
         return listing
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Contenu adulte : ni images ni lien ne sont conservés
+    effective_adult = updates.get("is_adult", listing.get("is_adult", False))
+    if effective_adult:
+        updates["images"] = []
+        updates["url_preview"] = None
 
     # Prix de vente / réserve + achat immédiat minimum dynamique (frais min + 1 €)
     if data.price is not None or data.auction_buy_now_price is not None:

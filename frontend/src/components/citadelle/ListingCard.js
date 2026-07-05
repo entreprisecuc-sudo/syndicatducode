@@ -23,6 +23,7 @@ export default function ListingCard({ listing }) {
   const firstImage = listing.images?.filter(Boolean).find(img => isImageFile(img));
   const mainImage = firstImage ? getListingImageUrl(firstImage) : PLACEHOLDER_IMG;
   const isSold = listing.status === "sold";
+  const isAdult = listing.is_adult;
 
   // Calcul du temps restant pour les enchères
   const tempsRestant = useTempsRestant(listing.is_auction ? listing.auction_ends_at : null);
@@ -49,13 +50,22 @@ export default function ListingCard({ listing }) {
     <Wrapper>
       {/* Image */}
       <div className="relative overflow-hidden" style={{ height: "160px" }}>
-        <img
-          src={mainImage}
-          alt={listing.title}
-          className={`w-full h-full object-cover transition-transform duration-300 ${!isSold ? "group-hover:scale-105" : ""}`}
-          style={{ filter: isSold ? "grayscale(40%)" : "none" }}
-          onError={e => { e.target.src = PLACEHOLDER_IMG; }}
-        />
+        {isAdult ? (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2"
+            style={{ background: "linear-gradient(135deg, #1a1626 0%, #2d1b2e 100%)" }} data-testid={`listing-adult-cover-${listing.slug}`}>
+            <span className="flex items-center justify-center w-12 h-12 rounded-full text-lg font-black"
+              style={{ background: "rgba(220,38,38,0.2)", color: "#f87171", border: "2px solid #f87171" }}>18+</span>
+            <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>Contenu adulte</span>
+          </div>
+        ) : (
+          <img
+            src={mainImage}
+            alt={listing.title}
+            className={`w-full h-full object-cover transition-transform duration-300 ${!isSold ? "group-hover:scale-105" : ""}`}
+            style={{ filter: isSold ? "grayscale(40%)" : "none" }}
+            onError={e => { e.target.src = PLACEHOLDER_IMG; }}
+          />
+        )}
         {/* Bandeau VENDU diagonal */}
         {isSold && (
           <div className="absolute inset-0 flex items-center justify-center"
@@ -90,6 +100,12 @@ export default function ListingCard({ listing }) {
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
                 <Star size={11} />
                 Recommandé
+              </span>
+            )}
+            {isAdult && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold"
+                style={{ background: "#DC2626", color: "white" }} data-testid={`listing-adult-badge-${listing.slug}`}>
+                Contenu adulte 18+
               </span>
             )}
           </div>

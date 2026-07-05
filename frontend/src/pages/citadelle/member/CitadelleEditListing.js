@@ -87,6 +87,7 @@ export default function CitadelleEditListing() {
         technologies: (listing.technologies || []).join(", "),
         url_preview: listing.url_preview || "",
         images: [...(listing.images || []), "", "", "", "", ""].slice(0, 5),
+        is_adult: !!listing.is_adult,
       });
     } catch {
       setNotFound(true);
@@ -129,8 +130,9 @@ export default function CitadelleEditListing() {
         age_months: form.age_months ? parseInt(form.age_months) : null,
         niche: form.niche.trim() || null,
         technologies: form.technologies.split(",").map(t => t.trim()).filter(Boolean),
-        url_preview: form.url_preview.trim() || null,
-        images: form.images.filter(Boolean),
+        url_preview: form.is_adult ? null : (form.url_preview.trim() || null),
+        images: form.is_adult ? [] : form.images.filter(Boolean),
+        is_adult: form.is_adult,
       };
       await citadelleApi.patch(`/listings/${id}`, payload);
       navigate("/citadelle/espace-membre/mes-annonces");
@@ -342,23 +344,41 @@ export default function CitadelleEditListing() {
               className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
           </div>
 
-          {/* URL du site */}
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-              URL du site <span className="font-normal text-xs">(masquée jusqu'à transaction)</span>
+          {/* Contenu adulte */}
+          <div className="p-4 rounded-xl" style={{ background: "rgba(220,38,38,0.05)", border: "1px solid rgba(220,38,38,0.2)" }}>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" checked={form.is_adult} onChange={e => set("is_adult", e.target.checked)}
+                className="w-4 h-4 rounded mt-0.5" data-testid="edit-listing-adult" />
+              <span>
+                <span className="block text-sm font-semibold" style={{ color: "#DC2626" }}>Contenu adulte (18+)</span>
+                <span className="block text-xs mt-1" style={labelStyle}>
+                  Si coché : aucune image ni lien du site ne seront affichés. Un bandeau « Contenu adulte » sera présenté et la consultation du détail sera réservée aux comptes vérifiés.
+                </span>
+              </span>
             </label>
-            <input value={form.url_preview} onChange={e => set("url_preview", e.target.value)}
-              placeholder="https://monsite.fr"
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
           </div>
 
-          {/* Captures d'écran */}
-          <CitadelleImageUpload
-            images={form.images}
-            onChange={(imgs) => set("images", imgs)}
-            inputStyle={inputStyle}
-            labelStyle={labelStyle}
-          />
+          {!form.is_adult && (
+            <>
+              {/* URL du site */}
+              <div>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>
+                  URL du site <span className="font-normal text-xs">(masquée jusqu'à transaction)</span>
+                </label>
+                <input value={form.url_preview} onChange={e => set("url_preview", e.target.value)}
+                  placeholder="https://monsite.fr"
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+              </div>
+
+              {/* Captures d'écran */}
+              <CitadelleImageUpload
+                images={form.images}
+                onChange={(imgs) => set("images", imgs)}
+                inputStyle={inputStyle}
+                labelStyle={labelStyle}
+              />
+            </>
+          )}
         </div>
 
         {/* Boutons d'action */}

@@ -106,6 +106,37 @@ export default function CitadelleListingDetail() {
     </CitadelleLayout>
   );
 
+  // Contenu adulte : consultation du détail réservée aux comptes vérifiés (connectés)
+  if (listing.is_adult && !isAuthenticated) {
+    return (
+      <CitadelleLayout>
+        <div className="max-w-lg mx-auto px-4 py-20 text-center" data-testid="adult-restricted">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-5"
+            style={{ background: "rgba(220,38,38,0.12)", color: "#DC2626", border: "2px solid #DC2626" }}>
+            <span className="text-xl font-black">18+</span>
+          </div>
+          <h1 className="text-2xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+            Contenu adulte
+          </h1>
+          <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
+            Cette annonce contient du contenu réservé aux adultes. La consultation du détail est réservée aux comptes vérifiés.
+            Connectez-vous ou créez un compte pour continuer.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Link to="/citadelle/connexion" className="px-5 py-2.5 rounded-xl text-sm font-bold"
+              style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }} data-testid="adult-login-btn">
+              Se connecter
+            </Link>
+            <Link to="/citadelle/annonces" className="px-5 py-2.5 rounded-xl text-sm font-medium"
+              style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
+              Retour aux annonces
+            </Link>
+          </div>
+        </div>
+      </CitadelleLayout>
+    );
+  }
+
   const { label: typeLabel, icon: TypeIcon } = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
   const allFiles = listing.images?.filter(Boolean) || [];
   const images = allFiles.filter(f => isImageFile(f));
@@ -130,7 +161,17 @@ export default function CitadelleListingDetail() {
           <div className="lg:col-span-2 space-y-6">
             {/* Image principale */}
             <div className="rounded-2xl overflow-hidden" style={{ height: "320px", background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
-              {displayImages[activeImg] ? (
+              {listing.is_adult ? (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-center px-6"
+                  style={{ background: "linear-gradient(135deg, #1a1626 0%, #2d1b2e 100%)" }} data-testid="adult-cover">
+                  <span className="flex items-center justify-center w-16 h-16 rounded-full text-xl font-black"
+                    style={{ background: "rgba(220,38,38,0.2)", color: "#f87171", border: "2px solid #f87171" }}>18+</span>
+                  <span className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.85)" }}>Contenu adulte</span>
+                  <span className="text-xs max-w-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
+                    Aucune image ni lien du site n'est affiché pour les annonces à contenu adulte.
+                  </span>
+                </div>
+              ) : displayImages[activeImg] ? (
                 <img src={getListingImageUrl(displayImages[activeImg])} alt={listing.title} className="w-full h-full object-cover" onError={e => e.target.style.display="none"} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -138,7 +179,7 @@ export default function CitadelleListingDetail() {
                 </div>
               )}
             </div>
-            {displayImages.length > 1 && (
+            {!listing.is_adult && displayImages.length > 1 && (
               <div className="flex gap-2">
                 {displayImages.map((img, i) => (
                   <button key={i} onClick={() => setActiveImg(i)} className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 transition-all"
