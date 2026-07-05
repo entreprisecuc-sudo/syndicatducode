@@ -128,6 +128,7 @@ import CitadelleMyTransmissions from "@/pages/citadelle/member/CitadelleMyTransm
 import CitadelleNotifications from "@/pages/citadelle/member/CitadelleNotifications";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import AdminLiveApp from "@/pages/admin/AdminLiveApp";
+import AdminInstallApp from "@/pages/admin/AdminInstallApp";
 
 // Pages partagées (tous les membres)
 import MemberPartners from "@/pages/shared/MemberPartners";
@@ -296,6 +297,10 @@ function App() {
               <Route
                 path="/admin-live"
                 element={<RoleRoute allowedRoles={["admin"]}><AdminLiveApp /></RoleRoute>}
+              />
+              <Route
+                path="/admin-live/installer"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminInstallApp /></RoleRoute>}
               />
               <Route 
                 path="/syndicat-admin/utilisateurs" 

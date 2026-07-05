@@ -5,7 +5,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, XCircle, ExternalLink, Bell, BellOff, RefreshCw, LogOut, Sword, QrCode, X } from "lucide-react";
+import { CheckCircle, XCircle, ExternalLink, Bell, BellOff, RefreshCw, LogOut, Sword, QrCode } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/services/api";
 
@@ -141,38 +141,6 @@ const AlertCard = ({ type, alertData, onAction }) => {
   );
 };
 
-// ── Composant QR code modal ───────────────────────────────────────────────────
-const QRModal = ({ onClose }) => {
-  const appUrl = window.location.origin + "/admin-live";
-  const qrUrl  = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(appUrl)}&bgcolor=0a0f1e&color=C9A45C&qzone=2`;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.85)" }} onClick={onClose}>
-      <div className="relative w-72 rounded-2xl p-6 text-center"
-        style={{ background: "#0f1929", border: "1px solid rgba(201,164,92,0.35)" }}
-        onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-3 right-3 text-white/40 hover:text-white/80">
-          <X size={18} />
-        </button>
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3"
-          style={{ background: "rgba(201,164,92,0.15)" }}>
-          <QrCode size={20} style={{ color: "#C9A45C" }} />
-        </div>
-        <h3 className="text-white font-bold mb-1">Installer Papa en Mousse</h3>
-        <p className="text-xs mb-4" style={{ color: "rgba(255,255,255,0.45)" }}>
-          Scanne ce QR code pour ouvrir l'app sur ton téléphone, puis "Ajouter à l'écran d'accueil"
-        </p>
-        <img src={qrUrl} alt="QR code installation"
-          className="mx-auto rounded-xl" style={{ width: 220, height: 220 }} />
-        <p className="text-xs mt-3 font-mono break-all" style={{ color: "rgba(201,164,92,0.6)" }}>
-          {appUrl}
-        </p>
-      </div>
-    </div>
-  );
-};
-
 // ── App principale ────────────────────────────────────────────────────────────
 export default function AdminLiveApp() {
   const { user, logout } = useAuth();
@@ -180,7 +148,6 @@ export default function AdminLiveApp() {
   const [summary,     setSummary]     = useState(null);
   const [loading,     setLoading]     = useState(true);
   const [pushEnabled, setPushEnabled] = useState(false);
-  const [showQR,      setShowQR]      = useState(false);
   const [lastRefresh, setLastRefresh] = useState(null);
   const [installPrompt, setInstallPrompt] = useState(null);
   const prevTotal = useRef(0);
@@ -261,8 +228,6 @@ export default function AdminLiveApp() {
     <div className="min-h-screen flex flex-col"
       style={{ background: "linear-gradient(180deg, #0a0f1e 0%, #0d1528 100%)", fontFamily: "'Inter', sans-serif" }}>
 
-      {showQR && <QRModal onClose={() => setShowQR(false)} />}
-
       {/* Header */}
       <header className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between"
         style={{ background: "rgba(10,15,30,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(201,164,92,0.15)" }}>
@@ -296,8 +261,8 @@ export default function AdminLiveApp() {
             {pushEnabled ? <Bell size={15} style={{ color: "#34d399" }} /> : <BellOff size={15} style={{ color: "rgba(255,255,255,0.5)" }} />}
           </button>
 
-          {/* QR code */}
-          <button onClick={() => setShowQR(true)} data-testid="show-qr-btn"
+          {/* Installation / QR */}
+          <button onClick={() => navigate("/admin-live/installer")} data-testid="show-qr-btn"
             className="p-2 rounded-xl transition-all hover:opacity-70"
             style={{ background: "rgba(255,255,255,0.06)" }}>
             <QrCode size={15} style={{ color: "rgba(255,255,255,0.5)" }} />
@@ -358,10 +323,10 @@ export default function AdminLiveApp() {
             style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <ExternalLink size={13} /> Admin complet
           </a>
-          <button onClick={() => setShowQR(true)}
+          <button onClick={() => navigate("/admin-live/installer")}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all hover:opacity-80"
             style={{ background: "rgba(201,164,92,0.08)", color: "#C9A45C", border: "1px solid rgba(201,164,92,0.2)" }}>
-            <QrCode size={13} /> Partager l'app
+            <QrCode size={13} /> Installer / Partager l'app
           </button>
         </div>
       </main>

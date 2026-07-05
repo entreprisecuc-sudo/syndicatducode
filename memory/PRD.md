@@ -48,6 +48,19 @@ Processus professionnel de cession + génération de l'« Attestation de Transmi
 - Vérifs prod OK : HOME 200, /api/citadelle/blog 200, /api/citadelle/services 200 (/api/alerts/ = 403 attendu, auth admin).
 - ⚠️ Cache PWA : SW met à jour l'UI au prochain chargement. Ancienne branche locale `main-projet-4` conserve 26 commits non poussés (sans impact).
 
+## 🔧 Session 07/2026 — Installation PWA admin simplifiée (« Papa en Mousse ») (PREVIEW)
+- **Besoin client** : simplifier l'installation de la web app admin pour les collègues (scan QR → installation simple type « Voulez-vous installer ? »), sans passer par un store. Page unique réservée aux admins.
+- **Nouvelle page** `AdminInstallApp.js` (route admin `/admin-live/installer`, `RoleRoute` admin) : détection plateforme →
+  - **Android/Chrome** : bouton one-tap « Installer l'application » via `beforeinstallprompt` (prompt natif) + écoute `appinstalled`.
+  - **iPhone/Safari** : instructions visuelles 3 étapes (Partager → Sur l'écran d'accueil → Ajouter) — seule méthode possible sur iOS.
+  - **Déjà installée** (standalone) : message + bouton « Ouvrir l'application ».
+  - **Fallback** : consignes menu ⋮ Chrome + bouton Réessayer.
+  - **QR code** pointant vers `/admin-live/installer` pour faire scanner à un collègue.
+- **Routage** : `RoleRoute` — ajout de `/admin-live` aux `adminPaths` → un accès non connecté à l'app admin/installer redirige vers la **connexion administrateur** (`/papaenmousse1981`) au lieu de la connexion membre (confirmé via screenshot). `start_url` PWA reste `/admin-live` (ouverture sur connexion admin, conforme choix client).
+- **Service worker** (`public/sw.js`) : ajout d'un handler `fetch` (network-first + secours cache/`/admin-live`) pour fiabiliser l'installabilité PWA.
+- **AdminLiveApp.js** : le QR pointe désormais vers la page d'installation ; ancien `QRModal` (code mort) supprimé ; import `X` inutilisé retiré ; boutons « Installer / Partager l'app » naviguent vers `/admin-live/installer`.
+- **Validé** : compilation frontend OK, redirection connexion admin confirmée. ⚠️ Capture visuelle de la page d'installation non aboutie (limitation login headless du harnais).
+
 ## 🔧 Session 07/2026 — Annulation auto des offres concurrentes (PREVIEW)
 - **Choix client** : sur une même annonce, dès qu'une offre est **acceptée**, toutes les **autres offres en cours** (`offer_sent` / `offer_countered`) sont **immédiatement annulées** (avant paiement). Message système + email à chaque acheteur concerné : « Navré, le bien numérique vient de trouver acquéreur. N'hésitez pas à consulter les autres annonces pour trouver la perle rare. » + lien `/citadelle/annonces`.
 - **Backend** (`routes/citadelle/transactions.py`) : helper `_annuler_offres_concurrentes(listing_id, accepted_tx_id, now)` (filtre `listing_id` + `$ne` tx acceptée + `status $in [offer_sent, offer_countered]` → `cancelled` + `cancelled_reason='concurrent_offer_accepted'` + message système + email). Appelé dans `accept_offer` (vendeur accepte) et `accept_counter_offer` (acheteur accepte la contre-offre).

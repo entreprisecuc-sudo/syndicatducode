@@ -74,7 +74,7 @@ export const RoleRoute = ({ children, allowedRoles }) => {
   }
 
   if (!isAuthenticated) {
-    const adminPaths = ["/syndicat-admin"];
+    const adminPaths = ["/syndicat-admin", "/admin-live"];
     const isAdminPath = adminPaths.some(p => location.pathname.startsWith(p));
     return <Navigate to={isAdminPath ? "/papaenmousse1981" : "/connexion"} state={{ from: location }} replace />;
   }
