@@ -494,28 +494,51 @@ async def accept_counter_offer(
     return {"message": "Contre-offre acceptée", "payment_amount": tx["counter_amount"]}
 
 
-@router.post("/transactions/{transaction_id}/refuse-counter", summary="Refuser une contre-offre")
-async def refuse_counter_offer(
+@router.post("/transactions/{transaction_id}/buyer-counter", summary="Acheteur — Faire une nouvelle proposition")
+async def buyer_counter_offer(
     transaction_id: str,
+    data: CounterOffer,
     current_user: dict = Depends(require_citadelle_user)
 ):
-    """Acheteur : refuse la contre-offre du vendeur. La négociation prend fin (offre refusée)."""
+    """
+    Acheteur : au lieu d'accepter la contre-offre du vendeur, propose un nouveau montant.
+    La négociation reste ouverte : la transaction repasse en 'offer_sent' et le vendeur
+    peut de nouveau accepter, refuser ou contre-proposer (va-et-vient illimité).
+    """
     tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction introuvable")
     if tx["buyer_id"] != current_user.get("sub"):
-        raise HTTPException(status_code=403, detail="Seul l'acheteur peut refuser la contre-offre")
+        raise HTTPException(status_code=403, detail="Seul l'acheteur peut faire une nouvelle proposition")
     if tx["status"] != "offer_countered":
-        raise HTTPException(status_code=400, detail="Pas de contre-offre à refuser")
+        raise HTTPException(status_code=400, detail="Aucune contre-offre en cours à renégocier")
 
     now = datetime.now(timezone.utc).isoformat()
     await db.citadelle_transactions.update_one(
         {"id": transaction_id},
-        {"$set": {"status": "offer_refused", "updated_at": now},
-         "$push": {"messages": system_message("Contre-offre refusée par l'acheteur. La négociation est terminée.")}}
+        {"$set": {
+            "status": "offer_sent",
+            "offer_amount": data.amount,
+            "offer_message": data.message,
+            "counter_amount": None,
+            "counter_message": None,
+            "updated_at": now,
+        }, "$push": {"messages": {
+            "$each": [
+                system_message(f"Nouvelle proposition de l'acheteur : {data.amount:,.0f} €."),
+                {
+                    "id": str(uuid.uuid4()),
+                    "sender_id": current_user.get("sub"),
+                    "sender_email": current_user.get("email"),
+                    "content": data.message,
+                    "sent_at": now,
+                    "type": "message",
+                },
+            ]
+        }}}
     )
-    logger.info(f"[Citadelle] Contre-offre refusée par l'acheteur: {transaction_id}")
-    return {"message": "Contre-offre refusée."}
+    logger.info(f"[Citadelle] Nouvelle proposition de l'acheteur: {transaction_id} — {data.amount} €")
+    return {"message": "Nouvelle proposition envoyée au vendeur", "amount": data.amount}
 
 
 # ── Helpers commission ────────────────────────────────────────────────────────

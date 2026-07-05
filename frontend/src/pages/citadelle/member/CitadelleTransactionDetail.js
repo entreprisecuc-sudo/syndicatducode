@@ -353,10 +353,10 @@ export default function CitadelleTransactionDetail() {
                   style={{ background: "#22C55E", color: "white" }} data-testid="btn-accept-counter">
                   <CheckCircle size={14} /> Accepter la contre-offre
                 </button>
-                <button onClick={() => doAction("refuse-counter")} disabled={actionLoading}
+                <button onClick={() => setCounterModal(true)} disabled={actionLoading}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-60"
-                  style={{ background: "#DC2626", color: "white" }} data-testid="btn-refuse-counter">
-                  <XCircle size={14} /> Refuser la contre-offre
+                  style={{ background: CITADELLE_COLORS.blue, color: "white" }} data-testid="btn-buyer-counter">
+                  <ArrowRight size={14} /> Faire une nouvelle proposition
                 </button>
               </div>
             </div>
@@ -917,7 +917,9 @@ export default function CitadelleTransactionDetail() {
         {counterModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)" }}>
             <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
-              <h3 className="font-bold text-lg mb-4" style={{ color: CITADELLE_COLORS.blue }}>Contre-offre</h3>
+              <h3 className="font-bold text-lg mb-4" style={{ color: CITADELLE_COLORS.blue }}>
+                {isBuyer ? "Nouvelle proposition" : "Contre-offre"}
+              </h3>
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: CITADELLE_COLORS.blue }}>Montant (€)</label>
@@ -929,7 +931,7 @@ export default function CitadelleTransactionDetail() {
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: CITADELLE_COLORS.blue }}>Message</label>
                   <textarea value={counterMsg} onChange={e => setCounterMsg(e.target.value)} rows={3}
-                    placeholder="Justifiez votre contre-offre..."
+                    placeholder={isBuyer ? "Justifiez votre nouvelle proposition..." : "Justifiez votre contre-offre..."}
                     className="w-full px-4 py-2.5 rounded-xl text-sm outline-none resize-none"
                     style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
                     data-testid="counter-message" />
@@ -941,7 +943,7 @@ export default function CitadelleTransactionDetail() {
                   Annuler
                 </button>
                 <button onClick={async () => {
-                  await doAction("counter", { amount: parseFloat(counterAmount), message: counterMsg });
+                  await doAction(isBuyer ? "buyer-counter" : "counter", { amount: parseFloat(counterAmount), message: counterMsg });
                   setCounterModal(false); setCounterAmount(""); setCounterMsg("");
                 }} disabled={!counterAmount || !counterMsg || counterMsg.length < 10}
                   className="flex-1 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"

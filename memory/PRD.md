@@ -453,3 +453,10 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Frontend** (`CitadelleTransactionDetail.js`) : bouton « Refuser la contre-offre » (`data-testid="btn-refuse-counter"`) à côté de « Accepter la contre-offre » dans le bloc `offer_countered`.
 - **Jeu de données de test** : `backend/scripts/seed_test_transactions.py` (idempotent, marqueur `test_scenario_seed`) — 5 transactions acheteur=test.acheteur / vendeur=test.vendeur couvrant offer_sent, offer_countered, offer_accepted, payment_done, completed. Détail dans `test_credentials.md`.
 - **Validé (testing_agent iteration_14, avec accord client)** : backend 9/9 ciblés (withdraw-offer + refuse-counter, transitions + 400/403), frontend 3/3 (boutons + modals). 100% PASS, aucun bug. Suite : `backend/tests/test_citadelle_withdraw_refuse.py`.
+
+## 🔧 Session 06/2026 — Négociation ouverte en va-et-vient illimité (PREVIEW)
+- **Décision client** : la négociation ne se termine QUE par un accord (accept) ou l'abandon volontaire de l'acheteur (withdraw-offer). L'acheteur ne clôture jamais.
+- **Route `refuse-counter` SUPPRIMÉE**, remplacée par **`POST /api/citadelle/transactions/{id}/buyer-counter`** : depuis `offer_countered`, l'acheteur propose un nouveau montant → la transaction repasse en `offer_sent` (offer_amount mis à jour, counter effacé) et le vendeur peut de nouveau accepter/refuser/contre-proposer. Va-et-vient illimité.
+- Le bouton **« Refuser » du vendeur reste** (le vendeur peut décliner définitivement → `offer_refused`).
+- **Frontend** (`CitadelleTransactionDetail.js`) : bouton acheteur « Faire une nouvelle proposition » (`data-testid="btn-buyer-counter"`, remplace `btn-refuse-counter`) ouvre le modal de contre-offre (rendu générique : titre + endpoint `buyer-counter`/`counter` selon le rôle).
+- **Validé (curl)** : boucle complète offre→contre-offre vendeur→nouvelle proposition acheteur→contre-offre vendeur ; blocage 400 hors `offer_countered`.
