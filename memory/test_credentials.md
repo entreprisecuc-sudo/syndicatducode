@@ -22,6 +22,11 @@
 - Transmission démo finalisée : dossier **TR-2026-00003** (actif « Boutique Zenith »)
 - Espace membre → « Mes transmissions » : acheteur = Attestation complète, vendeur = Titre de Cession (sans accès)
 
+## Signalements de démonstration (marqueur test_scenario_seed — 06/2026)
+Créés en base (collection `citadelle_reports`) pour visualiser la page admin `/syndicat-admin/citadelle/signalements`.
+4 signalements : Contournement (ouvert), Arnaque (ouvert), Contenu inapproprié (en cours), Litige (résolu).
+Suppression : `db.citadelle_reports.delete_many({"test_scenario_seed": True})`.
+
 ## Transactions de test (script : backend/scripts/seed_test_transactions.py — 06/2026)
 Acheteur = test.acheteur@citadelle.fr · Vendeur = test.vendeur@citadelle.fr
 Réexécuter le script pour réinitialiser (idempotent, marqueur `test_scenario_seed`).
