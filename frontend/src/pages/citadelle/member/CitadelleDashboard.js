@@ -1,35 +1,92 @@
 /**
- * Espace membre — La Citadelle Numérique (stub Phase A)
- * Sera enrichi en Phase B avec la gestion des annonces
+ * Espace membre — La Citadelle Numérique
+ * Tableau de bord repensé : en-tête premium, rangée de KPI cliquables,
+ * puis un split "Gestion & Services" / "Administration".
  */
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Shield, Plus, MessageSquare, ArrowLeftRight, FileText, User, LogOut, TrendingUp } from "lucide-react";
+import {
+  Shield, LogOut, PlusCircle, LayoutList, ArrowRightLeft,
+  MessageSquare, ShieldCheck, Briefcase, User, FileText, ChevronRight,
+} from "lucide-react";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import MemberActivityPanel from "@/components/citadelle/MemberActivityPanel";
 import MemberEarningsPanel from "@/components/citadelle/MemberEarningsPanel";
 import citadelleApi from "@/services/citadelleApi";
-import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
+import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+
+const C = CITADELLE_COLORS;
+
+/* Carte KPI cliquable — chiffre clé + libellé, navigue au clic */
+function KpiCard({ icon: Icon, label, value, href, testId }) {
+  return (
+    <Link
+      to={href}
+      data-testid={testId}
+      className="group flex flex-col justify-between p-5 rounded-2xl bg-white transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+      style={{ border: `1px solid ${C.border}` }}
+    >
+      <div className="flex items-start justify-between">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+          style={{ background: "rgba(201,164,92,0.1)" }}>
+          <Icon size={20} strokeWidth={1.5} style={{ color: C.gold }} />
+        </div>
+        <ChevronRight size={18} className="opacity-30 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
+          style={{ color: C.blue }} />
+      </div>
+      <div className="mt-4">
+        <p className="text-3xl font-bold leading-none" style={{ color: C.blue }}>{value}</p>
+        <p className="text-sm mt-1.5" style={{ color: C.textMuted }}>{label}</p>
+      </div>
+    </Link>
+  );
+}
+
+/* Ligne d'accès à une section (colonnes Gestion / Administration) */
+function SectionLink({ icon: Icon, title, desc, href, testId }) {
+  return (
+    <Link
+      to={href}
+      data-testid={testId}
+      className="group flex items-center gap-4 p-4 rounded-xl bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+      style={{ border: `1px solid ${C.border}` }}
+    >
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: "rgba(15,39,71,0.06)" }}>
+        <Icon size={20} strokeWidth={1.5} style={{ color: C.blue }} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold text-sm transition-colors group-hover:text-[#C9A45C]" style={{ color: C.blue }}>{title}</p>
+        <p className="text-xs truncate" style={{ color: C.textMuted }}>{desc}</p>
+      </div>
+      <ChevronRight size={16} className="flex-shrink-0 opacity-30 group-hover:opacity-100 transition-opacity"
+        style={{ color: C.blue }} />
+    </Link>
+  );
+}
 
 export default function CitadelleDashboard() {
   const { user, logout, isAuthenticated } = useCitadelleAuth();
   const navigate = useNavigate();
   const [unreadMessages, setUnreadMessages]         = useState(0);
   const [unreadTransactions, setUnreadTransactions] = useState(0);
+  const [activeListings, setActiveListings]         = useState(0);
 
   useEffect(() => {
     if (!isAuthenticated) return;
 
     const fetchCounts = async () => {
       try {
-        const [resMsg, resTx] = await Promise.all([
+        const [resMsg, resTx, resListings] = await Promise.all([
           citadelleApi.get("/messages-unread-count"),
           citadelleApi.get("/transactions/unread-count"),
+          citadelleApi.get("/listings/my"),
         ]);
         setUnreadMessages(resMsg.data.unread || 0);
         setUnreadTransactions(resTx.data.unread || 0);
+        setActiveListings((resListings.data.listings || []).filter((l) => l.status === "active").length);
       } catch { /* silence */ }
     };
 
@@ -38,35 +95,23 @@ export default function CitadelleDashboard() {
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
-  // Redirection si non connecté
   if (!isAuthenticated) {
     navigate("/citadelle/connexion");
     return null;
   }
 
-  const menuItems = [
-    { icon: Plus,          label: "Publier une annonce", desc: "Mettez votre actif en vente",      href: "/citadelle/espace-membre/mes-annonces/creer", active: true },
-    { icon: FileText,      label: "Mes annonces",         desc: "Gérez vos annonces actives",       href: "/citadelle/espace-membre/mes-annonces",        active: true },
-    { icon: ArrowLeftRight,label: "Mes transactions",     desc: "Suivez vos achats et ventes",      href: "/citadelle/espace-membre/transactions",    active: true, unread: unreadTransactions },
-    { icon: FileText,      label: "Mes factures",         desc: "Téléchargez vos factures PDF",     href: "/citadelle/espace-membre/factures",        active: true },
-    { icon: Shield,        label: "Mes transmissions",    desc: "Vos attestations de La Garde",     href: "/citadelle/espace-membre/transmissions",   active: true },
-    { icon: MessageSquare, label: "Mes messages",         desc: "Échangez avec acheteurs et vendeurs", href: "/citadelle/espace-membre/messages",     active: true, unread: unreadMessages },
-    { icon: TrendingUp,    label: "Mes services",         desc: "Demandes d'évaluation et d'audit", href: "/citadelle/espace-membre/mes-services",        active: true },
-    { icon: User,          label: "Mon profil",           desc: "Modifier mes informations",        href: "/citadelle/espace-membre/profil",              active: true },
-  ];
-
   return (
     <CitadelleLayout>
-      <div className="min-h-screen py-12 px-4" style={{ background: CITADELLE_COLORS.bg }}>
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen py-10 px-4" style={{ background: C.bg }}>
+        <div className="max-w-6xl mx-auto">
 
-          {/* Header */}
-          <div className="mb-10 p-8 rounded-2xl" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
+          {/* ── En-tête (validé) ─────────────────────────────── */}
+          <div className="mb-8 p-8 rounded-2xl" style={{ background: `linear-gradient(135deg, ${C.night} 0%, ${C.blue} 100%)` }}>
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Shield size={18} style={{ color: CITADELLE_COLORS.gold }} />
-                  <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: CITADELLE_COLORS.gold }}>
+                  <Shield size={18} style={{ color: C.gold }} />
+                  <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.gold }}>
                     Espace Membre
                   </span>
                 </div>
@@ -89,56 +134,67 @@ export default function CitadelleDashboard() {
             </div>
           </div>
 
-          {/* Panneau "À traiter" — vue directe des interactions */}
-          <MemberActivityPanel />
+          {/* ── Rangée KPI + CTA ─────────────────────────────── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <KpiCard icon={LayoutList} label="Annonces actives" value={activeListings}
+              href="/citadelle/espace-membre/mes-annonces" testId="kpi-annonces-actives" />
+            <KpiCard icon={ArrowRightLeft} label="Transactions en cours" value={unreadTransactions}
+              href="/citadelle/espace-membre/transactions" testId="kpi-transactions" />
+            <KpiCard icon={MessageSquare} label="Messages non lus" value={unreadMessages}
+              href="/citadelle/espace-membre/messages" testId="kpi-messages" />
 
-          {/* Encart "Mes gains" — récap vendeur + virement */}
-          <MemberEarningsPanel />
+            {/* CTA principal — fond Navy plein */}
+            <Link
+              to="/citadelle/espace-membre/mes-annonces/creer"
+              data-testid="cta-publier-annonce"
+              className="group flex flex-col justify-between p-5 rounded-2xl transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+              style={{ background: C.blue, border: `1px solid ${C.blue}` }}
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ background: "rgba(201,164,92,0.18)" }}>
+                <PlusCircle size={22} strokeWidth={1.5} style={{ color: C.gold }} />
+              </div>
+              <div className="mt-4">
+                <p className="text-base font-bold text-white leading-tight">Publier une annonce</p>
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>Mettez votre actif en vente</p>
+              </div>
+            </Link>
+          </div>
 
-          {/* Menu */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {menuItems.map(({ icon: Icon, label, desc, href, active, badge, unread }) => {
-              const CardContent = (
-                <div
-                  key={label}
-                  className="p-5 rounded-2xl relative transition-all"
-                  style={{
-                    background: "white",
-                    border: `1px solid ${active ? "rgba(201,164,92,0.3)" : CITADELLE_COLORS.border}`,
-                    opacity: active ? 1 : 0.65,
-                    cursor: active ? "pointer" : "default"
-                  }}
-                  data-testid={`citadelle-member-${label.toLowerCase().replace(/\s+/g, '-')}`}
-                >
-                  {badge && (
-                    <span className="absolute top-3 right-3 text-xs px-2 py-0.5 rounded-full font-semibold"
-                      style={{ background: "rgba(201,164,92,0.12)", color: CITADELLE_COLORS.gold }}>
-                      {badge}
-                    </span>
-                  )}
-                  {unread > 0 && (
-                    <span className="absolute top-3 right-3 min-w-5 h-5 flex items-center justify-center text-xs px-1.5 rounded-full font-bold text-white"
-                      style={{ background: "#DC2626" }}
-                      data-testid="unread-badge">
-                      {unread}
-                    </span>
-                  )}
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                    style={{ background: active ? "rgba(201,164,92,0.1)" : "rgba(15,39,71,0.07)" }}>
-                    <Icon size={20} style={{ color: active ? CITADELLE_COLORS.gold : CITADELLE_COLORS.blue }} />
-                  </div>
-                  <p className="font-semibold text-sm mb-1" style={{ color: CITADELLE_COLORS.blue }}>{label}</p>
-                  <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>{desc}</p>
+          {/* ── Contenu principal : 3 colonnes ───────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            {/* Colonne gauche */}
+            <div className="lg:col-span-2 space-y-8">
+              <MemberActivityPanel />
+              <MemberEarningsPanel />
+
+              <div>
+                <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: C.blue }}>
+                  Gestion & Services
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <SectionLink icon={ShieldCheck} title="Mes transmissions" desc="Vos attestations de La Garde"
+                    href="/citadelle/espace-membre/transmissions" testId="nav-mes-transmissions" />
+                  <SectionLink icon={Briefcase} title="Mes services" desc="Évaluations et audits"
+                    href="/citadelle/espace-membre/mes-services" testId="nav-mes-services" />
                 </div>
-              );
-              return active ? (
-                <Link key={label} to={href} className="block hover:scale-[1.02] transition-transform">
-                  {CardContent}
-                </Link>
-              ) : (
-                <div key={label}>{CardContent}</div>
-              );
-            })}
+              </div>
+            </div>
+
+            {/* Colonne droite — Administration */}
+            <div className="lg:col-span-1">
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: C.blue }}>
+                Administration
+              </h2>
+              <div className="space-y-3">
+                <SectionLink icon={User} title="Mon profil" desc="Modifier mes informations"
+                  href="/citadelle/espace-membre/profil" testId="nav-mon-profil" />
+                <SectionLink icon={FileText} title="Mes factures" desc="Téléchargez vos PDF"
+                  href="/citadelle/espace-membre/factures" testId="nav-mes-factures" />
+              </div>
+            </div>
+
           </div>
         </div>
       </div>

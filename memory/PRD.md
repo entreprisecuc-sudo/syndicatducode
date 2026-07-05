@@ -418,4 +418,12 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Mettre à jour `STRIPE_WEBHOOK_SECRET` dans le `.env` VPS après création du webhook
 - Vérifier l'email Citadelle `lagarde@lacitadellenumerique.fr` (mot de passe à confirmer)
 
+**Refonte UX Tableau de bord membre (05/07/2026) — FAIT :**
+- `CitadelleDashboard.js` repensé selon `/app/design_guidelines.json`
+- En-tête Navy dégradé conservé (validé par le client)
+- Rangée de 4 KPI cliquables : Annonces actives, Transactions en cours, Messages non lus + CTA "Publier une annonce" (fond Navy plein)
+- Split 3 colonnes : gauche = À traiter + Mes gains + Gestion & Services (transmissions, services) ; droite = Administration (profil, factures)
+- Nouveau compteur "Annonces actives" via `/api/citadelle/listings/my` (status === "active")
+- Vérifié via screenshot desktop + mobile (Règle 6 : pas de testing_agent sans accord client)
+
 *Mise à jour : 15/06/2026*
