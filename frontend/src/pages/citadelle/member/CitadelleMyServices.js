@@ -205,23 +205,29 @@ export default function CitadelleMyServices() {
           ) : (
             <div className="space-y-10">
               {renderCategory(
+                "Inclus gratuitement",
+                "Services accessibles sans frais pour tout membre inscrit.",
+                Star,
+                services.filter(s => s.service_type === "free")
+              )}
+              {renderCategory(
                 "Pour les vendeurs",
                 "Évaluez, optimisez et valorisez votre projet avant la vente.",
                 TrendingUp,
-                services.filter(s => s.target_category === "vendeur")
+                services.filter(s => s.target_category === "vendeur" && s.service_type !== "free")
               )}
               {renderCategory(
                 "Pour les acheteurs",
                 "Sécurisez votre investissement avant et après l'acquisition.",
                 Search,
-                services.filter(s => s.target_category === "acheteur"),
+                services.filter(s => s.target_category === "acheteur" && s.service_type !== "free"),
                 true
               )}
               {renderCategory(
                 "Services communs",
                 "Des services essentiels pour toutes vos transactions.",
                 Shield,
-                services.filter(s => !["vendeur", "acheteur"].includes(s.target_category))
+                services.filter(s => s.service_type !== "free" && !["vendeur", "acheteur"].includes(s.target_category))
               )}
             </div>
           )}

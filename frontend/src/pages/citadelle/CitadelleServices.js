@@ -278,6 +278,43 @@ export default function CitadelleServices() {
         ) : (
           <div className="space-y-12">
 
+            {/* 0. Inclus gratuitement — placé en haut */}
+            {freeServices.length > 0 && (
+              <div
+                className="rounded-2xl px-8 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+                style={{ background: "rgba(22,163,74,0.04)", border: "1px solid rgba(22,163,74,0.18)" }}
+                data-testid="free-services-section"
+              >
+                <div className="flex-shrink-0">
+                  <h3
+                    className="text-base font-black"
+                    style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
+                  >
+                    Inclus gratuitement
+                  </h3>
+                  <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
+                    Fonctionnalités accessibles sans frais pour tout membre inscrit.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {freeServices.map((svc) => (
+                    <div
+                      key={svc.id}
+                      className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
+                      style={{
+                        background: "rgba(22,163,74,0.07)",
+                        border: "1px solid rgba(22,163,74,0.22)",
+                        color: "#15803d",
+                      }}
+                    >
+                      <Check size={13} />
+                      {svc.title}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* 1. Transaction Sécurisée — hero pleine largeur */}
             {commonService && (
               <ServiceHeroBanner
@@ -385,43 +422,6 @@ export default function CitadelleServices() {
                       onBuy={openBuy}
                       promo={promo}
                     />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 4. Inclus gratuitement */}
-            {freeServices.length > 0 && (
-              <div
-                className="mt-10 rounded-2xl px-8 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
-                style={{ background: "rgba(22,163,74,0.04)", border: "1px solid rgba(22,163,74,0.18)" }}
-                data-testid="free-services-section"
-              >
-                <div className="flex-shrink-0">
-                  <h3
-                    className="text-base font-black"
-                    style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
-                  >
-                    Inclus gratuitement
-                  </h3>
-                  <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    Fonctionnalités accessibles sans frais pour tout membre inscrit.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {freeServices.map((svc) => (
-                    <div
-                      key={svc.id}
-                      className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
-                      style={{
-                        background: "rgba(22,163,74,0.07)",
-                        border: "1px solid rgba(22,163,74,0.22)",
-                        color: "#15803d",
-                      }}
-                    >
-                      <Check size={13} />
-                      {svc.title}
-                    </div>
                   ))}
                 </div>
               </div>
