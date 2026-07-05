@@ -191,7 +191,7 @@ export default function CitadelleDashboard() {
                   Gestion & Services
                 </h2>
                 <div className="flex flex-col gap-3">
-                  <SectionLink icon={ShieldCheck} title="Mes transmissions" desc="Vos attestations de La Garde"
+                  <SectionLink icon={ShieldCheck} title="Transmissions & commandes" desc="Attestations La Garde & vos services"
                     href="/citadelle/espace-membre/transmissions" testId="nav-mes-transmissions" />
                   <SectionLink icon={Briefcase} title="Mes services" desc="Évaluations et audits"
                     href="/citadelle/espace-membre/mes-services" testId="nav-mes-services" />

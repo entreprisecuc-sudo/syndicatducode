@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Star, Handshake, Zap, Shield, ExternalLink, ArrowRight, TrendingUp, Search,
-  ShoppingCart, CheckCircle, Clock, AlertCircle, Ban, Package
+  ShoppingCart
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ServiceCheckoutModal from "@/components/citadelle/ServiceCheckoutModal";
@@ -20,13 +20,6 @@ import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 const TYPE_ICONS = { paid: Zap, free: Star, partner: Handshake, quote: Shield };
 const TYPE_LABELS = { paid: "Payant", free: "Gratuit", partner: "Partenaire", quote: "Sur devis" };
 
-const ORDER_STATUS = {
-  en_attente: { label: "En attente", color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  Icon: Clock },
-  en_cours:   { label: "En cours",   color: "#3B82F6", bg: "rgba(59,130,246,0.1)",  Icon: AlertCircle },
-  termine:    { label: "Terminé",    color: "#22C55E", bg: "rgba(34,197,94,0.1)",   Icon: CheckCircle },
-  annule:     { label: "Annulé",     color: "#DC2626", bg: "rgba(220,38,38,0.1)",   Icon: Ban },
-};
-
 // Un service est achetable directement s'il est payant et a un prix positif
 const isPayable = (svc) => svc.service_type === "paid" && svc.price > 0;
 
@@ -35,24 +28,17 @@ const isPayable = (svc) => svc.service_type === "paid" && svc.price > 0;
 export default function CitadelleMyServices() {
   const { user } = useCitadelleAuth();
   const [services, setServices]           = useState([]);
-  const [orders, setOrders]               = useState([]);
   const [loadingServices, setLoadingServices] = useState(true);
-  const [loadingOrders, setLoadingOrders]     = useState(true);
 
   // Checkout — délégué à ServiceCheckoutModal (Stripe réel)
   const [checkoutService, setCheckoutService] = useState(null);
 
   useEffect(() => {
-    // Chargement parallèle : services publics + commandes de l'utilisateur
+    // Chargement des services publics
     citadelleApi.get("/services").then(res => {
       setServices(res.data.services || []);
       setLoadingServices(false);
     }).catch(() => setLoadingServices(false));
-
-    citadelleApi.get("/services/my-orders").then(res => {
-      setOrders(res.data.orders || []);
-      setLoadingOrders(false);
-    }).catch(() => setLoadingOrders(false));
   }, []);
 
   // ── Fonctions checkout ────────────────────────────────────────────────────────
@@ -174,13 +160,6 @@ export default function CitadelleMyServices() {
     );
   };
 
-  const formatDate = (isoStr) => {
-    if (!isoStr) return "—";
-    return new Date(isoStr).toLocaleDateString("fr-FR", {
-      day: "2-digit", month: "short", year: "numeric"
-    });
-  };
-
   // ── Rendu ──────────────────────────────────────────────────────────────────────
 
   return (
@@ -244,75 +223,6 @@ export default function CitadelleMyServices() {
                 Shield,
                 services.filter(s => !["vendeur", "acheteur"].includes(s.target_category))
               )}
-            </div>
-          )}
-        </section>
-
-        {/* Séparateur */}
-        <div className="mb-10" style={{ height: 1, background: CITADELLE_COLORS.border }} />
-
-        {/* ── Section 2 : Mes commandes ────────────────────────────────────── */}
-        <section>
-          <h2 className="text-base font-bold mb-5" style={{ color: CITADELLE_COLORS.blue }}>
-            Mes commandes
-          </h2>
-
-          {loadingOrders ? (
-            <div className="space-y-3">
-              {[1, 2].map(i => (
-                <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: CITADELLE_COLORS.bg }} />
-              ))}
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="py-12 text-center rounded-2xl"
-              style={{ background: "rgba(201,164,92,0.04)", border: `1px dashed rgba(201,164,92,0.25)` }}>
-              <Package size={36} className="mx-auto mb-3" style={{ color: CITADELLE_COLORS.textMuted, opacity: 0.35 }} />
-              <p className="text-sm font-medium" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Vous n'avez encore passé aucune commande.
-              </p>
-              <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted, opacity: 0.7 }}>
-                Découvrez les services ci-dessus et commandez directement.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3" data-testid="my-orders-list">
-              {orders.map(order => {
-                const statusCfg = ORDER_STATUS[order.status] || ORDER_STATUS.en_attente;
-                const StatusIcon = statusCfg.Icon;
-                return (
-                  <div key={order.id}
-                    className="p-4 rounded-xl"
-                    style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}
-                    data-testid={`my-order-row-${order.id}`}>
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <p className="font-semibold text-sm" style={{ color: CITADELLE_COLORS.blue }}>
-                            {order.service_title}
-                          </p>
-                          <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold whitespace-nowrap"
-                            style={{ background: statusCfg.bg, color: statusCfg.color }}>
-                            <StatusIcon size={10} />
-                            {statusCfg.label}
-                          </span>
-                        </div>
-                        <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                          Commandé le {formatDate(order.created_at)} · Réf. {order.id.slice(0, 8).toUpperCase()}
-                        </p>
-                      </div>
-                      <p className="font-black text-base shrink-0" style={{ color: CITADELLE_COLORS.gold }}>
-                        {order.amount?.toLocaleString("fr-FR")} €
-                      </p>
-                    </div>
-                    {order.admin_note && (
-                      <p className="text-xs mt-2 pl-3 border-l-2 italic"
-                        style={{ color: CITADELLE_COLORS.textMuted, borderColor: CITADELLE_COLORS.gold + "55" }}>
-                        Note : {order.admin_note}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
             </div>
           )}
         </section>
