@@ -21,3 +21,13 @@
 - **Acheteur** : test.acheteur@citadelle.fr / DemoAcheteur2026!
 - Transmission démo finalisée : dossier **TR-2026-00003** (actif « Boutique Zenith »)
 - Espace membre → « Mes transmissions » : acheteur = Attestation complète, vendeur = Titre de Cession (sans accès)
+
+## Transactions de test (script : backend/scripts/seed_test_transactions.py — 06/2026)
+Acheteur = test.acheteur@citadelle.fr · Vendeur = test.vendeur@citadelle.fr
+Réexécuter le script pour réinitialiser (idempotent, marqueur `test_scenario_seed`).
+Espace membre → « Transmissions & commandes » (ou dashboard) → ouvrir chaque transaction.
+1. **offer_sent** (Blog Cuisine, 5 500 €) → acheteur : bouton « Abandonner ma proposition » | vendeur : Accepter/Refuser/Contre-offre
+2. **offer_countered** (SaaS Factures, contre-offre 13 000 €) → acheteur : Accepter la contre-offre OU abandonner
+3. **offer_accepted** (Boutique Déco, 9 500 €) → acheteur : Payer OU **Abandonner (sans frais — cas clé)**
+4. **payment_done** (Newsletter Crypto, 8 000 €, payé il y a 8 j) → acheteur : Ouvrir litige / Annuler | vendeur : Transmettre les accès
+5. **completed** (YouTube Voyage, 16 000 €) → acheteur : voir les accès transmis | vendeur : gains encaissés
