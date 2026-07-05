@@ -347,11 +347,16 @@ export default function CitadelleTransactionDetail() {
                 Contre-offre du vendeur : {tx.counter_amount?.toLocaleString("fr-FR")} €
               </p>
               <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>{tx.counter_message}</p>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button onClick={() => doAction("accept-counter")} disabled={actionLoading}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-60"
                   style={{ background: "#22C55E", color: "white" }} data-testid="btn-accept-counter">
                   <CheckCircle size={14} /> Accepter la contre-offre
+                </button>
+                <button onClick={() => doAction("refuse-counter")} disabled={actionLoading}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-60"
+                  style={{ background: "#DC2626", color: "white" }} data-testid="btn-refuse-counter">
+                  <XCircle size={14} /> Refuser la contre-offre
                 </button>
               </div>
             </div>

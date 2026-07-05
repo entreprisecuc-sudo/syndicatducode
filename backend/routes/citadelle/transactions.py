@@ -494,6 +494,30 @@ async def accept_counter_offer(
     return {"message": "Contre-offre acceptée", "payment_amount": tx["counter_amount"]}
 
 
+@router.post("/transactions/{transaction_id}/refuse-counter", summary="Refuser une contre-offre")
+async def refuse_counter_offer(
+    transaction_id: str,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """Acheteur : refuse la contre-offre du vendeur. La négociation prend fin (offre refusée)."""
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx["buyer_id"] != current_user.get("sub"):
+        raise HTTPException(status_code=403, detail="Seul l'acheteur peut refuser la contre-offre")
+    if tx["status"] != "offer_countered":
+        raise HTTPException(status_code=400, detail="Pas de contre-offre à refuser")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {"status": "offer_refused", "updated_at": now},
+         "$push": {"messages": system_message("Contre-offre refusée par l'acheteur. La négociation est terminée.")}}
+    )
+    logger.info(f"[Citadelle] Contre-offre refusée par l'acheteur: {transaction_id}")
+    return {"message": "Contre-offre refusée."}
+
+
 # ── Helpers commission ────────────────────────────────────────────────────────
 
 async def _calculate_commission(payment_amount: float) -> tuple[float, float]:
