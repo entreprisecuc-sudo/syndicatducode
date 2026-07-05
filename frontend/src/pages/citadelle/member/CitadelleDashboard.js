@@ -132,6 +132,11 @@ export default function CitadelleDashboard() {
                 Déconnexion
               </button>
             </div>
+
+            {/* "À traiter" — 3 dernières notifications, sur fond bleu */}
+            <div className="mt-6 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+              <MemberActivityPanel dark limit={3} viewAllHref="/citadelle/espace-membre/notifications" />
+            </div>
           </div>
 
           {/* ── Rangée KPI + CTA ─────────────────────────────── */}
@@ -163,7 +168,6 @@ export default function CitadelleDashboard() {
 
           {/* ── Contenu principal : pleine largeur ───────────── */}
           <div className="space-y-8">
-            <MemberActivityPanel />
             <MemberEarningsPanel />
 
             {/* Administration (gauche) + Gestion & Services (droite) */}

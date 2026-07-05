@@ -122,8 +122,8 @@ import CitadelleCGV from "@/pages/citadelle/CitadelleCGV";
 import CitadelleConfidentialite from "@/pages/citadelle/CitadelleConfidentialite";
 import AdminCitadelleBlog from "@/pages/admin/AdminCitadelleBlog";
 import AdminCitadelleTransmission from "@/pages/admin/AdminCitadelleTransmission";
-import CitadelleMyTransmissions from "@/pages/citadelle/member/CitadelleMyTransmissions";
-import CitadelleVerifyTransmission from "@/pages/citadelle/CitadelleVerifyTransmission";
+import CitadelleMyTransmissions from "@/pages/citadelle/member/CitadelleMyTransmissions";import CitadelleVerifyTransmission from "@/pages/citadelle/CitadelleVerifyTransmission";
+import CitadelleNotifications from "@/pages/citadelle/member/CitadelleNotifications";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import AdminLiveApp from "@/pages/admin/AdminLiveApp";
 
@@ -393,6 +393,7 @@ function App() {
               <Route path="/citadelle/espace-membre/messages" element={<CitadelleMyMessages />} />
               <Route path="/citadelle/espace-membre/mes-services" element={<CitadelleMyServices />} />
               <Route path="/citadelle/espace-membre/profil" element={<CitadelleProfile />} />
+              <Route path="/citadelle/espace-membre/notifications" element={<CitadelleNotifications />} />
               <Route path="/citadelle/espace-membre" element={<CitadelleDashboard />} />
               <Route path="/citadelle/espace-membre/*" element={<CitadelleDashboard />} />
 
