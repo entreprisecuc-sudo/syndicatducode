@@ -270,6 +270,7 @@ export default function AdminCitadelleTransactions() {
         <div className="flex flex-wrap gap-2">
           {TABS.map(tab => (
             <button key={tab.key} onClick={() => { setActiveTab(tab.key); setSelectedTx(null); }}
+              data-testid={`admin-tx-tab-${tab.key}`}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
               style={{
                 background: activeTab === tab.key ? "#C9A45C" : "var(--admin-bg-card, rgba(255,255,255,0.05))",
