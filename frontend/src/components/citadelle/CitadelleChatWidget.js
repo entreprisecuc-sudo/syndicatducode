@@ -12,6 +12,7 @@ import { MessageCircle, X, Send, Shield, ChevronLeft, Trash2 } from "lucide-reac
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { AttachmentButton, AttachmentPreview, MessageAttachments } from "@/components/citadelle/messageAttachments";
 
 // Clé localStorage pour les conversations masquées
 const MASQUEES_KEY = "citadelle_conv_masquees";
@@ -36,6 +37,7 @@ function VueChat({ tx, mode, onRetour, user, jouerSon }) {
 
   const [messages, setMessages] = useState([]);
   const [saisie, setSaisie] = useState("");
+  const [attachments, setAttachments] = useState([]);
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const finMessagesRef = useRef(null);
   const nbPrecedent = useRef(0);
@@ -85,14 +87,15 @@ function VueChat({ tx, mode, onRetour, user, jouerSon }) {
   }, [messages.length]);
 
   const envoyerMessage = async () => {
-    if (!saisie.trim() || envoiEnCours) return;
+    if ((!saisie.trim() && attachments.length === 0) || envoiEnCours) return;
     setEnvoiEnCours(true);
     try {
       const endpoint = estLitige
         ? `/transactions/${tx.id}/dispute-messages`
         : `/transactions/${tx.id}/message`;
-      await citadelleApi.post(endpoint, { content: saisie.trim() });
+      await citadelleApi.post(endpoint, { content: saisie.trim(), attachments });
       setSaisie("");
+      setAttachments([]);
     } catch { /* silence */ }
     finally { setEnvoiEnCours(false); }
   };
@@ -138,6 +141,7 @@ function VueChat({ tx, mode, onRetour, user, jouerSon }) {
                   <div className="px-3 py-1.5 rounded-2xl rounded-tl-sm text-sm"
                     style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626", border: "1px solid rgba(220,38,38,0.15)" }}>
                     {msg.content}
+                    <MessageAttachments attachments={msg.attachments} mine={false} />
                   </div>
                 </div>
               </div>
@@ -147,6 +151,7 @@ function VueChat({ tx, mode, onRetour, user, jouerSon }) {
                 <div className="px-3 py-1.5 rounded-2xl rounded-tr-sm text-sm max-w-[82%] text-white"
                   style={{ background: "#DC2626" }}>
                   {msg.content}
+                  <MessageAttachments attachments={msg.attachments} mine={true} />
                 </div>
               </div>
             );
@@ -166,6 +171,7 @@ function VueChat({ tx, mode, onRetour, user, jouerSon }) {
                 <div className="px-3 py-1.5 rounded-2xl rounded-tl-sm text-sm"
                   style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626", border: "1px solid rgba(220,38,38,0.15)" }}>
                   {msg.content}
+                  <MessageAttachments attachments={msg.attachments} mine={false} />
                 </div>
               </div>
             </div>
@@ -176,6 +182,7 @@ function VueChat({ tx, mode, onRetour, user, jouerSon }) {
               <div className="px-3 py-1.5 rounded-2xl rounded-tr-sm text-sm max-w-[82%] text-white"
                 style={{ background: "#1D4ED8" }}>
                 {msg.content}
+                <MessageAttachments attachments={msg.attachments} mine={true} />
               </div>
             </div>
           );
@@ -185,6 +192,7 @@ function VueChat({ tx, mode, onRetour, user, jouerSon }) {
               <div className="px-3 py-1.5 rounded-2xl rounded-tl-sm text-sm max-w-[82%]"
                 style={{ background: CITADELLE_COLORS.bg, color: CITADELLE_COLORS.blue, border: `1px solid ${CITADELLE_COLORS.border}` }}>
                 {msg.content}
+                <MessageAttachments attachments={msg.attachments} mine={false} />
               </div>
             </div>
           );
@@ -193,21 +201,24 @@ function VueChat({ tx, mode, onRetour, user, jouerSon }) {
       </div>
 
       {/* Saisie */}
-      <div className="px-3 py-2.5 flex gap-2 flex-shrink-0"
-        style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}` }}>
-        <input
-          value={saisie}
-          onChange={e => setSaisie(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && envoyerMessage()}
-          placeholder="Votre message..."
-          className="flex-1 px-3 py-2 rounded-xl text-sm outline-none"
-          style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
-        />
-        <button onClick={envoyerMessage} disabled={envoiEnCours || !saisie.trim()}
-          className="w-8 h-8 rounded-xl flex items-center justify-center disabled:opacity-40 flex-shrink-0"
-          style={{ background: couleur, color: "white" }}>
-          <Send size={13} />
-        </button>
+      <div className="flex-shrink-0" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}` }}>
+        <AttachmentPreview attachments={attachments} setAttachments={setAttachments} />
+        <div className="px-3 py-2.5 flex gap-2">
+          <AttachmentButton attachments={attachments} setAttachments={setAttachments} disabled={envoiEnCours} color={couleur} />
+          <input
+            value={saisie}
+            onChange={e => setSaisie(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && envoyerMessage()}
+            placeholder="Votre message..."
+            className="flex-1 px-3 py-2 rounded-xl text-sm outline-none"
+            style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
+          />
+          <button onClick={envoyerMessage} disabled={envoiEnCours || (!saisie.trim() && attachments.length === 0)}
+            className="w-8 h-8 rounded-xl flex items-center justify-center disabled:opacity-40 flex-shrink-0"
+            style={{ background: couleur, color: "white" }}>
+            <Send size={13} />
+          </button>
+        </div>
       </div>
     </>
   );

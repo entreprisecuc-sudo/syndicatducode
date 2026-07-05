@@ -10,6 +10,7 @@ import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { AttachmentButton, AttachmentPreview, MessageAttachments } from "@/components/citadelle/messageAttachments";
 
 export default function CitadelleConversationDetail() {
   const { id } = useParams();
@@ -17,6 +18,7 @@ export default function CitadelleConversationDetail() {
   const [conv, setConv] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [attachments, setAttachments] = useState([]);
   const [sending, setSending] = useState(false);
   const [sanitizedWarning, setSanitizedWarning] = useState(false);
   const messagesEndRef = useRef(null);
@@ -48,13 +50,14 @@ export default function CitadelleConversationDetail() {
   };
 
   const sendMessage = async () => {
-    if (!message.trim() || sending) return;
+    if ((!message.trim() && attachments.length === 0) || sending) return;
     setSending(true);
     setSanitizedWarning(false);
     try {
-      const res = await citadelleApi.post(`/messages/${id}/reply`, { content: message.trim() });
+      const res = await citadelleApi.post(`/messages/${id}/reply`, { content: message.trim(), attachments });
       if (res.data.sanitized) setSanitizedWarning(true);
       setMessage("");
+      setAttachments([]);
       await fetchConversation();
     } catch { /* ignore */ }
     finally { setSending(false); }
@@ -149,6 +152,7 @@ export default function CitadelleConversationDetail() {
                       color: msg.sender_id === user?.id ? "white" : CITADELLE_COLORS.blue
                     }}>
                       {msg.content}
+                      <MessageAttachments attachments={msg.attachments} mine={msg.sender_id === user?.id} />
                     </div>
                     <p className="text-xs mt-0.5 text-right" style={{ color: CITADELLE_COLORS.textMuted }}>
                       {new Date(msg.sent_at).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
@@ -187,7 +191,9 @@ export default function CitadelleConversationDetail() {
                   </div>
                 </div>
               )}
+              <AttachmentPreview attachments={attachments} setAttachments={setAttachments} />
               <div className="px-4 py-3 flex gap-2">
+                <AttachmentButton attachments={attachments} setAttachments={setAttachments} disabled={sending} />
                 <input
                   value={message}
                   onChange={e => setMessage(e.target.value)}
@@ -197,7 +203,7 @@ export default function CitadelleConversationDetail() {
                   style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
                   data-testid="message-input"
                 />
-                <button onClick={sendMessage} disabled={sending || !message.trim()}
+                <button onClick={sendMessage} disabled={sending || (!message.trim() && attachments.length === 0)}
                   className="px-4 py-2.5 rounded-xl disabled:opacity-40 transition-all"
                   style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                   data-testid="send-message-btn">

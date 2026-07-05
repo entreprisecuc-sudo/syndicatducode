@@ -3,9 +3,9 @@ Routes messagerie — La Citadelle Numérique
 Conversations pré-vente liées aux annonces (acheteur ↔ vendeur)
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, timezone
 import uuid
 import logging
@@ -13,6 +13,7 @@ import asyncio
 
 from routes.citadelle.dependencies import require_citadelle_user
 from services.email_service import send_new_message_notification_email
+from utils.attachments import Attachment, save_attachment, validate_attachments
 
 logger = logging.getLogger(__name__)
 
@@ -29,15 +30,26 @@ def set_database(database):
 
 class MessageCreate(BaseModel):
     listing_id: str
-    content: str = Field(min_length=1, max_length=2000)
+    content: str = Field(default="", max_length=2000)
+    attachments: Optional[List[Attachment]] = None
 
 class MessageReply(BaseModel):
-    content: str = Field(min_length=1, max_length=2000)
+    content: str = Field(default="", max_length=2000)
+    attachments: Optional[List[Attachment]] = None
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 # require_citadelle_user importé depuis routes/citadelle/dependencies (DRY)
+
+
+@router.post("/messages/upload-attachment", summary="Téléverser une pièce jointe de conversation")
+async def upload_message_attachment(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(require_citadelle_user),
+):
+    """Upload d'une pièce jointe (image JPG/PNG/WebP ou PDF, max 25 Mo) pour une messagerie."""
+    return await save_attachment(file)
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
@@ -63,15 +75,21 @@ async def send_message(
 
     now = datetime.now(timezone.utc).isoformat()
 
+    pieces = validate_attachments(data.attachments)
+    contenu = (data.content or "").strip()
+    if not contenu and not pieces:
+        raise HTTPException(status_code=400, detail="Message vide : ajoutez un texte ou une pièce jointe")
+
     # Filtrage des informations de contact (email, téléphone)
     from utils.message_sanitizer import sanitiser_message
-    contenu_sanitise, sanitized = sanitiser_message(data.content)
+    contenu_sanitise, sanitized = sanitiser_message(contenu) if contenu else ("", False)
 
     msg = {
         "id": str(uuid.uuid4()),
         "sender_id": sender_id,
         "sender_email": current_user.get("email"),
         "content": contenu_sanitise,
+        "attachments": pieces,
         "sent_at": now,
     }
 
@@ -119,7 +137,7 @@ async def send_message(
                     seller_email=seller_email,
                     listing_title=listing["title"],
                     buyer_email=current_user.get("email", ""),
-                    message_preview=data.content,
+                    message_preview=contenu or "[Pièce jointe]",
                     conversation_id=conv_id,
                 )
                 if success:
@@ -158,15 +176,21 @@ async def reply_message(
 
     now = datetime.now(timezone.utc).isoformat()
 
+    pieces = validate_attachments(data.attachments)
+    contenu = (data.content or "").strip()
+    if not contenu and not pieces:
+        raise HTTPException(status_code=400, detail="Message vide : ajoutez un texte ou une pièce jointe")
+
     # Filtrage des informations de contact (email, téléphone)
     from utils.message_sanitizer import sanitiser_message
-    contenu_sanitise, sanitized = sanitiser_message(data.content)
+    contenu_sanitise, sanitized = sanitiser_message(contenu) if contenu else ("", False)
 
     msg = {
         "id": str(uuid.uuid4()),
         "sender_id": user_id,
         "sender_email": current_user.get("email"),
         "content": contenu_sanitise,
+        "attachments": pieces,
         "sent_at": now,
     }
 

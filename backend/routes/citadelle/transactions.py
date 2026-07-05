@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from routes.citadelle.dependencies import require_admin, require_citadelle_user
 from services.email_service import send_citadelle_credentials_email, send_new_offer_notification_email
+from utils.attachments import Attachment, validate_attachments
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,8 @@ class CredentialsSubmit(BaseModel):
     data: str = Field(min_length=10, max_length=5000, description="Codes d'accès, identifiants, instructions de transfert")
 
 class TransactionMessage(BaseModel):
-    content: str = Field(min_length=1, max_length=2000)
+    content: str = Field(default="", max_length=2000)
+    attachments: Optional[List[Attachment]] = None
 
 class AdminVerify(BaseModel):
     notes: str = Field(default="", max_length=2000)
@@ -84,7 +86,8 @@ class DisputeOpen(BaseModel):
     reason: str = Field(min_length=10, max_length=2000)
 
 class DisputeMessageCreate(BaseModel):
-    content: str = Field(min_length=1, max_length=2000)
+    content: str = Field(default="", max_length=2000)
+    attachments: Optional[List[Attachment]] = None
 
 class DisputeConfigUpdate(BaseModel):
     tranches_acheteur: List[dict]
@@ -792,15 +795,21 @@ async def send_message(
     if tx["status"] in ("offer_refused", "cancelled"):
         raise HTTPException(status_code=400, detail="Impossible d'envoyer un message sur une transaction terminée")
 
+    pieces = validate_attachments(data.attachments)
+    contenu = (data.content or "").strip()
+    if not contenu and not pieces:
+        raise HTTPException(status_code=400, detail="Message vide : ajoutez un texte ou une pièce jointe")
+
     # Filtrage des informations de contact (email, téléphone)
     from utils.message_sanitizer import sanitiser_message
-    contenu_sanitise, sanitized = sanitiser_message(data.content)
+    contenu_sanitise, sanitized = sanitiser_message(contenu) if contenu else ("", False)
 
     msg = {
         "id": str(uuid.uuid4()),
         "sender_id": user_id if not is_admin else "admin",
         "sender_email": current_user.get("email"),
         "content": contenu_sanitise,
+        "attachments": pieces,
         "sent_at": datetime.now(timezone.utc).isoformat(),
         "type": "admin" if is_admin else "message"
     }
@@ -1310,9 +1319,14 @@ async def send_dispute_message(
     if tx["status"] != "disputed":
         raise HTTPException(status_code=400, detail="Le chat litige n'est actif qu'en cas de litige ouvert")
 
+    pieces = validate_attachments(data.attachments)
+    contenu = (data.content or "").strip()
+    if not contenu and not pieces:
+        raise HTTPException(status_code=400, detail="Message vide : ajoutez un texte ou une pièce jointe")
+
     # Filtrage des informations de contact (email, téléphone)
     from utils.message_sanitizer import sanitiser_message
-    contenu_sanitise, sanitized = sanitiser_message(data.content)
+    contenu_sanitise, sanitized = sanitiser_message(contenu) if contenu else ("", False)
 
     msg = {
         "id": str(uuid.uuid4()),
@@ -1320,6 +1334,7 @@ async def send_dispute_message(
         "sender_email": current_user.get("email"),
         "sender_role": "admin" if is_admin else "seller",
         "content": contenu_sanitise,
+        "attachments": pieces,
         "sent_at": datetime.now(timezone.utc).isoformat(),
     }
 
