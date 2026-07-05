@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { Flag, ArrowLeft, ShoppingCart, MessageSquare, ExternalLink } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
+import { MemberModerationActions } from "@/components/admin/MemberModerationActions";
 
 const STATUS_META = {
   open: { label: "Ouvert", color: "#DC2626", bg: "rgba(220,38,38,0.12)" },
@@ -52,7 +53,7 @@ export default function AdminCitadelleReports() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6" data-testid="admin-citadelle-reports">
+      <div className="space-y-6" style={{ color: "var(--admin-text)" }} data-testid="admin-citadelle-reports">
         <div className="flex items-center gap-3">
           <Link to="/syndicat-admin/citadelle" className="p-2 rounded-lg" style={{ border: "1px solid rgba(201,164,92,0.3)", color: "#C9A45C" }}>
             <ArrowLeft size={18} />
@@ -119,6 +120,26 @@ export default function AdminCitadelleReports() {
                       className="inline-flex items-center gap-1.5 text-xs font-medium mb-3" style={{ color: "#C9A45C" }} data-testid="report-open-conversation">
                       <ExternalLink size={12} /> Ouvrir la transaction
                     </Link>
+                  )}
+
+                  {(r.buyer_id || r.seller_id) && (
+                    <div className="p-3 rounded-lg mb-3" style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)" }}>
+                      <p className="text-xs opacity-70 mb-2">Modération des participants :</p>
+                      <div className="space-y-2">
+                        {r.buyer_id && (
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="text-xs">Acheteur — {r.buyer_email}</span>
+                            <MemberModerationActions userId={r.buyer_id} label={`Acheteur — ${r.buyer_email}`} onDone={load} />
+                          </div>
+                        )}
+                        {r.seller_id && (
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="text-xs">Vendeur — {r.seller_email}</span>
+                            <MemberModerationActions userId={r.seller_id} label={`Vendeur — ${r.seller_email}`} onDone={load} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
 
                   <div className="flex items-end gap-2 flex-wrap pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>

@@ -10,7 +10,7 @@ import {
   Menu, X, LogOut, Users, BarChart3, 
   FileText, History, Shield, Home, Rocket, Megaphone, Bell, BookOpen,
   CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare, Database,
-  Globe, ArrowLeftRight, Star, LayoutDashboard, ChevronLeft, Sword,
+  Globe, ArrowLeftRight, Star, LayoutDashboard, ChevronLeft, Sword, Flag,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminTheme } from "@/context/AdminThemeContext";
@@ -80,6 +80,7 @@ const CITADELLE_MENU = [
     items: [
       { path: "/syndicat-admin/citadelle/annonces",    label: "Annonces",           icon: Globe,          description: "Valider les annonces" },
       { path: "/syndicat-admin/citadelle/transactions",label: "Transactions",        icon: ArrowLeftRight, description: "Ventes et litiges" },
+      { path: "/syndicat-admin/citadelle/signalements",label: "Signalements",        icon: Flag,           description: "Conversations signalées", badge: "reports" },
       { path: "/syndicat-admin/citadelle/factures",    label: "Factures",            icon: FileText,       description: "Factures PDF" },
       { path: "/syndicat-admin/citadelle/services",    label: "Services",            icon: Star,           description: "Catalogue services" },
       { path: "/syndicat-admin/citadelle/commission",  label: "Commission ventes",   icon: CreditCard,     description: "Taux de commission" },
@@ -105,6 +106,7 @@ const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [universe, setUniverse] = useState(() => localStorage.getItem(UNIVERSE_KEY));
   const [alertCount, setAlertCount] = useState(0);
+  const [reportsCount, setReportsCount] = useState(0);
   const { user, logout } = useAuth();
   const { theme, currentTheme, toggleTheme } = useAdminTheme();
   const location = useLocation();
@@ -140,6 +142,20 @@ const AdminLayout = ({ children }) => {
     const interval = setInterval(fetchAlerts, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  // Badge signalements Citadelle ouverts — polling 60s
+  useEffect(() => {
+    if (universe !== "citadelle") return;
+    const fetchReports = async () => {
+      try {
+        const res = await api.get("/citadelle/admin/reports", { params: { status: "open" } });
+        setReportsCount(res.data.open_count || 0);
+      } catch { /* silencieux */ }
+    };
+    fetchReports();
+    const interval = setInterval(fetchReports, 60000);
+    return () => clearInterval(interval);
+  }, [universe]);
 
   const handleLogout = () => { logout(); navigate("/"); };
 
@@ -230,15 +246,23 @@ const AdminLayout = ({ children }) => {
                     <Link key={item.path} to={item.path}
                       onClick={() => setSidebarOpen(false)}
                       title={item.description}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
+                      className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
                       style={{
                         background: isActive ? (isCitadelle ? "rgba(201,164,92,0.12)" : currentTheme.bgSection) : "transparent",
                         color: isActive
                           ? (isCitadelle ? "#C9A45C" : currentTheme.text)
                           : (isCitadelle ? "rgba(255,255,255,0.6)" : currentTheme.textSecondary),
                       }}>
-                      <Icon size={18} />
-                      {item.label}
+                      <span className="flex items-center gap-3">
+                        <Icon size={18} />
+                        {item.label}
+                      </span>
+                      {item.badge === "reports" && reportsCount > 0 && (
+                        <span className="min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center text-xs font-black"
+                          style={{ background: "#ef4444", color: "white" }} data-testid="sidebar-reports-badge">
+                          {reportsCount > 9 ? "9+" : reportsCount}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}

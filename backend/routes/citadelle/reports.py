@@ -66,6 +66,8 @@ async def _charger_contexte(conversation_type: str, conversation_id: str, user_i
     counterpart = "seller" if user_id == conv.get("buyer_id") else "buyer"
     return {
         "listing_title": conv.get("listing_title", ""),
+        "buyer_id": conv.get("buyer_id", ""),
+        "seller_id": conv.get("seller_id", ""),
         "buyer_email": conv.get("buyer_email", ""),
         "seller_email": conv.get("seller_email", ""),
         "reporter_role": "buyer" if user_id == conv.get("buyer_id") else "seller",
@@ -96,6 +98,8 @@ async def create_report(data: ReportCreate, current_user: dict = Depends(require
         "reporter_email": current_user.get("email"),
         "reporter_role": ctx["reporter_role"],
         "listing_title": ctx["listing_title"],
+        "buyer_id": ctx["buyer_id"],
+        "seller_id": ctx["seller_id"],
         "buyer_email": ctx["buyer_email"],
         "seller_email": ctx["seller_email"],
         "status": "open",

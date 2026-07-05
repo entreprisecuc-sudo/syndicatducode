@@ -306,11 +306,25 @@ async def citadelle_login(credentials: CitadelleLogin, request: Request):
             detail="Email ou mot de passe incorrect"
         )
 
-    if user.get("status") == "suspended":
+    statut = user.get("status", "active")
+    if statut == "banned":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Votre compte a été suspendu. Contactez le support."
+            detail="Votre compte a été banni. Contactez le support."
         )
+    if statut == "suspended":
+        until = user.get("suspended_until")
+        if until and datetime.now(timezone.utc).isoformat() < until:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Votre compte est suspendu jusqu'au {until[:10]}. Contactez le support."
+            )
+        # Suspension expirée → réactivation automatique
+        await db.users.update_one(
+            {"id": user["id"]},
+            {"$set": {"status": "active", "suspended_until": None}}
+        )
+        user["status"] = "active"
 
     # Créer le token JWT (même structure que le Syndicat)
     token_data = {

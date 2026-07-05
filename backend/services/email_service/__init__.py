@@ -36,6 +36,7 @@ from services.email_service.citadelle.services import (
 )
 from services.email_service.citadelle.contact import send_citadelle_contact_email
 from services.email_service.citadelle.report import send_citadelle_report_email
+from services.email_service.citadelle.moderation import send_citadelle_moderation_email
 from services.email_service.citadelle.newsletter import (
     build_newsletter_html,
     send_newsletter_digest_email,

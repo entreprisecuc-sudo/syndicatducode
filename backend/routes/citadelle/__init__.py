@@ -4,6 +4,7 @@ Plateforme indépendante d'achat/vente d'actifs numériques
 """
 
 from fastapi import APIRouter
+from routes.citadelle.dependencies import set_database as set_citadelle_dependencies_db
 from routes.citadelle.auth import router as citadelle_auth_router, set_database as set_citadelle_auth_db
 from routes.citadelle.listings import router as citadelle_listings_router, set_database as set_citadelle_listings_db
 from routes.citadelle.transactions import router as citadelle_transactions_router, set_database as set_citadelle_transactions_db
@@ -20,6 +21,7 @@ from routes.citadelle.invoices import router as citadelle_invoices_router, set_d
 from routes.citadelle.stripe_connect import router as citadelle_stripe_connect_router, set_database as set_citadelle_stripe_connect_db
 from routes.citadelle.transmissions import router as citadelle_transmissions_router, set_database as set_citadelle_transmissions_db
 from routes.citadelle.reports import router as citadelle_reports_router, set_database as set_citadelle_reports_db
+from routes.citadelle.moderation import router as citadelle_moderation_router, set_database as set_citadelle_moderation_db
 
 router = APIRouter(prefix="/citadelle", tags=["La Citadelle Numérique"])
 router.include_router(citadelle_auth_router)
@@ -38,6 +40,7 @@ router.include_router(citadelle_invoices_router)
 router.include_router(citadelle_stripe_connect_router)
 router.include_router(citadelle_transmissions_router)
 router.include_router(citadelle_reports_router)
+router.include_router(citadelle_moderation_router)
 
 _db = None
 
@@ -59,3 +62,5 @@ def set_database(database):
     set_citadelle_stripe_connect_db(database)
     set_citadelle_transmissions_db(database)
     set_citadelle_reports_db(database)
+    set_citadelle_moderation_db(database)
+    set_citadelle_dependencies_db(database)

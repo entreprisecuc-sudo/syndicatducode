@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
+import { MemberModerationActions } from "@/components/admin/MemberModerationActions";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -367,13 +368,31 @@ export default function AdminCitadelleUsers() {
 
                     {/* Statut compte */}
                     <td className="px-4 py-3">
-                      <span className="text-xs px-2.5 py-0.5 rounded-full font-medium"
-                        style={{
-                          background: u.status === "active" ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
-                          color: u.status === "active" ? "#16a34a" : "#dc2626",
-                        }}>
-                        {u.status === "active" ? "Actif" : "Suspendu"}
-                      </span>
+                      {(() => {
+                        const st = u.status || "active";
+                        const meta = st === "banned"
+                          ? { t: "Banni", bg: "rgba(239,68,68,0.12)", c: "#dc2626" }
+                          : st === "suspended"
+                          ? { t: "Suspendu", bg: "rgba(249,115,22,0.14)", c: "#ea580c" }
+                          : { t: "Actif", bg: "rgba(34,197,94,0.1)", c: "#16a34a" };
+                        const warns = (u.moderation_log || []).filter(m => m.type === "warning").length;
+                        return (
+                          <div className="space-y-1">
+                            <span className="text-xs px-2.5 py-0.5 rounded-full font-medium inline-block"
+                              style={{ background: meta.bg, color: meta.c }} data-testid={`user-status-${i}`}>
+                              {meta.t}
+                            </span>
+                            {st === "suspended" && u.suspended_until && (
+                              <p className="text-xs opacity-50">jusqu'au {fmtDate(u.suspended_until)}</p>
+                            )}
+                            {warns > 0 && (
+                              <p className="text-xs font-medium" style={{ color: "#C9A45C" }} data-testid={`user-warnings-${i}`}>
+                                ⚠ {warns} avertissement{warns > 1 ? "s" : ""}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
 
                     {/* CGU / CGV */}
@@ -407,13 +426,21 @@ export default function AdminCitadelleUsers() {
 
                     {/* Actions */}
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => setSelectedUser(u)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
-                        style={{ background: "rgba(201,164,92,0.1)", color: "#C9A45C" }}
-                        data-testid={`btn-kyc-review-${i}`}>
-                        <Eye size={12} /> Réviser KYC
-                      </button>
+                      <div className="flex flex-col gap-2 items-start">
+                        <button
+                          onClick={() => setSelectedUser(u)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
+                          style={{ background: "rgba(201,164,92,0.1)", color: "#C9A45C" }}
+                          data-testid={`btn-kyc-review-${i}`}>
+                          <Eye size={12} /> Réviser KYC
+                        </button>
+                        <MemberModerationActions
+                          userId={u.id}
+                          label={`${u.first_name} ${u.last_name} — ${u.email}`}
+                          status={u.status || "active"}
+                          onDone={loadUsers}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))
