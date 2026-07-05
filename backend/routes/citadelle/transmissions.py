@@ -285,6 +285,32 @@ async def finalize_transmission(tid: str, request: Request):
         except Exception as e:
             logger.error(f"[Transmission] Échec email acheteur : {e}")
 
+    # Email vendeur — Titre de Cession prêt (sans aucun accès/code)
+    seller_email = doc.get("seller_email", "")
+    if seller_email:
+        try:
+            from services.email_service.core import send_citadelle_email, _build_notification_base
+            asset_title = doc.get("general", {}).get("asset_title", "votre actif")
+            body_html = (
+                f"<p style='color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;'>Bonjour,</p>"
+                f"<p style='color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;'>"
+                f"La cession de « {asset_title} » a été finalisée par La Garde. Votre "
+                f"<strong>Titre de Cession</strong> (dossier <strong>{doc.get('dossier_number')}</strong>) "
+                f"est désormais disponible : il atteste officiellement de la transmission de votre actif.</p>"
+                f"<p style='color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;'>"
+                f"Retrouvez-le à tout moment dans votre espace La Garde. Merci de votre confiance.</p>"
+            )
+            html = _build_notification_base(
+                "Titre de Cession",
+                "Votre cession a été finalisée",
+                "#C9A45C", body_html,
+                f"{CITADELLE_URL}/citadelle/espace-membre/transmissions",
+                "Accéder à mon document",
+            )
+            await send_citadelle_email(seller_email, "Votre Titre de Cession est disponible — La Garde", html)
+        except Exception as e:
+            logger.error(f"[Transmission] Échec email vendeur : {e}")
+
     doc = await db.citadelle_transmissions.find_one({"id": tid})
     return _public_doc(doc)
 
