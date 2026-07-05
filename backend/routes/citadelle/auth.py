@@ -308,17 +308,21 @@ async def citadelle_login(credentials: CitadelleLogin, request: Request):
 
     statut = user.get("status", "active")
     if statut == "banned":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Votre compte a été banni. Contactez le support."
-        )
+        motif = user.get("ban_reason")
+        detail = "Votre compte a été banni de La Citadelle Numérique."
+        if motif:
+            detail += f" Motif : {motif}."
+        detail += " Pour toute contestation, contactez le support."
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
     if statut == "suspended":
         until = user.get("suspended_until")
         if until and datetime.now(timezone.utc).isoformat() < until:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Votre compte est suspendu jusqu'au {until[:10]}. Contactez le support."
-            )
+            motif = user.get("suspension_reason")
+            detail = f"Votre compte est suspendu jusqu'au {until[:10]}."
+            if motif:
+                detail += f" Motif : {motif}."
+            detail += " Contactez le support pour toute question."
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
         # Suspension expirée → réactivation automatique
         await db.users.update_one(
             {"id": user["id"]},

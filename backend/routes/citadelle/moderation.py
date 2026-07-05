@@ -72,7 +72,7 @@ async def suspend_member(user_id: str, data: SuspendInput, current_user: dict = 
     until = (datetime.now(timezone.utc) + timedelta(weeks=data.weeks)).isoformat()
     await db.users.update_one(
         {"id": user_id},
-        {"$set": {"status": "suspended", "suspended_until": until, "updated_at": _now()}}
+        {"$set": {"status": "suspended", "suspended_until": until, "suspension_reason": data.reason, "updated_at": _now()}}
     )
     await _log_and_notify(user, "suspension", data.reason, data.note, until=until)
     logger.info(f"[Citadelle Moderation] Suspension {data.weeks}sem de {user['email']} par {current_user.get('email')}")
@@ -85,11 +85,11 @@ async def ban_member(user_id: str, data: WarnInput, current_user: dict = Depends
     now = _now()
     await db.users.update_one(
         {"id": user_id},
-        {"$set": {"status": "banned", "banned_at": now, "suspended_until": None, "updated_at": now}}
+        {"$set": {"status": "banned", "banned_at": now, "ban_reason": data.reason, "suspended_until": None, "updated_at": now}}
     )
-    # Retrait des annonces actives du membre banni
+    # Retrait des annonces actives ET en attente du membre banni
     await db.citadelle_listings.update_many(
-        {"seller_id": user_id, "status": "active"},
+        {"seller_id": user_id, "status": {"$in": ["active", "pending"]}},
         {"$set": {"status": "rejected", "rejection_reason": "Compte du vendeur banni par l'administration", "updated_at": now}}
     )
     await _log_and_notify(user, "ban", data.reason, data.note)
@@ -102,7 +102,7 @@ async def reactivate_member(user_id: str, current_user: dict = Depends(require_a
     user = await _get_member(user_id)
     await db.users.update_one(
         {"id": user_id},
-        {"$set": {"status": "active", "suspended_until": None, "banned_at": None, "updated_at": _now()},
+        {"$set": {"status": "active", "suspended_until": None, "banned_at": None, "ban_reason": None, "suspension_reason": None, "updated_at": _now()},
          "$push": {"moderation_log": {"id": str(uuid.uuid4()), "type": "reactivation", "reason": "Réactivation manuelle",
                                       "note": "", "created_at": _now(), "until": None}}}
     )
