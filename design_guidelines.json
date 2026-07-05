@@ -1,0 +1,131 @@
+{
+  "project": "La Citadelle Numérique - Espace Membre",
+  "theme_and_archetype": {
+    "theme": "Light",
+    "archetype": "Premium SaaS / Old Money Tech",
+    "rationale": "High-end French marketplace for digital assets requires a trustworthy, premium interface. Relying strictly on the user-provided Navy & Gold palette to convey authority and value."
+  },
+  "colors": {
+    "primary": "#0F2747",
+    "primary_foreground": "#FFFFFF",
+    "accent_gold": "#C9A45C",
+    "accent_gold_light": "#D9BB7A",
+    "background": "#F5F7FA",
+    "surface": "#FFFFFF",
+    "muted_text": "#5F6672",
+    "border": "#DDE3EA",
+    "success": "#22C55E"
+  },
+  "typography": {
+    "heading_font": "Cabinet Grotesk",
+    "body_font": "IBM Plex Sans",
+    "strategy": "Avoid generic fonts like Inter for headings. Use Cabinet Grotesk for a premium, authoritative heading structure. IBM Plex Sans for highly legible, data-heavy body text.",
+    "scales": {
+      "h1": "text-2xl md:text-3xl font-semibold tracking-tight text-[#0F2747]",
+      "h2": "text-xl md:text-2xl font-medium text-[#0F2747]",
+      "h3": "text-lg font-medium text-[#0F2747]",
+      "body": "text-base text-[#5F6672]",
+      "small": "text-sm text-[#5F6672]",
+      "kpi_value": "text-3xl md:text-4xl font-bold text-[#0F2747]"
+    }
+  },
+  "layout_strategy": {
+    "mobile": "1-column layout, vertically stacked sections. Container padding p-4.",
+    "tablet": "2-column bento grids. Container padding p-6.",
+    "desktop": "Compact header + 4-column KPI row + 3-column main split (2 cols content, 1 col sidebar).",
+    "sections": {
+      "header": {
+        "description": "Compact top navigation bar, completely decoupled from the main content grid.",
+        "components": "User avatar (Initials or Photo), 'Bonjour, Marie !', and a subtle 'Déconnexion' ghost button.",
+        "spacing": "flex justify-between items-center py-4 px-6 border-b border-[#DDE3EA] bg-white mb-8"
+      },
+      "kpi_and_cta_row": {
+        "description": "Top row highlighting the most crucial stats and the primary CTA. Solves the 'no stats at a glance' problem.",
+        "layout": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8",
+        "cards": [
+          { "type": "kpi", "title": "Annonces actives", "value": "3", "link": "Mes annonces", "icon": "LayoutList" },
+          { "type": "kpi", "title": "Transactions en cours", "value": "1", "link": "Mes transactions", "icon": "ArrowRightLeft" },
+          { "type": "kpi", "title": "Messages non lus", "value": "2", "link": "Mes messages", "icon": "MessageSquare" },
+          { "type": "primary_cta", "title": "Publier une annonce", "subtitle": "Mettez votre actif en vente", "style": "bg-[#0F2747] text-white hover:bg-[#0F2747]/90 transition-colors border-none shadow-md cursor-pointer", "icon_color": "#C9A45C", "icon": "PlusCircle" }
+        ]
+      },
+      "main_content": {
+        "layout": "grid grid-cols-1 lg:grid-cols-3 gap-8",
+        "left_column": {
+          "span": "lg:col-span-2",
+          "blocks": [
+            {
+              "id": "a_traiter",
+              "title": "À Traiter",
+              "description": "Pending actions transformed from a heavy block to a sleek, actionable list.",
+              "style": "bg-white rounded-xl border border-[#DDE3EA] p-6 shadow-sm mb-8",
+              "empty_state": "Sleek horizontal row with success icon (#22C55E) and text 'Tout est à jour. Aucune action requise.'"
+            },
+            {
+              "id": "mes_services_transmissions",
+              "title": "Gestion & Services",
+              "layout": "grid grid-cols-1 md:grid-cols-2 gap-4",
+              "cards": ["Mes transmissions (Attestations de La Garde)", "Mes services (Évaluations et audits)"]
+            }
+          ]
+        },
+        "right_column": {
+          "span": "lg:col-span-1",
+          "blocks": [
+            {
+              "id": "administration",
+              "title": "Administration",
+              "style": "bg-white rounded-xl border border-[#DDE3EA] p-6 shadow-sm",
+              "items": [
+                { "title": "Mon profil", "desc": "Modifier mes informations", "icon": "User" },
+                { "title": "Mes factures", "desc": "Téléchargez vos PDF", "icon": "FileText" }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "ui_components": {
+    "cards": "Use Shadcn Cards but with custom borders (#DDE3EA) and zero/subtle shadow. Use rounded-xl for a modern premium feel.",
+    "icons": "lucide-react. Stroke width 1.5. Sizes 20px (standard) or 24px (KPIs).",
+    "buttons": "Shadcn buttons. Primary buttons use #0F2747 background. Secondary buttons use transparent background with #DDE3EA border."
+  },
+  "micro_interactions": {
+    "hover_states": "Interactive Cards should have a subtle -translate-y-1 and shadow-md transition on hover. Links/Text should change text color to #C9A45C.",
+    "focus_states": "focus-visible:ring-2 focus-visible:ring-[#C9A45C]/50 focus-visible:outline-none"
+  },
+  "media_and_icons": {
+    "publier_annonce": "PlusCircle",
+    "mes_annonces": "LayoutList",
+    "mes_transactions": "ArrowRightLeft",
+    "mes_factures": "FileText",
+    "mes_transmissions": "ShieldCheck",
+    "mes_messages": "MessageSquare",
+    "mes_services": "Briefcase",
+    "mon_profil": "User"
+  },
+  "testing_requirements": {
+    "data_testids": [
+      "dashboard-header-logout",
+      "kpi-annonces-actives",
+      "kpi-transactions",
+      "kpi-messages",
+      "cta-publier-annonce",
+      "section-a-traiter",
+      "nav-mes-transmissions",
+      "nav-mes-services",
+      "nav-mon-profil",
+      "nav-mes-factures"
+    ]
+  },
+  "instructions_to_main_agent": [
+    "1. DO NOT use generic fonts like Inter or Roboto for headings; configure Cabinet Grotesk or similar geometric/premium sans.",
+    "2. Create the layout strictly using the color hex codes provided, mapping them precisely to Tailwind classes in tailwind.config.js.",
+    "3. Extract the 'Publier une annonce' out of the generic list and make it a highly visible CTA card in the KPI row.",
+    "4. Dismantle the 8-card identical grid. Re-route 'Mes annonces', 'Mes transactions', and 'Mes messages' into the top KPI summary cards (where clicking the card acts as the navigation).",
+    "5. Group 'Mon profil' and 'Mes factures' into an 'Administration' sidebar/column on the right.",
+    "6. Make the 'À traiter' block a clean list view (Shadcn Table or custom Flex rows) rather than a giant empty card.",
+    "7. Ensure all interactive elements have data-testid attributes."
+  ]
+}
