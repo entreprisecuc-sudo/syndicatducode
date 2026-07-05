@@ -7,6 +7,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { HelmetProvider } from "react-helmet-async";
+import { Toaster } from "sonner";
 import { ModalProvider } from "@/context/ModalContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { AdminThemeProvider } from "@/context/AdminThemeContext";
@@ -160,6 +161,7 @@ function App() {
       <ModalProvider>
         <AdminThemeProvider>
           <div className="App">
+            <Toaster position="top-center" richColors closeButton />
             <BrowserRouter>
               {/* Scroll en haut à chaque navigation */}
               <ScrollToTop />

@@ -6,6 +6,7 @@
 
 import { useRef, useState } from "react";
 import { Paperclip, X, FileText, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import citadelleApi from "@/services/citadelleApi";
 import {
   CITADELLE_COLORS,
@@ -38,16 +39,16 @@ export function AttachmentButton({ attachments, setAttachments, disabled, color 
     if (!files.length) return;
     const slots = MAX_ATTACHMENTS - attachments.length;
     if (slots <= 0) {
-      alert(`Maximum ${MAX_ATTACHMENTS} pièces jointes par message.`);
+      toast.error(`Maximum ${MAX_ATTACHMENTS} pièces jointes par message.`);
       return;
     }
     setUploading(true);
     try {
       const uploaded = [];
       for (const f of files.slice(0, slots)) {
-        if (f.size > MAX_SIZE) { alert(`« ${f.name} » dépasse 25 Mo.`); continue; }
+        if (f.size > MAX_SIZE) { toast.error(`« ${f.name} » dépasse 25 Mo.`); continue; }
         try { uploaded.push(await uploadAttachment(f)); }
-        catch (err) { alert(err?.response?.data?.detail || `Échec de l'envoi de « ${f.name} ».`); }
+        catch (err) { toast.error(err?.response?.data?.detail || `Échec de l'envoi de « ${f.name} ».`); }
       }
       if (uploaded.length) setAttachments([...attachments, ...uploaded]);
     } finally { setUploading(false); }
