@@ -1,0 +1,35 @@
+{
+  "summary": "Validation Citadelle iter18 : contenu adulte (A1..A5) + signalements & modération (B1..B4). Backend pytest 16/16 (test_citadelle_adult_reports_moderation.py) — purge is_adult sur POST/PATCH, listing normal conserve images/url, GET liste + détail exposent is_adult sans images/url, POST /reports + validation motif, admin liste avec open_count, patch statut, view conversation (messages + dispute_messages), warn/suspend (login 403)/reactivate (login 200)/ban (login 403). Frontend Playwright : A3 badge listing-adult-badge-test-site-adulte-demo-948e7689 sur la liste (note: le review request mentionnait par erreur 'listing-adult-badge-escrow-platform-5', le vrai pattern est '-{slug}'). A4 sans auth → adult-restricted + adult-login-btn ; avec auth acheteur → adult-cover (aucune image, aucun lien). A5 (URL réelle : /citadelle/espace-membre/mes-annonces/creer, non /publier) → étape 3 checkbox create-listing-adult, coche masque input URL + upload d'images. B3 /syndicat-admin/citadelle/signalements → admin-citadelle-reports, sidebar-reports-badge='2', 4 report-cards, report-view-conversation ouvre conversation-modal avec messages, moderation-open-btn ouvre moderation-modal avec moderation-confirm-btn. B4 /syndicat-admin/citadelle/utilisateurs → 57 statuts Actif, avertissement affiché (ex: '1 avertissement'), 12 boutons Sanctionner (moderation-open-btn), 0 reactivate (aucun membre non-actif au moment du test — attendu).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Toutes pages Citadelle avec select natifs (CitadelleListings, CitadelleHome SearchBar)", "issues": ["Warning console React (hydration): <span data-ve-dynamic> inséré comme enfant direct de <select>/<option> — préexistant, non bloquant, cosmétique (dev overlay VE)"]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_citadelle_adult_reports_moderation.py",
+    "/app/test_reports/pytest/adult_reports_mod_iter18.xml"
+  ],
+  "action_items": [
+    "Docs : la review request mentionne l'URL '/citadelle/espace-membre/publier' — la route réelle est '/citadelle/espace-membre/mes-annonces/creer' (App.js:388). Aligner soit la doc, soit ajouter un alias de route.",
+    "Docs : la review request donne le testid 'listing-adult-badge-escrow-platform-5' — le pattern réel est 'listing-adult-badge-{slug}' (ex: listing-adult-badge-test-site-adulte-demo-948e7689). Pas un bug, juste clarification."
+  ],
+  "critical_code_review_comments": [
+    "routes/citadelle/listings.py create + update : la purge conditionnelle 'images=[] et url_preview=None si is_adult' est bien exécutée à la fois à la création et lors du PATCH (via effective_adult = updates.get('is_adult', listing.get('is_adult'))). DRY-friendly, correct.",
+    "routes/citadelle/reports.py : _charger_contexte vérifie bien buyer_id/seller_id → 403 si non participant. Bon.",
+    "routes/citadelle/moderation.py::ban_member : le retrait automatique des annonces actives en 'rejected' est correct ; garde-fou : le champ 'rejection_reason' est bien rempli. Cependant les annonces 'pending' du banni ne sont pas rejetées — à considérer si besoin (potentielle amélioration).",
+    "routes/citadelle/dependencies.py::_statut_membre_ok : appelée dans require_citadelle_user donc chaque appel protégé re-check DB (bien pour empêcher l'usage d'un token émis avant ban). Coût : 1 read DB par requête protégée — acceptable.",
+    "routes/citadelle/auth.py::citadelle_login : la comparaison 'datetime.now(timezone.utc).isoformat() < until' fonctionne car les isoformat ISO-8601 UTC (Z) sont ordonnables lexicographiquement — attention si suspended_until vient un jour d'une autre timezone."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_citadelle_adult_reports_moderation.py (nouveau — 16 tests)"
+  ],
+  "success_rate": {"backend": "100% (16/16)", "frontend": "100% (A3, A4 sans/avec auth, A5, B3, B4)"},
+  "test_credentials": "admin bigpapa1981@asar.com / Josiane03@@@!1981 ; vendeur test.vendeur@citadelle.fr / DemoVendeur2026! ; acheteur test.acheteur@citadelle.fr / DemoAcheteur2026!",
+  "seed_data_creation": "Aucune donnée seed modifiée durablement : 1 signalement TEST_REPORT créé puis supprimé en DB ; 1 compte 'test_mod_*' créé (réactivé puis re-banni dans tests, laissé en DB avec status=banned — n'interfère pas avec les autres tests). Vendeur/acheteur test restent 'active'. Les 4 signalements démo (test_scenario_seed) et l'annonce adulte demo restent intacts.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Pour A5, la route à utiliser est /citadelle/espace-membre/mes-annonces/creer. Le formulaire a 4 étapes indexées 0..3 ; le checkbox create-listing-adult est à l'étape 2 (index step===2), donc après avoir cliqué 2× Suivant (attention : à l'étape 1 → 2, une modale 'Commission La Citadelle' apparaît et doit être fermée via button 'J'ai compris — Fixer mon prix'). Pour tester ban + auto-rejet des annonces d'un vendeur, il faut créer une annonce active puis ban ce vendeur (attention à réactiver après). Aucun email SMTP réel n'a été vérifié (juste success API), conforme aux consignes."
+}
