@@ -274,6 +274,93 @@ La Citadelle Numérique
         return False
 
 
+def send_citadelle_second_chance_seller_request_email(
+    seller_email: str,
+    listing_title: str,
+    next_amount: float,
+    transaction_id: str,
+) -> bool:
+    """Demande au vendeur s'il souhaite proposer l'actif à l'enchérisseur suivant (dernière chance)."""
+    try:
+        from config.settings import CITADELLE_URL
+        tx_url = f"{CITADELLE_URL}/citadelle/espace-membre/transactions/{transaction_id}"
+
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = seller_email
+        msg['Subject'] = f"[Enchère] Proposer une seconde chance — {listing_title}"
+
+        body = f"""Bonjour,
+
+La vente aux enchères de votre actif n'a pas abouti (l'enchérisseur gagnant ne l'a pas finalisée).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Annonce                : {listing_title}
+Enchérisseur suivant   : {next_amount:,.0f} €
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+La Garde de la Citadelle vous propose d'offrir une DERNIÈRE CHANCE à l'enchérisseur suivant,
+au montant de son enchère ({next_amount:,.0f} €).
+
+Rien n'est déclenché tant que vous n'avez pas confirmé. Rendez-vous sur votre transaction
+pour accepter ou refuser cette proposition :
+{tx_url}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+La Citadelle Numérique
+"""
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        _envoyer_email(msg)
+        return True
+    except Exception as e:
+        logger.error(f"[Citadelle Enchère] Erreur email demande seconde chance vendeur: {e}")
+        return False
+
+
+def send_citadelle_second_chance_offer_email(
+    bidder_email: str,
+    bidder_name: str,
+    listing_title: str,
+    listing_slug: str,
+    amount: float,
+    transaction_id: str,
+) -> bool:
+    """Offre 'dernière chance' à l'enchérisseur suivant après validation du vendeur."""
+    try:
+        from config.settings import CITADELLE_URL
+        payment_url = f"{CITADELLE_URL}/citadelle/espace-membre/transactions/{transaction_id}"
+
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = bidder_email
+        msg['Subject'] = f"Dernière chance ! L'actif « {listing_title} » vous est proposé"
+
+        body = f"""Bonjour {bidder_name},
+
+Bonne nouvelle : l'enchérisseur gagnant n'a pas finalisé son achat.
+La Citadelle Numérique vous offre une DERNIÈRE CHANCE d'acquérir cet actif au montant de votre enchère.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Annonce      : {listing_title}
+Votre prix   : {amount:,.0f} €
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pour en profiter, finalisez le paiement sécurisé depuis votre espace membre :
+{payment_url}
+
+Cette offre est prioritaire — ne tardez pas.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+La Citadelle Numérique
+"""
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        _envoyer_email(msg)
+        return True
+    except Exception as e:
+        logger.error(f"[Citadelle Enchère] Erreur email offre seconde chance: {e}")
+        return False
+
+
 def send_citadelle_auction_daily_digest_email(
     seller_email: str,
     seller_name: str,

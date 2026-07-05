@@ -379,6 +379,216 @@ async def withdraw_offer(
     return {"message": "Proposition retirée. Aucun frais appliqué."}
 
 
+# ── Enchères : seconde chance à l'enchérisseur suivant ─────────────────────────
+
+async def _prochain_encherisseur(listing: dict, exclude_bidder_ids: set) -> Optional[dict]:
+    """Retourne l'enchère valide la plus haute dont l'enchérisseur n'a pas déjà été sollicité."""
+    bids = listing.get("auction_bids") or []
+    candidats = [b for b in bids if b.get("bidder_id") and b.get("bidder_id") not in exclude_bidder_ids]
+    if not candidats:
+        return None
+    return max(candidats, key=lambda b: b.get("amount", 0))
+
+
+async def _encherisseurs_deja_sollicites(listing_id: str) -> set:
+    """Ensemble des bidder_id ayant déjà eu une transaction pour cette annonce (gagnant + secondes chances)."""
+    ids = set()
+    cursor = db.citadelle_transactions.find({"listing_id": listing_id}, {"_id": 0, "buyer_id": 1})
+    async for t in cursor:
+        if t.get("buyer_id"):
+            ids.add(t["buyer_id"])
+    return ids
+
+
+async def _is_auction_tx(tx: dict) -> bool:
+    if tx.get("is_auction"):
+        return True
+    listing = await db.citadelle_listings.find_one({"id": tx.get("listing_id")}, {"_id": 0, "is_auction": 1})
+    return bool(listing and listing.get("is_auction"))
+
+
+@router.post("/admin/transactions/{transaction_id}/request-second-chance",
+             summary="Admin — Demander au vendeur de proposer la seconde chance")
+async def admin_request_second_chance(
+    transaction_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """Admin : lorsque l'enchère gagnante n'aboutit pas, demande au vendeur (email + message)
+    s'il souhaite proposer l'actif à l'enchérisseur suivant. Ne déclenche rien tant que le
+    vendeur n'a pas confirmé."""
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if not await _is_auction_tx(tx):
+        raise HTTPException(status_code=400, detail="Cette transaction ne provient pas d'une enchère")
+    if tx.get("status") != "cancelled":
+        raise HTTPException(status_code=400, detail="La seconde chance n'est possible que sur une enchère non aboutie (transaction annulée)")
+
+    listing = await db.citadelle_listings.find_one({"id": tx["listing_id"]}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+
+    exclude = await _encherisseurs_deja_sollicites(tx["listing_id"])
+    prochain = await _prochain_encherisseur(listing, exclude)
+    if not prochain:
+        raise HTTPException(status_code=400, detail="Aucun enchérisseur suivant disponible pour cette annonce")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {
+            "second_chance_requested": True,
+            "second_chance_requested_at": now,
+            "second_chance_next_bidder": {
+                "bidder_id": prochain.get("bidder_id"),
+                "bidder_email": prochain.get("bidder_email"),
+                "bidder_name": prochain.get("bidder_name"),
+                "amount": prochain.get("amount"),
+            },
+            "updated_at": now,
+        }, "$push": {"messages": system_message(
+            f"La Garde vous invite à proposer cet actif à l'enchérisseur suivant "
+            f"({prochain.get('amount', 0):,.0f} €) puisque la vente n'a pas abouti. "
+            f"Confirmez ci-dessous pour lui offrir une dernière chance."
+        )}}
+    )
+
+    try:
+        from services.email_service import send_citadelle_second_chance_seller_request_email
+        send_citadelle_second_chance_seller_request_email(
+            seller_email=tx.get("seller_email", ""),
+            listing_title=tx.get("listing_title", ""),
+            next_amount=prochain.get("amount", 0),
+            transaction_id=transaction_id,
+        )
+    except Exception as e:
+        logger.warning(f"[Citadelle Enchère] Échec email demande seconde chance vendeur: {e}")
+
+    logger.info(f"[Citadelle Enchère] Seconde chance demandée au vendeur pour tx {transaction_id}")
+    return {"success": True, "message": "Demande envoyée au vendeur.", "next_amount": prochain.get("amount")}
+
+
+@router.post("/transactions/{transaction_id}/confirm-second-chance",
+             summary="Vendeur — Confirmer et proposer la seconde chance")
+async def confirm_second_chance(
+    transaction_id: str,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """Vendeur : confirme la proposition et déclenche la création de la transaction
+    pour l'enchérisseur suivant + email 'dernière chance'."""
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx["seller_id"] != current_user.get("sub"):
+        raise HTTPException(status_code=403, detail="Seul le vendeur peut confirmer")
+    if not tx.get("second_chance_requested"):
+        raise HTTPException(status_code=400, detail="Aucune demande de seconde chance en attente")
+    if tx.get("second_chance_done"):
+        raise HTTPException(status_code=400, detail="Seconde chance déjà déclenchée")
+
+    listing = await db.citadelle_listings.find_one({"id": tx["listing_id"]}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+
+    # Re-vérifier l'enchérisseur suivant au moment de la confirmation (source de vérité)
+    exclude = await _encherisseurs_deja_sollicites(tx["listing_id"])
+    prochain = await _prochain_encherisseur(listing, exclude)
+    if not prochain:
+        raise HTTPException(status_code=400, detail="Aucun enchérisseur suivant disponible")
+
+    now = datetime.now(timezone.utc).isoformat()
+    amount = prochain.get("amount", 0)
+    new_tx_id = str(uuid.uuid4())
+    new_tx = {
+        "id": new_tx_id,
+        "listing_id": listing["id"],
+        "listing_title": listing["title"],
+        "listing_slug": listing.get("slug", ""),
+        "buyer_id": prochain.get("bidder_id"),
+        "buyer_email": prochain.get("bidder_email"),
+        "seller_id": listing["seller_id"],
+        "seller_email": listing.get("seller_email", ""),
+        "status": "offer_accepted",
+        "is_auction": True,
+        "second_chance": True,
+        "offer_amount": amount,
+        "offer_message": "Seconde chance : l'enchérisseur précédent n'a pas finalisé l'achat.",
+        "counter_amount": None,
+        "counter_message": None,
+        "payment_id": None,
+        "payment_amount": amount,
+        "credentials": None,
+        "credentials_transmitted": False,
+        "messages": [system_message(
+            f"Dernière chance ! L'actif vous est proposé à votre enchère de {amount:,.0f} €. "
+            f"Procédez au paiement pour finaliser l'acquisition."
+        )],
+        "dispute_messages": [],
+        "created_at": now,
+        "updated_at": now,
+        "completed_at": None,
+        "paid_at": None,
+        "disputed_at": None,
+        "dispute_reason": None,
+    }
+    await db.citadelle_transactions.insert_one(new_tx)
+
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {"second_chance_done": True, "second_chance_new_tx_id": new_tx_id, "updated_at": now},
+         "$push": {"messages": system_message(
+             f"Seconde chance proposée à l'enchérisseur suivant ({amount:,.0f} €)."
+         )}}
+    )
+
+    # L'annonce pointe désormais vers la nouvelle transaction gagnante potentielle
+    await db.citadelle_listings.update_one(
+        {"id": listing["id"]},
+        {"$set": {"status": "sold", "auction_winner_transaction_id": new_tx_id, "updated_at": now}}
+    )
+
+    try:
+        from services.email_service import send_citadelle_second_chance_offer_email
+        send_citadelle_second_chance_offer_email(
+            bidder_email=prochain.get("bidder_email", ""),
+            bidder_name=prochain.get("bidder_name") or prochain.get("bidder_email", ""),
+            listing_title=listing["title"],
+            listing_slug=listing.get("slug", ""),
+            amount=amount,
+            transaction_id=new_tx_id,
+        )
+    except Exception as e:
+        logger.warning(f"[Citadelle Enchère] Échec email offre seconde chance: {e}")
+
+    logger.info(f"[Citadelle Enchère] Seconde chance confirmée par le vendeur — nouvelle tx {new_tx_id}")
+    return {"success": True, "message": "L'enchérisseur suivant a été notifié.", "new_transaction_id": new_tx_id}
+
+
+@router.post("/transactions/{transaction_id}/decline-second-chance",
+             summary="Vendeur — Refuser la seconde chance")
+async def decline_second_chance(
+    transaction_id: str,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """Vendeur : refuse la proposition de seconde chance (aucune relance)."""
+    tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction introuvable")
+    if tx["seller_id"] != current_user.get("sub"):
+        raise HTTPException(status_code=403, detail="Seul le vendeur peut refuser")
+    if not tx.get("second_chance_requested") or tx.get("second_chance_done"):
+        raise HTTPException(status_code=400, detail="Aucune demande de seconde chance en attente")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.citadelle_transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {"second_chance_requested": False, "second_chance_declined": True, "updated_at": now},
+         "$push": {"messages": system_message("Le vendeur a décliné la proposition de seconde chance.")}}
+    )
+    logger.info(f"[Citadelle Enchère] Seconde chance refusée par le vendeur pour tx {transaction_id}")
+    return {"success": True, "message": "Proposition refusée."}
+
+
 @router.post("/transactions/{transaction_id}/accept", summary="Accepter une offre")
 async def accept_offer(
     transaction_id: str,

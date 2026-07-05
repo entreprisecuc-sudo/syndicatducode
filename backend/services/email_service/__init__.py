@@ -46,5 +46,7 @@ from services.email_service.citadelle.auctions import (
     send_citadelle_auction_bid_email,
     send_citadelle_auction_winner_email,
     send_citadelle_auction_bid_removed_email,
+    send_citadelle_second_chance_seller_request_email,
+    send_citadelle_second_chance_offer_email,
     send_citadelle_auction_daily_digest_email,
 )

@@ -396,6 +396,39 @@ export default function CitadelleTransactionDetail() {
             </button>
           )}
 
+          {/* Vendeur : proposition de seconde chance (déclenchée par l'admin) */}
+          {isSeller && tx.second_chance_requested && !tx.second_chance_done && (
+            <div className="p-4 rounded-xl space-y-3" style={{ background: "rgba(201,164,92,0.08)", border: `1px solid ${CITADELLE_COLORS.gold}` }} data-testid="seller-second-chance-banner">
+              <p className="text-sm font-bold flex items-center gap-2" style={{ color: CITADELLE_COLORS.blue }}>
+                <ArrowRight size={16} style={{ color: CITADELLE_COLORS.gold }} /> Proposer une dernière chance
+              </p>
+              <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
+                L'enchère gagnante n'a pas abouti. La Garde vous propose d'offrir l'actif à l'enchérisseur suivant
+                {tx.second_chance_next_bidder?.amount ? ` (${tx.second_chance_next_bidder.amount.toLocaleString("fr-FR")} €)` : ""}.
+                Rien n'est envoyé tant que vous n'avez pas confirmé.
+              </p>
+              <div className="flex gap-2">
+                <button onClick={() => doAction("confirm-second-chance")} disabled={actionLoading}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
+                  style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                  data-testid="btn-confirm-second-chance">
+                  <CheckCircle size={14} /> Confirmer
+                </button>
+                <button onClick={() => doAction("decline-second-chance")} disabled={actionLoading}
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium disabled:opacity-60"
+                  style={{ color: CITADELLE_COLORS.textMuted, border: `1px solid ${CITADELLE_COLORS.border}` }}
+                  data-testid="btn-decline-second-chance">
+                  Refuser
+                </button>
+              </div>
+            </div>
+          )}
+          {isSeller && tx.second_chance_done && (
+            <div className="p-3 rounded-xl text-xs" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", color: "#16A34A" }} data-testid="seller-second-chance-done">
+              Seconde chance proposée à l'enchérisseur suivant. Une nouvelle transaction a été créée.
+            </div>
+          )}
+
           {/* Bannière KYC vendeur — soft block, fonds en séquestre + profil incomplet */}
           {isSeller && STATUTS_SEQUESTRE.includes(tx.status) && !kycBannerDismissed && (!user?.phone || !user?.date_of_birth) && (
             <KycSellerBanner

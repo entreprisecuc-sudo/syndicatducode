@@ -415,6 +415,29 @@ export default function AdminCitadelleTransactions() {
                       <CreditCard size={14} /> Finaliser la vente (libérer les fonds)
                     </button>
                   )}
+                  {/* Enchère non aboutie : proposer la seconde chance au vendeur */}
+                  {selectedTx.status === "cancelled" && selectedTx.is_auction && !selectedTx.second_chance_done && (
+                    <div className="p-3 rounded-xl" style={{ background: "rgba(201,164,92,0.08)", border: "1px solid rgba(201,164,92,0.25)" }} data-testid="admin-second-chance-block">
+                      <p className="text-xs mb-2 opacity-80">
+                        Enchère non finalisée. Vous pouvez demander au vendeur de proposer l'actif à l'enchérisseur suivant (dernière chance).
+                      </p>
+                      {selectedTx.second_chance_requested ? (
+                        <p className="text-xs font-semibold flex items-center gap-1.5" style={{ color: "#C9A45C" }} data-testid="admin-second-chance-pending">
+                          <Clock size={12} /> Demande envoyée au vendeur — en attente de sa confirmation.
+                        </p>
+                      ) : (
+                        <button onClick={() => doAction("request-second-chance")} disabled={actionLoading}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
+                          style={{ background: "#C9A45C", color: "#081729" }}
+                          data-testid="admin-request-second-chance-btn">
+                          <RefreshCw size={14} /> Proposer la seconde chance au vendeur
+                        </button>
+                      )}
+                      {selectedTx.second_chance_declined && (
+                        <p className="text-xs mt-2 opacity-60">Le vendeur a décliné la précédente proposition.</p>
+                      )}
+                    </div>
+                  )}
                   {/* Transmettre les accès à l'acheteur */}
                   {selectedTx.status === "completed" && !selectedTx.credentials_transmitted && selectedTx.credentials?.data && (
                     <button onClick={() => doAction("transmit")} disabled={actionLoading}

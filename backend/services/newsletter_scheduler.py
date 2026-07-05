@@ -403,6 +403,7 @@ async def check_ended_auctions():
                     "seller_id": listing["seller_id"],
                     "seller_email": listing.get("seller_email", ""),
                     "status": "offer_accepted",
+                    "is_auction": True,
                     "offer_amount": amount,
                     "offer_message": "Enchère remportée automatiquement.",
                     "counter_amount": None,
