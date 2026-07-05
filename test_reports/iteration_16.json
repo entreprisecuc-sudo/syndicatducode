@@ -1,0 +1,24 @@
+{
+  "summary": "Feature 'pièces jointes dans TOUTES les messageries' — validation backend + frontend complète. Backend: 18/18 pytest OK (upload PNG/PDF, refus TXT/>25Mo, auth requise; envoi message avec pj sans texte OK / vide 400 / URL forgée 400 / >5 pj 400 sur les 3 messageries; sanitizer et texte simple régressions OK). Frontend (Playwright): attachment-btn + attachment-input + attachment-preview + attachment-image/file présents et fonctionnels sur (1) messagerie transaction /citadelle/espace-membre/transactions/{id}, (2) messagerie pré-vente /citadelle/espace-membre/messages/{convId}, (3) chat litige vendeur (2 attachment-btn: message principal + dispute-message-input rouge), (4) widget flottant chat-widget-btn ouvre panneau des conversations. Upload UI → preview → send-message-btn s'active sans texte → bulle affiche l'image cliquable.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_citadelle_attachments.py",
+    "/app/test_reports/pytest/attachments.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Erreurs de console React hydration (span > option / span > select) sur CitadelleHome — préexistantes, sans lien avec les pièces jointes; à corriger séparément (visual-editor wrapper injecte <span> autour des <option>).",
+    "CitadelleTransactionDetail.js reste ~1000+ lignes — envisager split (guideline >700).",
+    "utils/attachments.py: bonne isolation (validate_attachments + prefix strict /uploads/citadelle/attachments/). RAS."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_citadelle_attachments.py (nouveau, 18 tests)"
+  ],
+  "success_rate": {"backend": "100% (18/18)", "frontend": "100% (tx + pré-vente + widget + dispute vendeur)"},
+  "test_credentials": "Acheteur test.acheteur@citadelle.fr / DemoAcheteur2026! ; Vendeur test.vendeur@citadelle.fr / DemoVendeur2026! ; login POST /api/citadelle/auth/login → {access_token,user}. Frontend localStorage: 'citadelle_token' (raw string) + 'citadelle_user' (JSON.stringify(user)).",
+  "seed_data_creation": "seed_test_transactions.py exécuté avant et après les tests (idempotent, restauré à l'état propre).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "L'upload UI se fait via page.expect_file_chooser + click attachment-btn puis set_files. Une conversation pré-vente non bloquée existe déjà pour test.acheteur (créée par le test); pour recréer il suffit de POST /api/citadelle/messages/send avec listing_id d'une annonce active de test.vendeur. Pour ouvrir un litige de test: POST /api/citadelle/transactions/{id}/open-dispute (acheteur) sur une tx payment_done. Sur une tx en litige, la page vendeur affiche 2 attachment-btn (message principal + zone dispute)."
+}
