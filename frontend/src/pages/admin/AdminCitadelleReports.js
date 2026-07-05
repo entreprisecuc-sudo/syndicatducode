@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Flag, ArrowLeft, ShoppingCart, MessageSquare, ExternalLink } from "lucide-react";
+import { Flag, ArrowLeft, ShoppingCart, MessageSquare, ExternalLink, Hammer, Trash2 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
 import { MemberModerationActions } from "@/components/admin/MemberModerationActions";
@@ -51,6 +51,16 @@ export default function AdminCitadelleReports() {
       await api.patch(`/citadelle/admin/reports/${report.id}`, { status, admin_notes: notes[report.id] ?? report.admin_notes ?? "" });
       await load();
     } catch (err) { console.error("Erreur maj signalement:", err); }
+  };
+
+  const deleteBid = async (report) => {
+    if (!window.confirm(`Supprimer définitivement l'enchère de ${(report.bid_amount || 0).toLocaleString("fr-FR")} € ? L'enchérisseur sera notifié par email.`)) return;
+    try {
+      await api.delete(`/citadelle/admin/listings/${report.listing_id}/bids/${report.bid_id}`);
+      await load();
+    } catch (err) {
+      alert(err?.response?.data?.detail || "Échec de la suppression de l'enchère.");
+    }
   };
 
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleString("fr-FR"); } catch { return iso; } };
@@ -108,7 +118,8 @@ export default function AdminCitadelleReports() {
           <div className="space-y-4">
             {reports.map(r => {
               const meta = STATUS_META[r.status] || STATUS_META.open;
-              const TypeIcon = r.conversation_type === "transaction" ? ShoppingCart : MessageSquare;
+              const isBid = r.report_type === "bid";
+              const TypeIcon = isBid ? Hammer : (r.conversation_type === "transaction" ? ShoppingCart : MessageSquare);
               return (
                 <div key={r.id} className="p-5 rounded-xl" style={{ background: "var(--admin-bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--admin-border, rgba(255,255,255,0.1))" }} data-testid="report-card">
                   <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
@@ -121,32 +132,70 @@ export default function AdminCitadelleReports() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 text-xs opacity-80 mb-3">
-                    <p><span className="opacity-60">Signalé par :</span> {r.reporter_email} ({r.reporter_role === "buyer" ? "acheteur" : "vendeur"})</p>
-                    <p><span className="opacity-60">Type :</span> {r.conversation_type === "transaction" ? "Transaction" : "Pré-vente"}</p>
-                    <p><span className="opacity-60">Annonce :</span> {r.listing_title || "—"}</p>
-                    <p><span className="opacity-60">Acheteur / Vendeur :</span> {r.buyer_email || "—"} / {r.seller_email || "—"}</p>
+                    {isBid ? (
+                      <>
+                        <p><span className="opacity-60">Signalé par :</span> {r.reporter_email} (membre)</p>
+                        <p><span className="opacity-60">Annonce :</span> {r.listing_title || "—"}</p>
+                        <p style={{ color: "#DC2626" }}><span className="opacity-60">Enchère signalée :</span> <strong>{(r.bid_amount || 0).toLocaleString("fr-FR")} €</strong> par {r.bid_bidder_email || "—"}</p>
+                        <p><span className="opacity-60">Prix de l'annonce :</span> {(r.listing_price || 0).toLocaleString("fr-FR")} €</p>
+                      </>
+                    ) : (
+                      <>
+                        <p><span className="opacity-60">Signalé par :</span> {r.reporter_email} ({r.reporter_role === "buyer" ? "acheteur" : "vendeur"})</p>
+                        <p><span className="opacity-60">Type :</span> {r.conversation_type === "transaction" ? "Transaction" : "Pré-vente"}</p>
+                        <p><span className="opacity-60">Annonce :</span> {r.listing_title || "—"}</p>
+                        <p><span className="opacity-60">Acheteur / Vendeur :</span> {r.buyer_email || "—"} / {r.seller_email || "—"}</p>
+                      </>
+                    )}
                   </div>
 
                   <div className="p-3 rounded-lg text-sm mb-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
                     {r.message}
                   </div>
 
-                  <div className="flex items-center gap-4 mb-3 flex-wrap">
-                    <button onClick={() => openConversation(r)}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg"
-                      style={{ background: "rgba(201,164,92,0.12)", color: "#C9A45C", border: "1px solid rgba(201,164,92,0.3)" }}
-                      data-testid="report-view-conversation">
-                      <MessageSquare size={12} /> Voir la conversation
-                    </button>
-                    {r.conversation_type === "transaction" && (
-                      <Link to={`/syndicat-admin/citadelle/transactions?tx=${r.conversation_id}`}
-                        className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: "#C9A45C" }} data-testid="report-open-conversation">
-                        <ExternalLink size={12} /> Ouvrir la transaction
-                      </Link>
-                    )}
-                  </div>
+                  {isBid ? (
+                    <div className="flex items-center gap-4 mb-3 flex-wrap">
+                      <a href={`/citadelle/annonces/${r.listing_slug}`} target="_blank" rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: "#C9A45C" }} data-testid="report-open-listing">
+                        <ExternalLink size={12} /> Voir l'annonce
+                      </a>
+                      {r.status !== "resolved" && (
+                        <button onClick={() => deleteBid(r)}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg"
+                          style={{ background: "#DC2626", color: "white" }}
+                          data-testid="report-delete-bid">
+                          <Trash2 size={12} /> Supprimer l'enchère
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4 mb-3 flex-wrap">
+                      <button onClick={() => openConversation(r)}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg"
+                        style={{ background: "rgba(201,164,92,0.12)", color: "#C9A45C", border: "1px solid rgba(201,164,92,0.3)" }}
+                        data-testid="report-view-conversation">
+                        <MessageSquare size={12} /> Voir la conversation
+                      </button>
+                      {r.conversation_type === "transaction" && (
+                        <Link to={`/syndicat-admin/citadelle/transactions?tx=${r.conversation_id}`}
+                          className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: "#C9A45C" }} data-testid="report-open-conversation">
+                          <ExternalLink size={12} /> Ouvrir la transaction
+                        </Link>
+                      )}
+                    </div>
+                  )}
 
-                  {(r.buyer_id || r.seller_id) && (
+                  {isBid && r.bid_bidder_id && (
+                    <div className="p-3 rounded-lg mb-3" style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)" }}>
+                      <p className="text-xs opacity-70 mb-2">Modération de l'enchérisseur :</p>
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span className="text-xs">Enchérisseur — {r.bid_bidder_email}</span>
+                        <MemberModerationActions userId={r.bid_bidder_id} label={`Enchérisseur — ${r.bid_bidder_email}`} onDone={load} />
+                      </div>
+                    </div>
+                  )}
+
+                  {!isBid && (r.buyer_id || r.seller_id) && (
                     <div className="p-3 rounded-lg mb-3" style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)" }}>
                       <p className="text-xs opacity-70 mb-2">Modération des participants :</p>
                       <div className="space-y-2">

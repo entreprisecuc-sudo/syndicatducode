@@ -48,6 +48,13 @@ Processus professionnel de cession + génération de l'« Attestation de Transmi
 - Vérifs prod OK : HOME 200, /api/citadelle/blog 200, /api/citadelle/services 200 (/api/alerts/ = 403 attendu, auth admin).
 - ⚠️ Cache PWA : SW met à jour l'UI au prochain chargement. Ancienne branche locale `main-projet-4` conserve 26 commits non poussés (sans impact).
 
+## 🔧 Session 07/2026 — Signalement d'enchère suspecte + suppression admin (PREVIEW)
+- **Choix client** : tout membre connecté peut signaler discrètement l'enchère **la plus haute** (courante) d'une annonce aux enchères ; signalement **invisible** des autres membres (visible admins uniquement) ; l'enchérisseur n'est notifié par email **que si son enchère est supprimée** ; recalcul auto de l'enchère courante après suppression ; gestion via la page **Signalements** existante (DRY).
+- **Backend** (`routes/citadelle/listings.py`) : `bid_id` (uuid) ajouté à chaque nouvelle enchère. `POST /listings/{id}/report-bid` (require_citadelle_user) → signale l'enchère courante (backfill `bid_id` si enchère historique), écrit dans `citadelle_reports` avec `report_type:"bid"` + email admin (réutilise `send_citadelle_report_email`). `DELETE /admin/listings/{id}/bids/{bid_id}` (require_admin) → retire l'enchère, recalcule `auction_current_bid`/bidder sur l'enchère valide suivante (ou prix de départ si aucune), notifie l'enchérisseur, clôture les signalements liés (`status:resolved`).
+- **Email** : `send_citadelle_auction_bid_removed_email` (`services/email_service/citadelle/auctions.py` + export `__init__`).
+- **Frontend** : composant `components/citadelle/ReportBidButton.js` (lien discret « Signaler cette enchère » + modal message facultatif) affiché sur la fiche `CitadelleListingDetail.js` sous l'enchère courante (membres connectés, enchère active avec ≥1 offre). Page admin `AdminCitadelleReports.js` : rendu spécifique `report_type:"bid"` (montant signalé, enchérisseur, prix annonce, « Voir l'annonce », bouton « Supprimer l'enchère » + modération de l'enchérisseur).
+- **Validé (curl + vérif DB)** : signalement 200 (+ backfill bid_id), liste admin OK, suppression 200 → recalcul current_bid=prix (1000€, bidder None) + report `resolved`, double suppression → 404, sans auth → 403, listing inconnu → 404. Frontend compilé sans erreur. Règle 6 respectée (pas de testing_agent sans accord).
+
 ## Phases Citadelle
 
 ### ✅ Phase A — Socle (TERMINÉ)

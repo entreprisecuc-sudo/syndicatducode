@@ -19,7 +19,9 @@ from services.email_service import (
     send_citadelle_auction_bid_email,
     send_citadelle_auction_winner_email,
     send_citadelle_auction_new_listing_email,
+    send_citadelle_auction_bid_removed_email,
     send_citadelle_admin_new_listing_email,
+    send_citadelle_report_email,
 )
 
 logger = logging.getLogger(__name__)
@@ -713,6 +715,7 @@ async def place_bid(
         bidder_name = f"{bidder_user.get('first_name', '')} {bidder_user.get('last_name', '')}".strip()
 
     bid_entry = {
+        "bid_id": str(uuid.uuid4()),
         "bidder_id": bidder_id,
         "bidder_email": current_user.get("email"),
         "bidder_name": bidder_name or current_user.get("email"),
@@ -747,6 +750,147 @@ async def place_bid(
     listing_updated = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
     logger.info(f"[Citadelle Enchère] {current_user.get('email')} a enchéri {data.amount}€ sur {listing['title']}")
     return listing_updated
+
+
+# ── Signalement d'enchère suspecte ────────────────────────────────────────────
+
+class BidReportCreate(BaseModel):
+    message: str = Field(default="", max_length=2000)
+
+
+def _bid_courante(listing: dict) -> Optional[dict]:
+    """Retourne l'enchère la plus haute (enchère courante) ou None."""
+    bids = listing.get("auction_bids") or []
+    if not bids:
+        return None
+    return max(bids, key=lambda b: b.get("amount", 0))
+
+
+@router.post("/listings/{listing_id}/report-bid", summary="Signaler l'enchère courante comme suspecte")
+async def report_bid(
+    listing_id: str,
+    data: BidReportCreate,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """Tout membre connecté peut signaler discrètement l'enchère la plus haute.
+    Le signalement n'est visible que des admins ; aucun autre membre n'en est informé."""
+    listing = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+    if not listing.get("is_auction"):
+        raise HTTPException(status_code=400, detail="Cette annonce n'est pas en mode enchère")
+
+    bid = _bid_courante(listing)
+    if not bid:
+        raise HTTPException(status_code=400, detail="Aucune enchère à signaler sur cette annonce")
+
+    # Backfill d'un bid_id pour les enchères historiques sans identifiant
+    bid_id = bid.get("bid_id")
+    if not bid_id:
+        bid_id = str(uuid.uuid4())
+        await db.citadelle_listings.update_one(
+            {"id": listing_id, "auction_bids.bid_at": bid.get("bid_at"),
+             "auction_bids.bidder_id": bid.get("bidder_id")},
+            {"$set": {"auction_bids.$.bid_id": bid_id}}
+        )
+
+    now = datetime.now(timezone.utc).isoformat()
+    report = {
+        "id": str(uuid.uuid4()),
+        "report_type": "bid",
+        "reason": "enchere_suspecte",
+        "reason_label": "Enchère suspecte",
+        "message": (data.message or "").strip() or "Enchère jugée suspecte par un membre.",
+        "reporter_id": current_user.get("sub"),
+        "reporter_email": current_user.get("email"),
+        "reporter_role": "member",
+        "listing_id": listing_id,
+        "listing_slug": listing.get("slug"),
+        "listing_title": listing.get("title", ""),
+        "listing_price": listing.get("price"),
+        "bid_id": bid_id,
+        "bid_amount": bid.get("amount"),
+        "bid_bidder_id": bid.get("bidder_id"),
+        "bid_bidder_email": bid.get("bidder_email"),
+        "bid_bidder_name": bid.get("bidder_name"),
+        "buyer_id": None,
+        "seller_id": listing.get("seller_id"),
+        "buyer_email": None,
+        "seller_email": listing.get("seller_email"),
+        "status": "open",
+        "admin_notes": "",
+        "created_at": now,
+        "updated_at": now,
+    }
+    await db.citadelle_reports.insert_one({**report})
+
+    try:
+        send_citadelle_report_email(report)
+    except Exception as e:
+        logger.warning(f"[Citadelle Report] Échec envoi email admin (enchère): {e}")
+
+    logger.info(f"[Citadelle Report] Enchère {bid_id} signalée par {current_user.get('email')} sur {listing['title']}")
+    return {"success": True, "message": "Signalement transmis à notre équipe. Merci, nous vérifions cette enchère."}
+
+
+@router.delete("/admin/listings/{listing_id}/bids/{bid_id}", summary="Admin — Supprimer une enchère suspecte")
+async def admin_delete_bid(
+    listing_id: str,
+    bid_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """Supprime une enchère, recalcule l'enchère courante et notifie l'enchérisseur."""
+    listing = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+
+    bids = listing.get("auction_bids") or []
+    cible = next((b for b in bids if b.get("bid_id") == bid_id), None)
+    if not cible:
+        raise HTTPException(status_code=404, detail="Enchère introuvable (déjà supprimée ?)")
+
+    reste = [b for b in bids if b.get("bid_id") != bid_id]
+
+    now = datetime.now(timezone.utc).isoformat()
+    updates = {"auction_bids": reste, "updated_at": now}
+    nouvelle = max(reste, key=lambda b: b.get("amount", 0)) if reste else None
+    if nouvelle:
+        updates.update({
+            "auction_current_bid": nouvelle.get("amount"),
+            "auction_current_bidder_id": nouvelle.get("bidder_id"),
+            "auction_current_bidder_email": nouvelle.get("bidder_email"),
+            "auction_current_bidder_name": nouvelle.get("bidder_name"),
+        })
+    else:
+        updates.update({
+            "auction_current_bid": listing.get("price"),
+            "auction_current_bidder_id": None,
+            "auction_current_bidder_email": None,
+            "auction_current_bidder_name": None,
+        })
+
+    await db.citadelle_listings.update_one({"id": listing_id}, {"$set": updates})
+
+    # Notification à l'enchérisseur dont l'enchère a été annulée
+    try:
+        send_citadelle_auction_bid_removed_email(
+            bidder_email=cible.get("bidder_email"),
+            bidder_name=cible.get("bidder_name") or cible.get("bidder_email"),
+            listing_title=listing.get("title", ""),
+            listing_slug=listing.get("slug", ""),
+            amount=cible.get("amount", 0),
+        )
+    except Exception as e:
+        logger.warning(f"[Citadelle Enchère] Échec email annulation enchère: {e}")
+
+    # Clôture des signalements liés à cette enchère
+    await db.citadelle_reports.update_many(
+        {"bid_id": bid_id, "status": {"$ne": "resolved"}},
+        {"$set": {"status": "resolved", "updated_at": now}}
+    )
+
+    logger.info(f"[Citadelle Enchère] Enchère {bid_id} supprimée par {current_user.get('email')} sur {listing['title']}")
+    return {"success": True, "message": "Enchère supprimée. L'enchérisseur a été notifié."}
 
 
 async def _notifier_utilisateurs_enchere(listing: dict, auction_ends_at: str):

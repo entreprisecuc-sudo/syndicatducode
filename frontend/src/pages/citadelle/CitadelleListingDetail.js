@@ -13,6 +13,7 @@ import citadelleApi from "@/services/citadelleApi";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { CITADELLE_COLORS, getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@/config/citadelleConstants";
 import CitadelleAuthModal from "@/components/citadelle/CitadelleAuthModal";
+import { ReportBidButton } from "@/components/citadelle/ReportBidButton";
 
 // ── Hook : compte à rebours ──────────────────────────────────────────────────
 
@@ -317,6 +318,12 @@ export default function CitadelleListingDetail() {
                       </span>
                     )}
                   </div>
+                  {/* Signalement discret d'une enchère suspecte (membres connectés) */}
+                  {isAuthenticated && listing.status === "active" && (listing.auction_bids?.length || 0) > 0 && (
+                    <div className="mb-2">
+                      <ReportBidButton listingId={listing.id} />
+                    </div>
+                  )}
                   {listing.auction_show_reserve && (
                     <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
                       Prix de réserve : {listing.price?.toLocaleString("fr-FR")} €

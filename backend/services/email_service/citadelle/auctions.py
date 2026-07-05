@@ -228,6 +228,52 @@ def send_citadelle_auction_winner_email(
         return False
 
 
+def send_citadelle_auction_bid_removed_email(
+    bidder_email: str,
+    bidder_name: str,
+    listing_title: str,
+    listing_slug: str,
+    amount: float,
+) -> bool:
+    """Informe un enchérisseur que son enchère a été annulée par la modération."""
+    try:
+        from config.settings import CITADELLE_URL
+        listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
+
+        msg = MIMEMultipart()
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = bidder_email
+        msg['Subject'] = f"Votre enchère a été annulée — {listing_title}"
+
+        body = f"""Bonjour {bidder_name},
+
+Après vérification, notre équipe de modération a annulé votre enchère sur La Citadelle Numérique.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Annonce         : {listing_title}
+Enchère annulée : {amount:,.0f} €
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cette décision peut faire suite à un signalement ou à une enchère jugée non conforme
+(montant manifestement disproportionné, comportement suspect, etc.).
+
+Si vous pensez qu'il s'agit d'une erreur, vous pouvez enchérir à nouveau de manière
+cohérente ou contacter notre support.
+
+Voir l'annonce :
+{listing_url}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+La Citadelle Numérique
+"""
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        _envoyer_email(msg)
+        return True
+    except Exception as e:
+        logger.error(f"[Citadelle Enchère] Erreur email annulation enchère: {e}")
+        return False
+
+
 def send_citadelle_auction_daily_digest_email(
     seller_email: str,
     seller_name: str,
