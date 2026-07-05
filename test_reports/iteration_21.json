@@ -1,0 +1,29 @@
+{
+  "summary": "Validated email_notifications preference feature (buyer notification opt-in/out) end-to-end. Backend PATCH/GET /profile + /me persist the flag correctly, helper email_notifications_enabled defaults to True and reads False when set. Code review confirmed all 5 buyer notification send_* calls (bid confirmation, outbid, bid_removed, offer_auto_cancelled, second_chance_offer) are properly gated by `if await email_notifications_enabled(...)`. Frontend toggle at data-testid='profile-email-notifications-toggle' displays correct color state (gold=on/grey=off), toggles cleanly, and Enregistrer persists the value across reload. Non-regression of other profile fields (first_name, last_name, phone, date_of_birth) confirmed. Cleanup performed: buyer email_notifications reset to True.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "/citadelle/espace-membre/profil", "issues": ["Le champ 'Date de naissance' utilise le date picker natif du navigateur (mm/dd/yyyy) plutôt qu'un composant calendrier shadcn — cohérence UX à considérer, mais existant hors scope de cette itération."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_email_notifications_pref.py",
+    "/app/test_reports/pytest/email_notif_pref.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "utils/notif_prefs.py est propre, court, avec défaut à True et exclusion _id correcte.",
+    "PATCH /profile parse email_notifications avec bool() strict — bon.",
+    "Tous les send_* de notifications acheteur (5/5) sont bien gardés par email_notifications_enabled — audit code effectué via grep.",
+    "Les emails critiques (welcome, reset_password, verification) ne sont pas gardés — conforme au requirement."
+  ],
+  "updated_files": ["/app/backend/tests/test_email_notifications_pref.py"],
+  "success_rate": {"backend": "100% (5/5 pytest)", "frontend": "100% (toggle visible + persist OK)"},
+  "test_credentials": "test.acheteur@citadelle.fr / DemoAcheteur2026! (reset to email_notifications=true after tests)",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Feature email_notifications toggle validated. Buyer account test.acheteur@citadelle.fr left with email_notifications=true, first_name='Testeur', last_name='Acheteur', phone='0612345678', date_of_birth='1990-01-15' from backend test. Adjust profile fields if needed for future scenarios."
+}
