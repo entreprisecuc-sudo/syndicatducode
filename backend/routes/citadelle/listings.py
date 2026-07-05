@@ -17,6 +17,7 @@ from services.email_service import (
     send_citadelle_listing_approved_email,
     send_citadelle_listing_rejected_email,
     send_citadelle_auction_bid_email,
+    send_citadelle_auction_outbid_email,
     send_citadelle_auction_winner_email,
     send_citadelle_auction_new_listing_email,
     send_citadelle_auction_bid_removed_email,
@@ -746,6 +747,21 @@ async def place_bid(
         amount=data.amount,
         auction_ends_at=auction_ends_at,
     )
+
+    # Notification "vous avez été surenchéri" à l'ancien meilleur enchérisseur
+    prev_bidder_id = listing.get("auction_current_bidder_id")
+    prev_bidder_email = listing.get("auction_current_bidder_email")
+    prev_amount = listing.get("auction_current_bid")
+    if prev_bidder_id and prev_bidder_email and prev_bidder_id != bidder_id:
+        send_citadelle_auction_outbid_email(
+            bidder_email=prev_bidder_email,
+            bidder_name=listing.get("auction_current_bidder_name") or prev_bidder_email,
+            listing_title=listing["title"],
+            listing_slug=listing["slug"],
+            previous_amount=prev_amount or 0,
+            new_amount=data.amount,
+            auction_ends_at=auction_ends_at,
+        )
 
     listing_updated = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
     logger.info(f"[Citadelle Enchère] {current_user.get('email')} a enchéri {data.amount}€ sur {listing['title']}")

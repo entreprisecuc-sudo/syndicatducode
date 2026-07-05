@@ -18,9 +18,26 @@ from config.settings import (
     CITADELLE_SMTP_PASSWORD,
     BACKEND_PUBLIC_URL,
 )
-from services.email_service.core import _envoyer_email
+from services.email_service.core import _envoyer_email, _build_notification_base
 
 logger = logging.getLogger(__name__)
+
+
+def _bloc_infos_html(rows: list, accent: str = "#C9A45C") -> str:
+    """Rend un encart clé/valeur stylisé pour les emails d'enchère (DRY)."""
+    lignes = "".join(
+        f"""<tr>
+              <td style="padding:6px 0;color:#718096;font-size:13px;">{k}</td>
+              <td style="padding:6px 0;color:#0F2747;font-size:14px;font-weight:700;text-align:right;">{v}</td>
+            </tr>"""
+        for k, v in rows
+    )
+    return f"""
+      <table cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border:1px solid #E2E8F0;border-left:3px solid {accent};border-radius:10px;margin:16px 0;">
+        <tr><td style="padding:14px 18px;">
+          <table cellpadding="0" cellspacing="0" width="100%">{lignes}</table>
+        </td></tr>
+      </table>"""
 
 
 def send_citadelle_auction_new_listing_email(
@@ -85,35 +102,88 @@ def send_citadelle_auction_bid_email(
         ends_str = ends.strftime("%d/%m/%Y à %Hh%M")
         listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
 
-        msg = MIMEMultipart()
+        body_html = f"""
+            <p style="color:#0F2747;font-size:15px;line-height:1.6;margin:0 0 8px 0;">Bonjour {bidder_name},</p>
+            <p style="color:#4A5568;font-size:14px;line-height:1.7;margin:0;">
+              Votre ench&#232;re a bien &#233;t&#233; enregistr&#233;e. Vous serez averti si un autre
+              ench&#233;risseur d&#233;passe votre offre — vous pourrez alors surench&#233;rir &#224; tout moment.
+            </p>
+            {_bloc_infos_html([("Annonce", listing_title), ("Votre offre", f"{amount:,.0f} &#8364;"), ("Fin de l'enchère", ends_str)])}
+        """
+        html = _build_notification_base(
+            title="Votre ench&#232;re est enregistr&#233;e",
+            subtitle=listing_title,
+            badge_color="#C9A45C",
+            body_html=body_html,
+            cta_url=listing_url,
+            cta_label="Voir l'annonce",
+        )
+        texte = (f"Bonjour {bidder_name},\n\nVotre enchère de {amount:,.0f} € sur « {listing_title} » "
+                 f"a bien été enregistrée. Fin : {ends_str}.\nVoir l'annonce : {listing_url}\n\nLa Citadelle Numérique")
+
+        msg = MIMEMultipart("alternative")
         msg['From'] = CITADELLE_FROM_EMAIL
         msg['To'] = bidder_email
         msg['Subject'] = f"Votre enchère de {amount:,.0f} € — {listing_title}"
-
-        body = f"""Bonjour {bidder_name},
-
-Votre enchère a bien été enregistrée sur La Citadelle Numérique.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Annonce     : {listing_title}
-Votre offre : {amount:,.0f} €
-Fin         : {ends_str}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Vous serez averti si un autre enchérisseur dépasse votre offre.
-Vous pouvez enchérir à nouveau à tout moment.
-
-Voir l'annonce :
-{listing_url}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-La Citadelle Numérique
-"""
-        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        msg.attach(MIMEText(texte, 'plain', 'utf-8'))
+        msg.attach(MIMEText(html, 'html', 'utf-8'))
         _envoyer_email(msg)
         return True
     except Exception as e:
         logger.error(f"[Citadelle Enchère] Erreur email confirmation enchère: {e}")
+        return False
+
+
+def send_citadelle_auction_outbid_email(
+    bidder_email: str,
+    bidder_name: str,
+    listing_title: str,
+    listing_slug: str,
+    previous_amount: float,
+    new_amount: float,
+    auction_ends_at: str,
+) -> bool:
+    """Prévient un enchérisseur qu'il vient d'être surenchéri."""
+    try:
+        from datetime import datetime
+        from config.settings import CITADELLE_URL
+        ends_str = ""
+        try:
+            ends_str = datetime.fromisoformat(auction_ends_at).strftime("%d/%m/%Y à %Hh%M")
+        except Exception:
+            ends_str = "—"
+        listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
+
+        body_html = f"""
+            <p style="color:#0F2747;font-size:15px;line-height:1.6;margin:0 0 8px 0;">Bonjour {bidder_name},</p>
+            <p style="color:#4A5568;font-size:14px;line-height:1.7;margin:0;">
+              Un autre ench&#233;risseur vient de <strong style="color:#0F2747;">d&#233;passer votre offre</strong>
+              sur cet actif. Ne laissez pas filer la perle rare — vous pouvez surench&#233;rir d&#232;s maintenant.
+            </p>
+            {_bloc_infos_html([("Annonce", listing_title), ("Votre offre", f"{previous_amount:,.0f} &#8364;"), ("Enchère actuelle", f"{new_amount:,.0f} &#8364;"), ("Fin de l'enchère", ends_str)], accent="#F59E0B")}
+        """
+        html = _build_notification_base(
+            title="Vous avez &#233;t&#233; surench&#233;ri",
+            subtitle=listing_title,
+            badge_color="#F59E0B",
+            body_html=body_html,
+            cta_url=listing_url,
+            cta_label="Surench&#233;rir maintenant",
+        )
+        texte = (f"Bonjour {bidder_name},\n\nVous avez été surenchéri sur « {listing_title} ». "
+                 f"Votre offre : {previous_amount:,.0f} € — Enchère actuelle : {new_amount:,.0f} €. Fin : {ends_str}.\n"
+                 f"Surenchérir : {listing_url}\n\nLa Citadelle Numérique")
+
+        msg = MIMEMultipart("alternative")
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = bidder_email
+        msg['Subject'] = f"Vous avez été surenchéri — {listing_title}"
+        msg.attach(MIMEText(texte, 'plain', 'utf-8'))
+        msg.attach(MIMEText(html, 'html', 'utf-8'))
+        _envoyer_email(msg)
+        return True
+    except Exception as e:
+        logger.error(f"[Citadelle Enchère] Erreur email surenchéri: {e}")
         return False
 
 
@@ -240,33 +310,35 @@ def send_citadelle_auction_bid_removed_email(
         from config.settings import CITADELLE_URL
         listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
 
-        msg = MIMEMultipart()
+        body_html = f"""
+            <p style="color:#0F2747;font-size:15px;line-height:1.6;margin:0 0 8px 0;">Bonjour {bidder_name},</p>
+            <p style="color:#4A5568;font-size:14px;line-height:1.7;margin:0 0 8px 0;">
+              Apr&#232;s v&#233;rification, notre &#233;quipe de mod&#233;ration a <strong style="color:#0F2747;">annul&#233; votre ench&#232;re</strong>.
+              Cette d&#233;cision peut faire suite &#224; un signalement ou &#224; une ench&#232;re jug&#233;e non conforme
+              (montant manifestement disproportionn&#233;, comportement suspect, etc.).
+            </p>
+            <p style="color:#4A5568;font-size:14px;line-height:1.7;margin:0;">
+              Si vous pensez qu'il s'agit d'une erreur, vous pouvez ench&#233;rir &#224; nouveau de mani&#232;re coh&#233;rente.
+            </p>
+            {_bloc_infos_html([("Annonce", listing_title), ("Enchère annulée", f"{amount:,.0f} &#8364;")], accent="#DC2626")}
+        """
+        html = _build_notification_base(
+            title="Votre ench&#232;re a &#233;t&#233; annul&#233;e",
+            subtitle=listing_title,
+            badge_color="#DC2626",
+            body_html=body_html,
+            cta_url=listing_url,
+            cta_label="Voir l'annonce",
+        )
+        texte = (f"Bonjour {bidder_name},\n\nVotre enchère de {amount:,.0f} € sur « {listing_title} » "
+                 f"a été annulée par la modération.\nVoir l'annonce : {listing_url}\n\nLa Citadelle Numérique")
+
+        msg = MIMEMultipart("alternative")
         msg['From'] = CITADELLE_FROM_EMAIL
         msg['To'] = bidder_email
         msg['Subject'] = f"Votre enchère a été annulée — {listing_title}"
-
-        body = f"""Bonjour {bidder_name},
-
-Après vérification, notre équipe de modération a annulé votre enchère sur La Citadelle Numérique.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Annonce         : {listing_title}
-Enchère annulée : {amount:,.0f} €
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Cette décision peut faire suite à un signalement ou à une enchère jugée non conforme
-(montant manifestement disproportionné, comportement suspect, etc.).
-
-Si vous pensez qu'il s'agit d'une erreur, vous pouvez enchérir à nouveau de manière
-cohérente ou contacter notre support.
-
-Voir l'annonce :
-{listing_url}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-La Citadelle Numérique
-"""
-        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        msg.attach(MIMEText(texte, 'plain', 'utf-8'))
+        msg.attach(MIMEText(html, 'html', 'utf-8'))
         _envoyer_email(msg)
         return True
     except Exception as e:
@@ -330,30 +402,32 @@ def send_citadelle_second_chance_offer_email(
         from config.settings import CITADELLE_URL
         payment_url = f"{CITADELLE_URL}/citadelle/espace-membre/transactions/{transaction_id}"
 
-        msg = MIMEMultipart()
+        body_html = f"""
+            <p style="color:#0F2747;font-size:15px;line-height:1.6;margin:0 0 8px 0;">Bonjour {bidder_name},</p>
+            <p style="color:#4A5568;font-size:14px;line-height:1.7;margin:0;">
+              Bonne nouvelle : l'ench&#233;risseur gagnant n'a pas finalis&#233; son achat.
+              La Citadelle vous offre une <strong style="color:#0F2747;">DERNI&#200;RE CHANCE</strong> d'acqu&#233;rir cet actif
+              au montant de votre ench&#232;re. Cette offre est prioritaire — ne tardez pas.
+            </p>
+            {_bloc_infos_html([("Annonce", listing_title), ("Votre prix", f"{amount:,.0f} &#8364;")])}
+        """
+        html = _build_notification_base(
+            title="Derni&#232;re chance !",
+            subtitle=listing_title,
+            badge_color="#C9A45C",
+            body_html=body_html,
+            cta_url=payment_url,
+            cta_label="Finaliser mon achat",
+        )
+        texte = (f"Bonjour {bidder_name},\n\nDernière chance : l'actif « {listing_title} » vous est proposé "
+                 f"à {amount:,.0f} €.\nFinaliser : {payment_url}\n\nLa Citadelle Numérique")
+
+        msg = MIMEMultipart("alternative")
         msg['From'] = CITADELLE_FROM_EMAIL
         msg['To'] = bidder_email
         msg['Subject'] = f"Dernière chance ! L'actif « {listing_title} » vous est proposé"
-
-        body = f"""Bonjour {bidder_name},
-
-Bonne nouvelle : l'enchérisseur gagnant n'a pas finalisé son achat.
-La Citadelle Numérique vous offre une DERNIÈRE CHANCE d'acquérir cet actif au montant de votre enchère.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Annonce      : {listing_title}
-Votre prix   : {amount:,.0f} €
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Pour en profiter, finalisez le paiement sécurisé depuis votre espace membre :
-{payment_url}
-
-Cette offre est prioritaire — ne tardez pas.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-La Citadelle Numérique
-"""
-        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        msg.attach(MIMEText(texte, 'plain', 'utf-8'))
+        msg.attach(MIMEText(html, 'html', 'utf-8'))
         _envoyer_email(msg)
         return True
     except Exception as e:
