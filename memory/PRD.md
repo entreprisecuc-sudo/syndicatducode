@@ -48,6 +48,9 @@ Processus professionnel de cession + génération de l'« Attestation de Transmi
 - Vérifs prod OK : HOME 200, /api/citadelle/blog 200, /api/citadelle/services 200 (/api/alerts/ = 403 attendu, auth admin).
 - ⚠️ Cache PWA : SW met à jour l'UI au prochain chargement. Ancienne branche locale `main-projet-4` conserve 26 commits non poussés (sans impact).
 
+## 🔧 Session 07/2026 — Nettoyage avant déploiement : retrait des accès de test du Footer (PREVIEW)
+- Retrait des boutons provisoires « Accès Admin » + « Accès Citadelle (test) » et du bloc `DEV_MODE` (quick-login admin/dev/commercial) de `components/layout/Footer.js`. Fonctions `quickLogin`/`provisionalCitadelleLogin` et imports associés supprimés (code mort). Footer épuré (navigation, mentions légales, écosystème, copyright). Compilation OK, 0 occurrence restante. ✅ P0 « retirer boutons Footer » TERMINÉ.
+
 ## 🔧 Session 07/2026 — Authentification Google personnalisée (marque blanche) (PREVIEW)
 - **Besoin client** : remplacer le Google login géré par Emergent par un **OAuth Google propre à La Citadelle** (projet Google Cloud du client, sans branding Emergent), pour la connexion des comptes utilisateurs.
 - **Identifiants** (fournis par le client, stockés uniquement en `.env`) : `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (backend/.env) ; `REACT_APP_GOOGLE_CLIENT_ID` (frontend/.env).
