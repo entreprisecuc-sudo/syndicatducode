@@ -48,6 +48,14 @@ Processus professionnel de cession + génération de l'« Attestation de Transmi
 - Vérifs prod OK : HOME 200, /api/citadelle/blog 200, /api/citadelle/services 200 (/api/alerts/ = 403 attendu, auth admin).
 - ⚠️ Cache PWA : SW met à jour l'UI au prochain chargement. Ancienne branche locale `main-projet-4` conserve 26 commits non poussés (sans impact).
 
+## 🔧 Session 07/2026 — Diagnostic & fiabilisation des notifications push (VPS) (PREVIEW)
+- **Contexte** : le client signalait que les notifications push admin (« Papa en Mousse », Web Push/VAPID via pywebpush) ne fonctionnaient pas après déploiement VPS.
+- **CAUSE RACINE VPS identifiée** : `backend/config/vapid_private.pem` est **gitignoré** → non déployé sur le VPS → l'envoi échoue (clé privée manquante). Correctif : `push_service._get_vapid_private_key()` lit désormais en priorité la variable d'env **`VAPID_PRIVATE_KEY`** (clé brute base64url 43 car., ajoutée au `.env`), avec repli sur le fichier .pem. La clé publique .env correspond bien à la clé privée (vérifié).
+- **BUG de robustesse corrigé** : dans `send_push_to_all_admins`, un abonnement corrompu ou une erreur non-`WebPushException` faisait **planter toute la boucle** → aucun admin notifié. Ajout de `except ValueError` + `except Exception` (log + continue) et purge automatique des abonnements corrompus/expirés (`WebPushException` response None ou 400/404/410).
+- **Vérifs** : keypair public/privé OK, `set_push_alerts_db` appelé au démarrage, scheduler `check_and_notify` (60s) actif, frontend `enablePush` récupère bien la clé publique du backend.
+- **⚠️ À FAIRE AU DÉPLOIEMENT VPS** : renseigner dans le `.env` du VPS `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (=`FVP20rNuwm5zX2htaPuczYYaaMULcVrUhobeIFoCFvA`), `VAPID_SUBJECT` ; servir le site en **HTTPS** (obligatoire pour service worker + push).
+- **Testé (testing_agent iteration_22)** : backend 15/15 pytest (100%) — vapid-key, summary (7 catégories, admin-gated), subscribe/unsubscribe (upsert), validate/reject, priorité clé env, signature VAPID acceptée (410 endpoint fake), robustesse boucle. Suite : `backend/tests/test_push_alerts.py`. Point mineur corrigé après coup (purge des abonnements corrompus response=None) + validé via curl. Livraison push réelle vers navigateur non automatisable → à tester sur un vrai téléphone. Règle 6 respectée.
+
 ## 🔧 Session 07/2026 — Installation PWA admin simplifiée (« Papa en Mousse ») (PREVIEW)
 - **Besoin client** : simplifier l'installation de la web app admin pour les collègues (scan QR → installation simple type « Voulez-vous installer ? »), sans passer par un store. Page unique réservée aux admins.
 - **Nouvelle page** `AdminInstallApp.js` (route admin `/admin-live/installer`, `RoleRoute` admin) : détection plateforme →

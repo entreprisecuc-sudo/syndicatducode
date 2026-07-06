@@ -127,8 +127,8 @@ async def send_push_to_all_admins(title: str, body: str, url: str = "/admin-live
             )
         except WebPushException as e:
             logger.warning(f"Push échoué pour {sub.get('endpoint', '')[:40]}: {e}")
-            # Subscription expirée / invalide → supprimer
-            if e.response is not None and e.response.status_code in (404, 410):
+            # Abonnement expiré/invalide (410, 404) ou clés de chiffrement illisibles (response None) → purge
+            if e.response is None or e.response.status_code in (400, 404, 410):
                 await _db.admin_push_subscriptions.delete_one({"endpoint": sub["endpoint"]})
         except ValueError as e:
             # Données d'abonnement corrompues (clés illisibles) : purger sans bloquer les autres envois
