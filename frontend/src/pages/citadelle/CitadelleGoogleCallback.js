@@ -1,7 +1,7 @@
 /**
  * CitadelleGoogleCallback
- * Traite le retour de Google OAuth (Emergent Auth).
- * Lit le #session_id dans l'URL, l'échange contre un JWT Citadelle.
+ * Traite le retour de Google OAuth (custom La Citadelle).
+ * Lit le ?code dans l'URL, l'échange contre un JWT Citadelle via le backend.
  * REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
  */
 
@@ -11,6 +11,7 @@ import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import CGUAcceptanceModal from "@/components/citadelle/CGUAcceptanceModal";
+import { GOOGLE_REDIRECT_PATH } from "@/services/citadelleGoogleAuth";
 import { Loader } from "lucide-react";
 
 export default function CitadelleGoogleCallback() {
@@ -28,19 +29,19 @@ export default function CitadelleGoogleCallback() {
     if (hasProcessed.current) return;
     hasProcessed.current = true;
 
-    const hash = location.hash || window.location.hash;
-    const sessionId = hash.includes("session_id=")
-      ? hash.split("session_id=")[1].split("&")[0]
-      : null;
+    const params = new URLSearchParams(location.search || window.location.search);
+    const code = params.get("code");
 
-    if (!sessionId) {
+    if (!code) {
       navigate("/citadelle/connexion", { replace: true });
       return;
     }
 
     (async () => {
       try {
-        const res = await citadelleApi.post("/auth/google/callback", { session_id: sessionId });
+        // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+        const redirectUri = window.location.origin + GOOGLE_REDIRECT_PATH;
+        const res = await citadelleApi.post("/auth/google/callback", { code, redirect_uri: redirectUri });
         const { access_token, user } = res.data;
 
         if (!user.cgu_accepted) {

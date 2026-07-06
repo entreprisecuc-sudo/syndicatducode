@@ -371,6 +371,7 @@ function App() {
               <Route path="/citadelle" element={<CitadelleHome />} />
               <Route path="/citadelle/connexion" element={<CitadelleLogin />} />
               <Route path="/citadelle/auth/google/callback" element={<CitadelleGoogleCallback />} />
+              <Route path="/auth/google" element={<CitadelleGoogleCallback />} />
               <Route path="/citadelle/inscription" element={<CitadelleRegister />} />
               <Route path="/citadelle/mot-de-passe-oublie" element={<CitadelleForgotPassword />} />
               <Route path="/citadelle/reinitialiser-mot-de-passe" element={<CitadelleResetPassword />} />

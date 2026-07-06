@@ -106,8 +106,7 @@ export default function CitadelleLogin() {
             onClick={() => {
               sessionStorage.setItem("citadelle_return_url", "/citadelle/espace-membre");
               // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-              const redirectUrl = window.location.origin + "/citadelle/auth/google/callback";
-              window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+              startCitadelleGoogleLogin();
             }}
             data-testid="citadelle-google-login-btn"
             className="w-full flex items-center justify-center gap-3 py-3 mb-5 rounded-xl font-medium text-sm transition-all hover:opacity-90 active:scale-95"

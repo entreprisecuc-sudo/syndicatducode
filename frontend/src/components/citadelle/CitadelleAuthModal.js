@@ -10,6 +10,7 @@ import { X, Mail, Lock, Eye, EyeOff, User, AlertCircle } from "lucide-react";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import citadelleApi from "@/services/citadelleApi";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
+import { startCitadelleGoogleLogin } from "@/services/citadelleGoogleAuth";
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -42,8 +43,7 @@ export default function CitadelleAuthModal({ isOpen, onClose, onSuccess, listing
     // Sauvegarder l'URL courante pour y revenir après Google Auth
     sessionStorage.setItem("citadelle_return_url", window.location.pathname);
     // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-    const redirectUrl = window.location.origin + "/citadelle/auth/google/callback";
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    startCitadelleGoogleLogin();
   };
 
   const handleLogin = async (e) => {
