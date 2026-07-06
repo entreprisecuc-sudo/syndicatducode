@@ -11,6 +11,7 @@ import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 import CGUAcceptanceModal from "@/components/citadelle/CGUAcceptanceModal";
+import { startCitadelleGoogleLogin } from "@/services/citadelleGoogleAuth";
 
 export default function CitadelleLogin() {
   const [form, setForm] = useState({ email: "", password: "", remember_me: false });
