@@ -15,6 +15,15 @@ logger = logging.getLogger(__name__)
 _VAPID_PRIVATE_PATH = os.path.join(os.path.dirname(__file__), "..", "config", "vapid_private.pem")
 _VAPID_SUBJECT      = os.environ.get("VAPID_SUBJECT", "mailto:admin@example.com")
 
+
+def _get_vapid_private_key() -> str:
+    """Clé privée VAPID : priorité à la variable d'environnement (déploiement VPS fiable),
+    sinon repli sur le fichier PEM local."""
+    env_key = (os.environ.get("VAPID_PRIVATE_KEY") or "").strip()
+    if env_key:
+        return env_key
+    return _VAPID_PRIVATE_PATH
+
 _db: AsyncIOMotorDatabase | None = None
 
 # Dernier état connu — pour détecter les nouvelles alertes
@@ -113,14 +122,21 @@ async def send_push_to_all_admins(title: str, body: str, url: str = "/admin-live
                     "keys": {"p256dh": sub["p256dh"], "auth": sub["auth"]},
                 },
                 data=payload,
-                vapid_private_key=_VAPID_PRIVATE_PATH,
+                vapid_private_key=_get_vapid_private_key(),
                 vapid_claims={"sub": _VAPID_SUBJECT},
             )
         except WebPushException as e:
             logger.warning(f"Push échoué pour {sub.get('endpoint', '')[:40]}: {e}")
-            # Subscription expirée → supprimer
-            if e.response and e.response.status_code in (404, 410):
+            # Subscription expirée / invalide → supprimer
+            if e.response is not None and e.response.status_code in (404, 410):
                 await _db.admin_push_subscriptions.delete_one({"endpoint": sub["endpoint"]})
+        except ValueError as e:
+            # Données d'abonnement corrompues (clés illisibles) : purger sans bloquer les autres envois
+            logger.warning(f"Abonnement push corrompu supprimé ({sub.get('endpoint', '')[:40]}): {e}")
+            await _db.admin_push_subscriptions.delete_one({"endpoint": sub["endpoint"]})
+        except Exception as e:
+            # Toute autre erreur (réseau, timeout…) : on log et on continue avec les abonnements suivants
+            logger.error(f"Push: erreur inattendue pour {sub.get('endpoint', '')[:40]}: {e}")
 
 
 async def check_and_notify():

@@ -1,0 +1,36 @@
+{
+  "summary": "Backend push notifications (Papa en Mousse) validated end-to-end. 15/15 pytest passed covering: (1) GET /api/admin/push-alerts/vapid-key public, returns 87-char key starting with BI55; (2) /summary requires admin (401 without), returns 7 categories with proper schema when admin; (3) POST /subscribe admin-gated, 400 on incomplete, upsert-by-endpoint (no duplicate); (4) DELETE /subscribe removes device; (5) validate/reject on listing (QA-seeded) updates status ('active'/'rejected') and removes from summary; (6) unknown alert_type -> 400; (7) VAPID env-priority: _get_vapid_private_key() returns env value (43 base64url chars); (8) pywebpush signature accepted by real FCM against fake endpoint (410 Gone response — proves the signature/keys are valid, not a serialization error); (9) Robustness: a corrupt subscription in the collection does NOT crash send_push_to_all_admins, and subsequent good subs are still processed (verified via 410 → purge of good sub). Test file: /app/backend/tests/test_push_alerts.py, JUnit: /app/test_reports/pytest/push_alerts.xml. QA-seeded data cleaned up (teardown_module).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "services/push_service.py :: send_push_to_all_admins",
+        "issue": "Corrupt subscription (invalid p256dh) raises WebPushException with response=None, not ValueError. Current code only purges WebPushException when response.status_code in (404,410) and only purges via `except ValueError` for corrupt keys. Result: corrupt sub is logged & skipped (loop safe), but NOT purged from admin_push_subscriptions, so it will keep triggering warnings every 60s scheduler tick until manually cleaned. Suggest widening purge: `if isinstance(e, WebPushException) and (e.response is None or e.response.status_code in (400,404,410)): delete_one(...)` OR always purge on WebPushException with response None (invalid encryption keys)."
+      }
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_push_alerts.py",
+    "/app/test_reports/pytest/push_alerts.xml"
+  ],
+  "action_items": [
+    "OPTIONAL/minor: In push_service.send_push_to_all_admins, purge subscriptions when WebPushException has response=None (invalid p256dh / corrupt encryption keys). Currently corrupt subs accumulate log noise every scheduler cycle without being auto-cleaned."
+  ],
+  "critical_code_review_comments": [
+    "push_service._get_vapid_private_key() correctly prioritizes VAPID_PRIVATE_KEY env over PEM file — VPS deployment fix confirmed working (env value has expected 43 base64url chars).",
+    "send_push_to_all_admins now wraps each webpush() in try/except WebPushException + ValueError + generic Exception → loop is genuinely robust (one bad sub does not block the others). Verified experimentally.",
+    "push_alerts.py routes are all admin-gated (Depends(admin_only)) except /vapid-key which is intentionally public. Correct.",
+    "subscribe uses upsert by endpoint — no duplicates possible. Confirmed via DB count.",
+    "validate/reject correctly update the source collections and the item disappears from /summary immediately (no caching). Good.",
+    "Minor purge gap noted above under backend_issues.minor — not blocking."
+  ],
+  "updated_files": ["/app/backend/tests/test_push_alerts.py"],
+  "success_rate": {"backend": "100% (15/15 pytest)", "frontend": "N/A (skipped per request)"},
+  "test_credentials": "Admin: bigpapa1981@asar.com / Josiane03@@@!1981 (POST /api/auth/login, access_token returned).",
+  "seed_data_creation": "QA-PUSH-* listings + fake FCM subscriptions created transiently and cleaned via teardown_module (delete_many with regex ^QA-PUSH-).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Push notification backend fully covered. If main agent later widens the corrupt-sub purge (WebPushException with response=None), update the corresponding assertion in TestSendPushRobustness to check n_corrupt == 0 as well. Real Web Push delivery to a browser cannot be automated — signature validation via fake FCM endpoint is the substitute.",
+  "rca of the issue": "Not a bug fix iteration — this is verification of the VPS fix (moving VAPID private key from gitignored PEM to VAPID_PRIVATE_KEY env var) and of the newly added robustness (try/except around webpush loop). Both fixes are correctly implemented and verified. Only a minor secondary robustness gap remains: corrupt subs are not auto-purged (only logged)."
+}
