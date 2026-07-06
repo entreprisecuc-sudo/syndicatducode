@@ -8,6 +8,16 @@
 ---
 
 
+## 🚀 Session 06/07/2026 — DÉPLOIEMENT VPS PRODUCTION (RÉUSSI)
+- **Branche déployée** : `main-projet-7` (67 commits) sur VPS Hostinger `/var/www/syndicatducode.fr`.
+- **Procédure** : `git pull` (fast-forward), ajout des clés `.env` prod (GOOGLE_CLIENT_ID/SECRET + VAPID_PUBLIC/PRIVATE/SUBJECT côté backend, REACT_APP_GOOGLE_CLIENT_ID côté frontend), `pip install` (hors `emergentintegrations`, inutile/absent PyPI public), `yarn build`, `pm2 restart syndicat-backend`.
+- **Données 100% préservées** (MongoDB non touchée) : admin `bigpapa1981@asar.com` OK, 20 articles blog, services et annonces "vendu" intacts.
+- **Validations prod** : VAPID key servie, `/api/citadelle/blog` (20 articles), login admin OK, front Citadelle chargé avec nouveau build.
+- **Note** : `emergentintegrations` retiré de facto sur VPS (non importé dans le code — remplacé par OAuth Google natif + Stripe interne).
+
+---
+
+
 ## 🔧 Session 03/07/2026 — Preview (fork de récupération)
 - **Bouton provisoire d'accès admin** ajouté en bas de la page d'accueil Syndicat (`Footer.js`, `data-testid="footer-admin-access-provisoire"`) → `/papaenmousse1981`. ⚠️ À RETIRER avant mise en prod.
 - **Bug bloquant corrigé** : `AdminLoginPage.js` redirigeait vers `/` sur le preview (liste blanche domaine limitée à `syndicatducode`/`localhost`). Ajout de `emergentagent.com` ; restriction prod `syndicatducode.fr` intacte.
