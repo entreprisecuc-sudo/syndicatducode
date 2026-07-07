@@ -113,6 +113,7 @@ import AdminCitadelleNewsletter from "@/pages/admin/AdminCitadelleNewsletter";
 import AdminCitadelleCommission from "@/pages/admin/AdminCitadelleCommission";
 import AdminCitadelleUsers from "@/pages/admin/AdminCitadelleUsers";
 import CitadelleBlog from "@/pages/citadelle/CitadelleBlog";
+import CitadelleParutions from "@/pages/citadelle/CitadelleParutions";
 import CitadelleChroniques from "@/pages/citadelle/CitadelleChroniques";
 import CitadelleGuides from "@/pages/citadelle/CitadelleGuides";
 import CitadelleBlogPost from "@/pages/citadelle/CitadelleBlogPost";
@@ -388,6 +389,7 @@ function App() {
               <Route path="/citadelle/cgv" element={<CitadelleCGV />} />
               <Route path="/citadelle/confidentialite" element={<CitadelleConfidentialite />} />
               <Route path="/citadelle/blog" element={<CitadelleBlog />} />
+              <Route path="/citadelle/parutions" element={<CitadelleParutions />} />
               <Route path="/citadelle/chroniques" element={<CitadelleChroniques />} />
               <Route path="/citadelle/guides" element={<CitadelleGuides />} />
               <Route path="/citadelle/blog/:slug" element={<CitadelleBlogPost />} />

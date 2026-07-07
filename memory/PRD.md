@@ -7,6 +7,18 @@
 
 ---
 
+## 🔧 Session 07/07/2026 — Page hub « Les Parutions » (PREVIEW)
+- **Besoin client** : regrouper Blog + Guides + Chroniques sous un seul lien de nav « Les Parutions » → page hub présentant les 3 rubriques, avec les 3 dernières parutions **publiées** de chacune, redirection vers chaque page, inscription newsletter, UX élégante et responsive (agent UX consulté).
+- **Nav** (`config/citadelleConstants.js`) : les 3 liens Blog/Guides/Chroniques remplacés par un seul `{ href: "/citadelle/parutions", label: "Les Parutions" }` (impacte desktop + mobile via `CitadelleLayout`). Les pages `/citadelle/blog|guides|chroniques` restent autonomes (redirection depuis le hub).
+- **Nouvelle page** `pages/citadelle/CitadelleParutions.js` (route `/citadelle/parutions` dans `App.js`) : Hero + 3 sections à identités visuelles distinctes (Blog=photos/fond clair · Guides=émeraude #059669 · Chroniques=fond nuit #081729/or). Composants internes DRY `ParutionCard` (variant light/emerald/dark), `EmptyTeaser`, `RubriqueSection`. Cartes → `/citadelle/blog/:slug`. Réutilise `NewsletterSection`. SEO via Helmet.
+- **Données** : fetch parallèle `GET /blog?limit=3` (blog, exclut premium), `?category=guide-la-citadelle&limit=3`, `?category=chroniques-la-garde&limit=3` + `GET /blog/next-scheduled` pour les rubriques sans publié (teaser « Prochaine parution à venir »). Aucun changement backend.
+- **Blueprint UX** : `/app/design_guidelines.json` (généré par design_agent).
+- **Testé (muet, Règle 6)** : screenshots desktop + mobile — 5 sections présentes, 3 cartes blog publiées, 2 états vides (Guides/Chroniques encore programmés) avec teaser daté. Responsive (mobile-first `grid-cols-1 md:grid-cols-3`). Compilation OK.
+- **⚠️ NON DÉPLOYÉ SUR LE VPS** : Save to Github → `git pull` → `yarn build` → `pm2 restart syndicat-backend` (aucun seed requis).
+
+---
+
+
 ## 🔧 Session 07/07/2026 — Choix vendeur : URL publique ou confidentielle (PREVIEW)
 - **Besoin client** : laisser le vendeur choisir de rendre l'URL de son actif publique sur l'annonce, ou la garder confidentielle. Si confidentielle → message cohérent (URL communiquée à l'acheteur seulement à la manifestation d'un intérêt sérieux / entame du processus de vente).
 - **Backend** (`routes/citadelle/listings.py`) : nouveau champ `url_public` (bool, défaut False) sur `ListingCreate`/`ListingUpdate` ; stocké à la création (`False` si contenu adulte) et forcé à `False` si passage en adulte à l'update. `get_listing` (détail public) ne renvoie `url_preview` **que si** `url_public` est True (pop conditionnel → jamais de fuite). Projection `/listings/my` : `url_preview` désormais renvoyé au vendeur (propriétaire) pour l'édition. Liste publique `/listings` : URL toujours exclue.
