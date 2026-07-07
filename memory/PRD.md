@@ -15,6 +15,10 @@
 - **Testé (muet, Règle 6)** : curl — url_public=True → url_preview renvoyé ; url_public=False → url_preview absent. Screenshot fiche : message confidentiel affiché correctement. Frontend compilé.
 - **⚠️ NON DÉPLOYÉ SUR LE VPS** : nécessite Save to Github → `git pull` → `yarn build` → `pm2 restart syndicat-backend` (aucun script de seed requis).
 
+### Ajout — Bouton « Demander l'adresse au vendeur » (annonces confidentielles)
+- Sur la fiche d'une annonce à URL confidentielle, bouton doré `data-testid=btn-request-url` (visible sauf pour le vendeur lui-même et annonce non vendue). Non connecté → ouvre la modale d'auth ; connecté → pré-remplit un message type et ouvre le **modal « Contacter le vendeur » existant** (DRY, `POST /messages/send`), créant la conversation de mise en relation. 1 seul fichier modifié (`CitadelleListingDetail.js`).
+- **Testé (muet)** : bouton affiché + ouverture modale auth (non connecté) via screenshot ; envoi message acheteur → 201 + conversation créée via curl (puis nettoyé). URL jamais exposée.
+
 ---
 
 

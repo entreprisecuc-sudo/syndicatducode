@@ -497,11 +497,26 @@ export default function CitadelleListingDetail() {
                 </a>
               </div>
             ) : (
-              <div className="p-4 rounded-xl flex items-start gap-3" style={{ background: "rgba(201,164,92,0.07)", border: `1px solid rgba(201,164,92,0.2)` }}>
-                <Lock size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0, marginTop: 2 }} />
-                <p className="text-xs leading-relaxed" style={{ color: CITADELLE_COLORS.textMuted }} data-testid="listing-url-hidden-msg">
-                  Par choix du vendeur, l'adresse du site reste confidentielle. Elle sera communiquée à l'acheteur dès qu'il manifeste un intérêt sérieux ou à l'entame du processus de vente sécurisé.
-                </p>
+              <div className="p-4 rounded-xl" style={{ background: "rgba(201,164,92,0.07)", border: `1px solid rgba(201,164,92,0.2)` }}>
+                <div className="flex items-start gap-3">
+                  <Lock size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0, marginTop: 2 }} />
+                  <p className="text-xs leading-relaxed" style={{ color: CITADELLE_COLORS.textMuted }} data-testid="listing-url-hidden-msg">
+                    Par choix du vendeur, l'adresse du site reste confidentielle. Elle sera communiquée à l'acheteur dès qu'il manifeste un intérêt sérieux ou à l'entame du processus de vente sécurisé.
+                  </p>
+                </div>
+                {listing.status !== "sold" && user?.id !== listing.seller_id && (
+                  <button
+                    onClick={() => {
+                      if (!isAuthenticated) { setAuthModal(true); return; }
+                      setContactMessage(`Bonjour, votre annonce « ${listing.title} » m'intéresse. Pourriez-vous me communiquer l'adresse du site afin que je puisse l'étudier plus en détail ? Merci d'avance.`);
+                      setContactModal(true);
+                    }}
+                    className="w-full mt-3 py-2.5 rounded-xl font-semibold text-xs transition-all hover:scale-[1.02]"
+                    style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                    data-testid="btn-request-url">
+                    Demander l'adresse au vendeur
+                  </button>
+                )}
               </div>
             )}
 
