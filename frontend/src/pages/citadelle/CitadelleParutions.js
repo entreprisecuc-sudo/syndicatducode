@@ -219,12 +219,19 @@ export default function CitadelleParutions() {
 
       <div style={{ background: CITADELLE_COLORS.bg }}>
         <div className="max-w-6xl mx-auto px-4 md:px-8 pt-10 md:pt-14 pb-16 md:pb-24">
-          {/* Eyebrow */}
-          <div className="flex items-center gap-3 mb-6">
-            <span className="w-10 h-1 rounded-full" style={{ background: CITADELLE_COLORS.gold }} />
-            <span className="text-sm font-semibold uppercase tracking-[0.15em]" style={{ color: CITADELLE_COLORS.gold }}>
-              Les Parutions
-            </span>
+          {/* Eyebrow + accès blog */}
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <span className="w-10 h-1 rounded-full" style={{ background: CITADELLE_COLORS.gold }} />
+              <span className="text-sm font-semibold uppercase tracking-[0.15em]" style={{ color: CITADELLE_COLORS.gold }}>
+                Les Parutions
+              </span>
+            </div>
+            <Link to="/citadelle/blog" data-testid="see-all-blog"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all hover:scale-105"
+              style={{ background: CITADELLE_COLORS.blue, color: "#FFFFFF" }}>
+              <BookOpen size={15} /> <span className="hidden sm:inline">Voir tout le blog</span><span className="sm:hidden">Le blog</span> <ArrowRight size={14} />
+            </Link>
           </div>
 
           {loading ? (
@@ -256,15 +263,6 @@ export default function CitadelleParutions() {
                   href="/citadelle/chroniques" cta="Voir toutes les chroniques" tag="Chronique"
                   item={chroItem} isTeaser={!data.chroniques && !!data.chroniquesNext}
                 />
-              </div>
-
-              {/* Accès au blog complet */}
-              <div className="text-center mt-10">
-                <Link to="/citadelle/blog" data-testid="see-all-blog"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105"
-                  style={{ background: CITADELLE_COLORS.blue, color: "#FFFFFF" }}>
-                  <BookOpen size={16} /> Voir tout le blog <ArrowRight size={15} />
-                </Link>
               </div>
             </>
           )}
