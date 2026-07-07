@@ -86,6 +86,7 @@ export default function CitadelleEditListing() {
         description: listing.description || "",
         technologies: (listing.technologies || []).join(", "),
         url_preview: listing.url_preview || "",
+        url_public: !!listing.url_public,
         images: [...(listing.images || []), "", "", "", "", ""].slice(0, 5),
         is_adult: !!listing.is_adult,
       });
@@ -131,6 +132,7 @@ export default function CitadelleEditListing() {
         niche: form.niche.trim() || null,
         technologies: form.technologies.split(",").map(t => t.trim()).filter(Boolean),
         url_preview: form.is_adult ? null : (form.url_preview.trim() || null),
+        url_public: form.is_adult ? false : !!form.url_public,
         images: form.is_adult ? [] : form.images.filter(Boolean),
         is_adult: form.is_adult,
       };
@@ -363,11 +365,21 @@ export default function CitadelleEditListing() {
               {/* URL du site */}
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-                  URL du site <span className="font-normal text-xs">(masquée jusqu'à transaction)</span>
+                  URL du site <span className="font-normal text-xs">(optionnel)</span>
                 </label>
                 <input value={form.url_preview} onChange={e => set("url_preview", e.target.value)}
                   placeholder="https://monsite.fr"
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+                <label className="flex items-start gap-3 cursor-pointer mt-3 p-3 rounded-xl" style={{ background: "rgba(201,164,92,0.06)", border: "1px solid rgba(201,164,92,0.2)" }}>
+                  <input type="checkbox" checked={form.url_public} onChange={e => set("url_public", e.target.checked)}
+                    className="w-4 h-4 rounded mt-0.5" data-testid="edit-listing-url-public" />
+                  <span>
+                    <span className="block text-sm font-semibold" style={labelStyle}>Rendre l'URL visible publiquement sur l'annonce</span>
+                    <span className="block text-xs mt-1" style={labelStyle}>
+                      Si décoché, l'adresse reste confidentielle : elle ne sera communiquée à l'acheteur qu'à la manifestation d'un intérêt sérieux ou à l'entame du processus de vente sécurisé.
+                    </span>
+                  </span>
+                </label>
               </div>
 
               {/* Captures d'écran */}

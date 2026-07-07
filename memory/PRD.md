@@ -7,6 +7,17 @@
 
 ---
 
+## 🔧 Session 07/07/2026 — Choix vendeur : URL publique ou confidentielle (PREVIEW)
+- **Besoin client** : laisser le vendeur choisir de rendre l'URL de son actif publique sur l'annonce, ou la garder confidentielle. Si confidentielle → message cohérent (URL communiquée à l'acheteur seulement à la manifestation d'un intérêt sérieux / entame du processus de vente).
+- **Backend** (`routes/citadelle/listings.py`) : nouveau champ `url_public` (bool, défaut False) sur `ListingCreate`/`ListingUpdate` ; stocké à la création (`False` si contenu adulte) et forcé à `False` si passage en adulte à l'update. `get_listing` (détail public) ne renvoie `url_preview` **que si** `url_public` est True (pop conditionnel → jamais de fuite). Projection `/listings/my` : `url_preview` désormais renvoyé au vendeur (propriétaire) pour l'édition. Liste publique `/listings` : URL toujours exclue.
+- **Frontend** : toggle « Rendre l'URL visible publiquement sur l'annonce » ajouté dans `CitadelleCreateListing.js` (state `url_public` + payload + `data-testid=create-listing-url-public`) et `CitadelleEditListing.js` (préremplissage depuis `listing.url_public` + payload + `data-testid=edit-listing-url-public`). Fiche `CitadelleListingDetail.js` : rendu conditionnel — si publique, lien cliquable (`data-testid=listing-public-url`, `rel=noopener noreferrer nofollow`) ; sinon message confidentiel (`data-testid=listing-url-hidden-msg`).
+- **Rétrocompat** : annonces existantes sans `url_public` → traitées comme confidentielles (comportement historique préservé, aucune migration).
+- **Testé (muet, Règle 6)** : curl — url_public=True → url_preview renvoyé ; url_public=False → url_preview absent. Screenshot fiche : message confidentiel affiché correctement. Frontend compilé.
+- **⚠️ NON DÉPLOYÉ SUR LE VPS** : nécessite Save to Github → `git pull` → `yarn build` → `pm2 restart syndicat-backend` (aucun script de seed requis).
+
+---
+
+
 ## 🚀 Session 07/07/2026 — DÉPLOIEMENT VPS des nouveaux contenus (RÉUSSI)
 - **Contexte** : mise en ligne sur le VPS (branche `main-projet-7`, `/var/www/syndicatducode.fr`) de tout le calendrier éditorial 2026 + correctifs de session (modération membres, escrow Stripe, route blog `next-scheduled`, rubrique Guides).
 - **Procédure guidée pas-à-pas** (client via SSH) : sauvegarde `mongodump` (→ `/root/backup_20260707_100650`), `git fetch`/`git pull` fast-forward (21 commits, aucun conflit), `yarn install && yarn build` (bundle `main.366d0c97.js`, compiled with warnings eslint bénins), `pm2 restart syndicat-backend`, puis exécution des 11 scripts de seed (`venv` actif).

@@ -162,6 +162,7 @@ class ListingCreate(BaseModel):
     niche: Optional[str] = Field(None, max_length=100)
     technologies: Optional[List[str]] = []
     url_preview: Optional[str] = Field(None, max_length=500)
+    url_public: bool = False
     images: Optional[List[str]] = []
     is_adult: bool = False
     # Enchères
@@ -187,6 +188,7 @@ class ListingUpdate(BaseModel):
     niche: Optional[str] = None
     technologies: Optional[List[str]] = None
     url_preview: Optional[str] = None
+    url_public: Optional[bool] = None
     images: Optional[List[str]] = None
     is_adult: Optional[bool] = None
     # Enchères
@@ -276,7 +278,7 @@ async def my_listings(current_user: dict = Depends(require_citadelle_user)):
     seller_id = current_user.get("sub")
     cursor = db.citadelle_listings.find(
         {"seller_id": seller_id},
-        {"_id": 0, "url_preview": 0}
+        {"_id": 0}
     ).sort("created_at", -1)
     listings = await cursor.to_list(100)
     return {"listings": listings}
@@ -284,13 +286,17 @@ async def my_listings(current_user: dict = Depends(require_citadelle_user)):
 
 @router.get("/listings/{slug}", summary="Détail d'une annonce publique")
 async def get_listing(slug: str):
-    """Détail d'une annonce active — URL preview masquée"""
+    """Détail d'une annonce active — URL du site visible seulement si le vendeur l'a autorisée"""
     listing = await db.citadelle_listings.find_one(
         {"slug": slug, "status": {"$in": ["active", "sold"]}},
-        {"_id": 0, "url_preview": 0}
+        {"_id": 0}
     )
     if not listing:
         raise HTTPException(status_code=404, detail="Annonce introuvable ou non disponible")
+
+    # URL du site : rendue publique uniquement si le vendeur l'a explicitement choisi
+    if not listing.get("url_public"):
+        listing.pop("url_preview", None)
 
     # Incrément du compteur de vues
     await db.citadelle_listings.update_one(
@@ -350,6 +356,7 @@ async def create_listing(
         "niche": data.niche,
         "technologies": data.technologies or [],
         "url_preview": None if data.is_adult else data.url_preview,
+        "url_public": False if data.is_adult else data.url_public,
         "images": [] if data.is_adult else (data.images or []),
         "is_adult": data.is_adult,
         "is_featured": False,
@@ -414,6 +421,7 @@ async def update_listing(
     if effective_adult:
         updates["images"] = []
         updates["url_preview"] = None
+        updates["url_public"] = False
 
     # Prix de vente / réserve + achat immédiat minimum dynamique (frais min + 1 €)
     if data.price is not None or data.auction_buy_now_price is not None:

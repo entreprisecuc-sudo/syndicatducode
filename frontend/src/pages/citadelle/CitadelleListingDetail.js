@@ -483,13 +483,27 @@ export default function CitadelleListingDetail() {
               ))}
             </div>
 
-            {/* URL masquée */}
-            <div className="p-4 rounded-xl flex items-start gap-3" style={{ background: "rgba(201,164,92,0.07)", border: `1px solid rgba(201,164,92,0.2)` }}>
-              <Lock size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0, marginTop: 2 }} />
-              <p className="text-xs leading-relaxed" style={{ color: CITADELLE_COLORS.textMuted }}>
-                L'URL du site est disponible après initiation d'une transaction sécurisée.
-              </p>
-            </div>
+            {/* URL du site — selon le choix du vendeur */}
+            {listing.url_public && listing.url_preview ? (
+              <div className="p-4 rounded-xl" style={{ background: "rgba(201,164,92,0.07)", border: `1px solid rgba(201,164,92,0.2)` }}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Globe size={16} style={{ color: CITADELLE_COLORS.gold }} />
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: CITADELLE_COLORS.textMuted }}>Adresse du site</span>
+                </div>
+                <a href={listing.url_preview} target="_blank" rel="noopener noreferrer nofollow"
+                  className="text-xs font-semibold underline break-all" style={{ color: CITADELLE_COLORS.blue }}
+                  data-testid="listing-public-url">
+                  {listing.url_preview}
+                </a>
+              </div>
+            ) : (
+              <div className="p-4 rounded-xl flex items-start gap-3" style={{ background: "rgba(201,164,92,0.07)", border: `1px solid rgba(201,164,92,0.2)` }}>
+                <Lock size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0, marginTop: 2 }} />
+                <p className="text-xs leading-relaxed" style={{ color: CITADELLE_COLORS.textMuted }} data-testid="listing-url-hidden-msg">
+                  Par choix du vendeur, l'adresse du site reste confidentielle. Elle sera communiquée à l'acheteur dès qu'il manifeste un intérêt sérieux ou à l'entame du processus de vente sécurisé.
+                </p>
+              </div>
+            )}
 
             {/* Widget estimateur contextuel */}
             <EstimateurSidebar listing={listing} />
