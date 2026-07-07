@@ -1,131 +1,138 @@
 {
-  "project": "La Citadelle Numérique - Espace Membre",
   "theme_and_archetype": {
     "theme": "Light",
-    "archetype": "Premium SaaS / Old Money Tech",
-    "rationale": "High-end French marketplace for digital assets requires a trustworthy, premium interface. Relying strictly on the user-provided Navy & Gold palette to convey authority and value."
+    "archetype": "Archetype 4 (Swiss & High-Contrast) crossed with Archetype 5 (Luxury)",
+    "reasoning": "La Citadelle Numérique uses a premium corporate palette (Navy, Gold, Light). The hub page needs to feel authoritative, elegant, and perfectly structured (Swiss layout principles) while maintaining a sense of high-end value (Luxury typography and color contrast)."
   },
   "colors": {
-    "primary": "#0F2747",
-    "primary_foreground": "#FFFFFF",
+    "primary_navy": "#0F2747",
+    "dark_night": "#081729",
     "accent_gold": "#C9A45C",
-    "accent_gold_light": "#D9BB7A",
-    "background": "#F5F7FA",
-    "surface": "#FFFFFF",
-    "muted_text": "#5F6672",
-    "border": "#DDE3EA",
-    "success": "#22C55E"
+    "accent_light_gold": "#D9BB7A",
+    "background_base": "#F5F7FA",
+    "text_muted": "#5F6672",
+    "border_light": "#DDE3EA",
+    "guide_emerald": "#059669",
+    "guide_terracotta": "#C53030"
   },
   "typography": {
-    "heading_font": "Cabinet Grotesk",
-    "body_font": "IBM Plex Sans",
-    "strategy": "Avoid generic fonts like Inter for headings. Use Cabinet Grotesk for a premium, authoritative heading structure. IBM Plex Sans for highly legible, data-heavy body text.",
-    "scales": {
-      "h1": "text-2xl md:text-3xl font-semibold tracking-tight text-[#0F2747]",
-      "h2": "text-xl md:text-2xl font-medium text-[#0F2747]",
-      "h3": "text-lg font-medium text-[#0F2747]",
-      "body": "text-base text-[#5F6672]",
-      "small": "text-sm text-[#5F6672]",
-      "kpi_value": "text-3xl md:text-4xl font-bold text-[#0F2747]"
+    "headings": "Montserrat, font-bold, tracking-tight. Utiliser des tailles fluides text-4xl à text-6xl+ pour les grands titres.",
+    "body": "Police sans-serif propre (Inter ou Roboto par défaut de Tailwind).",
+    "hierarchy": {
+      "h1": "text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#081729]",
+      "h2": "text-3xl md:text-4xl font-bold tracking-tight text-[#0F2747]",
+      "card_title": "text-xl md:text-2xl font-bold tracking-tight leading-snug",
+      "meta": "text-sm font-medium uppercase tracking-[0.1em]"
     }
   },
-  "layout_strategy": {
-    "mobile": "1-column layout, vertically stacked sections. Container padding p-4.",
-    "tablet": "2-column bento grids. Container padding p-6.",
-    "desktop": "Compact header + 4-column KPI row + 3-column main split (2 cols content, 1 col sidebar).",
-    "sections": {
-      "header": {
-        "description": "Compact top navigation bar, completely decoupled from the main content grid.",
-        "components": "User avatar (Initials or Photo), 'Bonjour, Marie !', and a subtle 'Déconnexion' ghost button.",
-        "spacing": "flex justify-between items-center py-4 px-6 border-b border-[#DDE3EA] bg-white mb-8"
+  "spacing_and_layout": {
+    "container_padding": "px-6 md:px-12 lg:px-24",
+    "section_spacing": "py-20 md:py-32",
+    "grid_strategy": "Grille asymétrique (Bento) pour briser la monotonie. 1 grand article à gauche (span 8), 2 petits articles empilés à droite (span 4). Ou bien un hero article pleine largeur et 2 articles secondaires."
+  },
+  "sections_blueprint": {
+    "hero": {
+      "layout": "Aligné à gauche, large padding-top. Pas d'image de fond lourde pour laisser respirer. Ligne d'accent or (`w-24 h-1 bg-[#C9A45C]`) au-dessus du H1.",
+      "content": "Titre: 'Les Parutions'. Sous-titre: 'Explorez nos articles, guides experts et chroniques exclusives de La Garde.'",
+      "data_testid": "parutions-hero-section"
+    },
+    "le_blog": {
+      "identity": "Classique, fond clair, photos réelles.",
+      "layout": "Fond `#F5F7FA`. Cartes avec fond blanc, bordure 1px `#DDE3EA`, ombre douce `shadow-xl shadow-[#0F2747]/5`. Bouton 'Voir tout le blog' style outline.",
+      "grid": "grid-cols-1 lg:grid-cols-12 gap-8. Le dernier article occupe `lg:col-span-7` avec grande image, les deux précédents occupent `lg:col-span-5` (empilés).",
+      "data_testid": "section-blog"
+    },
+    "le_guide": {
+      "identity": "Premium, accents Émeraude/Terracotta, images IA abstraites.",
+      "layout": "Fond blanc pur. Cartes sans bordure visible mais avec un fin trait Émeraude au survol. Badges catégorie en fond Émeraude clair. Bouton principal plein (#059669).",
+      "grid": "grid-cols-1 md:grid-cols-3 gap-6. Affichage égal, style 'cartes de tarot' (plus hautes que larges).",
+      "data_testid": "section-guides"
+    },
+    "les_chroniques": {
+      "identity": "Ultra-premium, style Navy/Or, fond sombre.",
+      "layout": "Section entière avec fond `#081729` (Nuit). Textes en blanc et or (`#C9A45C`). Cartes avec fond `#0F2747`, bordure `#C9A45C`/20. Effet Glassmorphism subtil (`backdrop-blur`). Bouton 'Voir toutes les chroniques' en Or plein avec texte Nuit.",
+      "grid": "grid-cols-1 lg:grid-cols-12 gap-8. Article principal au centre ou décalé.",
+      "data_testid": "section-chroniques"
+    },
+    "newsletter": {
+      "integration": "Réutiliser le composant <NewsletterSection /> existant en fin de page. S'assurer de l'espacement généreux avant (pt-32).",
+      "data_testid": "newsletter-block"
+    }
+  },
+  "components_blueprint": {
+    "article_card": {
+      "structure": "Image de couverture (ratio 16:9 ou 4:3) en haut, suivie du contenu textuel.",
+      "hover_effects": "Image avec `transition-transform duration-500 hover:scale-105` (dans un conteneur `overflow-hidden`). Titre change de couleur au survol du groupe (`group-hover:text-[#C9A45C]`).",
+      "content_layout": "Flex-col, gap-3, padding interne généreux (p-6 ou p-8).",
+      "meta_data": "Catégorie (badge ou texte uppercase or), Date et Auteur discrets (`text-[#5F6672]` ou `#DDE3EA` sur fond sombre)."
+    },
+    "graceful_empty_state": {
+      "concept": "Carte élégante 'Prochaine parution à venir'. Pas un message d'erreur.",
+      "visuals": "Fond avec motif subtil (grain ou gradient léger), icône Lucide (ex: `Sparkles` ou `BookOpen`), texte centré invitant à revenir bientôt. Bordure pointillée ou stylisée.",
+      "data_testid": "empty-state-card"
+    }
+  },
+  "image_urls": {
+    "blog_covers": [
+      {
+        "url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHwxfHxzdGFydHVwJTIwb2ZmaWNlJTIwbGFwdG9wfGVufDB8fHx8MTc4MzQyOTk4MHww&ixlib=rb-4.1.0&q=85",
+        "category": "blog",
+        "description": "MacBook sur bureau en bois, pour article classique business/tech"
       },
-      "kpi_and_cta_row": {
-        "description": "Top row highlighting the most crucial stats and the primary CTA. Solves the 'no stats at a glance' problem.",
-        "layout": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8",
-        "cards": [
-          { "type": "kpi", "title": "Annonces actives", "value": "3", "link": "Mes annonces", "icon": "LayoutList" },
-          { "type": "kpi", "title": "Transactions en cours", "value": "1", "link": "Mes transactions", "icon": "ArrowRightLeft" },
-          { "type": "kpi", "title": "Messages non lus", "value": "2", "link": "Mes messages", "icon": "MessageSquare" },
-          { "type": "primary_cta", "title": "Publier une annonce", "subtitle": "Mettez votre actif en vente", "style": "bg-[#0F2747] text-white hover:bg-[#0F2747]/90 transition-colors border-none shadow-md cursor-pointer", "icon_color": "#C9A45C", "icon": "PlusCircle" }
-        ]
+      {
+        "url": "https://images.unsplash.com/photo-1516387938699-a93567ec168e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHwzfHxzdGFydHVwJTIwb2ZmaWNlJTIwbGFwdG9wfGVufDB8fHx8MTc4MzQyOTk4MHww&ixlib=rb-4.1.0&q=85",
+        "category": "blog",
+        "description": "Personne tapant sur MacBook, action dynamique"
       },
-      "main_content": {
-        "layout": "grid grid-cols-1 lg:grid-cols-3 gap-8",
-        "left_column": {
-          "span": "lg:col-span-2",
-          "blocks": [
-            {
-              "id": "a_traiter",
-              "title": "À Traiter",
-              "description": "Pending actions transformed from a heavy block to a sleek, actionable list.",
-              "style": "bg-white rounded-xl border border-[#DDE3EA] p-6 shadow-sm mb-8",
-              "empty_state": "Sleek horizontal row with success icon (#22C55E) and text 'Tout est à jour. Aucune action requise.'"
-            },
-            {
-              "id": "mes_services_transmissions",
-              "title": "Gestion & Services",
-              "layout": "grid grid-cols-1 md:grid-cols-2 gap-4",
-              "cards": ["Mes transmissions (Attestations de La Garde)", "Mes services (Évaluations et audits)"]
-            }
-          ]
-        },
-        "right_column": {
-          "span": "lg:col-span-1",
-          "blocks": [
-            {
-              "id": "administration",
-              "title": "Administration",
-              "style": "bg-white rounded-xl border border-[#DDE3EA] p-6 shadow-sm",
-              "items": [
-                { "title": "Mon profil", "desc": "Modifier mes informations", "icon": "User" },
-                { "title": "Mes factures", "desc": "Téléchargez vos PDF", "icon": "FileText" }
-              ]
-            }
-          ]
-        }
+      {
+        "url": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHwyfHxzdGFydHVwJTIwb2ZmaWNlJTIwbGFwdG9wfGVufDB8fHx8MTc4MzQyOTk4MHww&ixlib=rb-4.1.0&q=85",
+        "category": "blog",
+        "description": "MacBook avec code, bureau chargé"
       }
-    }
-  },
-  "ui_components": {
-    "cards": "Use Shadcn Cards but with custom borders (#DDE3EA) and zero/subtle shadow. Use rounded-xl for a modern premium feel.",
-    "icons": "lucide-react. Stroke width 1.5. Sizes 20px (standard) or 24px (KPIs).",
-    "buttons": "Shadcn buttons. Primary buttons use #0F2747 background. Secondary buttons use transparent background with #DDE3EA border."
-  },
-  "micro_interactions": {
-    "hover_states": "Interactive Cards should have a subtle -translate-y-1 and shadow-md transition on hover. Links/Text should change text color to #C9A45C.",
-    "focus_states": "focus-visible:ring-2 focus-visible:ring-[#C9A45C]/50 focus-visible:outline-none"
-  },
-  "media_and_icons": {
-    "publier_annonce": "PlusCircle",
-    "mes_annonces": "LayoutList",
-    "mes_transactions": "ArrowRightLeft",
-    "mes_factures": "FileText",
-    "mes_transmissions": "ShieldCheck",
-    "mes_messages": "MessageSquare",
-    "mes_services": "Briefcase",
-    "mon_profil": "User"
-  },
-  "testing_requirements": {
-    "data_testids": [
-      "dashboard-header-logout",
-      "kpi-annonces-actives",
-      "kpi-transactions",
-      "kpi-messages",
-      "cta-publier-annonce",
-      "section-a-traiter",
-      "nav-mes-transmissions",
-      "nav-mes-services",
-      "nav-mon-profil",
-      "nav-mes-factures"
+    ],
+    "guides_covers": [
+      {
+        "url": "https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGVtZXJhbGQlMjAzZHxlbnwwfHx8dGVhbHwxNzgzNDI5OTc5fDA&ixlib=rb-4.1.0&q=85",
+        "category": "guides",
+        "description": "Texture abstraite émeraude liquide, ambiance IA premium"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1656625497592-af6140a73eaa?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMGVtZXJhbGQlMjAzZHxlbnwwfHx8dGVhbHwxNzgzNDI5OTc5fDA&ixlib=rb-4.1.0&q=85",
+        "category": "guides",
+        "description": "Cubes 3D émeraude abstraits"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1656248396925-ec086a35c568?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGVtZXJhbGQlMjAzZHxlbnwwfHx8dGVhbHwxNzgzNDI5OTc5fDA&ixlib=rb-4.1.0&q=85",
+        "category": "guides",
+        "description": "Ondes douces abstraites émeraude"
+      }
+    ],
+    "chroniques_covers": [
+      {
+        "url": "https://images.unsplash.com/photo-1710971228630-f59c4cb257a8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBpbnRlcmlvciUyMG5hdnklMjBnb2xkfGVufDB8fHx8MTc4MzQyOTk4NXww&ixlib=rb-4.1.0&q=85",
+        "category": "chroniques",
+        "description": "Plante feuilles d'or sur fond nuit. Parfait pour les chroniques premium expertes."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1646523773249-23fea630a7a5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwyfHxsdXh1cnklMjBpbnRlcmlvciUyMG5hdnklMjBnb2xkfGVufDB8fHx8MTc4MzQyOTk4NXww&ixlib=rb-4.1.0&q=85",
+        "category": "chroniques",
+        "description": "Texture abstraite fond noir motifs or et bleu"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1721815693498-cc28507c0ba2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwzfHxsdXh1cnklMjBwcmVtaXVtJTIwYXJjaGl0ZWN0dXJlfGVufDB8fHx8MTc4MzQyOTk4NXww&ixlib=rb-4.1.0&q=85",
+        "category": "chroniques",
+        "description": "Architecture premium moderne, peut servir de visuel annexe"
+      }
     ]
   },
-  "instructions_to_main_agent": [
-    "1. DO NOT use generic fonts like Inter or Roboto for headings; configure Cabinet Grotesk or similar geometric/premium sans.",
-    "2. Create the layout strictly using the color hex codes provided, mapping them precisely to Tailwind classes in tailwind.config.js.",
-    "3. Extract the 'Publier une annonce' out of the generic list and make it a highly visible CTA card in the KPI row.",
-    "4. Dismantle the 8-card identical grid. Re-route 'Mes annonces', 'Mes transactions', and 'Mes messages' into the top KPI summary cards (where clicking the card acts as the navigation).",
-    "5. Group 'Mon profil' and 'Mes factures' into an 'Administration' sidebar/column on the right.",
-    "6. Make the 'À traiter' block a clean list view (Shadcn Table or custom Flex rows) rather than a giant empty card.",
-    "7. Ensure all interactive elements have data-testid attributes."
-  ]
+  "instructions_to_main_agent": {
+    "framework": "React 19, Tailwind CSS, Lucide React. Fichiers en .js",
+    "seo": "Utiliser react-helmet-async pour la balise <title> (ex: Les Parutions | La Citadelle Numérique).",
+    "structure": "La page doit être englobée dans <CitadelleLayout>. Pas de `<main>` si Layout le fait déjà.",
+    "icons": "Utiliser `lucide-react` (ex: `ArrowRight`, `BookOpen`, `Shield`, `Sparkles`). AUCUN EMOJI.",
+    "testing": "Chaque bouton, lien, et carte DOIT avoir un attribut `data-testid` en kebab-case.",
+    "styling": "N'utiliser que Tailwind utilitaire ou objets de style inline si nécessaire (selon les conventions existantes du projet).",
+    "responsiveness": "Commencer en mobile-first (cols-1), ajouter md: (cols-2/3) et lg: (cols-12) pour desktop.",
+    "empty_state_logic": "Pour la logique de démonstration, prévoir des tableaux de données mockés (articles, guides, chroniques). Si un tableau est vide, afficher l'état vide gracieux conçu."
+  }
 }
