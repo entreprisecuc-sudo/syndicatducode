@@ -1224,24 +1224,49 @@ async def admin_complete_transaction(
     transfer_note = ""
 
     if seller_stripe_account and seller_ready:
-        try:
-            transfer = await asyncio.to_thread(
-                stripe_sdk.Transfer.create,
-                api_key=_stripe_key(),
-                amount=int(net_amount * 100),   # EUR → centimes
-                currency="eur",
-                destination=seller_stripe_account,
-                transfer_group=transaction_id,
-            )
-            stripe_transfer_id = transfer.id
+        # Associer le transfert à la charge de l'acheteur (source_transaction) : le virement
+        # est accepté même si le solde disponible plateforme est à 0 (fonds encore "en attente"),
+        # puis se dénoue automatiquement dès que la charge est réglée.
+        source_charge_id = None
+        payment_intent_id = tx.get("payment_id")
+        if payment_intent_id:
+            try:
+                pi = await asyncio.to_thread(
+                    stripe_sdk.PaymentIntent.retrieve,
+                    payment_intent_id,
+                    api_key=_stripe_key(),
+                )
+                source_charge_id = pi.get("latest_charge")
+            except stripe_sdk.error.StripeError as e:
+                logger.error(f"[Citadelle] Impossible de récupérer la charge du PaymentIntent {payment_intent_id} : {e}")
+
+        if not source_charge_id:
             transfer_note = (
-                f"Virement de {net_amount:,.0f} € effectué vers le vendeur. "
-                f"Commission plateforme : {commission:,.0f} €."
+                f"⚠️ Charge de paiement introuvable — virement manuel requis ({net_amount:,.0f} €). "
+                f"Vérifiez la transaction dans Stripe."
             )
-            logger.info(f"[Citadelle] Transfer Stripe : {transfer.id} → {seller_stripe_account} — {net_amount} €")
-        except stripe_sdk.error.StripeError as e:
-            logger.error(f"[Citadelle] Erreur Stripe Transfer : {e}")
-            transfer_note = f"⚠️ Transfert automatique échoué — virement manuel requis ({net_amount:,.0f} €)."
+            logger.error(f"[Citadelle] Transfert impossible : charge introuvable pour transaction {transaction_id}")
+        else:
+            try:
+                transfer = await asyncio.to_thread(
+                    stripe_sdk.Transfer.create,
+                    api_key=_stripe_key(),
+                    amount=int(net_amount * 100),   # EUR → centimes
+                    currency="eur",
+                    destination=seller_stripe_account,
+                    transfer_group=transaction_id,
+                    source_transaction=source_charge_id,
+                )
+                stripe_transfer_id = transfer.id
+                transfer_note = (
+                    f"Virement de {net_amount:,.0f} € programmé vers le vendeur "
+                    f"(libéré dès la disponibilité des fonds Stripe). "
+                    f"Commission plateforme : {commission:,.0f} €."
+                )
+                logger.info(f"[Citadelle] Transfer Stripe : {transfer.id} → {seller_stripe_account} — {net_amount} € (source={source_charge_id})")
+            except stripe_sdk.error.StripeError as e:
+                logger.error(f"[Citadelle] Erreur Stripe Transfer : {e}")
+                transfer_note = f"⚠️ Transfert automatique échoué — virement manuel requis ({net_amount:,.0f} €)."
     elif seller_stripe_account and not seller_ready:
         transfer_note = f"⚠️ Compte Stripe vendeur en cours de vérification — virement manuel requis ({net_amount:,.0f} €)."
     else:
