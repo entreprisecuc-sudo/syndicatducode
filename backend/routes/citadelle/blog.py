@@ -135,6 +135,22 @@ async def list_posts(
     return {"posts": posts, "total": total}
 
 
+@router.get("/blog/chroniques/next", summary="Prochaine chronique programmée (teaser)")
+async def next_chronique():
+    """Retourne le teaser de la prochaine chronique programmée (sans contenu)."""
+    now = datetime.now(timezone.utc).isoformat()
+    post = await db.citadelle_blog_posts.find_one(
+        {
+            "category": "chroniques-la-garde",
+            "is_published": False,
+            "scheduled_at": {"$gt": now},
+        },
+        {"_id": 0, "slug": 1, "title": 1, "excerpt": 1, "cover_image_url": 1, "scheduled_at": 1},
+        sort=[("scheduled_at", 1)],
+    )
+    return {"next": post}
+
+
 @router.get("/blog/{slug}", summary="Lecture d'un article publié — incrémente les vues")
 async def get_post(slug: str):
     """

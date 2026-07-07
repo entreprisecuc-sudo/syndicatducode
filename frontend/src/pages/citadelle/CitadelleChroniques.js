@@ -7,7 +7,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ScrollText, Calendar, ChevronRight, ShieldCheck } from "lucide-react";
+import { ScrollText, Calendar, ChevronRight, ShieldCheck, Clock } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, getListingImageUrl } from "@/config/citadelleConstants";
@@ -24,14 +24,19 @@ const chroniqueNumber = (slug = "") => {
 
 export default function CitadelleChroniques() {
   const [posts, setPosts] = useState([]);
+  const [nextPost, setNextPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await citadelleApi.get("/blog", { params: { category: "chroniques-la-garde", limit: 200 } });
-        const list = (res.data.posts || []).sort((a, b) => chroniqueNumber(a.slug) - chroniqueNumber(b.slug));
+        const [listRes, nextRes] = await Promise.all([
+          citadelleApi.get("/blog", { params: { category: "chroniques-la-garde", limit: 200 } }),
+          citadelleApi.get("/blog/chroniques/next").catch(() => ({ data: { next: null } })),
+        ]);
+        const list = (listRes.data.posts || []).sort((a, b) => chroniqueNumber(a.slug) - chroniqueNumber(b.slug));
         setPosts(list);
+        setNextPost(nextRes.data?.next || null);
       } catch {
         setPosts([]);
       } finally {
@@ -71,6 +76,42 @@ export default function CitadelleChroniques() {
           </div>
         </div>
       </div>
+
+      {/* ── Encart « prochaine chronique à paraître » ───────────────────── */}
+      {nextPost && (
+        <div className="max-w-5xl mx-auto px-4 md:px-6 pt-10 -mb-2" data-testid="chroniques-next-teaser">
+          <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] rounded-2xl overflow-hidden"
+            style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.gold}`, boxShadow: "0 10px 40px rgba(201,164,92,0.15)" }}>
+            <div className="relative h-40 sm:h-full min-h-[140px] overflow-hidden" style={{ background: CITADELLE_COLORS.night || "#0B1D36" }}>
+              <img src={getListingImageUrl(nextPost.cover_image_url) || COVER} alt={nextPost.title}
+                className="w-full h-full object-cover opacity-80" loading="lazy" />
+              <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1"
+                style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night || "#0B1D36" }}>
+                <Clock size={12} /> À paraître
+              </span>
+            </div>
+            <div className="p-6 flex flex-col justify-center">
+              <span className="text-xs font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: CITADELLE_COLORS.gold }}>
+                Prochaine chronique — n°{chroniqueNumber(nextPost.slug)}
+              </span>
+              <h2 className="font-bold text-lg leading-snug mb-2 break-words"
+                style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif", overflowWrap: "anywhere" }}
+                data-testid="chroniques-next-title">
+                {nextPost.title.replace(/^Les Chroniques de La Garde\s*:\s*/i, "")}
+              </h2>
+              {nextPost.excerpt && (
+                <p className="text-sm leading-relaxed mb-3"
+                  style={{ color: CITADELLE_COLORS.textMuted, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {nextPost.excerpt}
+                </p>
+              )}
+              <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }} data-testid="chroniques-next-date">
+                <Calendar size={14} style={{ color: CITADELLE_COLORS.gold }} /> Parution le {formatDate(nextPost.scheduled_at)}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Collection numérotée ────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-12" data-testid="chroniques-list">
