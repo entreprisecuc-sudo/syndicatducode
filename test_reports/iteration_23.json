@@ -1,0 +1,25 @@
+{
+  "summary": "Système de modération Citadelle (warn/suspend/ban/reactivate) validé end-to-end. Backend: 6/6 pytest passés (test_citadelle_moderation.py). Frontend: 3 bandeaux (jaune warning / orange suspended / rouge banned) affichés avec motif+commentaire+date, vue restreinte banni avec les 2 seuls liens (factures, transmissions), et notice de restriction d'action sur la page détail annonce quand le membre est suspendu (boutons offer/bid/buy-now correctement masqués). Login autorisé pour suspended ET banned (200). Actions bloquées 403 sur POST /listings, /listings/{id}/bid, /transactions/offer, /transactions/{id}/pay lorsque suspendu. Consultation conservée (/auth/me, /invoices/my, /transmissions/my restent 200) pour suspendu ET banni. require_citadelle_user (member/activity, listings/my, messages/my, transactions/my) renvoie 403 pour banni. Reactivate remet status='active' et débloque les actions. Compte arnaudaube@gmail.com laissé en statut 'active' (reactivate appelé en teardown).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_citadelle_moderation.py",
+    "/app/test_reports/pytest/moderation.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Séparation propre entre require_citadelle_user (bloque banned) et require_can_transact (bloque suspended+banned) — bonne conception DRY dans dependencies.py.",
+    "citadelle_login autorise correctement suspended/banned à s'authentifier ; réactivation auto quand suspended_until est dépassé (bon).",
+    "Endpoints /invoices/my et /transmissions/my utilisent un _get_current_user local (pas require_citadelle_user), ce qui est intentionnel car ce sont les SEULS endpoints qui doivent rester accessibles aux bannis. Vérifié: OK.",
+    "ModerationBanner s'affiche via useCitadelleModeration qui fetch /auth/me — 3 niveaux distincts (warning/suspended/banned) avec data-testid corrects.",
+    "CitadelleDashboard fait un early-return propre pour banned avec data-testid='banned-restricted-view' + les 2 liens uniques.",
+    "CitadelleListingDetail masque bien les 3 boutons d'action (bid/buy-now/make-offer) et affiche action-restricted-notice quand canTransact === false. Contact-seller également masqué (correct car messages/send est protégé par require_can_transact via .../reply... — mais en pratique messages/send utilise require_citadelle_user, pas require_can_transact ; le frontend est plus strict que le backend, ce qui n'est pas incorrect côté produit)."
+  ],
+  "updated_files": ["/app/backend/tests/test_citadelle_moderation.py"],
+  "success_rate": {"backend": "100% (6/6 pytest)", "frontend": "100% (3/3 flows validated)"},
+  "test_credentials": "ADMIN bigpapa1981@asar.com / Josiane03@@@!1981 ; MEMBRE arnaudaube@gmail.com / ArnaudTest2026! (id 7bd37587-6ef6-49ff-aa09-cdc4083a8637). Compte laissé en 'active' à la fin.",
+  "seed_data_creation": "Aucune donnée persistante créée. warn/suspend/ban temporaires sur arnaudaube — reactivate en teardown_module et cleanup explicite après chaque test.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Modération 100% couverte back+front. Si nouvelles règles ajoutées (ex: bloquer aussi contact-seller côté backend via require_can_transact), mettre à jour test_citadelle_moderation.py. Ne PAS modérer d'autres comptes que arnaudaube — les emails partent en réel."
+}

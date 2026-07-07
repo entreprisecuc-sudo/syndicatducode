@@ -10,6 +10,13 @@
 - **Mot de passe** : TestUI2026!
 - **ID** : 26c042ac-fbdc-471e-b791-edd15325de7e
 
+## Compte test MODÉRATION (email réel — pour tests avertissement/suspension/bannissement)
+- **Email** : arnaudaube@gmail.com
+- **Mot de passe** : ArnaudTest2026!
+- **ID** : 7bd37587-6ef6-49ff-aa09-cdc4083a8637
+- **Rôle** : citadelle_user · **Statut** : active
+- Utilisé pour tester les emails de modération (adresse réelle, pas de rebond).
+
 ## Notes
 - Route admin dashboard : /syndicat-admin
 - App alertes admin : /admin-live (Papa en Mousse)
