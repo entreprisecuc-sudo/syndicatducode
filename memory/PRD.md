@@ -8,6 +8,15 @@
 ---
 
 
+## 🔧 Session 06/07/2026 — Correctif virement escrow (Stripe Connect)
+- **Bug corrigé** : à la finalisation (`POST /admin/transactions/{id}/complete`), le `Transfer.create` échouait en prod avec `balance_insufficient` (fonds carte encore "en attente", solde dispo plateforme à 0) → aucun virement vers le vendeur (volume Connect à 0 €).
+- **Fix** : ajout de `source_transaction=<latest_charge du PaymentIntent>` dans `Transfer.create` (transactions.py ~L1226). Le transfert est accepté même solde dispo à 0 et se libère à la disponibilité des fonds. Gestion propre si charge introuvable.
+- **Décision produit** : rester sur comptes **Stripe Connect Express** (Stripe gère KYC + IBAN, zéro responsabilité juridique). Custom écarté.
+- **BACKLOG (plus tard)** : l'IBAN collecté dans le profil Citadelle est **redondant** (Stripe Express le recollecte dans son onboarding hébergé). Envisager de **retirer le champ IBAN du profil Citadelle** pour éviter la confusion vendeur, OU l'afficher comme purement informatif. Non bloquant.
+
+---
+
+
 ## 🚀 Session 06/07/2026 — DÉPLOIEMENT VPS PRODUCTION (RÉUSSI)
 - **Branche déployée** : `main-projet-7` (67 commits) sur VPS Hostinger `/var/www/syndicatducode.fr`.
 - **Procédure** : `git pull` (fast-forward), ajout des clés `.env` prod (GOOGLE_CLIENT_ID/SECRET + VAPID_PUBLIC/PRIVATE/SUBJECT côté backend, REACT_APP_GOOGLE_CLIENT_ID côté frontend), `pip install` (hors `emergentintegrations`, inutile/absent PyPI public), `yarn build`, `pm2 restart syndicat-backend`.
