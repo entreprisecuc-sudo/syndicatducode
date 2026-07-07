@@ -159,7 +159,7 @@ export default function CitadelleListingDetail() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Colonne gauche — Images + Description */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 min-w-0">
             {/* Image principale */}
             <div className="rounded-2xl overflow-hidden" style={{ height: "320px", background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
               {listing.is_adult ? (
@@ -218,7 +218,7 @@ export default function CitadelleListingDetail() {
             {/* Description */}
             <div className="p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
               <h2 className="font-bold mb-4" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Description</h2>
-              <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: CITADELLE_COLORS.textMuted }}>{listing.description}</p>
+              <p className="text-sm leading-relaxed whitespace-pre-line break-words" style={{ color: CITADELLE_COLORS.textMuted, overflowWrap: "anywhere" }}>{listing.description}</p>
             </div>
 
             {/* Technologies */}
@@ -227,8 +227,8 @@ export default function CitadelleListingDetail() {
                 <h2 className="font-bold mb-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Technologies</h2>
                 <div className="flex flex-wrap gap-2">
                   {listing.technologies.map(t => (
-                    <span key={t} className="px-3 py-1.5 rounded-lg text-xs font-semibold"
-                      style={{ background: "rgba(15,39,71,0.06)", color: CITADELLE_COLORS.blue }}>{t}</span>
+                    <span key={t} className="px-3 py-1.5 rounded-lg text-xs font-semibold break-words"
+                      style={{ background: "rgba(15,39,71,0.06)", color: CITADELLE_COLORS.blue, overflowWrap: "anywhere", maxWidth: "100%" }}>{t}</span>
                   ))}
                 </div>
               </div>
