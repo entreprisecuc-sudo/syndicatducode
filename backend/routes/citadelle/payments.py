@@ -162,6 +162,34 @@ async def _finalize_paid_transaction(session_id: str) -> bool:
 
     transaction = await _db.payment_transactions.find_one({"session_id": session_id})
     logger.info(f"Paiement confirmé : {session_id} — {transaction.get('service_title')}")
+
+    # Créer la commande de service visible côté admin ET côté membre (« Mes commandes »).
+    # Idempotent via session_id : le vrai flux Stripe alimentait payment_transactions/factures
+    # mais PAS citadelle_service_orders, d'où les commandes qui ne remontaient plus.
+    try:
+        existing_order = await _db.citadelle_service_orders.find_one({"session_id": session_id})
+        if not existing_order:
+            now = datetime.now(timezone.utc).isoformat()
+            await _db.citadelle_service_orders.insert_one({
+                "id": str(uuid.uuid4()),
+                "session_id": session_id,
+                "service_id": transaction.get("service_id", ""),
+                "service_title": transaction.get("service_title", ""),
+                "amount": transaction.get("amount", 0),
+                "client_name": transaction.get("client_name", ""),
+                "client_email": transaction.get("client_email", ""),
+                "client_message": transaction.get("client_message", ""),
+                "status": "en_attente",
+                "admin_note": "",
+                "payment_method": "stripe",
+                "user_id": transaction.get("user_id", ""),
+                "created_at": now,
+                "updated_at": now,
+            })
+            logger.info(f"Commande service créée (admin) pour session {session_id}")
+    except Exception as e:
+        logger.warning(f"Erreur création commande service admin : {e}")
+
     try:
         await _send_payment_confirmation_emails(transaction)
     except Exception as e:
