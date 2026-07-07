@@ -11,7 +11,7 @@ from pathlib import Path
 import re, uuid, shutil
 import logging
 
-from routes.citadelle.dependencies import require_admin, require_citadelle_user
+from routes.citadelle.dependencies import require_admin, require_citadelle_user, require_can_transact
 from services.auth_service import decode_access_token
 from utils.notif_prefs import email_notifications_enabled
 from services.email_service import (
@@ -313,7 +313,7 @@ async def get_listing(slug: str):
 @router.post("/listings", status_code=status.HTTP_201_CREATED, summary="Créer une annonce")
 async def create_listing(
     data: ListingCreate,
-    current_user: dict = Depends(require_citadelle_user)
+    current_user: dict = Depends(require_can_transact)
 ):
     """Crée une annonce en statut 'draft' ou 'pending' selon les données fournies"""
     try:
@@ -676,7 +676,7 @@ class BidCreate(BaseModel):
 async def place_bid(
     listing_id: str,
     data: BidCreate,
-    current_user: dict = Depends(require_citadelle_user)
+    current_user: dict = Depends(require_can_transact)
 ):
     """Acheteur : place une enchère sur une annonce mise aux enchères."""
     listing = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})

@@ -11,6 +11,7 @@ import {
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
+import { useCitadelleModeration } from "@/hooks/useCitadelleModeration";
 import { CITADELLE_COLORS, getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@/config/citadelleConstants";
 import CitadelleAuthModal from "@/components/citadelle/CitadelleAuthModal";
 import { ReportBidButton } from "@/components/citadelle/ReportBidButton";
@@ -51,6 +52,7 @@ export default function CitadelleListingDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useCitadelleAuth();
+  const { canTransact } = useCitadelleModeration();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
@@ -342,7 +344,7 @@ export default function CitadelleListingDetail() {
                   )}
 
                   {/* Formulaire enchère */}
-                  {listing.status !== "sold" && tempsRestant && isAuthenticated && user?.id !== listing.seller_id ? (
+                  {listing.status !== "sold" && tempsRestant && isAuthenticated && user?.id !== listing.seller_id && canTransact ? (
                     <div className="space-y-3 mt-4">
                       {bidSuccess ? (
                         <div className="p-3 rounded-xl text-xs text-center" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", color: "#22C55E" }}>
@@ -398,6 +400,10 @@ export default function CitadelleListingDetail() {
                     </div>
                   ) : listing.status === "sold" ? (
                     <AnnonceSoldee listing={listing} user={user} />
+                  ) : isAuthenticated && !canTransact && user?.id !== listing.seller_id ? (
+                    <div className="p-3 rounded-xl text-xs" style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.3)", color: "#9A3412" }} data-testid="action-restricted-notice">
+                      Actions indisponibles : votre compte fait l'objet d'une sanction. Vous ne pouvez pas enchérir pour le moment.
+                    </div>
                   ) : !isAuthenticated ? (
                     <button
                       onClick={() => setAuthModal(true)}
@@ -426,7 +432,7 @@ export default function CitadelleListingDetail() {
                   <div className="space-y-2 mt-5">
                     {listing.status === "sold" ? (
                       <AnnonceSoldee listing={listing} user={user} />
-                    ) : isAuthenticated && user?.id !== listing.seller_id ? (
+                    ) : isAuthenticated && user?.id !== listing.seller_id && canTransact ? (
                       <>
                         <button onClick={() => setOfferModal(true)}
                           className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"
@@ -441,6 +447,10 @@ export default function CitadelleListingDetail() {
                           Contacter le vendeur
                         </button>
                       </>
+                    ) : isAuthenticated && !canTransact && user?.id !== listing.seller_id ? (
+                      <div className="p-3 rounded-xl text-xs" style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.3)", color: "#9A3412" }} data-testid="action-restricted-notice">
+                        Actions indisponibles : votre compte fait l'objet d'une sanction. Vous ne pouvez pas acheter ni faire d'offre pour le moment.
+                      </div>
                     ) : !isAuthenticated ? (
                       <button
                         onClick={() => setAuthModal(true)}

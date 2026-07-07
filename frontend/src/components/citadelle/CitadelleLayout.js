@@ -16,6 +16,7 @@ import { CITADELLE_CONFIG, CITADELLE_NAV_LINKS, CITADELLE_COLORS } from "@/confi
 import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 import citadelleApi from "@/services/citadelleApi";
 import CitadelleChatWidget from "@/components/citadelle/CitadelleChatWidget";
+import ModerationBanner from "@/components/citadelle/ModerationBanner";
 
 // ── Navigation ───────────────────────────────────────────────────────────────
 
@@ -344,6 +345,7 @@ const CitadelleLayout = ({ children, pageTitle }) => {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <CitadelleNav />
+      <ModerationBanner />
       <main style={{ flex: 1 }}>
         {children}
       </main>

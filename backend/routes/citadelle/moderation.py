@@ -61,9 +61,11 @@ async def _log_and_notify(user, action, reason, note, until=None):
 @router.post("/admin/members/{user_id}/warn", summary="Admin — Avertir un membre")
 async def warn_member(user_id: str, data: WarnInput, current_user: dict = Depends(require_admin)):
     user = await _get_member(user_id)
-    await _log_and_notify(user, "warning", data.reason, data.note)
+    # Date de fin d'affichage du bandeau côté membre : 1 semaine (l'entrée reste dans l'historique).
+    until = (datetime.now(timezone.utc) + timedelta(weeks=1)).isoformat()
+    await _log_and_notify(user, "warning", data.reason, data.note, until=until)
     logger.info(f"[Citadelle Moderation] Avertissement de {user['email']} par {current_user.get('email')}")
-    return {"success": True, "message": "Avertissement enregistré et email envoyé au membre."}
+    return {"success": True, "message": "Avertissement enregistré et email envoyé au membre.", "until": until}
 
 
 @router.post("/admin/members/{user_id}/suspend", summary="Admin — Suspendre un membre (1-2 semaines)")

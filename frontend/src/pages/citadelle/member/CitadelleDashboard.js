@@ -11,6 +11,7 @@ import {
   MessageSquare, ShieldCheck, Briefcase, User, FileText, ChevronRight,
 } from "lucide-react";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
+import { useCitadelleModeration } from "@/hooks/useCitadelleModeration";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import MemberActivityPanel from "@/components/citadelle/MemberActivityPanel";
 import MemberEarningsPanel from "@/components/citadelle/MemberEarningsPanel";
@@ -69,6 +70,7 @@ function SectionLink({ icon: Icon, title, desc, href, testId }) {
 
 export default function CitadelleDashboard() {
   const { user, logout, isAuthenticated } = useCitadelleAuth();
+  const { banned } = useCitadelleModeration();
   const navigate = useNavigate();
   const [unreadMessages, setUnreadMessages]         = useState(0);
   const [unreadTransactions, setUnreadTransactions] = useState(0);
@@ -98,6 +100,39 @@ export default function CitadelleDashboard() {
   if (!isAuthenticated) {
     navigate("/citadelle/connexion");
     return null;
+  }
+
+  // Membre banni : accès strictement limité aux factures et documents de transmission.
+  if (banned) {
+    return (
+      <CitadelleLayout>
+        <div className="min-h-screen py-10 px-4" style={{ background: C.bg }}>
+          <div className="max-w-2xl mx-auto">
+            <div className="p-8 rounded-2xl bg-white" style={{ border: `1px solid ${C.border}` }} data-testid="banned-restricted-view">
+              <h1 className="text-xl font-bold mb-2" style={{ color: C.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                Accès restreint
+              </h1>
+              <p className="text-sm mb-6" style={{ color: C.textMuted }}>
+                Votre compte a été banni. Vous conservez uniquement l'accès à vos factures et à vos documents de transmission.
+              </p>
+              <div className="space-y-3">
+                <SectionLink icon={FileText} title="Mes factures" desc="Consulter et télécharger vos factures"
+                  href="/citadelle/espace-membre/factures" testId="banned-link-invoices" />
+                <SectionLink icon={ShieldCheck} title="Mes documents de transmission" desc="Accéder à vos dossiers de transmission"
+                  href="/citadelle/espace-membre/transmissions" testId="banned-link-transmissions" />
+              </div>
+              <button
+                onClick={() => { logout(); navigate("/citadelle"); }}
+                className="mt-6 flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
+                style={{ border: `1px solid ${C.border}`, color: C.textMuted }}
+                data-testid="banned-logout">
+                <LogOut size={15} /> Déconnexion
+              </button>
+            </div>
+          </div>
+        </div>
+      </CitadelleLayout>
+    );
   }
 
   return (

@@ -314,28 +314,19 @@ async def citadelle_login(credentials: CitadelleLogin, request: Request):
         )
 
     statut = user.get("status", "active")
-    if statut == "banned":
-        motif = user.get("ban_reason")
-        detail = "Votre compte a été banni de La Citadelle Numérique."
-        if motif:
-            detail += f" Motif : {motif}."
-        detail += " Pour toute contestation, contactez le support."
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+    # Réactivation automatique si la suspension est arrivée à échéance.
     if statut == "suspended":
         until = user.get("suspended_until")
-        if until and datetime.now(timezone.utc).isoformat() < until:
-            motif = user.get("suspension_reason")
-            detail = f"Votre compte est suspendu jusqu'au {until[:10]}."
-            if motif:
-                detail += f" Motif : {motif}."
-            detail += " Contactez le support pour toute question."
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
-        # Suspension expirée → réactivation automatique
-        await db.users.update_one(
-            {"id": user["id"]},
-            {"$set": {"status": "active", "suspended_until": None}}
-        )
-        user["status"] = "active"
+        if not until or datetime.now(timezone.utc).isoformat() >= until:
+            await db.users.update_one(
+                {"id": user["id"]},
+                {"$set": {"status": "active", "suspended_until": None}}
+            )
+            user["status"] = "active"
+    # Les comptes suspendus et bannis PEUVENT s'authentifier : ils conservent un accès
+    # restreint (consultation compte/factures, documents de transmission). Le blocage des
+    # actions (achat/vente/enchère) et l'accès réduit sont gérés au niveau des dépendances
+    # d'autorisation (require_can_transact / require_citadelle_user) et de l'interface.
 
     # Créer le token JWT (même structure que le Syndicat)
     token_data = {

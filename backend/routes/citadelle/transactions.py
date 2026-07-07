@@ -14,7 +14,7 @@ import stripe as stripe_sdk
 from fastapi import APIRouter, HTTPException, status, Depends, Query, Request
 from pydantic import BaseModel, Field
 
-from routes.citadelle.dependencies import require_admin, require_citadelle_user
+from routes.citadelle.dependencies import require_admin, require_citadelle_user, require_can_transact
 from services.email_service import send_citadelle_credentials_email, send_new_offer_notification_email
 from utils.attachments import Attachment, validate_attachments
 from utils.notif_prefs import email_notifications_enabled
@@ -225,7 +225,7 @@ async def _annuler_offres_concurrentes(listing_id: str, accepted_tx_id: str, now
 @router.post("/transactions/offer", status_code=201, summary="Faire une offre sur une annonce")
 async def create_offer(
     data: OfferCreate,
-    current_user: dict = Depends(require_citadelle_user)
+    current_user: dict = Depends(require_can_transact)
 ):
     """Acheteur : soumet une offre d'achat sur une annonce active"""
     listing = await db.citadelle_listings.find_one({"id": data.listing_id}, {"_id": 0})
@@ -548,7 +548,7 @@ async def admin_request_second_chance(
              summary="Vendeur — Confirmer et proposer la seconde chance")
 async def confirm_second_chance(
     transaction_id: str,
-    current_user: dict = Depends(require_citadelle_user)
+    current_user: dict = Depends(require_can_transact)
 ):
     """Vendeur : confirme la proposition et déclenche la création de la transaction
     pour l'enchérisseur suivant + email 'dernière chance'."""
@@ -669,7 +669,7 @@ async def decline_second_chance(
 @router.post("/transactions/{transaction_id}/accept", summary="Accepter une offre")
 async def accept_offer(
     transaction_id: str,
-    current_user: dict = Depends(require_citadelle_user)
+    current_user: dict = Depends(require_can_transact)
 ):
     """Vendeur : accepte l'offre de l'acheteur"""
     tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
@@ -723,7 +723,7 @@ async def refuse_offer(
 async def counter_offer(
     transaction_id: str,
     data: CounterOffer,
-    current_user: dict = Depends(require_citadelle_user)
+    current_user: dict = Depends(require_can_transact)
 ):
     """Vendeur : propose un autre montant"""
     tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
@@ -762,7 +762,7 @@ async def counter_offer(
 @router.post("/transactions/{transaction_id}/accept-counter", summary="Accepter une contre-offre")
 async def accept_counter_offer(
     transaction_id: str,
-    current_user: dict = Depends(require_citadelle_user)
+    current_user: dict = Depends(require_can_transact)
 ):
     """Acheteur : accepte la contre-offre du vendeur"""
     tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
@@ -790,7 +790,7 @@ async def accept_counter_offer(
 async def buyer_counter_offer(
     transaction_id: str,
     data: CounterOffer,
-    current_user: dict = Depends(require_citadelle_user)
+    current_user: dict = Depends(require_can_transact)
 ):
     """
     Acheteur : au lieu d'accepter la contre-offre du vendeur, propose un nouveau montant.
@@ -856,7 +856,7 @@ def _stripe_key() -> str:
 @router.post("/transactions/{transaction_id}/pay", summary="Créer une session Stripe Checkout")
 async def pay_transaction(
     transaction_id: str,
-    current_user: dict = Depends(require_citadelle_user)
+    current_user: dict = Depends(require_can_transact)
 ):
     """
     Acheteur : crée une session Stripe Checkout et retourne l'URL de paiement.
@@ -926,7 +926,7 @@ async def pay_transaction(
 @router.post("/transactions/{transaction_id}/confirm-payment", summary="Confirmer le paiement après retour Stripe")
 async def confirm_payment(
     transaction_id: str,
-    current_user: dict = Depends(require_citadelle_user)
+    current_user: dict = Depends(require_can_transact)
 ):
     """
     Appelé par le frontend après retour de Stripe (paramètre ?payment=success).
@@ -1069,7 +1069,7 @@ async def submit_credentials(
 async def send_message(
     transaction_id: str,
     data: TransactionMessage,
-    current_user: dict = Depends(require_citadelle_user)
+    current_user: dict = Depends(require_can_transact)
 ):
     """Envoie un message dans la conversation de la transaction"""
     tx = await db.citadelle_transactions.find_one({"id": transaction_id}, {"_id": 0})
