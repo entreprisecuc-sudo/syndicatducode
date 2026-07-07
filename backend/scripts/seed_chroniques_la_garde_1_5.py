@@ -19,7 +19,16 @@ load_dotenv()
 
 CATEGORY = "chroniques-la-garde"
 AUTHOR = "La Garde"
-COVER = "https://static.prod-images.emergentagent.com/jobs/bb5bc88e-9c1e-46ed-99db-f8c3b00e681b/images/a3715841dcdcf63556e7291c96bfed68897dde1bcdc4d9117c9150c2fe3c386e.png"
+
+# Image unique et stylisée par chronique (navy éditorial + or)
+_IMG = "https://static.prod-images.emergentagent.com/jobs/bb5bc88e-9c1e-46ed-99db-f8c3b00e681b/images/"
+COVERS = {
+    1: _IMG + "95a06f7daa1607dd23b54ea4419364ff5cc03c6064217f8a7aadd81cb571646a.png",
+    2: _IMG + "cab12af1e858d60742b42e435a72f1d79dd9c8c6df1f4794093e4f00ff44c27c.png",
+    3: _IMG + "7f82e4e4a0eb5b2d00ee428d4e55368707e9d12704654ad8d37d09ae062da1ed.png",
+    4: _IMG + "d057821829513b3482232333542760bd6a2929fef99e3e8cb947652af383fc3a.png",
+    5: _IMG + "ec44c8135fbbb87b654b08bfa326a5ee6b5847116ed7e463c2567180eb640685.png",
+}
 
 
 CHRONIQUES = [
@@ -334,8 +343,16 @@ async def main():
     created, skipped = 0, 0
 
     for c in CHRONIQUES:
-        if await db.citadelle_blog_posts.find_one({"slug": c["slug"]}):
+        cover = COVERS[c["num"]]
+        existing = await db.citadelle_blog_posts.find_one({"slug": c["slug"]})
+        if existing:
+            # Idempotent : met à jour l'image unique si l'article existe déjà
+            await db.citadelle_blog_posts.update_one(
+                {"slug": c["slug"]},
+                {"$set": {"cover_image_url": cover, "updated_at": now}},
+            )
             skipped += 1
+            print(f"  ↻ Chronique n°{c['num']} déjà présente — image mise à jour")
             continue
         post = {
             "id": str(uuid.uuid4()),
@@ -346,7 +363,7 @@ async def main():
             "category": CATEGORY,
             "author_name": AUTHOR,
             "partner_link": None,
-            "cover_image_url": COVER,
+            "cover_image_url": cover,
             "is_published": False,          # publication programmée
             "scheduled_at": c["date"],
             "published_at": None,
@@ -363,7 +380,7 @@ async def main():
         created += 1
         print(f"  ✓ Chronique n°{c['num']} programmée le {c['date'][:10]} — {c['slug']}")
 
-    print(f"\nLot 1 terminé — {created} chronique(s) créée(s), {skipped} ignorée(s) (déjà présentes).")
+    print(f"\nLot 1 terminé — {created} chronique(s) créée(s), {skipped} mise(s) à jour.")
 
 
 if __name__ == "__main__":
