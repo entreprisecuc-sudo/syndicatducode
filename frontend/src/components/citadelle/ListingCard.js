@@ -155,10 +155,10 @@ export default function ListingCard({ listing }) {
 
       {/* Contenu */}
       <div className="p-4" style={{ opacity: isSold ? 0.65 : 1 }}>
-        <h3 className="font-bold text-sm mb-2 line-clamp-2 leading-snug" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+        <h3 className="font-bold text-sm mb-2 line-clamp-2 leading-snug break-words" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif", overflowWrap: "anywhere" }}>
           {listing.title}
         </h3>
-        <p className="text-xs mb-3 line-clamp-2" style={{ color: CITADELLE_COLORS.textMuted }}>
+        <p className="text-xs mb-3 line-clamp-2 break-words" style={{ color: CITADELLE_COLORS.textMuted, overflowWrap: "anywhere" }}>
           {listing.short_description}
         </p>
 
