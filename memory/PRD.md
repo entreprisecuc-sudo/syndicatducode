@@ -8,6 +8,16 @@
 ---
 
 
+## 🛡️ Session 06-07/07/2026 — Modération membres (avertissement / suspension / bannissement)
+- **Objectif** : informer le membre sur son espace + restreindre l'accès selon la sanction.
+- **Règles** : Avertissement = bandeau info 1 semaine (aucun blocage). Suspension (1 ou 2 sem.) = bandeau + connexion + consultation compte/factures/transmissions OK, MAIS achat/vente/enchère/offre/contre/paiement + messagerie de transaction bloqués. Bannissement = connexion OK mais accès STRICTEMENT limité à factures + documents de transmission.
+- **Backend** : `dependencies.py` → `require_citadelle_user` bloque seulement les bannis ; nouvelle `require_can_transact` bloque suspendus+bannis (appliquée aux endpoints d'action de transactions.py & listings.py). `auth.py` login autorise désormais suspendus/bannis (réactivation auto en fin de suspension) — validé par integration_expert. `moderation.py` warn pose `until=+1 semaine`.
+- **Frontend** : `useCitadelleModeration` (hook, fetch /auth/me) + `ModerationBanner` (3 niveaux) dans `CitadelleLayout` ; vue restreinte banni dans `CitadelleDashboard` ; boutons d'action masqués + notice dans `CitadelleListingDetail`.
+- **Tests** : iteration_23.json — 100% (backend 6/6 pytest `test_citadelle_moderation.py`, frontend 3/3). Compte test `arnaudaube@gmail.com` (email réel) laissé actif.
+
+---
+
+
 ## 🔧 Session 06/07/2026 — Correctif virement escrow (Stripe Connect)
 - **Bug corrigé** : à la finalisation (`POST /admin/transactions/{id}/complete`), le `Transfer.create` échouait en prod avec `balance_insufficient` (fonds carte encore "en attente", solde dispo plateforme à 0) → aucun virement vers le vendeur (volume Connect à 0 €).
 - **Fix** : ajout de `source_transaction=<latest_charge du PaymentIntent>` dans `Transfer.create` (transactions.py ~L1226). Le transfert est accepté même solde dispo à 0 et se libère à la disponibilité des fonds. Gestion propre si charge introuvable.
