@@ -114,6 +114,7 @@ export const BLOG_CATEGORIES = [
   { slug: "communautes",       label: "Communautés" },
   { slug: "investissement",    label: "Investissement" },
   { slug: "chroniques-la-garde", label: "Les Chroniques de La Garde" },
+  { slug: "guide-la-citadelle", label: "Le Guide de La Citadelle" },
 ];
 
 // Navigation principale
@@ -122,6 +123,7 @@ export const CITADELLE_NAV_LINKS = [
   { href: "/citadelle/vendre", label: "Vendre" },
   { href: "/citadelle/services", label: "Services" },
   { href: "/citadelle/blog", label: "Blog" },
+  { href: "/citadelle/guides", label: "Guides" },
   { href: "/citadelle/chroniques", label: "Chroniques" },
 ];
 

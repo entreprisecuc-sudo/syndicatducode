@@ -32,7 +32,7 @@ export default function CitadelleChroniques() {
       try {
         const [listRes, nextRes] = await Promise.all([
           citadelleApi.get("/blog", { params: { category: "chroniques-la-garde", limit: 200 } }),
-          citadelleApi.get("/blog/chroniques/next").catch(() => ({ data: { next: null } })),
+          citadelleApi.get("/blog/next-scheduled", { params: { category: "chroniques-la-garde" } }).catch(() => ({ data: { next: null } })),
         ]);
         const list = (listRes.data.posts || []).sort((a, b) => chroniqueNumber(a.slug) - chroniqueNumber(b.slug));
         setPosts(list);

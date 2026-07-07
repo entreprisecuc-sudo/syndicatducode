@@ -33,7 +33,7 @@ BLOG_CATEGORIES = [
     "vendre-un-site", "acheter-un-site", "estimation", "seo",
     "securite", "migration", "business", "ecommerce", "saas",
     "vente-applications", "reseaux-sociaux", "marketplace",
-    "chroniques-la-garde"
+    "chroniques-la-garde", "guide-la-citadelle"
 ]
 
 
@@ -125,8 +125,8 @@ async def list_posts(
     if category:
         query["category"] = category
     else:
-        # Les Chroniques de La Garde ont leur propre page dédiée : on les exclut du blog général.
-        query["category"] = {"$ne": "chroniques-la-garde"}
+        # Les rubriques premium (Chroniques, Guides) ont leur propre page dédiée : on les exclut du blog général.
+        query["category"] = {"$nin": ["chroniques-la-garde", "guide-la-citadelle"]}
     cursor = db.citadelle_blog_posts.find(
         query, {"_id": 0, "content_md": 0}
     ).sort("published_at", -1).skip(skip).limit(limit)
@@ -135,13 +135,13 @@ async def list_posts(
     return {"posts": posts, "total": total}
 
 
-@router.get("/blog/chroniques/next", summary="Prochaine chronique programmée (teaser)")
-async def next_chronique():
-    """Retourne le teaser de la prochaine chronique programmée (sans contenu)."""
+@router.get("/blog/next-scheduled", summary="Prochain article programmé d'une rubrique (teaser)")
+async def next_scheduled(category: str = Query("chroniques-la-garde")):
+    """Retourne le teaser du prochain article programmé d'une rubrique (sans contenu)."""
     now = datetime.now(timezone.utc).isoformat()
     post = await db.citadelle_blog_posts.find_one(
         {
-            "category": "chroniques-la-garde",
+            "category": category,
             "is_published": False,
             "scheduled_at": {"$gt": now},
         },
