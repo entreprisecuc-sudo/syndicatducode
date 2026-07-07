@@ -230,7 +230,7 @@ export default function CitadelleParutions() {
             <Link to="/citadelle/blog" data-testid="see-all-blog"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all hover:scale-105"
               style={{ background: CITADELLE_COLORS.blue, color: "#FFFFFF" }}>
-              <BookOpen size={15} /> <span className="hidden sm:inline">Voir tout le blog</span><span className="sm:hidden">Le blog</span> <ArrowRight size={14} />
+              <BookOpen size={15} /> <span className="hidden sm:inline">Voir tous les articles</span><span className="sm:hidden">Articles</span> <ArrowRight size={14} />
             </Link>
           </div>
 
