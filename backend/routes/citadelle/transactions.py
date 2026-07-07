@@ -15,6 +15,7 @@ from fastapi import APIRouter, HTTPException, status, Depends, Query, Request
 from pydantic import BaseModel, Field
 
 from routes.citadelle.dependencies import require_admin, require_citadelle_user, require_can_transact
+from routes.citadelle.listings import get_min_sale_price
 from services.email_service import send_citadelle_credentials_email, send_new_offer_notification_email
 from utils.attachments import Attachment, validate_attachments
 from utils.notif_prefs import email_notifications_enabled
@@ -233,6 +234,11 @@ async def create_offer(
         raise HTTPException(status_code=404, detail="Annonce introuvable")
     if listing["status"] != "active":
         raise HTTPException(status_code=400, detail="Cette annonce n'est plus disponible")
+
+    # L'offre ne peut pas passer sous le prix minimum (couvre les frais de traitement).
+    min_price = await get_min_sale_price()
+    if data.amount < min_price:
+        raise HTTPException(status_code=400, detail=f"L'offre minimum est de {min_price:.0f} € (couvre les frais de traitement).")
 
     buyer_id = current_user.get("sub")
     if listing["seller_id"] == buyer_id:
@@ -734,6 +740,11 @@ async def counter_offer(
     if tx["status"] not in ("offer_sent",):
         raise HTTPException(status_code=400, detail="Impossible de contre-proposer à ce stade")
 
+    # La contre-offre ne peut pas passer sous le prix minimum (couvre les frais de traitement).
+    min_price = await get_min_sale_price()
+    if data.amount < min_price:
+        raise HTTPException(status_code=400, detail=f"La contre-offre minimum est de {min_price:.0f} € (couvre les frais de traitement).")
+
     now = datetime.now(timezone.utc).isoformat()
     await db.citadelle_transactions.update_one(
         {"id": transaction_id},
@@ -804,6 +815,11 @@ async def buyer_counter_offer(
         raise HTTPException(status_code=403, detail="Seul l'acheteur peut faire une nouvelle proposition")
     if tx["status"] != "offer_countered":
         raise HTTPException(status_code=400, detail="Aucune contre-offre en cours à renégocier")
+
+    # La nouvelle proposition ne peut pas passer sous le prix minimum (couvre les frais de traitement).
+    min_price = await get_min_sale_price()
+    if data.amount < min_price:
+        raise HTTPException(status_code=400, detail=f"Votre proposition minimum est de {min_price:.0f} € (couvre les frais de traitement).")
 
     now = datetime.now(timezone.utc).isoformat()
     await db.citadelle_transactions.update_one(
