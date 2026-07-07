@@ -7,6 +7,16 @@
 
 ---
 
+## 🚀 Session 07/07/2026 — DÉPLOIEMENT VPS des nouveaux contenus (RÉUSSI)
+- **Contexte** : mise en ligne sur le VPS (branche `main-projet-7`, `/var/www/syndicatducode.fr`) de tout le calendrier éditorial 2026 + correctifs de session (modération membres, escrow Stripe, route blog `next-scheduled`, rubrique Guides).
+- **Procédure guidée pas-à-pas** (client via SSH) : sauvegarde `mongodump` (→ `/root/backup_20260707_100650`), `git fetch`/`git pull` fast-forward (21 commits, aucun conflit), `yarn install && yarn build` (bundle `main.366d0c97.js`, compiled with warnings eslint bénins), `pm2 restart syndicat-backend`, puis exécution des 11 scripts de seed (`venv` actif).
+- **Résultat vérifié en prod** : 26 Chroniques + 25 Guides + 25 articles Blog classiques insérés — **tous en publication programmée** (`is_published=False` + `scheduled_at`), 0 publié le jour J. Total collection `citadelle_blog_posts` = **132**. Routes publiques `GET /api/citadelle/blog/next-scheduled?category=...` OK (prochaine Chronique 09/07, prochain Guide 11/07).
+- **Note** : pas de `pip install` (aucune nouvelle dépendance Python) ; images toutes en URL externes (CDN Emergent / Pexels / Unsplash), rien à copier. `emergentintegrations` réintroduit dans `requirements.txt` par le pull mais non installé/non importé → sans impact runtime.
+- Règle 6 respectée : validations en "muet" (curl + comptage DB), aucun testing_agent, aucun email de test.
+
+---
+
+
 
 ## 📜 Session 07/07/2026 — Rubrique premium « Les Chroniques de La Garde »
 - Nouvelle catégorie `chroniques-la-garde` ajoutée (backend blog.py BLOG_CATEGORIES + frontend citadelleConstants.js, label « Les Chroniques de La Garde »).
