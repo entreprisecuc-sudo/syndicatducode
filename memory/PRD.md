@@ -8,6 +8,16 @@
 ---
 
 
+## 📜 Session 07/07/2026 — Rubrique premium « Les Chroniques de La Garde »
+- Nouvelle catégorie `chroniques-la-garde` ajoutée (backend blog.py BLOG_CATEGORIES + frontend citadelleConstants.js, label « Les Chroniques de La Garde »).
+- Couverture graphique commune générée (emblème bouclier+circuit or sur navy) : URL statique Emergent.
+- 10 articles rédigés (1500+ mots, ton expert, SEO/GEO/AEO, conclusion « Recommandations de La Garde »), auteur « La Garde », en PUBLICATION PROGRAMMÉE (is_published=false + scheduled_at) chaque jeudi 09h Paris du 09/07 au 10/09/2026.
+- Scripts idempotents : `scripts/seed_chroniques_la_garde_1_5.py` et `..._6_10.py`. Vérifiés sur preview (10 visibles en admin avec dates). À exécuter sur le VPS prod après déploiement.
+- Backlog éditorial : page dédiée « Les Chroniques de La Garde » (collection numérotée, distincte du blog) + suite de la série jusqu'à fin d'année.
+
+---
+
+
 ## 🛡️ Session 06-07/07/2026 — Modération membres (avertissement / suspension / bannissement)
 - **Objectif** : informer le membre sur son espace + restreindre l'accès selon la sanction.
 - **Règles** : Avertissement = bandeau info 1 semaine (aucun blocage). Suspension (1 ou 2 sem.) = bandeau + connexion + consultation compte/factures/transmissions OK, MAIS achat/vente/enchère/offre/contre/paiement + messagerie de transaction bloqués. Bannissement = connexion OK mais accès STRICTEMENT limité à factures + documents de transmission.

@@ -113,6 +113,7 @@ export const BLOG_CATEGORIES = [
   { slug: "newsletter",        label: "Newsletter" },
   { slug: "communautes",       label: "Communautés" },
   { slug: "investissement",    label: "Investissement" },
+  { slug: "chroniques-la-garde", label: "Les Chroniques de La Garde" },
 ];
 
 // Navigation principale

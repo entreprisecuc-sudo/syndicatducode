@@ -32,7 +32,8 @@ BLOG_CATEGORIES = [
     "actualites", "conseils", "tutoriels", "marche", "juridique",
     "vendre-un-site", "acheter-un-site", "estimation", "seo",
     "securite", "migration", "business", "ecommerce", "saas",
-    "vente-applications", "reseaux-sociaux", "marketplace"
+    "vente-applications", "reseaux-sociaux", "marketplace",
+    "chroniques-la-garde"
 ]
 
 
