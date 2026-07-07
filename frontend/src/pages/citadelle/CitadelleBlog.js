@@ -67,7 +67,7 @@ export default function CitadelleBlog() {
     });
   }, [allPosts, activeCategory, searchQuery]);
 
-  const allCategories = [CATEGORY_ALL, ...BLOG_CATEGORIES];
+  const allCategories = [CATEGORY_ALL, ...BLOG_CATEGORIES.filter(c => c.slug !== "chroniques-la-garde")];
   const hasSearch = searchQuery.trim().length > 0;
 
   return (

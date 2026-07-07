@@ -124,6 +124,9 @@ async def list_posts(
     query = {"is_published": True}
     if category:
         query["category"] = category
+    else:
+        # Les Chroniques de La Garde ont leur propre page dédiée : on les exclut du blog général.
+        query["category"] = {"$ne": "chroniques-la-garde"}
     cursor = db.citadelle_blog_posts.find(
         query, {"_id": 0, "content_md": 0}
     ).sort("published_at", -1).skip(skip).limit(limit)

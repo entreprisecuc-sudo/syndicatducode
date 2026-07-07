@@ -122,6 +122,7 @@ export const CITADELLE_NAV_LINKS = [
   { href: "/citadelle/vendre", label: "Vendre" },
   { href: "/citadelle/services", label: "Services" },
   { href: "/citadelle/blog", label: "Blog" },
+  { href: "/citadelle/chroniques", label: "Chroniques" },
 ];
 
 /**
