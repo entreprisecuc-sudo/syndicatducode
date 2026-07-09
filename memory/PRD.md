@@ -680,3 +680,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Frontend** : colonne « Dernière connexion » (date + heure fr-FR) ajoutée dans `AdminCitadelleUsers.js` (tableau, colSpan 6→7) et ligne « Dernière connexion : … » dans les cartes de `AdminUsers.js`. Affiche « Jamais » si non renseigné.
 - **Validé (curl + screenshot)** : login membre 200, `last_login_at` enregistré et remonté ; les 2 pages affichent la donnée (compte reconnecté = 09/07/2026 19:58, autres = Jamais). Testing agent NON utilisé (Règle 6).
 - Note : historique non reconstituable → valeurs alimentées à partir des prochaines connexions.
+
+## ✨ Session 09/07/2026 — Suivi d'activité d'un membre Citadelle (PREVIEW)
+- **Backend** : nouvel endpoint `GET /api/citadelle/auth/admin/users/{user_id}/activity` (require_admin) → renvoie `{listings, sales, purchases}` : annonces du membre (seller_id), ventes (transactions seller_id) et achats (transactions buyer_id), champs allégés + tri desc.
+- **Frontend** : composant `MemberActivity` dans `AdminCitadelleUsers.js`, intégré à la modale membre (renommée « Fiche membre & KYC »). 3 sections avec compteurs : Annonces (prix, vues, statut, lien vers l'annonce), Ventes (acheteur, montant, statut), Achats (vendeur, montant, statut). Libellés FR pour statuts annonce/transaction.
+- **Validé (curl + screenshot)** : membre becamarnaud → 4 annonces / 4 ventes / 1 achat correctement affichés. Testing agent NON utilisé (Règle 6).

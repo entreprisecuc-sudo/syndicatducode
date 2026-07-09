@@ -6,7 +6,8 @@
 import { useState, useEffect } from "react";
 import {
   Users, Search, CheckCircle, XCircle, Shield, ChevronLeft, ChevronRight,
-  Eye, FileText, Phone, Calendar, X, AlertCircle, ExternalLink
+  Eye, FileText, Phone, Calendar, X, AlertCircle, ExternalLink,
+  Globe, ShoppingCart, Tag, Loader2
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
@@ -74,6 +75,105 @@ function DocLink({ label, doc }) {
   );
 }
 
+// ── Libellés de statut ─────────────────────────────────────────────────────────
+const LISTING_STATUS_LABEL = {
+  draft: "Brouillon", pending: "En attente", active: "Active",
+  sold: "Vendue", expired: "Expirée", rejected: "Rejetée",
+};
+const TX_STATUS_LABEL = {
+  offer_sent: "Offre envoyée", offer_countered: "Contre-offre", offer_refused: "Offre refusée",
+  offer_accepted: "Offre acceptée", payment_done: "Payée", credentials_submitted: "Accès transmis",
+  admin_verified: "Vérifiée admin", completed: "Finalisée", disputed: "En litige", cancelled: "Annulée",
+};
+const eur = (n) => (n != null ? Number(n).toLocaleString("fr-FR") + " €" : "—");
+
+// ── Suivi d'activité d'un membre (annonces / ventes / achats) ───────────────────
+function MemberActivity({ userId }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    api.get(`/citadelle/auth/admin/users/${userId}/activity`)
+      .then(res => { if (active) setData(res.data); })
+      .catch(() => { if (active) setData({ listings: [], sales: [], purchases: [] }); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [userId]);
+
+  if (loading) return (
+    <div className="flex items-center gap-2 text-xs opacity-50 py-4" data-testid="activity-loading">
+      <Loader2 size={14} className="animate-spin" /> Chargement de l'activité…
+    </div>
+  );
+
+  const { listings = [], sales = [], purchases = [] } = data || {};
+
+  const Section = ({ icon: Icon, title, count, children, testid }) => (
+    <div data-testid={testid}>
+      <p className="text-xs font-semibold uppercase tracking-wide opacity-50 mb-2 flex items-center gap-1.5">
+        <Icon size={13} style={{ color: "#C9A45C" }} /> {title}
+        <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+          style={{ background: "rgba(201,164,92,0.15)", color: "#C9A45C" }}>{count}</span>
+      </p>
+      {count === 0
+        ? <p className="text-xs opacity-40 pb-2">Aucun élément</p>
+        : <div className="space-y-1.5">{children}</div>}
+    </div>
+  );
+
+  const TxRow = ({ t, counterpartLabel, counterpartEmail }) => (
+    <div className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg text-xs"
+      style={{ background: "#f8f9fa" }}>
+      <div className="min-w-0 flex-1">
+        <p className="font-medium truncate">{t.listing_title || "Annonce"}</p>
+        <p className="opacity-50">{counterpartLabel} : {counterpartEmail || "—"} · {fmtDate(t.created_at)}</p>
+      </div>
+      <div className="text-right shrink-0">
+        <p className="font-semibold">{eur(t.payment_amount ?? t.offer_amount)}</p>
+        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium"
+          style={{ background: "rgba(15,39,71,0.06)", color: "#0F2747" }}>
+          {TX_STATUS_LABEL[t.status] || t.status}
+        </span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4" data-testid="member-activity">
+      <Section icon={Globe} title="Annonces" count={listings.length} testid="activity-listings">
+        {listings.map(l => (
+          <a key={l.id} href={`/citadelle/annonces/${l.slug}`} target="_blank" rel="noopener noreferrer"
+            className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg text-xs transition-all hover:opacity-80"
+            style={{ background: "#f8f9fa" }}>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium truncate">{l.title}</p>
+              <p className="opacity-50 flex items-center gap-2">
+                <span>{eur(l.price)}</span>
+                <span className="flex items-center gap-0.5"><Eye size={10} /> {l.views_count ?? 0}</span>
+                <span>· {fmtDate(l.created_at)}</span>
+              </p>
+            </div>
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium shrink-0"
+              style={{ background: "rgba(15,39,71,0.06)", color: "#0F2747" }}>
+              {LISTING_STATUS_LABEL[l.status] || l.status}
+            </span>
+          </a>
+        ))}
+      </Section>
+
+      <Section icon={Tag} title="Ventes" count={sales.length} testid="activity-sales">
+        {sales.map(t => <TxRow key={t.id} t={t} counterpartLabel="Acheteur" counterpartEmail={t.buyer_email} />)}
+      </Section>
+
+      <Section icon={ShoppingCart} title="Achats" count={purchases.length} testid="activity-purchases">
+        {purchases.map(t => <TxRow key={t.id} t={t} counterpartLabel="Vendeur" counterpartEmail={t.seller_email} />)}
+      </Section>
+    </div>
+  );
+}
+
 // ── Modale KYC ────────────────────────────────────────────────────────────────
 function KycModal({ user, onClose, onSuccess }) {
   const [action, setAction] = useState(null);   // "validate" | "reject"
@@ -114,7 +214,7 @@ function KycModal({ user, onClose, onSuccess }) {
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div className="flex items-center gap-2">
             <Shield size={18} style={{ color: "#C9A45C" }} />
-            <h2 className="font-bold text-base">Validation KYC</h2>
+            <h2 className="font-bold text-base">Fiche membre & KYC</h2>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
             data-testid="kyc-modal-close">
@@ -167,6 +267,9 @@ function KycModal({ user, onClose, onSuccess }) {
               </div>
             )}
           </div>
+
+          {/* Suivi d'activité — annonces, ventes, achats */}
+          <MemberActivity userId={user.id} />
 
           {/* Actions */}
           <div>

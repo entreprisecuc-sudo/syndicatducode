@@ -997,6 +997,46 @@ async def admin_update_kyc(
     return {"message": f"KYC {action_label} pour {user['email']}"}
 
 
+@router.get("/admin/users/{user_id}/activity", status_code=200)
+async def admin_get_citadelle_user_activity(
+    user_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Admin : suivi d'activité d'un membre Citadelle.
+    Retourne ses annonces publiées, ses ventes (en tant que vendeur) et ses achats (en tant qu'acheteur).
+    """
+    user = await db.users.find_one(
+        {"id": user_id, "platform": "citadelle"},
+        {"_id": 0, "id": 1}
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur Citadelle introuvable")
+
+    listing_fields = {
+        "_id": 0, "id": 1, "title": 1, "slug": 1, "type": 1, "price": 1,
+        "status": 1, "views_count": 1, "is_auction": 1, "created_at": 1,
+    }
+    listings = await db.citadelle_listings.find(
+        {"seller_id": user_id}, listing_fields
+    ).sort("created_at", -1).to_list(200)
+
+    tx_fields = {
+        "_id": 0, "id": 1, "listing_title": 1, "listing_slug": 1, "status": 1,
+        "offer_amount": 1, "payment_amount": 1, "buyer_email": 1, "seller_email": 1,
+        "created_at": 1, "updated_at": 1,
+    }
+    sales = await db.citadelle_transactions.find(
+        {"seller_id": user_id}, tx_fields
+    ).sort("created_at", -1).to_list(200)
+
+    purchases = await db.citadelle_transactions.find(
+        {"buyer_id": user_id}, tx_fields
+    ).sort("created_at", -1).to_list(200)
+
+    return {"listings": listings, "sales": sales, "purchases": purchases}
+
+
 @router.get("/admin/users/{user_id}", status_code=200)
 async def admin_get_citadelle_user(
     user_id: str,
