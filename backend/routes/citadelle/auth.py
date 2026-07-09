@@ -328,6 +328,10 @@ async def citadelle_login(credentials: CitadelleLogin, request: Request):
     # actions (achat/vente/enchère) et l'accès réduit sont gérés au niveau des dépendances
     # d'autorisation (require_can_transact / require_citadelle_user) et de l'interface.
 
+    # Enregistrement de la dernière connexion (audit)
+    login_now = datetime.now(timezone.utc).isoformat()
+    await db.users.update_one({"id": user["id"]}, {"$set": {"last_login_at": login_now}})
+
     # Créer le token JWT (même structure que le Syndicat)
     token_data = {
         "sub": user["id"],
@@ -450,6 +454,12 @@ async def google_callback(data: CitadelleGoogleCallbackRequest):
     # Vérifier statut
     if user.get("status") == "suspended":
         raise HTTPException(status_code=403, detail="Votre compte a été suspendu. Contactez le support.")
+
+    # Enregistrement de la dernière connexion (audit)
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"last_login_at": datetime.now(timezone.utc).isoformat()}}
+    )
 
     token_data = {
         "sub": user["id"],

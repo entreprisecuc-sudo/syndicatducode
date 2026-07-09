@@ -531,6 +531,15 @@ const AdminUsers = () => {
                         {statusConfig.label}
                       </span>
                     </div>
+                    <p
+                      className="text-xs mt-1"
+                      style={{ color: "var(--admin-text-secondary, #9ca3af)" }}
+                      data-testid={`user-last-login-${user.id}`}
+                    >
+                      Dernière connexion : {user.last_login_at
+                        ? new Date(user.last_login_at).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                        : "Jamais"}
+                    </p>
                   </div>
                 </div>
                 

@@ -313,6 +313,7 @@ export default function AdminCitadelleUsers() {
               <tr>
                 <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wide opacity-60">Utilisateur</th>
                 <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wide opacity-60">Inscription</th>
+                <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wide opacity-60">Dernière connexion</th>
                 <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wide opacity-60">Statut</th>
                 <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wide opacity-60">
                   <span className="flex items-center gap-1.5">
@@ -330,11 +331,11 @@ export default function AdminCitadelleUsers() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 opacity-40">Chargement…</td>
+                  <td colSpan={7} className="text-center py-10 opacity-40">Chargement…</td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 opacity-40">Aucun utilisateur trouvé</td>
+                  <td colSpan={7} className="text-center py-10 opacity-40">Aucun utilisateur trouvé</td>
                 </tr>
               ) : (
                 users.map((u, i) => (
@@ -365,6 +366,11 @@ export default function AdminCitadelleUsers() {
 
                     {/* Inscription */}
                     <td className="px-4 py-3 text-xs opacity-60">{fmt(u.created_at)}</td>
+
+                    {/* Dernière connexion */}
+                    <td className="px-4 py-3 text-xs opacity-60" data-testid={`user-last-login-${i}`}>
+                      {u.last_login_at ? fmt(u.last_login_at) : <em className="opacity-50">Jamais</em>}
+                    </td>
 
                     {/* Statut compte */}
                     <td className="px-4 py-3">

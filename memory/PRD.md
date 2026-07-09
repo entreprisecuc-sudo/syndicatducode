@@ -674,3 +674,9 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 ## 🐛 Session 09/07/2026 — Fix menu mobile Citadelle (header chevauche 1er lien)
 - **Bug** : le header fait `h-32` (128px) mais l'overlay du menu mobile n'avait que `pt-20` (80px) → le lien « Annonces » était masqué à moitié par le header.
 - **Fix** : `pt-20` → `pt-32` dans `CitadelleLayout.js` (menu mobile). Validé par screenshot mobile (tous les liens visibles). Front uniquement.
+
+## ✨ Session 09/07/2026 — Dernière connexion des utilisateurs (PREVIEW)
+- **Backend** : enregistrement de `last_login_at` (ISO UTC) à chaque connexion réussie — login Citadelle (mot de passe + Google callback dans `routes/citadelle/auth.py`) et login Syndicat (`routes/auth.py`). Aucune modification de la logique de sécurité (hash/JWT/brute force inchangés). Les endpoints admin `GET /api/citadelle/auth/admin/users` et `GET /api/admin/users` renvoient déjà le doc complet → `last_login_at` exposé automatiquement.
+- **Frontend** : colonne « Dernière connexion » (date + heure fr-FR) ajoutée dans `AdminCitadelleUsers.js` (tableau, colSpan 6→7) et ligne « Dernière connexion : … » dans les cartes de `AdminUsers.js`. Affiche « Jamais » si non renseigné.
+- **Validé (curl + screenshot)** : login membre 200, `last_login_at` enregistré et remonté ; les 2 pages affichent la donnée (compte reconnecté = 09/07/2026 19:58, autres = Jamais). Testing agent NON utilisé (Règle 6).
+- Note : historique non reconstituable → valeurs alimentées à partir des prochaines connexions.

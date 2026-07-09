@@ -210,6 +210,12 @@ async def login(credentials: UserLogin, request: Request):
             detail=detail_message
         )
     
+    # Enregistrement de la dernière connexion (audit)
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"last_login_at": datetime.now(timezone.utc).isoformat()}}
+    )
+
     # Créer le token JWT
     token_data = {
         "sub": user["id"],
