@@ -58,6 +58,7 @@ export default function CitadelleMyMessages() {
           <div className="space-y-3">
             {conversations.map(conv => {
               const isBuyer = conv.buyer_id === userId;
+              const otherName = isBuyer ? conv.seller_name : conv.buyer_name;
               const lastMsg = conv.last_message;
               return (
                 <Link key={conv.id} to={`/citadelle/espace-membre/messages/${conv.id}`}
@@ -73,7 +74,7 @@ export default function CitadelleMyMessages() {
                       {conv.listing_title}
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      {isBuyer ? "Vendeur" : "Acheteur"}
+                      {isBuyer ? "Vendeur" : "Acheteur"} : {otherName}
                     </p>
                     {lastMsg && (
                       <p className="text-xs mt-1 truncate" style={{ color: CITADELLE_COLORS.textMuted }}>

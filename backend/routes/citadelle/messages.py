@@ -222,17 +222,27 @@ async def my_conversations(
     ).sort("updated_at", -1)
     conversations = await cursor.to_list(100)
 
+    # Prénoms des parties (une seule requête) — anti-désintermédiation : jamais d'e-mail
+    ids = set()
+    for conv in conversations:
+        ids.add(conv.get("buyer_id"))
+        ids.add(conv.get("seller_id"))
+    users = await db.users.find(
+        {"id": {"$in": list(ids)}},
+        {"_id": 0, "id": 1, "first_name": 1}
+    ).to_list(500)
+    names = {u["id"]: (u.get("first_name") or "").strip() for u in users}
+
     # Ajouter le dernier message et le compteur pour chaque conversation
     for conv in conversations:
         conv["last_message"] = conv["messages"][-1] if conv.get("messages") else None
         conv["message_count"] = len(conv.get("messages", []))
         del conv["messages"]  # Ne pas envoyer tous les messages dans la liste
-        # Anonymisation : masquer les e-mails des parties (anti-désintermédiation + RGPD)
-        seller_id = conv.get("seller_id")
+        conv["buyer_name"] = names.get(conv.get("buyer_id")) or "Acheteur"
+        conv["seller_name"] = names.get(conv.get("seller_id")) or "Vendeur"
         conv.pop("buyer_email", None)
         conv.pop("seller_email", None)
         if conv["last_message"]:
-            conv["last_message"]["sender_role"] = "Vendeur" if conv["last_message"].get("sender_id") == seller_id else "Acheteur"
             conv["last_message"].pop("sender_email", None)
 
     return {"conversations": conversations}
@@ -259,12 +269,21 @@ async def get_conversation(
         {"$set": {f"last_read.{user_id}": now}}
     )
 
-    # Anonymisation : ne jamais exposer les e-mails des parties (anti-désintermédiation + RGPD)
+    # Anonymisation : jamais d'e-mail exposé (anti-désintermédiation + RGPD) — on affiche le prénom
     seller_id = conv.get("seller_id")
+    buyer_id = conv.get("buyer_id")
+    users = await db.users.find(
+        {"id": {"$in": [buyer_id, seller_id]}},
+        {"_id": 0, "id": 1, "first_name": 1}
+    ).to_list(2)
+    names = {u["id"]: (u.get("first_name") or "").strip() for u in users}
+    conv["buyer_name"] = names.get(buyer_id) or "Acheteur"
+    conv["seller_name"] = names.get(seller_id) or "Vendeur"
     conv.pop("buyer_email", None)
     conv.pop("seller_email", None)
     for m in conv.get("messages", []):
-        m["sender_role"] = "Vendeur" if m.get("sender_id") == seller_id else "Acheteur"
+        sender_default = "Vendeur" if m.get("sender_id") == seller_id else "Acheteur"
+        m["sender_name"] = names.get(m.get("sender_id")) or sender_default
         m.pop("sender_email", None)
 
     return conv

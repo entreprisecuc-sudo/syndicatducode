@@ -86,6 +86,7 @@ export default function CitadelleConversationDetail() {
   );
 
   const isBuyer = conv.buyer_id === user?.id;
+  const otherName = isBuyer ? conv.seller_name : conv.buyer_name;
 
   return (
     <CitadelleLayout>
@@ -101,7 +102,7 @@ export default function CitadelleConversationDetail() {
               {conv.listing_title}
             </h1>
             <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-              {isBuyer ? "Vendeur" : "Acheteur"}
+              {isBuyer ? "Vendeur" : "Acheteur"} : {otherName}
             </p>
           </div>
           <ReportConversationButton conversationType="presale" conversationId={conv.id} compact />
@@ -146,7 +147,7 @@ export default function CitadelleConversationDetail() {
                 <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}>
                   <div className="max-w-xs">
                     <p className="text-xs mb-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      {msg.sender_id === user?.id ? "Vous" : (msg.sender_role || (msg.sender_id === conv.seller_id ? "Vendeur" : "Acheteur"))}
+                      {msg.sender_id === user?.id ? "Vous" : (msg.sender_name || (msg.sender_id === conv.seller_id ? "Vendeur" : "Acheteur"))}
                     </p>
                     <div className="px-3 py-2 rounded-xl text-sm" style={{
                       background: msg.sender_id === user?.id ? CITADELLE_COLORS.blue : CITADELLE_COLORS.bg,
