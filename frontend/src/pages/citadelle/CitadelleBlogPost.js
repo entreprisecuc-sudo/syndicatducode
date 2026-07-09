@@ -9,6 +9,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowLeft, ArrowRight, Calendar, User, ExternalLink, BookOpen, Eye } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
+import ShareBar from "@/components/citadelle/ShareBar";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, BLOG_CATEGORIES, getListingImageUrl } from "@/config/citadelleConstants";
 
@@ -218,6 +219,7 @@ export default function CitadelleBlogPost() {
   }
 
   const categoryLabel = getCategoryLabel(post.category);
+  const shareUrl = `https://lacitadellenumerique.fr/citadelle/blog/${post.slug}`;
 
   return (
     <CitadelleLayout pageTitle={post.title}>
@@ -289,6 +291,11 @@ export default function CitadelleBlogPost() {
           )}
         </div>
 
+        {/* Partage */}
+        <div className="mb-8">
+          <ShareBar url={shareUrl} title={post.title} />
+        </div>
+
         {/* Contenu Markdown */}
         <div className="blog-content" data-testid="blog-post-content">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -299,13 +306,14 @@ export default function CitadelleBlogPost() {
         {/* Articles liés */}
         <RelatedArticles slug={slug} />
 
-        {/* Retour bas de page */}
-        <div className="mt-12 pt-6" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}` }}>
+        {/* Retour bas de page + partage */}
+        <div className="mt-12 pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}` }}>
           <Link to="/citadelle/blog"
             className="inline-flex items-center gap-2 text-sm font-medium hover:opacity-80 transition-opacity"
             style={{ color: CITADELLE_COLORS.gold }}>
             <ArrowLeft size={14} /> Retour au blog
           </Link>
+          <ShareBar url={shareUrl} title={post.title} />
         </div>
       </article>
     </CitadelleLayout>

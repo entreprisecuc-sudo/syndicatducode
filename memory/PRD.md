@@ -7,6 +7,16 @@
 
 ---
 
+## 🔗 Session 09/07/2026 — Bouton de partage des articles (PREVIEW)
+- **Besoin** : bouton « Partager » sur les articles pour augmenter l'audience.
+- **Frontend** : nouveau composant réutilisable `components/citadelle/ShareBar.jsx` (sans dépendance) — LinkedIn, Facebook, X, WhatsApp, E-mail, Copier le lien (feedback « Lien copié ! ») + partage natif `navigator.share` sur mobile. Logos de marque en SVG inline. Intégré dans `CitadelleBlogPost.js` (sous l'en-tête + en bas d'article), URL de partage = canonical prod `https://lacitadellenumerique.fr/citadelle/blog/{slug}`.
+- Les balises Open Graph existantes (useSeoMeta) assurent un aperçu enrichi lors du partage.
+- **Testé (muet)** : screenshot article — 2 barres, tous les réseaux présents, logos OK. Copie via presse-papier fonctionnelle en navigateur réel (restreinte en headless).
+- **⚠️ NON DÉPLOYÉ SUR LE VPS** : Save to Github → `git pull` → `yarn build` → `pm2 restart syndicat-backend`.
+
+---
+
+
 ## 📊 Session 09/07/2026 — Analytics Admin LOT 1 (PREVIEW)
 - **Besoin client** : tableau de bord de fréquentation dans l'admin. LOT 1 choisi : visiteurs uniques, pages vues, utilisateurs actifs, courbe temporelle, top pages, conversations entamées par annonce. Sans géoloc (reporté). IP hachée (RGPD). Périmètre : Citadelle + Syndicat.
 - **Backend** : nouveau `routes/citadelle/analytics.py` (enregistré dans `__init__.py`). Collection `citadelle_analytics_events` `{session_id, path, referrer, ip_hash, user_id, is_authenticated, device, scope, created_at}`. Endpoints : `POST /api/citadelle/analytics/track` (public, filtre bots + admin, IP hachée avec sel = JWT_SECRET_KEY), `GET /admin/analytics/overview|timeseries|top-pages|listings-engagement` (protégés `require_admin`). Paramètres `period` (24h/7d/30d/90d) + `scope` (all/citadelle/syndicat).
