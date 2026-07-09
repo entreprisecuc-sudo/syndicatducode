@@ -653,3 +653,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Backend** (`listings.py`) : champ `is_adult` sur ListingCreate/Update. À la création et à l'édition, si adulte → `images=[]` et `url_preview=None` forcés. Le champ `is_adult` est renvoyé par la liste et le détail.
 - **Frontend** : case à cocher dans `CitadelleCreateListing.js` et `CitadelleEditListing.js` (masque les champs URL + upload images quand cochée). `ListingCard.js` : cover sombre « 18+ » + badge rouge « Contenu adulte 18+ » (pas d'image). `CitadelleListingDetail.js` : si `is_adult && !isAuthenticated` → écran de restriction (`adult-restricted`) « consultation réservée aux comptes vérifiés » + bouton connexion ; sinon cover « 18+ » à la place de la galerie.
 - **Validé (curl + capture)** : création adulte purge images/url (is_adult=true, images=[], url=None), liste renvoie is_adult ; écran de restriction confirmé (non connecté).
+
+## 🔧 Session 09/07/2026 — Bouton de partage sur les annonces (PREVIEW)
+- **Frontend** (`CitadelleListingDetail.js`) : intégration du composant `ShareBar` (déjà utilisé sur le blog), placé dans la colonne de gauche entre la galerie d'images et le bloc « Description » (emplacement validé par capture d'écran fournie par le client). URL partagée = `window.location.href`, titre = titre de l'annonce.
+- Réseaux : LinkedIn, Facebook, X (Twitter), WhatsApp, e-mail, copie du lien + partage natif (mobile).
+- **Validé (screenshot desktop)** : `share-bar` présent (count=1), affichage conforme. Testing agent NON utilisé (Règle 6).

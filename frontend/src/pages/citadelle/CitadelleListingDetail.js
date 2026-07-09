@@ -15,6 +15,7 @@ import { useCitadelleModeration } from "@/hooks/useCitadelleModeration";
 import { CITADELLE_COLORS, getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@/config/citadelleConstants";
 import CitadelleAuthModal from "@/components/citadelle/CitadelleAuthModal";
 import { ReportBidButton } from "@/components/citadelle/ReportBidButton";
+import ShareBar from "@/components/citadelle/ShareBar";
 
 // ── Hook : compte à rebours ──────────────────────────────────────────────────
 
@@ -192,6 +193,11 @@ export default function CitadelleListingDetail() {
                 ))}
               </div>
             )}
+
+            {/* Partage de l'annonce */}
+            <div className="py-1">
+              <ShareBar url={typeof window !== "undefined" ? window.location.href : ""} title={listing.title} />
+            </div>
 
             {/* Documents joints */}
             {documents.length > 0 && (
