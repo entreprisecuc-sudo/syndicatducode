@@ -19,8 +19,8 @@ export default function AdminCitadelle() {
 
   const loadStats = async () => {
     try {
-      // Comptage des utilisateurs Citadelle en base
-      const res = await api.get("/admin/stats");
+      // Statistiques globales de La Citadelle Numérique
+      const res = await api.get("/admin/citadelle-stats");
       setStats(res.data);
     } catch (err) {
       console.error("Erreur chargement stats Citadelle:", err);
@@ -30,14 +30,14 @@ export default function AdminCitadelle() {
   };
 
   const modules = [
-    { icon: Globe, label: "Annonces", desc: "Gérer et valider les annonces de vente", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/annonces" },
-    { icon: ShoppingCart, label: "Transactions", desc: "Suivre les transactions en cours", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/transactions" },
+    { icon: Globe, label: "Annonces", desc: "Gérer et valider les annonces de vente", status: "Actif", count: stats?.listings?.total ?? null, href: "/syndicat-admin/citadelle/annonces" },
+    { icon: ShoppingCart, label: "Transactions", desc: "Suivre les transactions en cours", status: "Actif", count: stats?.transactions?.total ?? null, href: "/syndicat-admin/citadelle/transactions" },
     { icon: Flag, label: "Signalements", desc: "Conversations signalées par les utilisateurs", status: "Actif", count: null, href: "/syndicat-admin/citadelle/signalements" },
-    { icon: Users, label: "Utilisateurs", desc: "Membres inscrits sur La Citadelle", status: "Actif", count: null, href: null },
-    { icon: Cloud, label: "Services", desc: "Catalogue des services complémentaires", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/services" },
-    { icon: FileText, label: "Factures", desc: "Factures PDF générées après paiement", status: "Actif", count: null, href: "/syndicat-admin/citadelle/factures" },
-    { icon: Bell, label: "Newsletter", desc: "Alertes annonces & gestion des abonnés", status: "Actif", count: null, href: "/syndicat-admin/citadelle/newsletter" },
-    { icon: Monitor, label: "Blog", desc: "Articles et publications", status: "Actif", count: 0, href: "/syndicat-admin/citadelle/blog" },
+    { icon: Users, label: "Utilisateurs", desc: "Membres inscrits sur La Citadelle", status: "Actif", count: stats?.users?.total ?? null, href: null },
+    { icon: Cloud, label: "Services", desc: "Catalogue des services complémentaires", status: "Actif", count: stats?.services?.orders_total ?? null, href: "/syndicat-admin/citadelle/services" },
+    { icon: FileText, label: "Factures", desc: "Factures PDF générées après paiement", status: "Actif", count: stats?.invoices?.total ?? null, href: "/syndicat-admin/citadelle/factures" },
+    { icon: Bell, label: "Newsletter", desc: "Alertes annonces & gestion des abonnés", status: "Actif", count: stats?.newsletter?.subscribers ?? null, href: "/syndicat-admin/citadelle/newsletter" },
+    { icon: Monitor, label: "Blog", desc: "Articles et publications", status: "Actif", count: stats?.blog?.published ?? null, href: "/syndicat-admin/citadelle/blog" },
     { icon: Settings, label: "Paramètres", desc: "Configuration de la plateforme", status: "Actif", count: null, href: null },
   ];
 

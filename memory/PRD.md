@@ -665,3 +665,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Frontend** : le `ShareBar` de `CitadelleListingDetail.js` partage désormais l'URL `.../api/citadelle/listings/{slug}/share` au lieu du lien brut.
 - Enregistrement : `routes/citadelle/__init__.py` (import + include_router + set_database).
 - **Validé (curl)** : balises OG correctes (avec/sans image), prix inclus, 302 si slug inexistant ; bouton LinkedIn pointe bien vers l'endpoint OG (screenshot). Testing agent NON utilisé (Règle 6).
+
+## 🐛 Session 09/07/2026 — Fix compteurs Vue d'ensemble admin Citadelle (PREVIEW)
+- **Bug** : `AdminCitadelle.js` appelait le mauvais endpoint (`/admin/stats`) et les `count` des modules étaient codés en dur à 0 → tous les chiffres affichaient 0.
+- **Fix** : appel de `/admin/citadelle-stats` (route existante `routes/admin/stats.py:get_citadelle_stats`) et câblage des compteurs (Annonces=listings.total, Transactions=transactions.total, Utilisateurs=users.total, Services=services.orders_total, Factures=invoices.total, Newsletter=newsletter.subscribers, Blog=blog.published).
+- **Validé (curl + screenshot)** : endpoint renvoie 28 annonces / 14 tx / 12 users / 7 services / 2 factures / 57 blog ; dashboard affiche ces valeurs. Testing agent NON utilisé (Règle 6).
