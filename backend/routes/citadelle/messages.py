@@ -227,6 +227,13 @@ async def my_conversations(
         conv["last_message"] = conv["messages"][-1] if conv.get("messages") else None
         conv["message_count"] = len(conv.get("messages", []))
         del conv["messages"]  # Ne pas envoyer tous les messages dans la liste
+        # Anonymisation : masquer les e-mails des parties (anti-désintermédiation + RGPD)
+        seller_id = conv.get("seller_id")
+        conv.pop("buyer_email", None)
+        conv.pop("seller_email", None)
+        if conv["last_message"]:
+            conv["last_message"]["sender_role"] = "Vendeur" if conv["last_message"].get("sender_id") == seller_id else "Acheteur"
+            conv["last_message"].pop("sender_email", None)
 
     return {"conversations": conversations}
 
@@ -251,6 +258,14 @@ async def get_conversation(
         {"id": conversation_id},
         {"$set": {f"last_read.{user_id}": now}}
     )
+
+    # Anonymisation : ne jamais exposer les e-mails des parties (anti-désintermédiation + RGPD)
+    seller_id = conv.get("seller_id")
+    conv.pop("buyer_email", None)
+    conv.pop("seller_email", None)
+    for m in conv.get("messages", []):
+        m["sender_role"] = "Vendeur" if m.get("sender_id") == seller_id else "Acheteur"
+        m.pop("sender_email", None)
 
     return conv
 
