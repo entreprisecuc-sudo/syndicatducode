@@ -658,3 +658,10 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Frontend** (`CitadelleListingDetail.js`) : intégration du composant `ShareBar` (déjà utilisé sur le blog), placé dans la colonne de gauche entre la galerie d'images et le bloc « Description » (emplacement validé par capture d'écran fournie par le client). URL partagée = `window.location.href`, titre = titre de l'annonce.
 - Réseaux : LinkedIn, Facebook, X (Twitter), WhatsApp, e-mail, copie du lien + partage natif (mobile).
 - **Validé (screenshot desktop)** : `share-bar` présent (count=1), affichage conforme. Testing agent NON utilisé (Règle 6).
+
+## 🔧 Session 09/07/2026 — Open Graph dynamique des annonces (PREVIEW)
+- **Backend** : nouvelle route `GET /api/citadelle/listings/{slug}/share` (`routes/citadelle/social.py`). Renvoie une page HTML avec balises Open Graph + Twitter Card (titre, description + prix, image) pour l'aperçu du lien sur LinkedIn/Facebook/WhatsApp/X. Redirige immédiatement les humains vers la fiche annonce (`meta refresh` + `window.location.replace`). Aucune modification de l'affichage de l'annonce sur le site.
+- Image OG : 1re image de l'annonce (URL absolue `/api/uploads` ou URL externe), logo Citadelle par défaut si aucune (ou contenu adulte). Annonce introuvable → 302 vers /citadelle/annonces.
+- **Frontend** : le `ShareBar` de `CitadelleListingDetail.js` partage désormais l'URL `.../api/citadelle/listings/{slug}/share` au lieu du lien brut.
+- Enregistrement : `routes/citadelle/__init__.py` (import + include_router + set_database).
+- **Validé (curl)** : balises OG correctes (avec/sans image), prix inclus, 302 si slug inexistant ; bouton LinkedIn pointe bien vers l'endpoint OG (screenshot). Testing agent NON utilisé (Règle 6).

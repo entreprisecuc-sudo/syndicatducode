@@ -196,7 +196,10 @@ export default function CitadelleListingDetail() {
 
             {/* Partage de l'annonce */}
             <div className="py-1">
-              <ShareBar url={typeof window !== "undefined" ? window.location.href : ""} title={listing.title} />
+              <ShareBar
+                url={`${process.env.REACT_APP_BACKEND_URL}/api/citadelle/listings/${listing.slug}/share`}
+                title={listing.title}
+              />
             </div>
 
             {/* Documents joints */}
