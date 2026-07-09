@@ -179,6 +179,12 @@ export default function CitadelleConfidentialite() {
             <p>Des cookies analytiques peuvent être utilisés pour améliorer le service.
             Leur dépôt est soumis à votre consentement préalable.</p>
           </Sub>
+          <Sub title="Mesure d'audience interne (sans cookie)">
+            <p>Nous réalisons une mesure d'audience interne et anonyme pour comprendre la fréquentation
+            de la plateforme (pages consultées, nombre de visiteurs). Cette mesure n'utilise pas de cookie
+            publicitaire : votre adresse IP est immédiatement anonymisée (hachée) et n'est jamais conservée
+            en clair. Aucune donnée n'est transmise à des tiers à des fins commerciales.</p>
+          </Sub>
           <Sub title="Durée de vie des cookies">
             <p>Les cookies de session expirent à la fermeture du navigateur.
             Les cookies persistants ont une durée maximale de 13 mois, conformément aux recommandations de la CNIL.</p>

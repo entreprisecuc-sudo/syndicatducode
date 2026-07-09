@@ -12,6 +12,7 @@ import { ModalProvider } from "@/context/ModalContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { AdminThemeProvider } from "@/context/AdminThemeContext";
 import { PublicRoute, RoleRoute } from "@/components/auth/ProtectedRoute";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 // Scroll en haut à chaque changement de route
 function ScrollToTop() {
@@ -126,6 +127,7 @@ import CitadelleCGU from "@/pages/citadelle/CitadelleCGU";
 import CitadelleCGV from "@/pages/citadelle/CitadelleCGV";
 import CitadelleConfidentialite from "@/pages/citadelle/CitadelleConfidentialite";
 import AdminCitadelleBlog from "@/pages/admin/AdminCitadelleBlog";
+import AdminCitadelleAnalytics from "@/pages/admin/AdminCitadelleAnalytics";
 import AdminCitadelleTransmission from "@/pages/admin/AdminCitadelleTransmission";
 import CitadelleMyTransmissions from "@/pages/citadelle/member/CitadelleMyTransmissions";import CitadelleVerifyTransmission from "@/pages/citadelle/CitadelleVerifyTransmission";
 import CitadelleNotifications from "@/pages/citadelle/member/CitadelleNotifications";
@@ -170,6 +172,8 @@ function App() {
             <BrowserRouter>
               {/* Scroll en haut à chaque navigation */}
               <ScrollToTop />
+              {/* Suivi statistique anonyme (RGPD) */}
+              <AnalyticsTracker />
               {/* Alertes globales (bannières et popups) */}
               <GlobalAlerts />
             
@@ -452,6 +456,10 @@ function App() {
               <Route
                 path="/syndicat-admin/citadelle/blog"
                 element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleBlog /></RoleRoute>}
+              />
+              <Route
+                path="/syndicat-admin/citadelle/analytics"
+                element={<RoleRoute allowedRoles={["admin"]}><AdminCitadelleAnalytics /></RoleRoute>}
               />
               <Route
                 path="/syndicat-admin/citadelle/utilisateurs"

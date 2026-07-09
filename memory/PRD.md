@@ -7,6 +7,18 @@
 
 ---
 
+## 📊 Session 09/07/2026 — Analytics Admin LOT 1 (PREVIEW)
+- **Besoin client** : tableau de bord de fréquentation dans l'admin. LOT 1 choisi : visiteurs uniques, pages vues, utilisateurs actifs, courbe temporelle, top pages, conversations entamées par annonce. Sans géoloc (reporté). IP hachée (RGPD). Périmètre : Citadelle + Syndicat.
+- **Backend** : nouveau `routes/citadelle/analytics.py` (enregistré dans `__init__.py`). Collection `citadelle_analytics_events` `{session_id, path, referrer, ip_hash, user_id, is_authenticated, device, scope, created_at}`. Endpoints : `POST /api/citadelle/analytics/track` (public, filtre bots + admin, IP hachée avec sel = JWT_SECRET_KEY), `GET /admin/analytics/overview|timeseries|top-pages|listings-engagement` (protégés `require_admin`). Paramètres `period` (24h/7d/30d/90d) + `scope` (all/citadelle/syndicat).
+- **Frontend** : `components/AnalyticsTracker.jsx` monté globalement dans `App.js` (envoie une vue à chaque navigation via `citadelleApi`, session_id en sessionStorage, exclut l'admin). Page `pages/admin/AdminCitadelleAnalytics.js` (route `/syndicat-admin/citadelle/analytics`, lien menu « Statistiques » dans `AdminLayout.js`) : 6 cartes KPI + graphique recharts (AreaChart vues/visiteurs) + top pages + engagement annonces + sélecteurs période/périmètre.
+- **RGPD** : IP hachée (jamais en clair), pas de cookie (sessionStorage). Mention ajoutée dans `CitadelleConfidentialite.js` (« Mesure d'audience interne sans cookie »). Note : le site a déjà Google Analytics (G-RDFNQ5EGB3), ce tableau interne le complète.
+- **Testé (muet, Règle 6)** : curl end-to-end (track UA navigateur → events stockés → KPIs/top-pages/timeseries corrects) + screenshot page admin (6 KPI, filtres, graphique, tableaux OK). Events de test nettoyés.
+- **RESTE — LOT 2** (à faire sur demande) : géolocalisation (pays/ville), durée moyenne de session, parcours détaillés des visiteurs.
+- **⚠️ NON DÉPLOYÉ SUR LE VPS** : Save to Github → `git pull` → `yarn build` → `pm2 restart syndicat-backend` (aucun seed requis).
+
+---
+
+
 ## 🔧 Session 07/07/2026 — Page hub « Les Parutions » (PREVIEW)
 - **Besoin client** : regrouper Blog + Guides + Chroniques sous un seul lien de nav « Les Parutions » → page hub présentant les 3 rubriques, avec les 3 dernières parutions **publiées** de chacune, redirection vers chaque page, inscription newsletter, UX élégante et responsive (agent UX consulté).
 - **Nav** (`config/citadelleConstants.js`) : les 3 liens Blog/Guides/Chroniques remplacés par un seul `{ href: "/citadelle/parutions", label: "Les Parutions" }` (impacte desktop + mobile via `CitadelleLayout`). Les pages `/citadelle/blog|guides|chroniques` restent autonomes (redirection depuis le hub).

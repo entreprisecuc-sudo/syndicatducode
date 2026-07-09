@@ -10,7 +10,7 @@ import {
   Menu, X, LogOut, Users, BarChart3, 
   FileText, History, Shield, Home, Rocket, Megaphone, Bell, BookOpen,
   CreditCard, Handshake, BookCheck, Sun, Moon, MessageSquare, Database,
-  Globe, ArrowLeftRight, Star, LayoutDashboard, ChevronLeft, Sword, Flag,
+  Globe, ArrowLeftRight, Star, LayoutDashboard, ChevronLeft, Sword, Flag, TrendingUp,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminTheme } from "@/context/AdminThemeContext";
@@ -86,6 +86,7 @@ const CITADELLE_MENU = [
       { path: "/syndicat-admin/citadelle/commission",  label: "Commission ventes",   icon: CreditCard,     description: "Taux de commission" },
       { path: "/syndicat-admin/citadelle/newsletter",  label: "Newsletter",          icon: Bell,           description: "Abonnés et scheduler" },
       { path: "/syndicat-admin/citadelle/blog",        label: "Blog",                icon: BookOpen,       description: "Articles Citadelle" },
+      { path: "/syndicat-admin/citadelle/analytics",   label: "Statistiques",        icon: TrendingUp,     description: "Fréquentation et parcours" },
     ],
   },
   {
