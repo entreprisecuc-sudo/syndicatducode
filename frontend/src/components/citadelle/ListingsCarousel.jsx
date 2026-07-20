@@ -89,7 +89,7 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
                 ) : cover ? (
                   <>
                     <img src={cover} alt={l.title}
-                      className="w-full h-full object-cover transform transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110"
+                      className="w-full h-full object-cover object-top transform transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110"
                       onError={(e) => { e.currentTarget.style.display = "none"; }} />
                     <div className={`absolute inset-0 pointer-events-none z-10 ${dark ? "bg-gradient-to-t from-[#101F33] via-transparent to-transparent opacity-70 mix-blend-multiply" : "bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-500"}`} />
                   </>
