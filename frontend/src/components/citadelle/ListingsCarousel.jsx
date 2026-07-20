@@ -40,8 +40,12 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
 
   const scrollBy = (dir) => ref.current?.scrollBy({ left: dir * 240, behavior: "smooth" });
 
-  const cardBg = dark ? "rgba(255,255,255,0.05)" : "#FFFFFF";
-  const cardBorder = dark ? "rgba(201,164,92,0.18)" : CITADELLE_COLORS.border;
+  const cardBg = dark ? "linear-gradient(160deg, #16345C 0%, #0C2340 100%)" : "#FFFFFF";
+  const cardBorder = dark ? "rgba(201,164,92,0.35)" : CITADELLE_COLORS.border;
+  const cardShadow = dark ? "0 10px 30px rgba(0,0,0,0.45)" : "0 4px 16px rgba(15,39,71,0.08)";
+  const imgBg = dark
+    ? "linear-gradient(135deg, #1E4373 0%, #0E2748 100%)"
+    : "linear-gradient(135deg, #15305A 0%, #0A1D34 100%)";
   const titleColor = dark ? "rgba(255,255,255,0.85)" : CITADELLE_COLORS.blue;
   const cardTitleColor = dark ? "#FFFFFF" : CITADELLE_COLORS.blue;
   const btnStyle = dark
@@ -78,9 +82,9 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
           return (
             <Link key={l.id} to={`/citadelle/annonces/${l.slug}`}
               className="group flex-shrink-0 w-[220px] rounded-2xl overflow-hidden snap-start transition-all duration-200 hover:-translate-y-1"
-              style={{ background: cardBg, border: `1px solid ${cardBorder}`, backdropFilter: dark ? "blur(8px)" : "none" }}
+              style={{ background: cardBg, border: `1px solid ${cardBorder}`, boxShadow: cardShadow }}
               data-testid={`carousel-card-${l.slug}`}>
-              <div className="relative h-28 overflow-hidden" style={{ background: CITADELLE_COLORS.night }}>
+              <div className="relative h-28 overflow-hidden" style={{ background: imgBg, borderBottom: `1px solid ${dark ? "rgba(201,164,92,0.25)" : CITADELLE_COLORS.border}` }}>
                 {l.is_adult ? (
                   <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg,#1a1626,#2d1b2e)" }}>
                     <span className="text-xs font-black px-2 py-1 rounded-full" style={{ background: "rgba(220,38,38,0.2)", color: "#f87171", border: "1px solid #f87171" }}>18+</span>
