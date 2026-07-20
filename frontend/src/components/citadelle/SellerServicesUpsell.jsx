@@ -16,7 +16,7 @@ const TARGET_SERVICES = [
   { title: "Accompagnement Vente Premium", icon: Handshake },
 ];
 
-export default function SellerServicesUpsell({ user, onDecline }) {
+export default function SellerServicesUpsell({ user, onDecline, stacked = false }) {
   const [services, setServices] = useState([]);
   const [loadingId, setLoadingId] = useState(null);
   const [error, setError] = useState("");
@@ -79,36 +79,68 @@ export default function SellerServicesUpsell({ user, onDecline }) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className={stacked ? "grid grid-cols-1 gap-3" : "grid grid-cols-1 sm:grid-cols-3 gap-3"}>
         {services.map((svc) => {
           const Icon = svc.icon;
           return (
-            <div key={svc.id} className="flex flex-col p-4 rounded-xl"
+            <div key={svc.id} className={`flex ${stacked ? "flex-row items-center gap-3" : "flex-col"} p-4 rounded-xl`}
               style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}
               data-testid={`upsell-service-${svc.id}`}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(201,164,92,0.12)" }}>
-                  <Icon size={15} style={{ color: CITADELLE_COLORS.gold }} />
-                </div>
-                <span className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                  {svc.price ? `${svc.price.toLocaleString("fr-FR")} €` : (svc.price_label || "")}
-                </span>
-              </div>
-              <p className="text-sm font-bold mb-1" style={{ color: CITADELLE_COLORS.blue }}>{svc.title}</p>
-              <p className="text-xs mb-3 flex-1" style={{ color: CITADELLE_COLORS.textMuted }}>{svc.short_description}</p>
-              <button
-                type="button"
-                onClick={() => buy(svc)}
-                disabled={loadingId === svc.id}
-                className="w-full py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 disabled:opacity-60 transition-all hover:scale-[1.02]"
-                style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
-                data-testid={`upsell-buy-${svc.id}`}>
-                {loadingId === svc.id ? (
-                  <div className="w-3.5 h-3.5 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
-                ) : (
-                  <><ShoppingCart size={12} /> Acheter</>
-                )}
-              </button>
+              {stacked ? (
+                <>
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(201,164,92,0.12)" }}>
+                    <Icon size={16} style={{ color: CITADELLE_COLORS.gold }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-bold truncate" style={{ color: CITADELLE_COLORS.blue }}>{svc.title}</p>
+                      <span className="text-sm font-black flex-shrink-0" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                        {svc.price ? `${svc.price.toLocaleString("fr-FR")} €` : (svc.price_label || "")}
+                      </span>
+                    </div>
+                    <p className="text-xs mt-0.5 mb-2" style={{ color: CITADELLE_COLORS.textMuted }}>{svc.short_description}</p>
+                    <button
+                      type="button"
+                      onClick={() => buy(svc)}
+                      disabled={loadingId === svc.id}
+                      className="px-4 py-1.5 rounded-lg font-bold text-xs inline-flex items-center justify-center gap-1.5 disabled:opacity-60 transition-all hover:scale-[1.02]"
+                      style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                      data-testid={`upsell-buy-${svc.id}`}>
+                      {loadingId === svc.id ? (
+                        <div className="w-3.5 h-3.5 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
+                      ) : (
+                        <><ShoppingCart size={12} /> Acheter</>
+                      )}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(201,164,92,0.12)" }}>
+                      <Icon size={15} style={{ color: CITADELLE_COLORS.gold }} />
+                    </div>
+                    <span className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                      {svc.price ? `${svc.price.toLocaleString("fr-FR")} €` : (svc.price_label || "")}
+                    </span>
+                  </div>
+                  <p className="text-sm font-bold mb-1" style={{ color: CITADELLE_COLORS.blue }}>{svc.title}</p>
+                  <p className="text-xs mb-3 flex-1" style={{ color: CITADELLE_COLORS.textMuted }}>{svc.short_description}</p>
+                  <button
+                    type="button"
+                    onClick={() => buy(svc)}
+                    disabled={loadingId === svc.id}
+                    className="w-full py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 disabled:opacity-60 transition-all hover:scale-[1.02]"
+                    style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                    data-testid={`upsell-buy-${svc.id}`}>
+                    {loadingId === svc.id ? (
+                      <div className="w-3.5 h-3.5 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
+                    ) : (
+                      <><ShoppingCart size={12} /> Acheter</>
+                    )}
+                  </button>
+                </>
+              )}
             </div>
           );
         })}

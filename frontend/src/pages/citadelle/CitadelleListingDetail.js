@@ -17,6 +17,7 @@ import CitadelleAuthModal from "@/components/citadelle/CitadelleAuthModal";
 import { ReportBidButton } from "@/components/citadelle/ReportBidButton";
 import ShareBar from "@/components/citadelle/ShareBar";
 import BoostModal from "@/components/citadelle/BoostModal";
+import SellerServicesUpsell from "@/components/citadelle/SellerServicesUpsell";
 
 // ── Hook : compte à rebours ──────────────────────────────────────────────────
 
@@ -68,6 +69,7 @@ export default function CitadelleListingDetail() {
   const [contactModal, setContactModal] = useState(false);
   const [authModal, setAuthModal] = useState(false);
   const [boostModal, setBoostModal] = useState(false);
+  const [ownerUpsellStep, setOwnerUpsellStep] = useState("boost"); // "boost" | "services" | "done"
   const [contactMessage, setContactMessage] = useState("");
   const [contactLoading, setContactLoading] = useState(false);
   const [contactError, setContactError] = useState("");
@@ -569,8 +571,23 @@ export default function CitadelleListingDetail() {
                     data-testid="btn-boost-listing">
                     <Star size={14} /> Mettre à la Une
                   </button>
+                  {ownerUpsellStep === "boost" && (
+                    <button
+                      type="button"
+                      onClick={() => setOwnerUpsellStep("services")}
+                      className="w-full mt-2 py-1.5 text-xs font-semibold"
+                      style={{ color: CITADELLE_COLORS.textMuted }}
+                      data-testid="owner-boost-decline">
+                      Non merci
+                    </button>
+                  )}
                 </div>
               ) : null
+            )}
+
+            {/* Upsell services vendeur (après refus du boost) */}
+            {isOwner && listing.status !== "sold" && ownerUpsellStep === "services" && (
+              <SellerServicesUpsell user={user} stacked onDecline={() => setOwnerUpsellStep("done")} />
             )}
 
             {/* Métriques clés */}
