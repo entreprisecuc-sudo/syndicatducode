@@ -5,11 +5,12 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Globe, ShoppingCart, Cloud, Monitor, Users, ChevronRight, ChevronLeft, CheckCircle, AlertCircle, MoreHorizontal, Store, Package, Mail, Youtube, Camera, Smartphone, Linkedin, MessageSquare, MessagesSquare, FileText, Newspaper, Bot, LayoutTemplate, Database } from "lucide-react";
+import { Globe, ShoppingCart, Cloud, Monitor, Users, ChevronRight, ChevronLeft, CheckCircle, AlertCircle, MoreHorizontal, Store, Package, Mail, Youtube, Camera, Smartphone, Linkedin, MessageSquare, MessagesSquare, FileText, Newspaper, Bot, LayoutTemplate, Database, Star } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CitadelleImageUpload } from "@/components/citadelle/CitadelleImageUpload";
 import CommissionInfoPopup from "@/components/citadelle/CommissionInfoPopup";
 import ListingQualityHelper from "@/components/citadelle/ListingQualityHelper";
+import BoostModal from "@/components/citadelle/BoostModal";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
@@ -63,6 +64,8 @@ export default function CitadelleCreateListing() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [createdListing, setCreatedListing] = useState(null);
+  const [boostModal, setBoostModal] = useState(false);
   const [showCommissionPopup, setShowCommissionPopup] = useState(false);
   const [commissionAcknowledged, setCommissionAcknowledged] = useState(false);
   const [commission, setCommission] = useState({ rate: 0.05, minimum_eur: 49 });
@@ -181,7 +184,7 @@ export default function CitadelleCreateListing() {
         auction_duration_days: form.is_auction ? parseInt(form.auction_duration_days) : 7,
         auction_buy_now_price: form.is_auction && form.auction_buy_now_price ? parseFloat(form.auction_buy_now_price) : null,
       };
-      await citadelleApi.post("/listings", payload);
+      await citadelleApi.post("/listings", payload).then(res => setCreatedListing(res.data));
       setSubmitted(true);
     } catch (err) {
       const detail = err.response?.data?.detail;
@@ -207,6 +210,31 @@ export default function CitadelleCreateListing() {
           <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
             Votre annonce est en attente de validation par notre équipe. Vous recevrez une notification dès sa publication (sous 24h).
           </p>
+
+          {/* Proposition « Annonce à la Une » */}
+          {createdListing?.id && (
+            <div className="p-5 rounded-2xl mb-6 text-left" data-testid="post-submit-boost"
+              style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.25)" }}>
+              <div className="flex items-center gap-2 mb-1">
+                <Star size={16} style={{ color: CITADELLE_COLORS.gold }} />
+                <p className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                  Donnez un coup de projecteur à votre annonce
+                </p>
+              </div>
+              <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
+                Passez votre annonce « à la Une » pour apparaître dans le carrousel mis en avant sur l'accueil et la liste des annonces. Dès 19 €.
+              </p>
+              <button
+                type="button"
+                onClick={() => setBoostModal(true)}
+                className="w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                data-testid="post-submit-boost-btn">
+                <Star size={14} /> Mettre à la Une
+              </button>
+            </div>
+          )}
+
           <div className="flex gap-3 justify-center">
             <Link to="/citadelle/espace-membre/mes-annonces" className="px-5 py-2.5 rounded-xl font-semibold text-sm"
               style={{ border: `1px solid ${CITADELLE_COLORS.blue}`, color: CITADELLE_COLORS.blue }}>
@@ -219,6 +247,12 @@ export default function CitadelleCreateListing() {
           </div>
         </div>
       </div>
+      <BoostModal
+        isOpen={boostModal}
+        onClose={() => setBoostModal(false)}
+        listingId={createdListing?.id}
+        listingTitle={createdListing?.title}
+      />
     </CitadelleLayout>
   );
 

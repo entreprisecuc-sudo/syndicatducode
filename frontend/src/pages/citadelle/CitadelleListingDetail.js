@@ -16,6 +16,7 @@ import { CITADELLE_COLORS, getListingImageUrl, isImageFile, isDocumentFile, getF
 import CitadelleAuthModal from "@/components/citadelle/CitadelleAuthModal";
 import { ReportBidButton } from "@/components/citadelle/ReportBidButton";
 import ShareBar from "@/components/citadelle/ShareBar";
+import BoostModal from "@/components/citadelle/BoostModal";
 
 // ── Hook : compte à rebours ──────────────────────────────────────────────────
 
@@ -66,6 +67,7 @@ export default function CitadelleListingDetail() {
   const [offerError, setOfferError] = useState("");
   const [contactModal, setContactModal] = useState(false);
   const [authModal, setAuthModal] = useState(false);
+  const [boostModal, setBoostModal] = useState(false);
   const [contactMessage, setContactMessage] = useState("");
   const [contactLoading, setContactLoading] = useState(false);
   const [contactError, setContactError] = useState("");
@@ -156,6 +158,13 @@ export default function CitadelleListingDetail() {
   const documents = allFiles.filter(f => isDocumentFile(f));
   // Si pas d'images, on affiche le placeholder
   const displayImages = images.length > 0 ? images : [null];
+
+  // Propriétaire de l'annonce & état du boost « Annonce à la Une »
+  const isOwner = isAuthenticated && user?.id === listing.seller_id;
+  const isBoosted = !!listing.boost_plan && (
+    listing.boost_plan === "until_sale" ||
+    (listing.boost_expires_at && new Date(listing.boost_expires_at) > new Date())
+  );
 
   return (
     <CitadelleLayout>
@@ -523,6 +532,47 @@ export default function CitadelleListingDetail() {
               )}
             </div>
 
+            {/* Encart « Annonce à la Une » — visible uniquement par le propriétaire */}
+            {isOwner && (
+              isBoosted ? (
+                <div className="p-4 rounded-2xl flex items-center gap-3" data-testid="owner-boost-active"
+                  style={{ background: "linear-gradient(135deg, #0F2747 0%, #1a3a6b 100%)", border: "1px solid rgba(201,164,92,0.3)" }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(201,164,92,0.15)", border: "1px solid rgba(201,164,92,0.3)" }}>
+                    <Star size={18} style={{ color: "#C9A45C" }} />
+                  </div>
+                  <div>
+                    <p className="font-black text-sm" style={{ color: "#C9A45C", letterSpacing: "0.3px" }}>Votre annonce est à la Une</p>
+                    <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>
+                      {listing.boost_plan === "until_sale"
+                        ? "Mise en avant jusqu'à la vente."
+                        : listing.boost_expires_at
+                          ? `Mise en avant jusqu'au ${new Date(listing.boost_expires_at).toLocaleDateString("fr-FR")}.`
+                          : "Mise en avant active."}
+                    </p>
+                  </div>
+                </div>
+              ) : listing.status !== "sold" ? (
+                <div className="p-4 rounded-2xl" data-testid="owner-boost-cta"
+                  style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.25)" }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Star size={15} style={{ color: CITADELLE_COLORS.gold }} />
+                    <p className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Boostez votre visibilité</p>
+                  </div>
+                  <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
+                    Placez votre annonce dans le carrousel « À la Une » sur l'accueil et la liste des annonces. Dès 19 €.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setBoostModal(true)}
+                    className="w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                    style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
+                    data-testid="btn-boost-listing">
+                    <Star size={14} /> Mettre à la Une
+                  </button>
+                </div>
+              ) : null
+            )}
+
             {/* Métriques clés */}
             <div className="p-5 rounded-2xl space-y-3" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
               <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>Chiffres clés</h3>
@@ -720,6 +770,14 @@ export default function CitadelleListingDetail() {
         isOpen={authModal}
         onClose={() => setAuthModal(false)}
         onSuccess={() => setAuthModal(false)}
+        listingTitle={listing?.title}
+      />
+
+      {/* Modal — Mettre l'annonce à la Une (propriétaire) */}
+      <BoostModal
+        isOpen={boostModal}
+        onClose={() => setBoostModal(false)}
+        listingId={listing?.id}
         listingTitle={listing?.title}
       />
     </CitadelleLayout>

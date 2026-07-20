@@ -7,6 +7,15 @@
 
 ---
 
+## ⭐ Session 20/07/2026 — Finalisation service « Annonce à la Une » (boost) (PREVIEW)
+- **Besoin client** : permettre au vendeur de payer pour mettre son annonce « à la Une » (carrousel de visibilité). Formules : **19 € / 3 mois** ou **49 € / jusqu'à la vente**. Proposé (1) à la fin de la soumission d'annonce ET (2) sur la fiche détail pour le propriétaire.
+- **Nouveau composant réutilisable (DRY)** : `components/citadelle/BoostModal.jsx` — modale présentant les 2 formules (constante exportée `BOOST_PLANS`), sélection + redirection vers Stripe Checkout via `POST /api/citadelle/payments/boost/checkout` `{listing_id, plan, origin_url}`. data-testids : `boost-modal`, `boost-plan-3months`, `boost-plan-until_sale`, `boost-checkout-btn`, `boost-modal-close`.
+- **Fiche détail** (`pages/citadelle/CitadelleListingDetail.js`) : encart propriétaire (`user.id === listing.seller_id`) sous le bloc Titre/Prix — si NON boostée & non vendue → bouton doré « Mettre à la Une » (`btn-boost-listing`) ouvrant `BoostModal` ; si DÉJÀ boostée → badge navy « Votre annonce est à la Une » avec date d'expiration (`owner-boost-active`). Boost jugé actif si `boost_plan==="until_sale"` OU `boost_expires_at > now`.
+- **Après soumission d'annonce** (`pages/citadelle/member/CitadelleCreateListing.js`) : capture de l'annonce créée (`res.data`) → écran de succès propose « Mettre à la Une » (`post-submit-boost-btn`) ouvrant la même `BoostModal`.
+- **Backend (déjà en place, vérifié)** : `BOOST_PLANS` + `POST /payments/boost/checkout` (ownership + plan validés) + activation du boost dans `_finalize_paid_transaction` (`source==citadelle_boost` → pose `boost_plan/boost_started_at/boost_expires_at` + facture). Carrousel `GET /listings/carousel` mixe annonces boostées (aléatoire) + complément aléatoire.
+- **Testé (muet, Règle 6)** : cURL — boost valide → 200 + vraie URL Stripe Checkout ; plan invalide → 400 ; annonce inexistante → 404 ; sans auth → 403. Screenshots : carrousel « À la Une », badge propriétaire boosté (date d'expiration), CTA propriétaire non boosté, modale 2 formules. Aucun testing_agent, aucun email de test.
+- **⚠️ NON DÉPLOYÉ SUR LE VPS** : Save to Github → `git pull` → `yarn build` → `pm2 restart syndicat-backend`.
+
 ## 🔗 Session 09/07/2026 — Bouton de partage des articles (PREVIEW)
 - **Besoin** : bouton « Partager » sur les articles pour augmenter l'audience.
 - **Frontend** : nouveau composant réutilisable `components/citadelle/ShareBar.jsx` (sans dépendance) — LinkedIn, Facebook, X, WhatsApp, E-mail, Copier le lien (feedback « Lien copié ! ») + partage natif `navigator.share` sur mobile. Logos de marque en SVG inline. Intégré dans `CitadelleBlogPost.js` (sous l'en-tête + en bas d'article), URL de partage = canonical prod `https://lacitadellenumerique.fr/citadelle/blog/{slug}`.
