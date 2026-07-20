@@ -559,7 +559,7 @@ function QualityPanel({ listing }) {
         <span className="text-sm font-black" style={{ color: label.color }}>{pct}% · {label.text}</span>
       </div>
       <div className="h-2 w-full rounded-full overflow-hidden mb-3" style={{ background: "rgba(255,255,255,0.08)" }}>
-        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: `linear-gradient(90deg, #C9A45C, #E0BE7A)` }} />
+        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: `linear-gradient(90deg, #16A34A, #22C55E)` }} />
       </div>
       {missing.length > 0 ? (
         <>

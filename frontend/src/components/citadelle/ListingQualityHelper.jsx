@@ -40,23 +40,23 @@ export default function ListingQualityHelper({ form, step }) {
   return (
     <div
       className="mb-6 rounded-2xl p-4"
-      style={{ background: "rgba(201,164,92,0.06)", border: `1px solid rgba(201,164,92,0.22)` }}
+      style={{ background: CITADELLE_COLORS.blue, border: `1px solid rgba(201,164,92,0.35)`, color: "#FFFFFF" }}
       data-testid="listing-quality-helper"
     >
       {/* Barre de score */}
       <div className="flex items-center justify-between mb-2">
-        <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide" style={{ color: CITADELLE_COLORS.blue }}>
+        <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide" style={{ color: CITADELLE_COLORS.gold }}>
           <Sparkles size={14} style={{ color: CITADELLE_COLORS.gold }} /> Qualité de l'annonce
         </span>
-        <span className="text-sm font-black" style={{ color: lbl.color }} data-testid="quality-score">
-          {pct}% · {lbl.text}
+        <span className="text-sm font-black" style={{ color: "#FFFFFF" }} data-testid="quality-score">
+          {pct}% · <span style={{ color: pct >= 70 ? "#4ADE80" : CITADELLE_COLORS.goldLight }}>{lbl.text}</span>
         </span>
       </div>
-      <div className="h-2 w-full rounded-full overflow-hidden mb-1" style={{ background: "rgba(15,39,71,0.08)" }}>
+      <div className="h-2 w-full rounded-full overflow-hidden mb-1" style={{ background: "rgba(255,255,255,0.15)" }}>
         <div className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${CITADELLE_COLORS.gold}, #E0BE7A)` }} />
+          style={{ width: `${pct}%`, background: "linear-gradient(90deg, #16A34A, #22C55E)" }} />
       </div>
-      <p className="text-[11px] mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
+      <p className="text-[11px] mb-3" style={{ color: "rgba(255,255,255,0.55)" }}>
         Score indicatif — plus votre annonce est complète, plus elle inspire confiance. 💛
       </p>
 
@@ -64,7 +64,7 @@ export default function ListingQualityHelper({ form, step }) {
       {tips.length > 0 && (
         <div className="space-y-1.5 mb-1">
           {tips.map((t, i) => (
-            <p key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: CITADELLE_COLORS.blue }}>
+            <p key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.9)" }}>
               <Lightbulb size={13} className="shrink-0 mt-0.5" style={{ color: CITADELLE_COLORS.gold }} />
               <span>{t}</span>
             </p>
@@ -74,13 +74,13 @@ export default function ListingQualityHelper({ form, step }) {
 
       {/* Éléments à compléter (checklist indicative) */}
       {missing.length > 0 && (
-        <div className="mt-3 pt-3" style={{ borderTop: "1px dashed rgba(201,164,92,0.3)" }}>
-          <p className="text-[11px] font-bold mb-2" style={{ color: CITADELLE_COLORS.textMuted }}>
+        <div className="mt-3 pt-3" style={{ borderTop: "1px dashed rgba(201,164,92,0.35)" }}>
+          <p className="text-[11px] font-bold mb-2" style={{ color: "rgba(255,255,255,0.7)" }}>
             {step === 3 ? "Pour une annonce au top, il vous reste :" : "Suggestions pour cette étape :"}
           </p>
           <ul className="space-y-1">
             {missing.map((c, i) => (
-              <li key={i} className="flex items-center gap-2 text-xs" style={{ color: CITADELLE_COLORS.textMuted }} data-testid="quality-missing-item">
+              <li key={i} className="flex items-center gap-2 text-xs" style={{ color: "rgba(255,255,255,0.75)" }} data-testid="quality-missing-item">
                 <Circle size={12} style={{ color: CITADELLE_COLORS.gold }} />
                 {c.label}
               </li>
@@ -90,7 +90,7 @@ export default function ListingQualityHelper({ form, step }) {
       )}
 
       {missing.length === 0 && step !== 3 && (
-        <p className="flex items-center gap-2 text-xs font-semibold mt-2" style={{ color: "#16A34A" }}>
+        <p className="flex items-center gap-2 text-xs font-semibold mt-2" style={{ color: "#4ADE80" }}>
           <CheckCircle2 size={14} /> Cette étape est parfaitement remplie, bravo !
         </p>
       )}
