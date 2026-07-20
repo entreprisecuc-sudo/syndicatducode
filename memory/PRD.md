@@ -703,3 +703,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Backend** : `GET /api/citadelle/listings/{slug}/siblings` → `{prev, next}` (slug+title) selon le tri par défaut (is_featured desc, published_at desc) sur les annonces active+sold.
 - **Frontend** : barre de navigation dans `CitadelleListingDetail.js` (sous le breadcrumb) — boutons « Annonce précédente » / « Annonce suivante » (désactivés en début/fin de liste) + lien « Toutes les annonces ». Scroll top au changement d'annonce.
 - **Validé (curl + screenshot)** : endpoint OK, navigation next fonctionnelle. Testing agent NON utilisé (Règle 6).
+
+## ✨ Session 20/07/2026 — Navigation annonces respectant filtres/tri (PREVIEW)
+- **Backend** : refactor DRY `_build_listings_query()` partagé par `list_listings` et `siblings`. `GET /listings/{slug}/siblings` accepte désormais q, type, budget(_min/_max), sort → prev/next calculés dans le sous-ensemble filtré/trié. Fallback sur le classement global si l'annonce est hors périmètre du filtre.
+- **Frontend** : `ListingCard` reçoit `search` et l'ajoute au lien détail ; `CitadelleListings` passe `?${searchParams}`. `CitadelleListingDetail` lit `location.search` (hors `page`), le transmet à `siblings` et le conserve dans les boutons prev/next + lien « Toutes les annonces ».
+- **Validé (curl + screenshot)** : filtre type=saas restreint la navigation aux SaaS ; navigation e2e conserve `?sort=price_desc` dans l'URL. Testing agent NON utilisé (Règle 6).

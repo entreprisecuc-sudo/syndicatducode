@@ -204,18 +204,8 @@ class AdminRejectListing(BaseModel):
 
 # ── Routes publiques ──────────────────────────────────────────────────────────
 
-@router.get("/listings", summary="Liste publique des annonces actives")
-async def list_listings(
-    q: Optional[str] = Query(None, description="Recherche mot-clé"),
-    type: Optional[str] = Query(None),
-    budget_min: Optional[float] = Query(None),
-    budget_max: Optional[float] = Query(None),
-    budget: Optional[str] = Query(None, description="Tranche budget ex: 5000-20000"),
-    sort: Optional[str] = Query("recent", description="recent|price_asc|price_desc|revenue"),
-    page: int = Query(1, ge=1),
-    limit: int = Query(12, ge=1, le=50)
-):
-    """Liste des annonces actives — accessible sans authentification"""
+def _build_listings_query(q, type, budget, budget_min, budget_max, sort):
+    """Construit (filters, sort_order) pour les annonces publiques — partagé (DRY)."""
     filters = {"status": {"$in": ["active", "sold"]}}
 
     if type and type in LISTING_TYPES:
@@ -245,11 +235,9 @@ async def list_listings(
     if price_filter:
         filters["price"] = price_filter
 
-    # Recherche textuelle
     if q:
         filters["$text"] = {"$search": q}
 
-    # Tri
     sort_map = {
         "recent": [("is_featured", -1), ("published_at", -1)],
         "price_asc": [("is_featured", -1), ("price", 1)],
@@ -257,6 +245,22 @@ async def list_listings(
         "revenue": [("is_featured", -1), ("monthly_revenue", -1)],
     }
     sort_order = sort_map.get(sort, sort_map["recent"])
+    return filters, sort_order
+
+
+@router.get("/listings", summary="Liste publique des annonces actives")
+async def list_listings(
+    q: Optional[str] = Query(None, description="Recherche mot-clé"),
+    type: Optional[str] = Query(None),
+    budget_min: Optional[float] = Query(None),
+    budget_max: Optional[float] = Query(None),
+    budget: Optional[str] = Query(None, description="Tranche budget ex: 5000-20000"),
+    sort: Optional[str] = Query("recent", description="recent|price_asc|price_desc|revenue"),
+    page: int = Query(1, ge=1),
+    limit: int = Query(12, ge=1, le=50)
+):
+    """Liste des annonces actives — accessible sans authentification"""
+    filters, sort_order = _build_listings_query(q, type, budget, budget_min, budget_max, sort)
 
     skip = (page - 1) * limit
     total = await db.citadelle_listings.count_documents(filters)
@@ -285,15 +289,32 @@ async def my_listings(current_user: dict = Depends(require_citadelle_user)):
 
 
 @router.get("/listings/{slug}/siblings", summary="Annonce précédente / suivante")
-async def get_listing_siblings(slug: str):
-    """Renvoie l'annonce précédente et suivante selon le tri par défaut (récentes d'abord)."""
+async def get_listing_siblings(
+    slug: str,
+    q: Optional[str] = Query(None),
+    type: Optional[str] = Query(None),
+    budget_min: Optional[float] = Query(None),
+    budget_max: Optional[float] = Query(None),
+    budget: Optional[str] = Query(None),
+    sort: Optional[str] = Query("recent"),
+):
+    """Annonce précédente et suivante en respectant les filtres/tri en cours."""
+    filters, sort_order = _build_listings_query(q, type, budget, budget_min, budget_max, sort)
     docs = await db.citadelle_listings.find(
-        {"status": {"$in": ["active", "sold"]}},
-        {"_id": 0, "slug": 1, "title": 1}
-    ).sort([("is_featured", -1), ("published_at", -1)]).to_list(1000)
+        filters, {"_id": 0, "slug": 1, "title": 1}
+    ).sort(sort_order).to_list(1000)
+
     idx = next((i for i, d in enumerate(docs) if d.get("slug") == slug), None)
+
+    # Annonce hors périmètre du filtre : on retombe sur le classement global
     if idx is None:
-        return {"prev": None, "next": None}
+        filters_all, sort_all = _build_listings_query(None, None, None, None, None, "recent")
+        docs = await db.citadelle_listings.find(
+            filters_all, {"_id": 0, "slug": 1, "title": 1}
+        ).sort(sort_all).to_list(1000)
+        idx = next((i for i, d in enumerate(docs) if d.get("slug") == slug), None)
+        if idx is None:
+            return {"prev": None, "next": None}
 
     def light(d):
         return {"slug": d["slug"], "title": d.get("title", "")} if d else None

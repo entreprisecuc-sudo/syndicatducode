@@ -18,7 +18,7 @@ const TYPE_CONFIG = {
 
 const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240' fill='%230F2747'%3E%3Crect width='400' height='240'/%3E%3Ctext x='50%25' y='50%25' fill='%23C9A45C' font-size='40' text-anchor='middle' dominant-baseline='middle'%3E🏰%3C/text%3E%3C/svg%3E";
 
-export default function ListingCard({ listing }) {
+export default function ListingCard({ listing, search = "" }) {
   const { label: typeLabel, icon: TypeIcon } = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
   const firstImage = listing.images?.filter(Boolean).find(img => isImageFile(img));
   const mainImage = firstImage ? getListingImageUrl(firstImage) : PLACEHOLDER_IMG;
@@ -39,7 +39,7 @@ export default function ListingCard({ listing }) {
       )
     : ({ children }) => (
         <Link
-          to={`/citadelle/annonces/${listing.slug}`}
+          to={`/citadelle/annonces/${listing.slug}${search || ""}`}
           className="group block rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-1"
           style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, boxShadow: "0 2px 8px rgba(15,39,71,0.05)" }}
           data-testid={`listing-card-${listing.slug}`}

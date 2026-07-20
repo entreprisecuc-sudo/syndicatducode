@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, BarChart2,
   Calendar, ShieldCheck, Star, ArrowLeft, Eye, Share2, Lock, FileText, Download, Send, AlertCircle, Hammer, Clock, Zap
@@ -52,6 +52,7 @@ const TYPE_CONFIG = {
 export default function CitadelleListingDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, user } = useCitadelleAuth();
   const { canTransact } = useCitadelleModeration();
   const [listing, setListing] = useState(null);
@@ -77,11 +78,14 @@ export default function CitadelleListingDetail() {
 
   useEffect(() => {
     fetchListing();
-    citadelleApi.get(`/listings/${slug}/siblings`)
+    // On conserve les filtres/tri en cours pour une navigation cohérente
+    const params = new URLSearchParams(location.search);
+    params.delete("page");
+    citadelleApi.get(`/listings/${slug}/siblings`, { params: Object.fromEntries(params) })
       .then(res => setSiblings(res.data))
       .catch(() => setSiblings({ prev: null, next: null }));
     window.scrollTo(0, 0);
-  }, [slug]);
+  }, [slug, location.search]);
 
   const fetchListing = async () => {
     setLoading(true);
@@ -170,7 +174,7 @@ export default function CitadelleListingDetail() {
           <button
             type="button"
             disabled={!siblings.prev}
-            onClick={() => siblings.prev && navigate(`/citadelle/annonces/${siblings.prev.slug}`)}
+            onClick={() => siblings.prev && navigate(`/citadelle/annonces/${siblings.prev.slug}${location.search}`)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-85"
             style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue, background: "#fff" }}
             data-testid="listing-prev-btn"
@@ -182,7 +186,7 @@ export default function CitadelleListingDetail() {
           </button>
 
           <Link
-            to="/citadelle/annonces"
+            to={`/citadelle/annonces${location.search}`}
             className="text-xs font-medium hover:opacity-80 hidden md:inline"
             style={{ color: CITADELLE_COLORS.textMuted }}
             data-testid="listing-back-all"
@@ -193,7 +197,7 @@ export default function CitadelleListingDetail() {
           <button
             type="button"
             disabled={!siblings.next}
-            onClick={() => siblings.next && navigate(`/citadelle/annonces/${siblings.next.slug}`)}
+            onClick={() => siblings.next && navigate(`/citadelle/annonces/${siblings.next.slug}${location.search}`)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-85"
             style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue, background: "#fff" }}
             data-testid="listing-next-btn"
