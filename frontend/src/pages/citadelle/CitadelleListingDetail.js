@@ -779,9 +779,13 @@ export default function CitadelleListingDetail() {
                   });
                   setContactModal(false);
                   setContactMessage("");
-                  // Propose les estimations avant de rejoindre la conversation
-                  setPendingConversationId(res.data.conversation_id);
-                  setEstimationPopup(true);
+                  // Propose les estimations UNIQUEMENT à la première prise de contact
+                  if (res.data.created) {
+                    setPendingConversationId(res.data.conversation_id);
+                    setEstimationPopup(true);
+                  } else {
+                    navigate(`/citadelle/espace-membre/messages/${res.data.conversation_id}`);
+                  }
                 } catch (err) {
                   setContactError(err.response?.data?.detail || "Erreur lors de l'envoi");
                 } finally { setContactLoading(false); }

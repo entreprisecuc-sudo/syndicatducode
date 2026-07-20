@@ -106,8 +106,10 @@ async def send_message(
             {"$push": {"messages": msg}, "$set": {"updated_at": now, f"last_read.{sender_id}": now}}
         )
         conv_id = conv["id"]
+        is_new_conversation = False
     else:
         # Créer une nouvelle conversation
+        is_new_conversation = True
         conv_id = str(uuid.uuid4())
         conversation = {
             "id": conv_id,
@@ -149,7 +151,7 @@ async def send_message(
         else:
             logger.warning(f"[Citadelle] Seller email manquant pour la conversation {conv_id}")
 
-    return {"conversation_id": conv_id, "message": msg, "sanitized": sanitized}
+    return {"conversation_id": conv_id, "message": msg, "sanitized": sanitized, "created": is_new_conversation}
 
 
 @router.post("/messages/{conversation_id}/reply", summary="Répondre dans une conversation")
