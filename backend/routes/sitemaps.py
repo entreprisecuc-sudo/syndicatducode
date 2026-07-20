@@ -53,7 +53,7 @@ def _fmt_date(raw) -> str:
 # Sitemap — La Citadelle Numérique
 # ─────────────────────────────────────────────────────────────────────────────
 
-@router.get("/sitemap-citadelle.xml", response_class=Response)
+@router.api_route("/sitemap-citadelle.xml", methods=["GET", "HEAD"], response_class=Response)
 async def sitemap_citadelle():
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
@@ -109,7 +109,7 @@ async def sitemap_citadelle():
 # Sitemap — Le Syndicat du Code
 # ─────────────────────────────────────────────────────────────────────────────
 
-@router.get("/sitemap-syndicat.xml", response_class=Response)
+@router.api_route("/sitemap-syndicat.xml", methods=["GET", "HEAD"], response_class=Response)
 async def sitemap_syndicat():
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
