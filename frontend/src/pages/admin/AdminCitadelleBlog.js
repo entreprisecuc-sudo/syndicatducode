@@ -12,6 +12,7 @@ import {
   BarChart3, ChevronLeft, ChevronRight, Users, Globe, Smartphone, Monitor, TrendingUp,
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { useAdminTheme } from "@/context/AdminThemeContext";
 import api from "@/services/api";
 import { BLOG_CATEGORIES, getListingImageUrl } from "@/config/citadelleConstants";
 
@@ -128,6 +129,7 @@ export default function AdminCitadelleBlog() {
   const [statusFilter, setStatusFilter] = useState("all"); // all | published | pending
   const [total, setTotal] = useState(0);
   const [counts, setCounts] = useState({ all: 0, published: 0, pending: 0 });
+  const { currentTheme } = useAdminTheme();
   const [topPosts, setTopPosts] = useState([]);
   const [statsModal, setStatsModal] = useState(null); // { post, data, period, loading }
   const contentRef = useRef(null);
@@ -319,9 +321,9 @@ export default function AdminCitadelleBlog() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1.5">
               {topPosts.map((p, i) => (
                 <div key={p.id} className="flex items-center gap-3 text-sm" data-testid={`blog-top-item-${i + 1}`}>
-                  <span className="w-5 text-right font-black" style={{ color: i < 3 ? "#C9A45C" : "rgba(255,255,255,0.3)" }}>{i + 1}</span>
+                  <span className="w-5 text-right font-black" style={{ color: i < 3 ? "#C9A45C" : currentTheme.textMuted }}>{i + 1}</span>
                   <span className="flex-1 truncate" title={p.title}>{p.title}</span>
-                  <span className="flex items-center gap-1 flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>
+                  <span className="flex items-center gap-1 flex-shrink-0" style={{ color: currentTheme.textSecondary }}>
                     <Eye size={11} />{p.view_count || 0}
                   </span>
                 </div>
@@ -455,15 +457,15 @@ export default function AdminCitadelleBlog() {
           <div className="flex items-center justify-center gap-4 pt-2" data-testid="blog-pagination">
             <button disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}
               className="p-2 rounded-lg transition-all disabled:opacity-30 hover:scale-110"
-              style={{ background: "rgba(255,255,255,0.06)" }} data-testid="blog-page-prev">
+              style={{ background: currentTheme.bgSection, border: `1px solid ${currentTheme.border}` }} data-testid="blog-page-prev">
               <ChevronLeft size={16} />
             </button>
-            <span className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>
+            <span className="text-sm font-semibold" style={{ color: currentTheme.textSecondary }}>
               Page {page} / {totalPages}
             </span>
             <button disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               className="p-2 rounded-lg transition-all disabled:opacity-30 hover:scale-110"
-              style={{ background: "rgba(255,255,255,0.06)" }} data-testid="blog-page-next">
+              style={{ background: currentTheme.bgSection, border: `1px solid ${currentTheme.border}` }} data-testid="blog-page-next">
               <ChevronRight size={16} />
             </button>
           </div>
@@ -483,12 +485,12 @@ export default function AdminCitadelleBlog() {
                   <BarChart3 size={17} style={{ color: "#60A5FA" }} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-bold truncate">{statsModal.post.title}</p>
+                  <p className="text-sm font-bold truncate" style={{ color: "#F1F5F9" }}>{statsModal.post.title}</p>
                   <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Statistiques d'audience</p>
                 </div>
               </div>
               <button onClick={() => setStatsModal(null)} className="p-1 rounded-lg hover:bg-white/10" data-testid="blog-stats-close">
-                <X size={16} />
+                <X size={16} style={{ color: "rgba(255,255,255,0.75)" }} />
               </button>
             </div>
 
@@ -519,7 +521,7 @@ export default function AdminCitadelleBlog() {
                     ].map((k, i) => (
                       <div key={i} className="p-3 rounded-xl text-center" style={{ background: "rgba(255,255,255,0.04)" }}>
                         <k.icon size={14} style={{ color: k.color }} className="mx-auto mb-1" />
-                        <p className="text-lg font-black">{k.value}</p>
+                        <p className="text-lg font-black" style={{ color: "#F1F5F9" }}>{k.value}</p>
                         <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>{k.label}</p>
                       </div>
                     ))}
@@ -555,7 +557,7 @@ export default function AdminCitadelleBlog() {
                   <div className="flex gap-3">
                     <div className="flex-1 p-2.5 rounded-xl flex items-center gap-2" style={{ background: "rgba(255,255,255,0.04)" }}>
                       <Monitor size={14} style={{ color: "#94A3B8" }} />
-                      <span className="text-sm font-bold">{statsModal.data.devices.desktop}</span>
+                      <span className="text-sm font-bold" style={{ color: "#F1F5F9" }}>{statsModal.data.devices.desktop}</span>
                       <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>ordinateur</span>
                     </div>
                     <div className="flex-1 p-2.5 rounded-xl flex items-center gap-2" style={{ background: "rgba(255,255,255,0.04)" }}>
