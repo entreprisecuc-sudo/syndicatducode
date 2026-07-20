@@ -30,10 +30,10 @@ export function buildCriteria(data) {
 }
 
 export function scoreLabel(pct) {
-  if (pct >= 90) return { text: "Excellente annonce", color: "#16A34A" };
-  if (pct >= 70) return { text: "Bonne annonce", color: "#C9A45C" };
-  if (pct >= 40) return { text: "À compléter", color: "#F59E0B" };
-  return { text: "À enrichir", color: "#EF4444" };
+  if (pct >= 90) return { text: "Score excellent", color: "#16A34A" };
+  if (pct >= 70) return { text: "Bon score", color: "#22C55E" };
+  if (pct >= 40) return { text: "Score à compléter", color: "#F59E0B" };
+  return { text: "Score de départ", color: "#EF4444" };
 }
 
 export function computeListingQuality(data) {

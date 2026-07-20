@@ -48,15 +48,15 @@ export default function ListingQualityHelper({ form, step }) {
         <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide" style={{ color: CITADELLE_COLORS.gold }}>
           <Sparkles size={14} style={{ color: CITADELLE_COLORS.gold }} /> Qualité de l'annonce
         </span>
-        <span className="text-sm font-black" style={{ color: "#FFFFFF" }} data-testid="quality-score">
-          {pct}% · <span style={{ color: pct >= 70 ? "#4ADE80" : CITADELLE_COLORS.goldLight }}>{lbl.text}</span>
+        <span className="text-sm font-black" style={{ color: "#4ADE80" }} data-testid="quality-score">
+          {pct}% · {lbl.text}
         </span>
       </div>
       <div className="h-2 w-full rounded-full overflow-hidden mb-1" style={{ background: "rgba(255,255,255,0.15)" }}>
         <div className="h-full rounded-full transition-all duration-500"
           style={{ width: `${pct}%`, background: "linear-gradient(90deg, #16A34A, #22C55E)" }} />
       </div>
-      <p className="text-[11px] mb-3" style={{ color: "rgba(255,255,255,0.55)" }}>
+      <p className="text-sm font-medium mb-3" style={{ color: "#4ADE80" }}>
         Score indicatif — plus votre annonce est complète, plus elle inspire confiance. 💛
       </p>
 
