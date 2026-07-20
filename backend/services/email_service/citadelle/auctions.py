@@ -486,3 +486,93 @@ La Citadelle Numérique
         return False
 
 
+
+
+# Conseils de vente partagés (pop-up + email) — source unique (DRY)
+CITADELLE_SELLING_TIPS = [
+    ("Soignez votre visuel", "Ajoutez une belle image (capture du site, logo, aperçu). Les annonces avec un visuel de qualité attirent bien plus l'attention."),
+    ("Affinez vos informations", "Détaillez revenus, trafic, technologies et potentiel de croissance : plus c'est précis et transparent, plus l'acheteur est rassuré."),
+    ("Révisez votre prix de vente", "Un prix aligné sur le marché accélère la vente. Votre prix de réserve devient votre prix de vente par défaut — modifiable à tout moment."),
+    ("Rendez l'actif crédible", "Proposez une démo, une URL publique (si pertinent) ou des preuves de revenus pour lever les doutes des acheteurs sérieux."),
+    ("Partagez votre annonce", "Utilisez le bouton Partager pour diffuser votre annonce sur LinkedIn, Facebook et WhatsApp et toucher davantage d'acheteurs."),
+]
+
+
+def send_citadelle_auction_unsold_email(
+    seller_email: str,
+    seller_name: str,
+    listing_title: str,
+    listing_slug: str,
+    price=None,
+) -> bool:
+    """Rassure le vendeur dont l'enchère s'est terminée sans acheteur + conseils de vente."""
+    try:
+        from config.settings import CITADELLE_URL
+        listing_url = f"{CITADELLE_URL}/citadelle/annonces/{listing_slug}"
+        edit_url = f"{CITADELLE_URL}/citadelle/espace-membre/annonces"
+        prix_txt = f"{int(price):,}".replace(",", " ") + " €" if price else "votre prix"
+
+        tips_html = "".join(
+            f"""<tr><td style="padding:10px 0;border-bottom:1px solid #EDF0F5;">
+                  <p style="margin:0 0 3px;font-size:14px;font-weight:700;color:#0F2747;">{i+1}. {titre}</p>
+                  <p style="margin:0;font-size:13px;color:#4A5568;line-height:1.6;">{txt}</p>
+                </td></tr>"""
+            for i, (titre, txt) in enumerate(CITADELLE_SELLING_TIPS)
+        )
+
+        greeting = f"Bonjour {seller_name}," if seller_name else "Bonjour,"
+
+        msg = MIMEMultipart("alternative")
+        msg['From'] = CITADELLE_FROM_EMAIL
+        msg['To'] = seller_email
+        msg['Subject'] = f"Votre enchère est terminée — votre annonce reste en ligne ({listing_title})"
+
+        html = f"""<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f6f9;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
+        <tr><td style="background:#0f2747;padding:32px 40px;text-align:center;">
+          <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c9a45c;">La Citadelle Numérique</p>
+          <h1 style="margin:0;font-size:24px;font-weight:900;color:#ffffff;line-height:1.3;">Pas d'acheteur cette fois…<br>mais pas de panique !</h1>
+          <div style="margin:18px auto 0;width:48px;height:3px;background:#c9a45c;border-radius:2px;"></div>
+        </td></tr>
+        <tr><td style="background:#ffffff;padding:36px 40px 28px;">
+          <p style="margin:0 0 20px;font-size:16px;color:#4a5568;">{greeting}</p>
+          <p style="margin:0 0 20px;font-size:15px;color:#4a5568;line-height:1.7;">
+            L'enchère pour <strong style="color:#0f2747;">{listing_title}</strong> s'est terminée sans acheteur.
+            Bonne nouvelle : <strong style="color:#0f2747;">votre annonce reste en ligne</strong> et bascule automatiquement
+            en <strong style="color:#0f2747;">annonce standard</strong>. Votre prix de réserve devient
+            par défaut votre <strong style="color:#0f2747;">prix de vente ({prix_txt})</strong>, que vous pouvez
+            modifier à tout moment.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#F8FAFC;border:1px solid #E2E8F0;border-left:3px solid #C9A45C;border-radius:10px;margin:0 0 24px;">
+            <tr><td style="padding:18px 20px;">
+              <p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c9a45c;">5 conseils pour vendre plus vite</p>
+              <table width="100%" cellpadding="0" cellspacing="0">{tips_html}</table>
+            </td></tr>
+          </table>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+            <tr><td align="center">
+              <a href="{edit_url}" style="display:inline-block;background:#c9a45c;color:#0f2747;font-size:15px;font-weight:800;text-decoration:none;padding:15px 36px;border-radius:10px;">Modifier mon annonce →</a>
+            </td></tr>
+          </table>
+          <p style="margin:0;font-size:13px;color:#a0aec0;text-align:center;line-height:1.6;">
+            Voir l'annonce : <a href="{listing_url}" style="color:#c9a45c;word-break:break-all;">{listing_url}</a>
+          </p>
+        </td></tr>
+        <tr><td style="background:#0f2747;padding:22px 40px;text-align:center;">
+          <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.45);">© La Citadelle Numérique — Marketplace d'actifs numériques</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>"""
+
+        msg.attach(MIMEText(html, "html", "utf-8"))
+        _envoyer_email(msg)
+        return True
+    except Exception as e:
+        logger.error(f"[Citadelle Enchère] Erreur email enchère non vendue: {e}")
+        return False

@@ -381,3 +381,28 @@ async def member_activity(current_user: dict = Depends(require_citadelle_user)):
 
     items.sort(key=lambda x: x.get("created_at", ""), reverse=True)
     return {"items": items, "count": len(items)}
+
+
+
+@router.get("/member/notices", summary="Notices vendeur en attente (pop-up)")
+async def member_notices(current_user: dict = Depends(require_citadelle_user)):
+    """Retourne les notices non confirmées du membre (ex : enchère terminée sans acheteur)."""
+    user_id = current_user.get("sub")
+    notices = await db.citadelle_seller_notices.find(
+        {"user_id": user_id, "acknowledged": False},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(20)
+    return {"notices": notices, "count": len(notices)}
+
+
+@router.post("/member/notices/{notice_id}/ack", summary="Confirmer une notice vendeur")
+async def acknowledge_notice(notice_id: str, current_user: dict = Depends(require_citadelle_user)):
+    """Marque une notice comme lue/comprise par le vendeur (ne réapparaîtra plus)."""
+    user_id = current_user.get("sub")
+    res = await db.citadelle_seller_notices.update_one(
+        {"id": notice_id, "user_id": user_id},
+        {"$set": {"acknowledged": True, "acknowledged_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Notice introuvable")
+    return {"success": True}

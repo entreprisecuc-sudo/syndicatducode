@@ -685,3 +685,11 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Backend** : nouvel endpoint `GET /api/citadelle/auth/admin/users/{user_id}/activity` (require_admin) → renvoie `{listings, sales, purchases}` : annonces du membre (seller_id), ventes (transactions seller_id) et achats (transactions buyer_id), champs allégés + tri desc.
 - **Frontend** : composant `MemberActivity` dans `AdminCitadelleUsers.js`, intégré à la modale membre (renommée « Fiche membre & KYC »). 3 sections avec compteurs : Annonces (prix, vues, statut, lien vers l'annonce), Ventes (acheteur, montant, statut), Achats (vendeur, montant, statut). Libellés FR pour statuts annonce/transaction.
 - **Validé (curl + screenshot)** : membre becamarnaud → 4 annonces / 4 ventes / 1 achat correctement affichés. Testing agent NON utilisé (Règle 6).
+
+## ✨ Session 20/07/2026 — Clôture d'enchère : réactivité + notice vendeur (PREVIEW)
+- **Scheduler** : `check_ended_auctions` passe de */30 à ***/5 min** (`newsletter_scheduler.py`).
+- **Enchère sans acheteur (Cas 2)** : l'annonce redevient standard (`is_auction=False`, `auction_ends_at=None`). Création d'une **notice vendeur** en base (`citadelle_seller_notices`) + envoi d'un **email** (`send_citadelle_auction_unsold_email`, auctions.py) reprenant le même message + 5 conseils de vente.
+- **Backend endpoints** (`messages.py`) : `GET /api/citadelle/member/notices` (notices non confirmées) et `POST /api/citadelle/member/notices/{id}/ack` (confirmation). `require_citadelle_user`.
+- **Frontend** : `SellerNoticeModal.jsx` monté dans `CitadelleLayout` → pop-up à la connexion du vendeur (message rassurant, prix de réserve = prix de vente par défaut, 5 conseils, boutons « Modifier mon annonce » / « J'ai compris » qui confirme la notice). Ne réapparaît plus après confirmation.
+- **Validé (curl + screenshot)** : endpoints pending/ack OK, pop-up affiché correctement. Email NON envoyé en test (Règle 6 — pas d'email de test vers adresse invalide) ; fonction importée OK. Testing agent NON utilisé (Règle 6).
+- Nouvelle collection : `citadelle_seller_notices` {id, user_id, type, listing_id, listing_title, listing_slug, price, acknowledged, acknowledged_at, created_at}.

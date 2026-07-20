@@ -17,6 +17,7 @@ import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 import citadelleApi from "@/services/citadelleApi";
 import CitadelleChatWidget from "@/components/citadelle/CitadelleChatWidget";
 import ModerationBanner from "@/components/citadelle/ModerationBanner";
+import SellerNoticeModal from "@/components/citadelle/SellerNoticeModal";
 
 // ── Navigation ───────────────────────────────────────────────────────────────
 
@@ -351,6 +352,7 @@ const CitadelleLayout = ({ children, pageTitle }) => {
       </main>
       <CitadelleFooter />
       <CitadelleChatWidget />
+      <SellerNoticeModal />
     </div>
   );
 };

@@ -451,15 +451,44 @@ async def check_ended_auctions():
                 )
                 logger.info(f"[Enchère] Clôturée: '{listing['title']}' — gagnant: {winner_email} ({amount}€)")
             else:
-                # Pas d'enchère reçue : l'annonce reste active mais l'enchère est terminée
+                # Pas d'enchère reçue : l'annonce redevient une annonce standard
                 await _db.citadelle_listings.update_one(
                     {"id": listing_id},
                     {"$set": {
                         "auction_ends_at": None,
+                        "is_auction": False,
                         "updated_at": now.isoformat(),
                     }}
                 )
-                logger.info(f"[Enchère] Terminée sans gagnant: '{listing['title']}'")
+
+                # Créer une notice vendeur (pop-up à sa prochaine connexion)
+                seller_id = listing["seller_id"]
+                notice = {
+                    "id": str(_uuid.uuid4()),
+                    "user_id": seller_id,
+                    "type": "auction_unsold",
+                    "listing_id": listing_id,
+                    "listing_title": listing["title"],
+                    "listing_slug": listing.get("slug", ""),
+                    "price": listing.get("price"),
+                    "acknowledged": False,
+                    "created_at": now.isoformat(),
+                }
+                await _db.citadelle_seller_notices.insert_one(notice)
+
+                # Email d'accompagnement au vendeur (mêmes informations que le pop-up)
+                seller = await _db.users.find_one({"id": seller_id}, {"_id": 0, "email": 1, "first_name": 1, "prenom": 1})
+                if seller and seller.get("email"):
+                    from services.email_service import send_citadelle_auction_unsold_email
+                    send_citadelle_auction_unsold_email(
+                        seller_email=seller["email"],
+                        seller_name=seller.get("first_name") or seller.get("prenom") or "",
+                        listing_title=listing["title"],
+                        listing_slug=listing.get("slug", ""),
+                        price=listing.get("price"),
+                    )
+
+                logger.info(f"[Enchère] Terminée sans gagnant → annonce standard: '{listing['title']}'")
 
     except Exception as e:
         logger.error(f"[Enchère Scheduler] Erreur check_ended_auctions: {e}")
@@ -539,10 +568,10 @@ async def init_newsletter_scheduler():
         replace_existing=True,
     )
 
-    # ── Job 4 : Vérification des enchères terminées (toutes les 30 min) ─────────
+    # ── Job 4 : Vérification des enchères terminées (toutes les 5 min) ─────────
     scheduler.add_job(
         check_ended_auctions,
-        CronTrigger(minute="*/30"),
+        CronTrigger(minute="*/5"),
         id=AUCTION_CHECK_JOB_ID,
         replace_existing=True,
     )
