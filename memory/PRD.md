@@ -37,6 +37,8 @@
   - Ajouté dans `sites-available/lacitadellenumerique.fr` deux `location = /sitemap.xml` et `= /sitemap-citadelle.xml` → `proxy_pass http://127.0.0.1:8001/api/sitemap-citadelle.xml`.
   - ⚠️ **PIÈGE VPS CRITIQUE** : `sites-enabled/lacitadellenumerique.fr` était une **COPIE** (pas un symlink) → éditer `sites-available` n'avait aucun effet. CORRIGÉ : remplacé par un vrai symlink `ln -s sites-available/... sites-enabled/...` (sauvegarde `/root/lacitadellenumerique.enabled.bak`). Depuis, toute édition de sites-available est prise en compte après reload.
   - Vérifié : `https://lacitadellenumerique.fr/sitemap.xml` sert bien le dynamique (GET 200, 93 loc, 20 annonces). NOTE : requête HEAD → 405 (backend GET-only) ; sans impact GSC. Option future : ajouter support HEAD au endpoint.
+  - **[RÉSOLU 20/07 soir]** Support `HEAD` ajouté aux 2 routes sitemap (`@router.api_route(..., methods=["GET","HEAD"])` dans `backend/routes/sitemaps.py`). Déployé backend (Save to Github → git pull commit 768bea3 → `pm2 restart syndicat-backend`). Vérifié prod : HEAD `/sitemap.xml` → 200, GET → 93 loc / 20 annonces. Sitemap prêt pour Google Search Console.
+  - **[CONFIRMÉ déployé]** Carrousel refondu (flèches latérales + 3 cartes centrées) est EN LIGNE en production (vérifié par screenshot lacitadellenumerique.fr/citadelle).
   - `robots.txt` pointe vers `sitemap-citadelle.xml` (Citadelle) et `syndicatducode.fr/sitemap-syndicat.xml` (Syndicat). Le domaine syndicatducode.fr n'a PAS encore reçu le même traitement proxy (statique encore servi côté Syndicat).
 
 
