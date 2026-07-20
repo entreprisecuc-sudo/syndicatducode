@@ -30,6 +30,15 @@
 - **Déployé sur VPS** : Save to Github → `git pull` → `yarn build` → `systemctl reload nginx`. 3 correctifs (blog admin + carrousel) en ligne.
 - **RAPPEL THÈME ADMIN** : l'admin a un toggle clair/sombre via `useAdminTheme()`. Pour tout style inline de texte/fond dans les pages admin, utiliser `currentTheme.*` et JAMAIS de `rgba(255,255,255,...)` en dur — sauf à l'intérieur d'un conteneur au fond fixe sombre (ex modal `#0F2039`), où le texte doit être forcé clair.
 
+## ⭐ Session 20/07/2026 (soir, 4e lot) — Carrousel refonte + Sitemap dynamique (VPS/Nginx)
+- **Carrousel accueil refondu** (`components/citadelle/ListingsCarousel.jsx`) : flèches déplacées du header vers les CÔTÉS (gauche `<` / droite `>` encadrant les cartes), conteneur centré `justify-center`, largeur limitée `max-w-[708px]` = 3 cartes visibles (220px + gap-6). `scrollBy` = `clientWidth` (défile par page de 3). Nettoyé un bloc JSX dupliqué en fin de fichier. NON déployé au moment de l'écriture (à faire : Save to Github → git pull → yarn build → reload nginx).
+- **SITEMAP DYNAMIQUE branché en prod (Nginx VPS)** :
+  - Backend expose `/api/sitemap-citadelle.xml` et `/api/sitemap-syndicat.xml` (`backend/routes/sitemaps.py`, monté sous `api_router` prefix `/api`). Le dynamique inclut pages + articles publiés + annonces `active` (93 URLs dont 20 annonces), date du jour. Les fichiers statiques `frontend/public/sitemap*.xml` sont FIGÉS (30/06) et ne contiennent pas les annonces.
+  - Ajouté dans `sites-available/lacitadellenumerique.fr` deux `location = /sitemap.xml` et `= /sitemap-citadelle.xml` → `proxy_pass http://127.0.0.1:8001/api/sitemap-citadelle.xml`.
+  - ⚠️ **PIÈGE VPS CRITIQUE** : `sites-enabled/lacitadellenumerique.fr` était une **COPIE** (pas un symlink) → éditer `sites-available` n'avait aucun effet. CORRIGÉ : remplacé par un vrai symlink `ln -s sites-available/... sites-enabled/...` (sauvegarde `/root/lacitadellenumerique.enabled.bak`). Depuis, toute édition de sites-available est prise en compte après reload.
+  - Vérifié : `https://lacitadellenumerique.fr/sitemap.xml` sert bien le dynamique (GET 200, 93 loc, 20 annonces). NOTE : requête HEAD → 405 (backend GET-only) ; sans impact GSC. Option future : ajouter support HEAD au endpoint.
+  - `robots.txt` pointe vers `sitemap-citadelle.xml` (Citadelle) et `syndicatducode.fr/sitemap-syndicat.xml` (Syndicat). Le domaine syndicatducode.fr n'a PAS encore reçu le même traitement proxy (statique encore servi côté Syndicat).
+
 
 ## ⭐ Session 20/07/2026 — Finalisation service « Annonce à la Une » (boost) (PREVIEW)
 - **Besoin client** : permettre au vendeur de payer pour mettre son annonce « à la Une » (carrousel de visibilité). Formules : **19 € / 3 mois** ou **49 € / jusqu'à la vente**. Proposé (1) à la fin de la soumission d'annonce ET (2) sur la fiche détail pour le propriétaire.
