@@ -17,7 +17,7 @@ import CitadelleAuthModal from "@/components/citadelle/CitadelleAuthModal";
 import { ReportBidButton } from "@/components/citadelle/ReportBidButton";
 import ShareBar from "@/components/citadelle/ShareBar";
 import BoostModal from "@/components/citadelle/BoostModal";
-import SellerServicesUpsell from "@/components/citadelle/SellerServicesUpsell";
+import SellerServicesUpsell, { BUYER_ESTIMATION_SERVICES } from "@/components/citadelle/SellerServicesUpsell";
 
 // ── Hook : compte à rebours ──────────────────────────────────────────────────
 
@@ -643,6 +643,20 @@ export default function CitadelleListingDetail() {
                   </button>
                 )}
               </div>
+            )}
+
+            {/* Upsell estimations pour l'acheteur — « ce site vaut-il le coup ? » */}
+            {!isOwner && listing.status !== "sold" && (
+              <SellerServicesUpsell
+                user={user}
+                stacked
+                testid="buyer-estimation-upsell"
+                targetServices={BUYER_ESTIMATION_SERVICES}
+                heading="Ce site vaut-il le coup ?"
+                subheading="Avant d'acheter, faites estimer cette annonce par nos experts pour investir en toute confiance."
+                clientMessage={`Estimation acheteur pour l'annonce « ${listing.title} » (réf ${listing.id})`}
+                onRequireAuth={() => setAuthModal(true)}
+              />
             )}
 
             {/* Widget estimateur contextuel */}

@@ -1,22 +1,38 @@
 /**
- * SellerServicesUpsell — La Citadelle Numérique
- * Après avoir décliné la mise à la Une, on propose 3 services vendeur
- * pour augmenter les chances de vente. Redirige vers Stripe Checkout.
+ * ServicesUpsell — La Citadelle Numérique
+ * Propose des services (vendeur OU acheteur) menant à Stripe Checkout.
+ * Configurable via `targetServices`, `heading`, `subheading`, `clientMessage`.
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Star, ShieldCheck, Handshake, ShoppingCart, AlertCircle } from "lucide-react";
+import { Star, ShieldCheck, Handshake, ShoppingCart, AlertCircle, Gauge, LineChart } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 
-// Titres exacts (DRY, résistant au re-seed) + icône associée
-const TARGET_SERVICES = [
+// Services vendeur (défaut) — titres exacts (DRY, résistant au re-seed) + icône
+export const SELLER_SERVICES = [
   { title: "Estimation Expert", icon: Star },
   { title: "Vérification La Garde", icon: ShieldCheck },
   { title: "Accompagnement Vente Premium", icon: Handshake },
 ];
 
-export default function SellerServicesUpsell({ user, onDecline, stacked = false }) {
+// Services acheteur — estimations pour vérifier si le site vaut le coup
+export const BUYER_ESTIMATION_SERVICES = [
+  { title: "Estimation Standard", icon: Gauge },
+  { title: "Estimation Expert", icon: LineChart },
+];
+
+export default function SellerServicesUpsell({
+  user,
+  onDecline,
+  onRequireAuth,
+  stacked = false,
+  targetServices = SELLER_SERVICES,
+  heading = "Augmentez vos chances de vente",
+  subheading = "Nos experts de La Garde peuvent valoriser, vérifier et accompagner votre annonce jusqu'à la signature.",
+  clientMessage = "Commande depuis la création d'annonce",
+  testid = "seller-services-upsell",
+}) {
   const [services, setServices] = useState([]);
   const [loadingId, setLoadingId] = useState(null);
   const [error, setError] = useState("");
@@ -25,7 +41,7 @@ export default function SellerServicesUpsell({ user, onDecline, stacked = false 
     citadelleApi.get("/services")
       .then(res => {
         const all = Array.isArray(res.data) ? res.data : (res.data.services || []);
-        const picked = TARGET_SERVICES
+        const picked = targetServices
           .map(t => {
             const svc = all.find(s => s.title === t.title);
             return svc ? { ...svc, icon: t.icon } : null;
@@ -34,9 +50,12 @@ export default function SellerServicesUpsell({ user, onDecline, stacked = false 
         setServices(picked);
       })
       .catch(() => {});
-  }, []);
+  }, [targetServices]);
 
   const buy = async (service) => {
+    if (!user?.email) {
+      if (onRequireAuth) { onRequireAuth(); return; }
+    }
     setError("");
     setLoadingId(service.id);
     try {
@@ -44,9 +63,9 @@ export default function SellerServicesUpsell({ user, onDecline, stacked = false 
         service_id: service.id,
         client_name: `${user?.first_name || ""} ${user?.last_name || ""}`.trim() || user?.email || "Client",
         client_email: user?.email || "",
-        client_message: "Commande depuis la création d'annonce",
+        client_message: clientMessage,
         origin_url: window.location.origin,
-        cancel_path: "/citadelle/espace-membre/mes-annonces",
+        cancel_path: window.location.pathname,
         user_id: user?.id || null,
       });
       if (res.data?.checkout_url) {
@@ -64,13 +83,13 @@ export default function SellerServicesUpsell({ user, onDecline, stacked = false 
   if (!services.length) return null;
 
   return (
-    <div className="p-5 rounded-2xl mb-6 text-left" data-testid="seller-services-upsell"
+    <div className="p-5 rounded-2xl mb-6 text-left" data-testid={testid}
       style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
       <p className="text-sm font-black mb-1" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-        Augmentez vos chances de vente
+        {heading}
       </p>
       <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
-        Nos experts de La Garde peuvent valoriser, vérifier et accompagner votre annonce jusqu'à la signature.
+        {subheading}
       </p>
 
       {error && (
@@ -150,9 +169,11 @@ export default function SellerServicesUpsell({ user, onDecline, stacked = false 
         <Link to="/citadelle/services" className="text-xs font-medium underline" style={{ color: CITADELLE_COLORS.textMuted }}>
           Voir tous les services
         </Link>
-        <button type="button" onClick={onDecline} className="text-xs font-semibold" style={{ color: CITADELLE_COLORS.textMuted }} data-testid="upsell-decline">
-          Non merci
-        </button>
+        {onDecline && (
+          <button type="button" onClick={onDecline} className="text-xs font-semibold" style={{ color: CITADELLE_COLORS.textMuted }} data-testid="upsell-decline">
+            Non merci
+          </button>
+        )}
       </div>
     </div>
   );
