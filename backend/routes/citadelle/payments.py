@@ -14,12 +14,20 @@ from typing import Optional
 import uuid
 
 import stripe as stripe_sdk
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
 from pydantic import BaseModel, EmailStr
+from datetime import timedelta
+from routes.citadelle.dependencies import require_citadelle_user
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/payments", tags=["Paiements La Citadelle"])
+
+# ── Service « Annonce à la Une » (boost de visibilité) ───────────────────────
+BOOST_PLANS = {
+    "3months":    {"price": 19.0, "label": "Annonce à la Une — 3 mois",       "days": 90},
+    "until_sale": {"price": 49.0, "label": "Annonce à la Une — jusqu'à la vente", "days": None},
+}
 
 _db = None
 
@@ -163,6 +171,28 @@ async def _finalize_paid_transaction(session_id: str) -> bool:
     transaction = await _db.payment_transactions.find_one({"session_id": session_id})
     logger.info(f"Paiement confirmé : {session_id} — {transaction.get('service_title')}")
 
+    # ── Cas « Annonce à la Une » : activer le boost, pas de commande de service ──
+    if transaction.get("source") == "citadelle_boost":
+        plan = transaction.get("boost_plan")
+        cfg = BOOST_PLANS.get(plan, {})
+        now = datetime.now(timezone.utc)
+        expires = (now + timedelta(days=cfg["days"])).isoformat() if cfg.get("days") else None
+        await _db.citadelle_listings.update_one(
+            {"id": transaction.get("listing_id")},
+            {"$set": {
+                "boost_plan": plan,
+                "boost_started_at": now.isoformat(),
+                "boost_expires_at": expires,
+                "updated_at": now.isoformat(),
+            }}
+        )
+        logger.info(f"Boost activé : annonce {transaction.get('listing_id')} plan {plan}")
+        try:
+            await create_invoice_for_payment(transaction)
+        except Exception as e:
+            logger.warning(f"Erreur création facture boost : {e}")
+        return True
+
     # Créer la commande de service visible côté admin ET côté membre (« Mes commandes »).
     # Idempotent via session_id : le vrai flux Stripe alimentait payment_transactions/factures
     # mais PAS citadelle_service_orders, d'où les commandes qui ne remontaient plus.
@@ -294,8 +324,77 @@ async def create_service_checkout(payload: ServiceCheckoutRequest):
     return {"checkout_url": session.url, "session_id": session.id}
 
 
-# ── GET /payments/service/status/{session_id} ─────────────────────────────────
+class BoostCheckoutRequest(BaseModel):
+    listing_id: str
+    plan: str  # "3months" | "until_sale"
+    origin_url: str
 
+
+@router.post("/boost/checkout")
+async def create_boost_checkout(payload: BoostCheckoutRequest, current_user: dict = Depends(require_citadelle_user)):
+    """Crée une session Stripe Checkout pour le service « Annonce à la Une »."""
+    if _db is None:
+        raise HTTPException(status_code=500, detail="Base de données non initialisée.")
+
+    cfg = BOOST_PLANS.get(payload.plan)
+    if not cfg:
+        raise HTTPException(status_code=400, detail="Formule invalide.")
+
+    user_id = current_user.get("sub")
+    listing = await _db.citadelle_listings.find_one({"id": payload.listing_id})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Annonce introuvable.")
+    if listing.get("seller_id") != user_id:
+        raise HTTPException(status_code=403, detail="Vous n'êtes pas propriétaire de cette annonce.")
+
+    price = cfg["price"]
+    origin = payload.origin_url.rstrip("/")
+    success_url = f"{origin}/citadelle/paiement/confirmation?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{origin}/citadelle/annonces/{listing.get('slug', '')}"
+
+    metadata = {
+        "source": "citadelle_boost",
+        "listing_id": payload.listing_id,
+        "boost_plan": payload.plan,
+        "service_title": cfg["label"],
+        "client_email": current_user.get("email", ""),
+    }
+
+    stripe = _get_stripe()
+    checkout_req = CheckoutSessionRequest(
+        amount=price, currency="eur",
+        success_url=success_url, cancel_url=cancel_url, metadata=metadata,
+    )
+    try:
+        session = await stripe.create_checkout_session(checkout_req)
+    except Exception as e:
+        logger.error(f"Stripe boost checkout error: {e}")
+        raise HTTPException(status_code=502, detail="Erreur lors de la création de la session de paiement.")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await _db.payment_transactions.insert_one({
+        "session_id": session.id,
+        "source": "citadelle_boost",
+        "listing_id": payload.listing_id,
+        "boost_plan": payload.plan,
+        "service_title": cfg["label"],
+        "client_name": f"{current_user.get('first_name', '')}".strip() or current_user.get("email", ""),
+        "client_email": current_user.get("email", ""),
+        "amount": price,
+        "currency": "eur",
+        "original_amount": price,
+        "promo_percent": 0,
+        "payment_status": "pending",
+        "status": "initiated",
+        "user_id": user_id,
+        "created_at": now,
+        "updated_at": now,
+    })
+    logger.info(f"Checkout boost créé : {session.id} pour annonce {payload.listing_id} ({payload.plan})")
+    return {"checkout_url": session.url, "session_id": session.id}
+
+
+# ── GET /payments/service/status/{session_id} ─────────────────────────────────
 @router.get("/service/status/{session_id}")
 async def get_service_payment_status(session_id: str):
     """

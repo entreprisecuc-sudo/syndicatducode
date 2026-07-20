@@ -8,6 +8,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Search, ChevronLeft, ChevronRight, ArrowRight, Shield } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ListingCard from "@/components/citadelle/ListingCard";
+import ListingsCarousel from "@/components/citadelle/ListingsCarousel";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_ALL_CATEGORIES } from "@/config/citadelleConstants";
 import { Helmet } from "react-helmet-async";
@@ -153,6 +154,9 @@ export default function CitadelleListings() {
 
       {/* Grille */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+
+        {/* Carrousel « À la Une » — indépendant des filtres */}
+        <ListingsCarousel variant="light" title="À la Une" limit={8} />
 
         {/* ── Bandeau vendeur ──────────────────────────────────────────── */}
         <div className="relative overflow-hidden rounded-2xl mb-8 px-8 py-7 flex flex-col md:flex-row items-center justify-between gap-6"

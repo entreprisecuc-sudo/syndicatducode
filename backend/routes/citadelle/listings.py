@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, HttpUrl
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-import re, uuid, shutil
+import re, uuid, shutil, random
 import logging
 
 from routes.citadelle.dependencies import require_admin, require_citadelle_user, require_can_transact
@@ -288,6 +288,38 @@ async def my_listings(current_user: dict = Depends(require_citadelle_user)):
     ).sort("created_at", -1)
     listings = await cursor.to_list(100)
     return {"listings": listings}
+
+
+@router.get("/listings/carousel", summary="Carrousel : annonces à la Une + complément aléatoire")
+async def listings_carousel(limit: int = Query(8, ge=1, le=50)):
+    """
+    Annonces « à la Une » (souscripteurs), mélangées aléatoirement.
+    S'il y en a moins que `limit`, on complète avec des annonces normales tirées au hasard.
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    proj = {"_id": 0, "url_preview": 0}
+
+    boosted = await db.citadelle_listings.find({
+        "status": "active",
+        "$or": [
+            {"boost_plan": "until_sale"},
+            {"boost_expires_at": {"$gt": now}},
+        ],
+    }, proj).to_list(1000)
+    random.shuffle(boosted)
+
+    boosted_ids = [l["id"] for l in boosted]
+    result = boosted
+
+    if len(result) < limit:
+        fill = await db.citadelle_listings.aggregate([
+            {"$match": {"status": "active", "id": {"$nin": boosted_ids}}},
+            {"$sample": {"size": limit - len(result)}},
+            {"$project": proj},
+        ]).to_list(limit)
+        result = result + fill
+
+    return {"listings": result, "boosted_count": len(boosted)}
 
 
 @router.get("/listings/{slug}/siblings", summary="Annonce précédente / suivante")
