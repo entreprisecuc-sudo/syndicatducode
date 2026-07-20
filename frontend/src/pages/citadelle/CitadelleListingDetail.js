@@ -69,6 +69,8 @@ export default function CitadelleListingDetail() {
   const [contactModal, setContactModal] = useState(false);
   const [authModal, setAuthModal] = useState(false);
   const [boostModal, setBoostModal] = useState(false);
+  const [estimationPopup, setEstimationPopup] = useState(false);
+  const [pendingConversationId, setPendingConversationId] = useState(null);
   const [ownerUpsellStep, setOwnerUpsellStep] = useState("boost"); // "boost" | "services" | "done"
   const [contactMessage, setContactMessage] = useState("");
   const [contactLoading, setContactLoading] = useState(false);
@@ -777,7 +779,9 @@ export default function CitadelleListingDetail() {
                   });
                   setContactModal(false);
                   setContactMessage("");
-                  navigate(`/citadelle/espace-membre/messages/${res.data.conversation_id}`);
+                  // Propose les estimations avant de rejoindre la conversation
+                  setPendingConversationId(res.data.conversation_id);
+                  setEstimationPopup(true);
                 } catch (err) {
                   setContactError(err.response?.data?.detail || "Erreur lors de l'envoi");
                 } finally { setContactLoading(false); }
@@ -811,6 +815,27 @@ export default function CitadelleListingDetail() {
         listingId={listing?.id}
         listingTitle={listing?.title}
       />
+
+      {/* Pop-up — proposition d'estimation à l'entame d'une conversation */}
+      {estimationPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" style={{ background: "rgba(0,0,0,0.6)" }} data-testid="contact-estimation-popup">
+          <div className="w-full max-w-lg my-8">
+            <SellerServicesUpsell
+              user={user}
+              testid="contact-estimation-upsell"
+              targetServices={BUYER_ESTIMATION_SERVICES}
+              heading="Votre message est bien parti !"
+              subheading="Avant d'investir, assurez-vous que ce site tient toutes ses promesses. Nos experts de La Garde en estiment la vraie valeur — pour négocier et acheter en toute sérénité."
+              clientMessage={`Estimation acheteur pour l'annonce « ${listing.title} » (réf ${listing.id})`}
+              onRequireAuth={() => setAuthModal(true)}
+              onDecline={() => {
+                setEstimationPopup(false);
+                if (pendingConversationId) navigate(`/citadelle/espace-membre/messages/${pendingConversationId}`);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </CitadelleLayout>
   );
 }
