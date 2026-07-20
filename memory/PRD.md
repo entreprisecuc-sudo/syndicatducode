@@ -18,6 +18,11 @@
 - Vérifié en production : logo visible sur fond blanc sur `lacitadellenumerique.fr/citadelle/annonces`.
 - **À FAIRE** : proposer au client un script `deploy.sh` en 1 commande (il déployait « autrement » avant — méthode non précisée).
 
+## ⭐ Session 20/07/2026 (soir, 2e lot) — 2 correctifs UI + redéploiement VPS ✅
+- **Séparateur page annonces** (`CitadelleListings.js`) : ajout d'un séparateur élégant entre le carrousel « À la Une » et la grille (losange doré + titre « TOUTES LES ANNONCES » en majuscules espacées + filet dégradé doré→transparent). `data-testid=listings-section-divider`. Demandé par le client (transition invisible auparavant).
+- **Filtres blog admin invisibles en thème clair** (`pages/admin/AdminCitadelleBlog.js`, ~ligne 340) : les boutons de filtre non actifs (« Publiés », « En attente ») utilisaient `background: rgba(255,255,255,0.06)` + `color: rgba(255,255,255,0.7)` (pensés pour thème sombre) → invisibles sur fond clair. Corrigé : non actif = `#F1F5F9` fond + `#475569` texte + bordure `#E2E8F0` ; actif = `#C9A45C` fond + `#081729` texte. Visible dans les 2 thèmes (clair ET sombre). ⚠️ Cette page admin a un TOGGLE thème clair/sombre — penser aux 2 modes pour tout futur style inline.
+- **Redéployé sur VPS** : `git pull` (fast-forward sur main-projet-8) → `cd frontend && yarn build` → `nginx -t && systemctl reload nginx` (PAS de restart backend, changement frontend pur). Vérifié en prod : séparateur visible sur lacitadellenumerique.fr/citadelle/annonces.
+
 
 ## ⭐ Session 20/07/2026 — Finalisation service « Annonce à la Une » (boost) (PREVIEW)
 - **Besoin client** : permettre au vendeur de payer pour mettre son annonce « à la Une » (carrousel de visibilité). Formules : **19 € / 3 mois** ou **49 € / jusqu'à la vente**. Proposé (1) à la fin de la soumission d'annonce ET (2) sur la fiche détail pour le propriétaire.
