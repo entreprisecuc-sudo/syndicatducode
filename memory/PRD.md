@@ -7,6 +7,18 @@
 
 ---
 
+## ⭐ Session 20/07/2026 (soir) — Correctif logo encart partenaire + DÉPLOIEMENT VPS ✅
+- **Correctif (P0)** : dans `pages/citadelle/CitadelleListings.js`, l'encart partenaire « Le projet de vos rêves… » affichait le `logo.png` (tons sombres) sur un carré **fond bleu marine** → logo invisible. Fond du carré passé en **blanc** + bordure dorée 2px, logo agrandi (`w-full h-full object-contain`) et carré agrandi (`w-28/h-28 md:w-32/h-32`). Vérifié par screenshot preview PUIS en production.
+- **DÉPLOYÉ SUR LE VPS ✅** (première fois avec le client, guidage pas à pas). Process réel confirmé :
+  - VPS : `/var/www/syndicatducode.fr` (monorepo unique servant **les deux domaines** syndicatducode.fr ET lacitadellenumerique.fr).
+  - GitHub : `https://github.com/entreprisecuc-sudo/syndicatducode.git`, branche déployée = **`main-projet-8`** (auparavant sur `main-projet-7`).
+  - Étapes : `git fetch` → écarter `frontend/{package-lock.json,yarn.lock}` non suivis (renommés `.bak`) → `git checkout main-projet-8` → `cd frontend && yarn install && yarn build` → `cd ../backend && pip install -r requirements.txt --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/` (emergentintegrations 0.2.0→0.1.0) → `pm2 restart syndicat-backend` (logs propres) → `nginx -t && systemctl reload nginx`.
+  - Backend géré par **PM2** (process `syndicat-backend`). Frontend servi en statique par **Nginx** depuis `frontend/build`.
+  - `frontend/.env` prod = `REACT_APP_BACKEND_URL=https://syndicatducode.fr`, Stripe **live**, Google Client ID, `REACT_APP_CITADELLE_URL=https://lacitadellenumerique.fr` (non écrasé par le pull).
+- Vérifié en production : logo visible sur fond blanc sur `lacitadellenumerique.fr/citadelle/annonces`.
+- **À FAIRE** : proposer au client un script `deploy.sh` en 1 commande (il déployait « autrement » avant — méthode non précisée).
+
+
 ## ⭐ Session 20/07/2026 — Finalisation service « Annonce à la Une » (boost) (PREVIEW)
 - **Besoin client** : permettre au vendeur de payer pour mettre son annonce « à la Une » (carrousel de visibilité). Formules : **19 € / 3 mois** ou **49 € / jusqu'à la vente**. Proposé (1) à la fin de la soumission d'annonce ET (2) sur la fiche détail pour le propriétaire.
 - **Nouveau composant réutilisable (DRY)** : `components/citadelle/BoostModal.jsx` — modale présentant les 2 formules (constante exportée `BOOST_PLANS`), sélection + redirection vers Stripe Checkout via `POST /api/citadelle/payments/boost/checkout` `{listing_id, plan, origin_url}`. data-testids : `boost-modal`, `boost-plan-3months`, `boost-plan-until_sale`, `boost-checkout-btn`, `boost-modal-close`.
