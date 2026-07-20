@@ -8,7 +8,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, ChevronLeft, ChevronRight, Eye, Castle } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
-import { getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
+import { getListingImageUrl, isImageFile, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 
 export default function ListingsCarousel({ variant = "dark", title = "Dernières annonces", limit = 8 }) {
   const [listings, setListings] = useState([]);
@@ -55,12 +55,9 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
     : "text-[#0F2747]/40 group-hover:text-[#0F2747]/60 transition-colors duration-300 flex items-center gap-1.5 text-[11px] mt-2 pt-2 border-t border-[#0F2747]/[0.06]";
 
   const placeholderWrap = dark
-    ? "bg-gradient-to-br from-[#081729] to-[#0F2747] flex items-center justify-center relative overflow-hidden h-full w-full"
-    : "bg-gradient-to-br from-[#F5F7FA] to-[#E2E8F0] flex items-center justify-center relative overflow-hidden h-full w-full";
-  const placeholderDots = dark
-    ? "absolute inset-0 opacity-[0.15] bg-[radial-gradient(circle_at_center,_#C9A45C_1px,_transparent_1px)] bg-[size:12px_12px]"
-    : "absolute inset-0 opacity-[0.05] bg-[radial-gradient(circle_at_center,_#0F2747_1px,_transparent_1px)] bg-[size:12px_12px]";
-  const placeholderIcon = dark ? "text-[#C9A45C]/35" : "text-[#0F2747]/25";
+    ? "bg-white flex items-center justify-center relative overflow-hidden h-full w-full"
+    : "bg-gradient-to-br from-[#0F2747] to-[#081729] flex items-center justify-center relative overflow-hidden h-full w-full";
+  const placeholderDots = "absolute inset-0 opacity-[0.15] bg-[radial-gradient(circle_at_center,_#C9A45C_1px,_transparent_1px)] bg-[size:12px_12px]";
 
   return (
     <div className="mt-6" data-testid="listings-carousel" style={{ fontFamily: "'Montserrat', sans-serif" }}>
@@ -102,8 +99,15 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
                   </>
                 ) : (
                   <div className={placeholderWrap}>
-                    <div className={placeholderDots} />
-                    <Castle size={26} strokeWidth={1} className={`relative z-10 ${placeholderIcon}`} />
+                    {dark ? (
+                      <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name}
+                        className="relative z-10 max-h-[86px] w-auto object-contain px-4 opacity-95" />
+                    ) : (
+                      <>
+                        <div className={placeholderDots} />
+                        <Castle size={26} strokeWidth={1} className="relative z-10 text-[#C9A45C]/45" />
+                      </>
+                    )}
                   </div>
                 )}
               </div>
