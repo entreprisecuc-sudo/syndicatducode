@@ -693,3 +693,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Frontend** : `SellerNoticeModal.jsx` monté dans `CitadelleLayout` → pop-up à la connexion du vendeur (message rassurant, prix de réserve = prix de vente par défaut, 5 conseils, boutons « Modifier mon annonce » / « J'ai compris » qui confirme la notice). Ne réapparaît plus après confirmation.
 - **Validé (curl + screenshot)** : endpoints pending/ack OK, pop-up affiché correctement. Email NON envoyé en test (Règle 6 — pas d'email de test vers adresse invalide) ; fonction importée OK. Testing agent NON utilisé (Règle 6).
 - Nouvelle collection : `citadelle_seller_notices` {id, user_id, type, listing_id, listing_title, listing_slug, price, acknowledged, acknowledged_at, created_at}.
+
+## ✨ Session 20/07/2026 — Uploader drag & drop des fichiers joints (PREVIEW)
+- **Refonte** de `components/citadelle/CitadelleImageUpload.js` : remplacement des 5 champs URL par une **zone de glisser-déposer** visuelle (drag & drop + clic pour parcourir), upload **multiple**, aperçus en grille (vignette image ou icône PDF/DOC), badge « Principale » sur le 1er fichier, bouton de suppression par vignette, compteur X/5, gestion d'erreurs (format/taille/quota). Option repliée « Ajouter plutôt via une URL » conservée.
+- Props inchangées (`images`, `onChange`, `inputStyle`, `labelStyle`) → aucun changement dans `CitadelleCreateListing.js` / `CitadelleEditListing.js`. Même endpoint `POST /api/citadelle/upload-image`, mêmes contraintes (5 max, 10 Mo, JPEG/PNG/WebP/GIF/PDF/DOC).
+- **Validé (screenshot)** : dropzone rendue correctement à l'étape 3 du wizard de création. Testing agent NON utilisé (Règle 6).
