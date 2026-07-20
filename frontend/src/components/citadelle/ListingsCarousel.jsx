@@ -62,18 +62,14 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
           <TrendingUp size={16} className="text-[#C9A45C]" />
           <h2 className={`text-sm font-semibold uppercase tracking-[0.2em] ${headTitle}`}>{title}</h2>
         </div>
-        <div className="flex items-center gap-3">
-          <Link to="/citadelle/annonces" className="text-sm text-[#C9A45C] hover:text-[#D9BB7A] transition-colors duration-300 flex items-center gap-1.5 font-medium">
-            Voir tout <span aria-hidden>→</span>
-          </Link>
-          <div className="hidden sm:flex gap-2 ml-1">
-            <button type="button" onClick={() => scrollBy(-1)} aria-label="Précédent" className={arrowBtn} data-testid="carousel-prev"><ChevronLeft size={16} /></button>
-            <button type="button" onClick={() => scrollBy(1)} aria-label="Suivant" className={arrowBtn} data-testid="carousel-next"><ChevronRight size={16} /></button>
-          </div>
-        </div>
+        <Link to="/citadelle/annonces" className="text-sm text-[#C9A45C] hover:text-[#D9BB7A] transition-colors duration-300 flex items-center gap-1.5 font-medium">
+          Voir tout <span aria-hidden>→</span>
+        </Link>
       </div>
 
-      <div ref={ref} className="flex gap-6 overflow-x-auto pb-3 snap-x" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+      <div className="flex items-center justify-center gap-3 sm:gap-5">
+        <button type="button" onClick={() => scrollBy(-1)} aria-label="Précédent" className={`${arrowBtn} flex-none`} data-testid="carousel-prev"><ChevronLeft size={18} /></button>
+        <div ref={ref} className="flex gap-6 overflow-x-auto pb-3 snap-x w-full max-w-[708px]" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         <style>{`[data-testid="listings-carousel"] > div::-webkit-scrollbar{display:none}`}</style>
         {listings.map((l) => {
           const img = l.images?.filter(Boolean).find(isImageFile);
@@ -114,6 +110,8 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
             </Link>
           );
         })}
+        </div>
+        <button type="button" onClick={() => scrollBy(1)} aria-label="Suivant" className={`${arrowBtn} flex-none`} data-testid="carousel-next"><ChevronRight size={18} /></button>
       </div>
     </div>
   );
