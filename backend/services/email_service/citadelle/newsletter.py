@@ -130,12 +130,86 @@ def _build_listing_row(listing: dict, history_id: str = None) -> str:
         </tr>"""
 
 
+def _build_blog_post_row(post: dict, history_id: str = None) -> str:
+    """Ligne HTML compacte d'un article de blog dans une fenêtre."""
+    title = post.get("title", "")
+    slug = post.get("slug") or post.get("id", "")
+    excerpt = (post.get("excerpt") or "")[:110]
+    if len(post.get("excerpt") or "") > 110:
+        excerpt += "…"
+    post_url = f"{CITADELLE_URL}/citadelle/blog/{slug}"
+    if history_id:
+        from urllib.parse import quote
+        post_url = f"{BACKEND_PUBLIC_URL}/api/citadelle/newsletter/click/{history_id}?url={quote(post_url, safe='')}"
+
+    excerpt_html = ""
+    if excerpt:
+        excerpt_html = (
+            f'<p style="margin:2px 0 0 0;font-size:12px;color:#5F6672;line-height:1.5;">{excerpt}</p>'
+        )
+    return f"""
+              <tr>
+                <td style="padding:12px 18px;border-top:1px solid #F0F3F7;">
+                  <a href="{post_url}" style="text-decoration:none;">
+                    <span style="font-size:14px;color:#0F2747;font-weight:700;line-height:1.35;">{title}</span>
+                  </a>
+                  {excerpt_html}
+                </td>
+              </tr>"""
+
+
+def _build_blog_section_html(section: dict, history_id: str = None) -> str:
+    """Génère une « fenêtre » (Derniers articles / Guides / Chroniques)."""
+    posts = section.get("posts") or []
+    if not posts:
+        return ""
+    rows = "".join(_build_blog_post_row(p, history_id=history_id) for p in posts)
+    return f"""
+        <tr>
+          <td style="padding:8px 40px;">
+            <table cellpadding="0" cellspacing="0" width="100%"
+                   style="border:1px solid #E7EBF0;border-radius:12px;overflow:hidden;">
+              <tr>
+                <td style="background:#0F2747;padding:12px 18px;">
+                  <span style="color:#C9A45C;font-weight:800;font-size:12px;
+                               text-transform:uppercase;letter-spacing:1px;">{section.get('label','')}</span>
+                </td>
+              </tr>
+              {rows}
+            </table>
+          </td>
+        </tr>"""
+
+
+def _build_blog_sections_block(blog_sections: list, history_id: str = None) -> str:
+    """Bloc complet « À lire cette semaine » avec les 3 fenêtres."""
+    sections_html = "".join(_build_blog_section_html(s, history_id=history_id) for s in (blog_sections or []) if s.get("posts"))
+    if not sections_html:
+        return ""
+    return f"""
+        <!-- Séparateur -->
+        <tr>
+          <td style="padding:0 40px;">
+            <div style="height:2px;background:linear-gradient(to right,#0F2747,#C9A45C,#0F2747);opacity:0.2;"></div>
+          </td>
+        </tr>
+        <!-- ── À LIRE CETTE SEMAINE ── -->
+        <tr>
+          <td style="padding:28px 40px 8px;text-align:center;">
+            <h2 style="color:#0F2747;font-size:18px;font-weight:700;margin:0;">À lire cette semaine</h2>
+            <p style="color:#5F6672;font-size:13px;margin:6px 0 0;">Guides, chroniques et derniers articles de La Citadelle.</p>
+          </td>
+        </tr>
+        {sections_html}"""
+
+
 def build_newsletter_html(
     listings: list,
     unsubscribe_token: str,
     period_days: int,
     is_preview: bool = False,
     history_id: str = None,
+    blog_sections: list = None,
 ) -> str:
     """
     Construit le HTML complet de l'email newsletter.
@@ -274,6 +348,8 @@ def build_newsletter_html(
           </td>
         </tr>
 
+        {_build_blog_sections_block(blog_sections, history_id=history_id if not is_preview else None)}
+
         <!-- ── PIED DE PAGE ── -->
         <tr>
           <td style="background:#081729;padding:28px 40px;text-align:center;">
@@ -307,6 +383,7 @@ def send_newsletter_digest_email(
     unsubscribe_token: str,
     period_days: int,
     history_id: str = None,
+    blog_sections: list = None,
 ) -> bool:
     """
     Envoie l'email digest newsletter à un abonné.
@@ -325,6 +402,7 @@ def send_newsletter_digest_email(
             period_days=period_days,
             is_preview=False,
             history_id=history_id,
+            blog_sections=blog_sections,
         )
 
         msg = MIMEMultipart("alternative")

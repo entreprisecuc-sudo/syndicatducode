@@ -66,6 +66,34 @@ async def get_or_create_config() -> dict:
 # ── Logique d'envoi ────────────────────────────────────────────────────────────
 
 
+# Définition des 3 « fenêtres » d'articles affichées en bas de la newsletter
+BLOG_NEWSLETTER_SECTIONS = [
+    ("Derniers articles", {"$nin": ["guide-la-citadelle", "chroniques-la-garde"]}),
+    ("Guides de La Citadelle", "guide-la-citadelle"),
+    ("Chroniques de La Garde", "chroniques-la-garde"),
+]
+
+
+async def fetch_blog_sections(since_iso: str = None, per_section: int = 3) -> list:
+    """
+    Récupère les derniers articles publiés pour les 3 fenêtres de la newsletter.
+    Si `since_iso` est fourni, ne prend que les articles publiés après cette date
+    (articles de la semaine) ; sinon les plus récents (aperçu/envoi forcé).
+    """
+    if _db is None:
+        return []
+    proj = {"_id": 0, "title": 1, "slug": 1, "excerpt": 1, "category": 1, "published_at": 1}
+    sections = []
+    for label, cat_filter in BLOG_NEWSLETTER_SECTIONS:
+        query = {"is_published": True, "category": cat_filter}
+        if since_iso:
+            query["published_at"] = {"$gte": since_iso}
+        posts = await _db.citadelle_blog_posts.find(query, proj).sort("published_at", -1).limit(per_section).to_list(per_section)
+        if posts:
+            sections.append({"label": label, "posts": posts})
+    return sections
+
+
 async def publish_scheduled_posts():
     """
     Job horaire — Publie automatiquement les articles planifiés arrivés à échéance.
@@ -272,6 +300,11 @@ async def run_newsletter_digest(force: bool = False):
         f"[Newsletter] Démarrage envoi : {len(listings)} annonce(s) → {len(subscribers)} abonné(s)."
     )
 
+    # Récupération des 3 fenêtres d'articles (bas de newsletter)
+    blog_since = None if force else (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
+    blog_sections = await fetch_blog_sections(since_iso=blog_since)
+    logger.info(f"[Newsletter] Fenêtres d'articles : {[(s['label'], len(s['posts'])) for s in blog_sections]}")
+
     # Import local pour éviter les imports circulaires au chargement du module
     from services.email_service import send_newsletter_digest_email
 
@@ -286,6 +319,7 @@ async def run_newsletter_digest(force: bool = False):
         "frequency": freq,
         "listings_count": len(listings),
         "listings_snapshot": listings,  # Stocké pour reconstituer l'aperçu
+        "blog_sections_snapshot": blog_sections,  # Fenêtres d'articles pour l'aperçu
         "total_sent": len(subscribers),
         "total_delivered": 0,
         "total_failed": 0,
@@ -305,6 +339,7 @@ async def run_newsletter_digest(force: bool = False):
             unsubscribe_token=subscriber["unsubscribe_token"],
             period_days=days_back,
             history_id=history_id,
+            blog_sections=blog_sections,
         )
 
         if success:

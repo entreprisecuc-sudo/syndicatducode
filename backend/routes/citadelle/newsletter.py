@@ -20,6 +20,7 @@ from services.newsletter_scheduler import (
     get_or_create_config,
     reschedule_newsletter_job,
     run_newsletter_digest,
+    fetch_blog_sections,
 )
 from services.email_service import build_newsletter_html
 
@@ -334,11 +335,14 @@ async def admin_preview_email(current_user: dict = Depends(require_admin)):
 
     listings = await cursor.to_list(5)
 
+    blog_sections = await fetch_blog_sections(since_iso=None)
+
     html = build_newsletter_html(
         listings=listings,
         unsubscribe_token="PREVIEW",
         period_days=7,
         is_preview=True,
+        blog_sections=blog_sections,
     )
     return HTMLResponse(content=html)
 
@@ -420,10 +424,12 @@ async def admin_history_preview(
         raise HTTPException(status_code=404, detail="Historique introuvable.")
 
     listings = record.get("listings_snapshot", [])
+    blog_sections = record.get("blog_sections_snapshot") or await fetch_blog_sections(since_iso=None)
     html = build_newsletter_html(
         listings=listings,
         unsubscribe_token="PREVIEW",
         period_days=record.get("period_days", 7),
         is_preview=True,
+        blog_sections=blog_sections,
     )
     return HTMLResponse(content=html)
