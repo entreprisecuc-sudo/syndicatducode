@@ -6,7 +6,7 @@
  */
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, ChevronLeft, ChevronRight, Castle } from "lucide-react";
+import { TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
 import { getListingImageUrl, isImageFile, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 
@@ -44,7 +44,7 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
 
   const cardClasses = dark
     ? "flex-none w-[220px] flex flex-col overflow-hidden group cursor-pointer rounded-xl bg-white border-[3px] border-[#C9A45C] transition-[transform,box-shadow] duration-500 ease-out hover:shadow-[0_12px_34px_rgba(0,0,0,0.55)] hover:-translate-y-1.5"
-    : "flex-none w-[220px] flex flex-col overflow-hidden group cursor-pointer rounded-xl bg-white border border-[#0F2747]/[0.07] transition-[transform,border-color,box-shadow] duration-500 ease-out hover:border-[#C9A45C]/40 hover:shadow-[0_10px_30px_rgba(15,39,71,0.10)] hover:-translate-y-1.5";
+    : "flex-none w-[220px] flex flex-col overflow-hidden group cursor-pointer rounded-xl bg-white border-[3px] border-[#C9A45C] transition-[transform,box-shadow] duration-500 ease-out hover:shadow-[0_10px_30px_rgba(15,39,71,0.18)] hover:-translate-y-1.5";
 
   const titleCls = dark
     ? "text-[#0F2747] transition-colors duration-300 truncate text-[13px] font-semibold"
@@ -54,7 +54,6 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
   const placeholderWrap = dark
     ? "bg-white flex items-center justify-center relative overflow-hidden h-full w-full"
     : "bg-gradient-to-br from-[#0F2747] to-[#081729] flex items-center justify-center relative overflow-hidden h-full w-full";
-  const placeholderDots = "absolute inset-0 opacity-[0.15] bg-[radial-gradient(circle_at_center,_#C9A45C_1px,_transparent_1px)] bg-[size:12px_12px]";
 
   return (
     <div className="mt-6" data-testid="listings-carousel" style={{ fontFamily: "'Montserrat', sans-serif" }}>
@@ -82,7 +81,7 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
           return (
             <Link key={l.id} to={`/citadelle/annonces/${l.slug}`} className={cardClasses} data-testid={`carousel-card-${l.slug}`}>
               {/* Zone visuelle */}
-              <div className="h-[120px] w-full relative overflow-hidden" style={{ background: "#081729", borderBottom: dark ? "3px solid #C9A45C" : "1px solid rgba(15,39,71,0.06)" }}>
+              <div className="h-[120px] w-full relative overflow-hidden" style={{ background: "#081729", borderBottom: "3px solid #C9A45C" }}>
                 {l.is_adult ? (
                   <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg,#1a1626,#2d1b2e)" }}>
                     <span className="text-xs font-black px-2.5 py-1 rounded-full" style={{ background: "rgba(220,38,38,0.2)", color: "#f87171", border: "1px solid #f87171" }}>18+</span>
@@ -100,10 +99,9 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
                       <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name}
                         className="relative z-10 max-h-[86px] w-auto object-contain px-4 opacity-95" />
                     ) : (
-                      <>
-                        <div className={placeholderDots} />
-                        <Castle size={26} strokeWidth={1} className="relative z-10 text-[#C9A45C]/45" />
-                      </>
+                      <div className="relative z-10 bg-white rounded-xl px-4 py-3 shadow-md">
+                        <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="max-h-[54px] w-auto object-contain" />
+                      </div>
                     )}
                   </div>
                 )}

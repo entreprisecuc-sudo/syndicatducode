@@ -155,9 +155,6 @@ export default function CitadelleListings() {
       {/* Grille */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
 
-        {/* Carrousel « À la Une » — indépendant des filtres */}
-        <ListingsCarousel variant="light" title="À la Une" limit={8} />
-
         {/* ── Bandeau vendeur ──────────────────────────────────────────── */}
         <div className="relative overflow-hidden rounded-2xl mb-8 px-8 py-7 flex flex-col md:flex-row items-center justify-between gap-6"
           style={{ background: CITADELLE_COLORS.night }}>
@@ -198,6 +195,10 @@ export default function CitadelleListings() {
             <ArrowRight size={15} />
           </Link>
         </div>
+
+        {/* Carrousel « À la Une » — indépendant des filtres (sous le bandeau) */}
+        <ListingsCarousel variant="light" title="À la Une" limit={8} />
+
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
