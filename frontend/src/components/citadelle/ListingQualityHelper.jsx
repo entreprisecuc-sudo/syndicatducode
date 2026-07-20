@@ -10,31 +10,7 @@
  */
 import { Lightbulb, CheckCircle2, Circle, Sparkles } from "lucide-react";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
-
-const hasNumber = (s) => /\d/.test(s || "");
-const len = (s) => (s || "").trim().length;
-
-// Critères de qualité — chaque critère est rattaché à une étape
-function buildCriteria(form) {
-  const nbImages = (form.images || []).filter(Boolean).length;
-  const criteria = [
-    { step: 0, weight: 10, done: len(form.title) >= 15, label: "Un titre clair d'au moins 15 caractères" },
-    { step: 0, weight: 8,  done: hasNumber(form.title), label: "Un chiffre clé dans le titre (revenu, trafic…)" },
-    { step: 0, weight: 10, done: len(form.short_description) >= 80, label: "Une accroche d'au moins 80 caractères" },
-    { step: 1, weight: 12, done: !!form.monthly_revenue && parseFloat(form.monthly_revenue) > 0, label: "Vos revenus mensuels" },
-    { step: 1, weight: 8,  done: !!form.monthly_traffic && parseFloat(form.monthly_traffic) > 0, label: "Votre trafic mensuel" },
-    { step: 1, weight: 6,  done: !!form.age_months, label: "L'ancienneté de l'actif" },
-    { step: 1, weight: 6,  done: len(form.niche) > 0, label: "La niche / le secteur" },
-    { step: 2, weight: 14, done: len(form.description) >= 300, label: "Une description détaillée d'au moins 300 caractères" },
-    { step: 2, weight: 6,  done: len(form.technologies) > 0, label: "Les technologies utilisées" },
-  ];
-  // Critères non pertinents pour le contenu adulte (ni image ni URL affichées)
-  if (!form.is_adult) {
-    criteria.push({ step: 2, weight: 14, done: nbImages > 0, label: "Au moins une image (visuel de vente)" });
-    criteria.push({ step: 2, weight: 6,  done: len(form.url_preview) > 0, label: "L'URL ou une démo du site" });
-  }
-  return criteria;
-}
+import { computeListingQuality } from "@/config/listingQuality";
 
 const STEP_TIPS = {
   0: [
@@ -54,19 +30,8 @@ const STEP_TIPS = {
   ],
 };
 
-function scoreLabel(pct) {
-  if (pct >= 90) return { text: "Excellente annonce", color: "#16A34A" };
-  if (pct >= 70) return { text: "Bonne annonce", color: CITADELLE_COLORS.gold };
-  if (pct >= 40) return { text: "À compléter", color: "#F59E0B" };
-  return { text: "À enrichir", color: "#EF4444" };
-}
-
 export default function ListingQualityHelper({ form, step }) {
-  const criteria = buildCriteria(form);
-  const total = criteria.reduce((s, c) => s + c.weight, 0);
-  const done = criteria.filter(c => c.done).reduce((s, c) => s + c.weight, 0);
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-  const lbl = scoreLabel(pct);
+  const { pct, criteria, label: lbl } = computeListingQuality(form);
 
   // Critères non remplis pertinents pour l'étape en cours (ou toutes à l'étape récap)
   const missing = criteria.filter(c => !c.done && (step === 3 || c.step === step));

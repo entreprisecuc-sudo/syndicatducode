@@ -717,3 +717,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Frontend** : nouveau composant `ListingQualityHelper.jsx` (100% front, indicatif) intégré dans `CitadelleCreateListing.js` (par étape via prop `step`) et `CitadelleEditListing.js` (page unique, `step={3}` → checklist complète).
 - Contient : (A) **conseils contextuels bienveillants** par étape (ton pédagogue, icônes ampoule) + (B) **score de qualité en temps réel** (barre or, %, libellé À enrichir/À compléter/Bonne/Excellente) calculé sur des critères pondérés (titre clair + chiffre, accroche ≥80, revenus, trafic, ancienneté, niche, description ≥300, technologies, image, URL). Critères image/URL exclus pour contenu adulte. Purement indicatif (ne bloque PAS la publication).
 - **Validé (screenshot)** : score dynamique 0%→28% en remplissant, conseils et checklist affichés, message de félicitations quand l'étape est complète. Testing agent NON utilisé (Règle 6).
+
+## ✨ Session 20/07/2026 — Score qualité côté admin (file de validation)
+- **Refactor DRY** : logique de score extraite dans `config/listingQuality.js` (`computeListingQuality`, gère technologies string OU tableau) ; `ListingQualityHelper` refactorisé pour l'utiliser.
+- **Admin** (`AdminCitadelleListings.js`) : badge score coloré (%) sur chaque ligne d'annonce (`QualityBadge`) + panneau détaillé dans la modale (`QualityPanel` : barre, libellé, liste des éléments manquants à suggérer au vendeur).
+- **Validé (screenshot)** : 28 badges affichés, panneau détail fonctionnel (ex : 35% · À enrichir + éléments manquants). 100% front. Testing agent NON utilisé (Règle 6).

@@ -8,6 +8,7 @@ import { CheckCircle, XCircle, Star, Eye, Filter, AlertCircle, Trash2, X, Extern
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
 import { getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@/config/citadelleConstants";
+import { computeListingQuality } from "@/config/listingQuality";
 
 const STATUS_LABELS = {
   pending:  { label: "En attente", color: "#F59E0B", bg: "rgba(245,158,11,0.1)" },
@@ -205,6 +206,8 @@ export default function AdminCitadelleListings() {
                     style={{ background: statusCfg.bg, color: statusCfg.color }}>
                     {statusCfg.label}
                   </span>
+                  {/* Score qualité */}
+                  <QualityBadge listing={listing} />
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {/* Voir les détails — toujours disponible */}
@@ -355,6 +358,9 @@ export default function AdminCitadelleListings() {
                 {detailModal.age_months != null && <MetriqueCard icon={Calendar} label="Âge" value={`${detailModal.age_months} mois`} />}
               </div>
 
+              {/* Score de qualité (aide à l'accompagnement du vendeur) */}
+              <QualityPanel listing={detailModal} />
+
               {/* Enchère */}
               {detailModal.is_auction && (
                 <div className="p-4 rounded-xl space-y-1" style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.15)" }}>
@@ -483,6 +489,51 @@ function MetriqueCard({ icon: Icon, label, value }) {
         <span className="text-xs opacity-40 uppercase tracking-wide">{label}</span>
       </div>
       <p className="text-sm font-bold">{value}</p>
+    </div>
+  );
+}
+
+// Badge compact du score de qualité (ligne de liste)
+function QualityBadge({ listing }) {
+  const { pct, label } = computeListingQuality(listing);
+  return (
+    <span
+      className="text-xs px-2.5 py-1 rounded-lg font-bold flex-shrink-0 flex items-center gap-1"
+      style={{ background: `${label.color}1A`, color: label.color }}
+      title={`Qualité de l'annonce : ${label.text}`}
+      data-testid={`admin-quality-${listing.id}`}
+    >
+      {pct}%
+    </span>
+  );
+}
+
+// Panneau détaillé du score + éléments manquants (modale)
+function QualityPanel({ listing }) {
+  const { pct, label, missing } = computeListingQuality(listing);
+  return (
+    <div className="p-4 rounded-xl" style={{ background: "rgba(201,164,92,0.06)", border: "1px solid rgba(201,164,92,0.2)" }} data-testid="admin-quality-panel">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#C9A45C" }}>Qualité de l'annonce</span>
+        <span className="text-sm font-black" style={{ color: label.color }}>{pct}% · {label.text}</span>
+      </div>
+      <div className="h-2 w-full rounded-full overflow-hidden mb-3" style={{ background: "rgba(255,255,255,0.08)" }}>
+        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: `linear-gradient(90deg, #C9A45C, #E0BE7A)` }} />
+      </div>
+      {missing.length > 0 ? (
+        <>
+          <p className="text-xs opacity-50 mb-1.5">Éléments manquants (à suggérer au vendeur) :</p>
+          <ul className="space-y-1">
+            {missing.map((c, i) => (
+              <li key={i} className="text-xs opacity-70 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#C9A45C" }} /> {c.label}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p className="text-xs" style={{ color: "#16A34A" }}>Annonce complète — rien à signaler. ✅</p>
+      )}
     </div>
   );
 }
