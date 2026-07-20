@@ -18,6 +18,7 @@ import citadelleApi from "@/services/citadelleApi";
 import CitadelleChatWidget from "@/components/citadelle/CitadelleChatWidget";
 import ModerationBanner from "@/components/citadelle/ModerationBanner";
 import SellerNoticeModal from "@/components/citadelle/SellerNoticeModal";
+import RecentSaleBanner from "@/components/citadelle/RecentSaleBanner";
 
 // ── Navigation ───────────────────────────────────────────────────────────────
 
@@ -347,6 +348,7 @@ const CitadelleLayout = ({ children, pageTitle }) => {
     <div style={{ fontFamily: "'Inter', sans-serif", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <CitadelleNav />
       <ModerationBanner />
+      <RecentSaleBanner />
       <main style={{ flex: 1 }}>
         {children}
       </main>

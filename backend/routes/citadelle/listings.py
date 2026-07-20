@@ -289,6 +289,21 @@ async def my_listings(current_user: dict = Depends(require_citadelle_user)):
     listings = await cursor.to_list(100)
     return {"listings": listings}
 
+@router.get("/listings/recent-sales", summary="Ventes récentes (preuve sociale)")
+async def recent_sales(limit: int = Query(8, ge=1, le=20)):
+    """Dernières annonces vendues — utilisé pour la bannière de preuve sociale."""
+    cursor = db.citadelle_listings.find(
+        {"status": "sold"},
+        {"_id": 0, "title": 1, "type": 1, "price": 1, "updated_at": 1}
+    ).sort("updated_at", -1)
+    docs = await cursor.to_list(limit)
+    return {"sales": [
+        {"title": d.get("title"), "type": d.get("type"), "price": d.get("price"), "sold_at": d.get("updated_at")}
+        for d in docs
+    ]}
+
+
+
 
 @router.get("/listings/carousel", summary="Carrousel : annonces à la Une + complément aléatoire")
 async def listings_carousel(limit: int = Query(8, ge=1, le=50)):
