@@ -192,9 +192,11 @@ export default function AdminCitadelleListings() {
             {listings.map(listing => {
               const statusCfg = STATUS_LABELS[listing.status] || STATUS_LABELS.draft;
               return (
-                <div key={listing.id} className="flex items-center gap-4 p-4 rounded-xl"
+                <div key={listing.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl"
                   style={{ background: "var(--admin-bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--admin-border, rgba(255,255,255,0.1))" }}
                   data-testid={`admin-listing-row-${listing.id}`}>
+                  {/* Groupe gauche : miniature + infos */}
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                   {/* Miniature */}
                   <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center"
                     style={{ background: "rgba(255,255,255,0.05)" }}>
@@ -214,6 +216,9 @@ export default function AdminCitadelleListings() {
                       </p>
                     )}
                   </div>
+                  </div>
+                  {/* Groupe droit : statut + score + actions */}
+                  <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap sm:justify-end sm:flex-shrink-0">
                   {/* Statut */}
                   <span className="text-xs px-2.5 py-1 rounded-lg font-semibold flex-shrink-0"
                     style={{ background: statusCfg.bg, color: statusCfg.color }}>
@@ -278,6 +283,7 @@ export default function AdminCitadelleListings() {
                       data-testid={`admin-delete-${listing.id}`}>
                       <Trash2 size={15} />
                     </button>
+                  </div>
                   </div>
                 </div>
               );
