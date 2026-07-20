@@ -729,3 +729,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Frontend** : nouveau var `REACT_APP_CITADELLE_URL=https://lacitadellenumerique.fr` (frontend/.env) ; `CitadelleListingDetail.js` construit le lien ShareBar avec ce var.
 - **Validé (curl + screenshot)** : og:url/canonical/redirect = lacitadellenumerique.fr ; boutons de partage pointent sur lacitadellenumerique.fr (0 syndicatducode). Testing agent NON utilisé (Règle 6).
 - ⚠️ Déploiement : ajouter `REACT_APP_CITADELLE_URL=https://lacitadellenumerique.fr` au frontend/.env du VPS (gitignoré) puis rebuild. lacitadellenumerique.fr doit proxifier /api vers le backend.
+
+## 🔧 Session 20/07/2026 — Cohérence domaine Citadelle (sitemap + emails)
+- **Sitemap** (`routes/sitemaps.py`) : déjà DYNAMIQUE (interroge la base à chaque requête → auto-à-jour à chaque nouvelle annonce active, sans cron). Refactor : `CITADELLE_DOMAIN`/`SYNDICAT_DOMAIN` tirés de `settings.CITADELLE_URL`/`FRONTEND_URL` (fin du hardcode). Routes : `/api/sitemap-citadelle.xml`, `/api/sitemap-syndicat.xml`.
+- **Emails Citadelle** : vérifié — tous les liens utilisent déjà `CITADELLE_URL` (lacitadellenumerique.fr). Aucun lien via FRONTEND_URL. Rien à changer.
+- **Validé (curl)** : sitemap 100% lacitadellenumerique.fr, 0 syndicatducode, annonces actives listées dynamiquement. Testing agent NON utilisé (Règle 6).

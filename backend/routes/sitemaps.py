@@ -7,14 +7,15 @@ from datetime import datetime, timezone
 from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi import APIRouter
 from fastapi.responses import Response
+from config.settings import CITADELLE_URL, FRONTEND_URL
 
 router = APIRouter(tags=["sitemaps"])
 
 MONGO_URL  = os.environ["MONGO_URL"]
 DB_NAME    = os.environ.get("DB_NAME", "syndicat_base")
 
-CITADELLE_DOMAIN = "https://lacitadellenumerique.fr"
-SYNDICAT_DOMAIN  = "https://syndicatducode.fr"
+CITADELLE_DOMAIN = CITADELLE_URL.rstrip("/")
+SYNDICAT_DOMAIN  = FRONTEND_URL.rstrip("/")
 
 
 def _url(loc: str, lastmod: str = None, changefreq: str = "weekly", priority: str = "0.8") -> str:
