@@ -274,13 +274,16 @@ export default function CitadelleListings() {
                 {/* Logo Syndicat à gauche */}
                 <div className="flex-shrink-0">
                   <div
-                    className="w-24 h-24 md:w-28 md:h-28 rounded-2xl flex items-center justify-center"
-                    style={{ background: CITADELLE_COLORS.blue }}
+                    className="w-28 h-28 md:w-32 md:h-32 rounded-2xl flex items-center justify-center p-2 overflow-hidden"
+                    style={{
+                      background: "#FFFFFF",
+                      border: `2px solid ${CITADELLE_COLORS.gold}`,
+                    }}
                   >
                     <img
                       src="/logo.png"
                       alt="Le Syndicat du Code"
-                      className="w-16 h-16 md:w-20 md:h-20 object-contain"
+                      className="w-full h-full object-contain"
                       data-testid="syndicat-partner-logo"
                     />
                   </div>
