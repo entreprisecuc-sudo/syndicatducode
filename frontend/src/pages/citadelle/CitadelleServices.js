@@ -240,7 +240,9 @@ export default function CitadelleServices() {
 
   const commonService  = services.find((s) => s.target_category === "commun" && s.service_type !== "free");
   const vendorServices = services.filter((s) => s.target_category === "vendeur");
-  const buyerServices  = services.filter((s) => s.target_category === "acheteur");
+  // Les estimations servent aussi les acheteurs (« ce site vaut-il le coup ? ») → affichées dans les deux zones
+  const buyerEstimations = services.filter((s) => ["Estimation Standard", "Estimation Expert"].includes(s.title));
+  const buyerServices  = [...buyerEstimations, ...services.filter((s) => s.target_category === "acheteur")];
   const freeServices   = services.filter((s) => s.service_type === "free" && s.target_category === "commun");
 
   const openBuy = (svc) => {
