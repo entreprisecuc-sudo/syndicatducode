@@ -1,17 +1,14 @@
 /**
  * ListingsCarousel — La Citadelle Numérique
  * Carrousel des annonces « à la Une » (souscripteurs) + complément aléatoire.
- * Défilement automatique en boucle. Utilisé sur l'accueil (dark) et la liste (light).
- *
- * Props : variant = "dark" | "light", title, limit (def 8)
+ * Défilement automatique en boucle. Variantes dark (accueil) et light (liste).
+ * Design premium navy + or (blueprint design_guidelines.json). Aucune pastille.
  */
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { TrendingUp, ChevronLeft, ChevronRight, Eye, Castle } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
-import { CITADELLE_COLORS, getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
-
-const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240' fill='%230F2747'%3E%3Crect width='400' height='240'/%3E%3Ctext x='50%25' y='50%25' fill='%23C9A45C' font-size='40' text-anchor='middle' dominant-baseline='middle'%3E🏰%3C/text%3E%3C/svg%3E";
+import { getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
 
 export default function ListingsCarousel({ variant = "dark", title = "Dernières annonces", limit = 8 }) {
   const [listings, setListings] = useState([]);
@@ -31,79 +28,92 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
       const el = ref.current;
       if (!el) return;
       const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-      el.scrollTo({ left: atEnd ? 0 : el.scrollLeft + 240, behavior: "smooth" });
+      el.scrollTo({ left: atEnd ? 0 : el.scrollLeft + 244, behavior: "smooth" });
     }, 3500);
     return () => clearInterval(id);
   }, [listings]);
 
   if (!listings.length) return null;
 
-  const scrollBy = (dir) => ref.current?.scrollBy({ left: dir * 240, behavior: "smooth" });
+  const scrollBy = (dir) => ref.current?.scrollBy({ left: dir * 244, behavior: "smooth" });
 
-  const cardBg = dark ? "linear-gradient(160deg, #16345C 0%, #0C2340 100%)" : "#FFFFFF";
-  const cardBorder = dark ? "rgba(201,164,92,0.35)" : CITADELLE_COLORS.border;
-  const cardShadow = dark ? "0 10px 30px rgba(0,0,0,0.45)" : "0 4px 16px rgba(15,39,71,0.08)";
-  const imgBg = dark
-    ? "linear-gradient(135deg, #1E4373 0%, #0E2748 100%)"
-    : "linear-gradient(135deg, #15305A 0%, #0A1D34 100%)";
-  const titleColor = dark ? "rgba(255,255,255,0.85)" : CITADELLE_COLORS.blue;
-  const cardTitleColor = dark ? "#FFFFFF" : CITADELLE_COLORS.blue;
-  const btnStyle = dark
-    ? { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(201,164,92,0.25)", color: CITADELLE_COLORS.gold }
-    : { background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue };
+  const headTitle = dark ? "text-white/90" : "text-[#081729]";
+  const arrowBtn = dark
+    ? "w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:bg-white/5 hover:text-white hover:border-white/30 transition-all duration-300 backdrop-blur-md"
+    : "w-9 h-9 rounded-full border border-[#0F2747]/10 flex items-center justify-center text-[#0F2747]/60 hover:bg-[#0F2747]/5 hover:text-[#0F2747] hover:border-[#0F2747]/20 transition-all duration-300";
+
+  const cardClasses = dark
+    ? "flex-none w-[220px] flex flex-col overflow-hidden group cursor-pointer rounded-xl bg-[#101F33]/90 backdrop-blur-xl border border-white/[0.06] transition-[transform,border-color,box-shadow] duration-500 ease-out hover:border-[#C9A45C]/40 hover:shadow-[0_10px_34px_rgba(0,0,0,0.55)] hover:-translate-y-1.5"
+    : "flex-none w-[220px] flex flex-col overflow-hidden group cursor-pointer rounded-xl bg-white border border-[#0F2747]/[0.07] transition-[transform,border-color,box-shadow] duration-500 ease-out hover:border-[#C9A45C]/40 hover:shadow-[0_10px_30px_rgba(15,39,71,0.10)] hover:-translate-y-1.5";
+
+  const titleCls = dark
+    ? "text-white/80 group-hover:text-white transition-colors duration-300 truncate text-[13px] font-medium"
+    : "text-[#081729] group-hover:text-[#0F2747] transition-colors duration-300 truncate text-[13px] font-medium";
+  const priceCls = "text-[#C9A45C] text-[16px] font-semibold";
+  const viewsCls = dark
+    ? "text-white/40 group-hover:text-white/60 transition-colors duration-300 flex items-center gap-1.5 text-[11px] mt-2 pt-2 border-t border-white/[0.05]"
+    : "text-[#0F2747]/40 group-hover:text-[#0F2747]/60 transition-colors duration-300 flex items-center gap-1.5 text-[11px] mt-2 pt-2 border-t border-[#0F2747]/[0.06]";
+
+  const placeholderWrap = dark
+    ? "bg-gradient-to-br from-[#081729] to-[#0F2747] flex items-center justify-center relative overflow-hidden h-full w-full"
+    : "bg-gradient-to-br from-[#F5F7FA] to-[#E2E8F0] flex items-center justify-center relative overflow-hidden h-full w-full";
+  const placeholderDots = dark
+    ? "absolute inset-0 opacity-[0.15] bg-[radial-gradient(circle_at_center,_#C9A45C_1px,_transparent_1px)] bg-[size:12px_12px]"
+    : "absolute inset-0 opacity-[0.05] bg-[radial-gradient(circle_at_center,_#0F2747_1px,_transparent_1px)] bg-[size:12px_12px]";
+  const placeholderIcon = dark ? "text-[#C9A45C]/35" : "text-[#0F2747]/25";
 
   return (
-    <div className="mt-6" data-testid="listings-carousel">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <TrendingUp size={16} style={{ color: CITADELLE_COLORS.gold }} />
-          <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: titleColor }}>{title}</h2>
+    <div className="mt-6" data-testid="listings-carousel" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2.5">
+          <TrendingUp size={16} className="text-[#C9A45C]" />
+          <h2 className={`text-sm font-semibold uppercase tracking-[0.2em] ${headTitle}`}>{title}</h2>
         </div>
-        <div className="flex items-center gap-2">
-          <Link to="/citadelle/annonces" className="text-xs font-semibold transition-all hover:opacity-80" style={{ color: CITADELLE_COLORS.gold }}>
-            Voir tout →
+        <div className="flex items-center gap-3">
+          <Link to="/citadelle/annonces" className="text-sm text-[#C9A45C] hover:text-[#D9BB7A] transition-colors duration-300 flex items-center gap-1.5 font-medium">
+            Voir tout <span aria-hidden>→</span>
           </Link>
-          <div className="hidden sm:flex gap-1.5 ml-1">
-            <button type="button" onClick={() => scrollBy(-1)} aria-label="Précédent"
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-105"
-              style={btnStyle} data-testid="carousel-prev"><ChevronLeft size={16} /></button>
-            <button type="button" onClick={() => scrollBy(1)} aria-label="Suivant"
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-105"
-              style={btnStyle} data-testid="carousel-next"><ChevronRight size={16} /></button>
+          <div className="hidden sm:flex gap-2 ml-1">
+            <button type="button" onClick={() => scrollBy(-1)} aria-label="Précédent" className={arrowBtn} data-testid="carousel-prev"><ChevronLeft size={16} /></button>
+            <button type="button" onClick={() => scrollBy(1)} aria-label="Suivant" className={arrowBtn} data-testid="carousel-next"><ChevronRight size={16} /></button>
           </div>
         </div>
       </div>
 
-      <div ref={ref} className="flex gap-4 overflow-x-auto pb-2 snap-x" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+      <div ref={ref} className="flex gap-6 overflow-x-auto pb-3 snap-x" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         <style>{`[data-testid="listings-carousel"] > div::-webkit-scrollbar{display:none}`}</style>
         {listings.map((l) => {
           const img = l.images?.filter(Boolean).find(isImageFile);
-          const cover = l.is_adult ? null : (img ? getListingImageUrl(img) : PLACEHOLDER);
+          const cover = l.is_adult ? null : (img ? getListingImageUrl(img) : null);
           return (
-            <Link key={l.id} to={`/citadelle/annonces/${l.slug}`}
-              className="group flex-shrink-0 w-[220px] rounded-2xl overflow-hidden snap-start transition-all duration-200 hover:-translate-y-1"
-              style={{ background: cardBg, border: `1px solid ${cardBorder}`, boxShadow: cardShadow }}
-              data-testid={`carousel-card-${l.slug}`}>
-              <div className="relative h-28 overflow-hidden" style={{ background: imgBg, borderBottom: `1px solid ${dark ? "rgba(201,164,92,0.25)" : CITADELLE_COLORS.border}` }}>
+            <Link key={l.id} to={`/citadelle/annonces/${l.slug}`} className={cardClasses} data-testid={`carousel-card-${l.slug}`}>
+              {/* Zone visuelle */}
+              <div className="h-[120px] w-full relative overflow-hidden" style={{ background: "#081729" }}>
                 {l.is_adult ? (
                   <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg,#1a1626,#2d1b2e)" }}>
-                    <span className="text-xs font-black px-2 py-1 rounded-full" style={{ background: "rgba(220,38,38,0.2)", color: "#f87171", border: "1px solid #f87171" }}>18+</span>
+                    <span className="text-xs font-black px-2.5 py-1 rounded-full" style={{ background: "rgba(220,38,38,0.2)", color: "#f87171", border: "1px solid #f87171" }}>18+</span>
                   </div>
+                ) : cover ? (
+                  <>
+                    <img src={cover} alt={l.title}
+                      className="w-full h-full object-cover transform transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110"
+                      onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                    <div className={`absolute inset-0 pointer-events-none z-10 ${dark ? "bg-gradient-to-t from-[#101F33] via-transparent to-transparent opacity-70 mix-blend-multiply" : "bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-500"}`} />
+                  </>
                 ) : (
-                  <img src={cover} alt={l.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    onError={(e) => { e.target.src = PLACEHOLDER; }} />
+                  <div className={placeholderWrap}>
+                    <div className={placeholderDots} />
+                    <Castle size={26} strokeWidth={1} className={`relative z-10 ${placeholderIcon}`} />
+                  </div>
                 )}
               </div>
-              <div className="p-3">
-                <p className="text-xs font-bold line-clamp-1 mb-1" style={{ color: cardTitleColor, fontFamily: "'Montserrat', sans-serif" }}>{l.title}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-black" style={{ color: CITADELLE_COLORS.gold, fontFamily: "'Montserrat', sans-serif" }}>{l.price?.toLocaleString("fr-FR")} €</span>
-                  {l.monthly_revenue != null && (
-                    <span className="text-[10px] flex items-center gap-1" style={{ color: dark ? "rgba(255,255,255,0.45)" : CITADELLE_COLORS.textMuted }}>
-                      <Eye size={10} /> {(l.views_count ?? 0)}
-                    </span>
-                  )}
-                </div>
+              {/* Contenu */}
+              <div className="p-4 flex flex-col gap-1.5">
+                <p className={titleCls}>{l.title}</p>
+                <span className={priceCls}>{l.price?.toLocaleString("fr-FR")} €</span>
+                <span className={viewsCls}>
+                  <Eye size={13} className="opacity-70" /> {(l.views_count ?? 0)} vue{(l.views_count ?? 0) > 1 ? "s" : ""}
+                </span>
               </div>
             </Link>
           );
