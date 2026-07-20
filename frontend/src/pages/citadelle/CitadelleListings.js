@@ -9,6 +9,8 @@ import { Search, ChevronLeft, ChevronRight, ArrowRight, Shield } from "lucide-re
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ListingCard from "@/components/citadelle/ListingCard";
 import ListingsCarousel from "@/components/citadelle/ListingsCarousel";
+import DevisModal from "@/components/modals/DevisModal";
+import { useModal } from "@/context/ModalContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_ALL_CATEGORIES } from "@/config/citadelleConstants";
 import { Helmet } from "react-helmet-async";
@@ -30,6 +32,7 @@ const SORT_OPTIONS = [
 ];
 
 export default function CitadelleListings() {
+  const { openModal } = useModal();
   const [searchParams, setSearchParams] = useSearchParams();
   const [listings, setListings] = useState([]);
   const [total, setTotal] = useState(0);
@@ -256,9 +259,69 @@ export default function CitadelleListings() {
                 </button>
               </div>
             )}
+
+            {/* Encart partenaire — Syndicat du Code (projet sur mesure) */}
+            <div
+              className="mt-14 mb-4 rounded-2xl overflow-hidden"
+              data-testid="syndicat-partner-cta"
+              style={{
+                background: "#FFFFFF",
+                border: `3px solid ${CITADELLE_COLORS.gold}`,
+                boxShadow: "0 10px 30px rgba(15,39,71,0.08)",
+              }}
+            >
+              <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 p-6 md:p-10">
+                {/* Logo Syndicat à gauche */}
+                <div className="flex-shrink-0">
+                  <div
+                    className="w-24 h-24 md:w-28 md:h-28 rounded-2xl flex items-center justify-center"
+                    style={{ background: CITADELLE_COLORS.blue }}
+                  >
+                    <img
+                      src="/logo.png"
+                      alt="Le Syndicat du Code"
+                      className="w-16 h-16 md:w-20 md:h-20 object-contain"
+                      data-testid="syndicat-partner-logo"
+                    />
+                  </div>
+                </div>
+
+                {/* Texte */}
+                <div className="flex-1 text-center md:text-left">
+                  <h3
+                    className="text-2xl md:text-3xl font-bold mb-2"
+                    style={{ color: CITADELLE_COLORS.blue }}
+                  >
+                    Le projet de vos rêves n'existe pas encore ? Créons-le.
+                  </h3>
+                  <p className="text-sm md:text-base" style={{ color: "#4A5568" }}>
+                    Quand la perle rare n'est pas sur La Citadelle,{" "}
+                    <span className="font-semibold" style={{ color: CITADELLE_COLORS.blue }}>
+                      notre partenaire le Syndicat du Code
+                    </span>{" "}
+                    la façonne pour vous : sites, applications, SaaS — construits sur mesure.
+                  </p>
+                </div>
+
+                {/* Bouton action Syndicat */}
+                <div className="flex-shrink-0">
+                  <button
+                    onClick={openModal}
+                    data-testid="syndicat-partner-cta-button"
+                    className="px-8 py-4 rounded-xl font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg whitespace-nowrap"
+                    style={{ background: "linear-gradient(135deg, var(--sage-dark, #2F4A38), var(--sage, #4A6B4F))" }}
+                  >
+                    Parler de mon projet
+                  </button>
+                </div>
+              </div>
+            </div>
           </>
         )}
       </div>
+
+      {/* Modal Syndicat (liaison uniquement, on reste sur La Citadelle) */}
+      <DevisModal />
     </CitadelleLayout>
   );
 }
