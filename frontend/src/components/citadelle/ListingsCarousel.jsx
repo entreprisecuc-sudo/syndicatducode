@@ -6,7 +6,7 @@
  */
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, ChevronLeft, ChevronRight, Eye, Castle } from "lucide-react";
+import { TrendingUp, ChevronLeft, ChevronRight, Castle } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
 import { getListingImageUrl, isImageFile, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 
@@ -43,16 +43,13 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
     : "w-9 h-9 rounded-full border border-[#0F2747]/10 flex items-center justify-center text-[#0F2747]/60 hover:bg-[#0F2747]/5 hover:text-[#0F2747] hover:border-[#0F2747]/20 transition-all duration-300";
 
   const cardClasses = dark
-    ? "flex-none w-[220px] flex flex-col overflow-hidden group cursor-pointer rounded-xl bg-[#101F33]/90 backdrop-blur-xl border border-white/[0.06] transition-[transform,border-color,box-shadow] duration-500 ease-out hover:border-[#C9A45C]/40 hover:shadow-[0_10px_34px_rgba(0,0,0,0.55)] hover:-translate-y-1.5"
+    ? "flex-none w-[220px] flex flex-col overflow-hidden group cursor-pointer rounded-xl bg-white border-[3px] border-[#C9A45C] transition-[transform,box-shadow] duration-500 ease-out hover:shadow-[0_12px_34px_rgba(0,0,0,0.55)] hover:-translate-y-1.5"
     : "flex-none w-[220px] flex flex-col overflow-hidden group cursor-pointer rounded-xl bg-white border border-[#0F2747]/[0.07] transition-[transform,border-color,box-shadow] duration-500 ease-out hover:border-[#C9A45C]/40 hover:shadow-[0_10px_30px_rgba(15,39,71,0.10)] hover:-translate-y-1.5";
 
   const titleCls = dark
-    ? "text-white/80 group-hover:text-white transition-colors duration-300 truncate text-[13px] font-medium"
+    ? "text-[#0F2747] transition-colors duration-300 truncate text-[13px] font-semibold"
     : "text-[#081729] group-hover:text-[#0F2747] transition-colors duration-300 truncate text-[13px] font-medium";
   const priceCls = "text-[#C9A45C] text-[16px] font-semibold";
-  const viewsCls = dark
-    ? "text-white/40 group-hover:text-white/60 transition-colors duration-300 flex items-center gap-1.5 text-[11px] mt-2 pt-2 border-t border-white/[0.05]"
-    : "text-[#0F2747]/40 group-hover:text-[#0F2747]/60 transition-colors duration-300 flex items-center gap-1.5 text-[11px] mt-2 pt-2 border-t border-[#0F2747]/[0.06]";
 
   const placeholderWrap = dark
     ? "bg-white flex items-center justify-center relative overflow-hidden h-full w-full"
@@ -85,7 +82,7 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
           return (
             <Link key={l.id} to={`/citadelle/annonces/${l.slug}`} className={cardClasses} data-testid={`carousel-card-${l.slug}`}>
               {/* Zone visuelle */}
-              <div className="h-[120px] w-full relative overflow-hidden" style={{ background: "#081729" }}>
+              <div className="h-[120px] w-full relative overflow-hidden" style={{ background: "#081729", borderBottom: dark ? "3px solid #C9A45C" : "1px solid rgba(15,39,71,0.06)" }}>
                 {l.is_adult ? (
                   <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg,#1a1626,#2d1b2e)" }}>
                     <span className="text-xs font-black px-2.5 py-1 rounded-full" style={{ background: "rgba(220,38,38,0.2)", color: "#f87171", border: "1px solid #f87171" }}>18+</span>
@@ -115,9 +112,6 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
               <div className="p-4 flex flex-col gap-1.5">
                 <p className={titleCls}>{l.title}</p>
                 <span className={priceCls}>{l.price?.toLocaleString("fr-FR")} €</span>
-                <span className={viewsCls}>
-                  <Eye size={13} className="opacity-70" /> {(l.views_count ?? 0)} vue{(l.views_count ?? 0) > 1 ? "s" : ""}
-                </span>
               </div>
             </Link>
           );
