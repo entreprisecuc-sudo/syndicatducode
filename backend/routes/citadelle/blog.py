@@ -7,7 +7,7 @@ Fonctionnalités : stats de vues, planification, SEO, slug personnalisé
 from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, Field
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import uuid
 import re
 import unicodedata
@@ -223,13 +223,74 @@ async def get_related_posts(slug: str):
 
 # ── Routes admin ───────────────────────────────────────────────────────────────
 
-@router.get("/admin/blog", summary="Admin — Tous les articles")
-async def admin_list_posts(current_user: dict = Depends(require_admin)):
-    """Admin : liste tous les articles (publiés, planifiés, brouillons), sans content_md"""
-    cursor = db.citadelle_blog_posts.find(
-        {}, {"_id": 0, "content_md": 0}
-    ).sort("created_at", -1)
-    posts = await cursor.to_list(200)
+_ANALYTICS_COLLECTION = "citadelle_analytics_events"
+_STATS_PERIODS = {"7d": 7, "30d": 30, "90d": 90, "365d": 365, "all": None}
+
+
+def _stats_period_start(period: str):
+    days = _STATS_PERIODS.get(period, 30)
+    if days is None:
+        return None
+    return (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+
+
+def _classify_referrer(ref: str) -> str:
+    if not ref:
+        return "Accès direct"
+    r = ref.lower()
+    if any(s in r for s in ("google.", "bing.", "duckduckgo", "yahoo", "qwant", "ecosia")):
+        return "Moteurs de recherche"
+    if any(s in r for s in ("facebook", "instagram", "twitter", "x.com", "t.co", "linkedin", "youtube", "tiktok", "reddit", "pinterest", "whatsapp", "telegram")):
+        return "Réseaux sociaux"
+    if any(s in r for s in ("lacitadellenumerique", "syndicatducode")):
+        return "Navigation interne"
+    return "Autres sites"
+
+
+@router.get("/admin/blog", summary="Admin — Articles paginés + filtre statut")
+async def admin_list_posts(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=50),
+    status: str = Query("all", pattern="^(all|published|pending)$"),
+    current_user: dict = Depends(require_admin),
+):
+    """Admin : liste paginée des articles (10/page) avec filtre par statut."""
+    base = {}
+    if status == "published":
+        base = {"is_published": True}
+    elif status == "pending":
+        base = {"is_published": False}
+
+    total = await db.citadelle_blog_posts.count_documents(base)
+    counts = {
+        "all": await db.citadelle_blog_posts.count_documents({}),
+        "published": await db.citadelle_blog_posts.count_documents({"is_published": True}),
+        "pending": await db.citadelle_blog_posts.count_documents({"is_published": False}),
+    }
+    cursor = (
+        db.citadelle_blog_posts.find({**base}, {"_id": 0, "content_md": 0})
+        .sort("created_at", -1)
+        .skip((page - 1) * limit)
+        .limit(limit)
+    )
+    posts = await cursor.to_list(limit)
+    return {"posts": posts, "total": total, "page": page, "limit": limit, "counts": counts}
+
+
+@router.get("/admin/blog/top", summary="Admin — Top articles les plus consultés")
+async def admin_top_posts(
+    limit: int = Query(10, ge=1, le=20),
+    current_user: dict = Depends(require_admin),
+):
+    """Admin : classement des articles par nombre de vues cumulées."""
+    cursor = (
+        db.citadelle_blog_posts.find(
+            {}, {"_id": 0, "id": 1, "title": 1, "slug": 1, "category": 1, "view_count": 1, "is_published": 1}
+        )
+        .sort("view_count", -1)
+        .limit(limit)
+    )
+    posts = await cursor.to_list(limit)
     return {"posts": posts}
 
 
@@ -243,6 +304,66 @@ async def admin_get_post(
     if not post:
         raise HTTPException(status_code=404, detail="Article introuvable")
     return post
+
+
+@router.get("/admin/blog/{post_id}/stats", summary="Admin — Statistiques d'un article")
+async def admin_post_stats(
+    post_id: str,
+    period: str = Query("30d", pattern="^(7d|30d|90d|365d|all)$"),
+    current_user: dict = Depends(require_admin),
+):
+    """
+    Statistiques d'audience d'un article : impressions, visiteurs uniques,
+    provenance de l'audience et répartition par appareil (via analytics maison).
+    """
+    post = await db.citadelle_blog_posts.find_one(
+        {"id": post_id}, {"_id": 0, "slug": 1, "title": 1, "view_count": 1}
+    )
+    if not post:
+        raise HTTPException(status_code=404, detail="Article introuvable")
+
+    path = f"/citadelle/blog/{post['slug']}"
+    events = db[_ANALYTICS_COLLECTION]
+    match = {"path": path}
+    since = _stats_period_start(period)
+    if since:
+        match["created_at"] = {"$gte": since}
+
+    impressions = await events.count_documents(match)
+    unique_visitors = len(await events.distinct("ip_hash", match))
+    devices = {d: await events.count_documents({**match, "device": d}) for d in ("mobile", "desktop")}
+
+    # Provenance de l'audience (catégorisation des referrers)
+    provenance = {}
+    async for e in events.find(match, {"_id": 0, "referrer": 1}):
+        cat = _classify_referrer(e.get("referrer"))
+        provenance[cat] = provenance.get(cat, 0) + 1
+    provenance_list = sorted(
+        [{"source": k, "count": v} for k, v in provenance.items()],
+        key=lambda x: x["count"], reverse=True
+    )
+
+    # Courbe temporelle (vues par jour)
+    ts_pipeline = [
+        {"$match": match},
+        {"$group": {"_id": {"$substrCP": ["$created_at", 0, 10]}, "views": {"$sum": 1}}},
+        {"$project": {"day": "$_id", "views": 1, "_id": 0}},
+        {"$sort": {"day": 1}},
+    ]
+    timeseries = await events.aggregate(ts_pipeline).to_list(400)
+
+    return {
+        "post_id": post_id,
+        "title": post.get("title"),
+        "period": period,
+        "view_count_total": post.get("view_count", 0),
+        "impressions": impressions,
+        "unique_visitors": unique_visitors,
+        "devices": devices,
+        "provenance": provenance_list,
+        "timeseries": timeseries,
+    }
+
 
 
 @router.post("/admin/blog", status_code=201, summary="Admin — Créer un article")

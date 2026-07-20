@@ -9,6 +9,7 @@ import remarkGfm from "remark-gfm";
 import {
   Plus, Edit2, Trash2, Eye, EyeOff, BookOpen, Save, X,
   Calendar, User, ImagePlus, Search, Clock, ChevronDown, ChevronUp,
+  BarChart3, ChevronLeft, ChevronRight, Users, Globe, Smartphone, Monitor, TrendingUp,
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
@@ -123,17 +124,56 @@ export default function AdminCitadelleBlog() {
   const [error, setError] = useState("");
   const [seoOpen, setSeoOpen] = useState(false);
   const [publishMode, setPublishMode] = useState("draft"); // "draft" | "now" | "scheduled"
+  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("all"); // all | published | pending
+  const [total, setTotal] = useState(0);
+  const [counts, setCounts] = useState({ all: 0, published: 0, pending: 0 });
+  const [topPosts, setTopPosts] = useState([]);
+  const [statsModal, setStatsModal] = useState(null); // { post, data, period, loading }
   const contentRef = useRef(null);
+  const LIMIT = 10;
+  const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
-  useEffect(() => { fetchPosts(); }, []);
+  useEffect(() => { fetchPosts(); /* eslint-disable-next-line */ }, [page, statusFilter]);
+  useEffect(() => { fetchTop(); /* eslint-disable-next-line */ }, []);
 
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/citadelle/admin/blog");
+      const res = await api.get("/citadelle/admin/blog", { params: { page, limit: LIMIT, status: statusFilter } });
       setPosts(res.data.posts || []);
+      setTotal(res.data.total || 0);
+      if (res.data.counts) setCounts(res.data.counts);
     } catch { setPosts([]); }
     finally { setLoading(false); }
+  };
+
+  const fetchTop = async () => {
+    try {
+      const res = await api.get("/citadelle/admin/blog/top", { params: { limit: 10 } });
+      setTopPosts(res.data.posts || []);
+    } catch { setTopPosts([]); }
+  };
+
+  const refreshAll = async () => { await fetchPosts(); await fetchTop(); };
+
+  const changeFilter = (f) => { setStatusFilter(f); setPage(1); };
+
+  const openStats = async (post) => {
+    setStatsModal({ post, data: null, period: "30d", loading: true });
+    try {
+      const res = await api.get(`/citadelle/admin/blog/${post.id}/stats`, { params: { period: "30d" } });
+      setStatsModal(s => (s ? { ...s, data: res.data, loading: false } : s));
+    } catch { setStatsModal(s => (s ? { ...s, loading: false } : s)); }
+  };
+
+  const changeStatsPeriod = async (period) => {
+    if (!statsModal) return;
+    setStatsModal(s => ({ ...s, period, loading: true }));
+    try {
+      const res = await api.get(`/citadelle/admin/blog/${statsModal.post.id}/stats`, { params: { period } });
+      setStatsModal(s => (s ? { ...s, data: res.data, period, loading: false } : s));
+    } catch { setStatsModal(s => (s ? { ...s, loading: false } : s)); }
   };
 
   const openNew = () => {
@@ -199,7 +239,7 @@ export default function AdminCitadelleBlog() {
         await api.patch(`/citadelle/admin/blog/${editPanel.id}`, payload);
       }
       setEditPanel(null);
-      await fetchPosts();
+      await refreshAll();
     } catch (err) {
       setError(err.response?.data?.detail || "Erreur lors de la sauvegarde");
     } finally { setSaving(false); }
@@ -211,7 +251,7 @@ export default function AdminCitadelleBlog() {
         is_published: !post.is_published,
         scheduled_at: null,
       });
-      await fetchPosts();
+      await refreshAll();
     } catch (err) { console.error("Erreur toggle publication:", err); }
   };
 
@@ -219,7 +259,7 @@ export default function AdminCitadelleBlog() {
     if (!window.confirm("Supprimer cet article définitivement ?")) return;
     try {
       await api.delete(`/citadelle/admin/blog/${id}`);
-      await fetchPosts();
+      await refreshAll();
     } catch (err) { console.error("Erreur suppression article:", err); }
   };
 
@@ -266,6 +306,46 @@ export default function AdminCitadelleBlog() {
             data-testid="admin-add-article">
             <Plus size={16} /> Nouvel article
           </button>
+        </div>
+
+        {/* Top 10 des articles les plus consultés */}
+        {topPosts.length > 0 && (
+          <div className="p-4 rounded-xl" data-testid="blog-top10"
+            style={{ background: "rgba(201,164,92,0.06)", border: "1px solid rgba(201,164,92,0.2)" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp size={15} style={{ color: "#C9A45C" }} />
+              <h2 className="text-sm font-bold">Top 10 des articles les plus consultés</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1.5">
+              {topPosts.map((p, i) => (
+                <div key={p.id} className="flex items-center gap-3 text-sm" data-testid={`blog-top-item-${i + 1}`}>
+                  <span className="w-5 text-right font-black" style={{ color: i < 3 ? "#C9A45C" : "rgba(255,255,255,0.3)" }}>{i + 1}</span>
+                  <span className="flex-1 truncate" title={p.title}>{p.title}</span>
+                  <span className="flex items-center gap-1 flex-shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    <Eye size={11} />{p.view_count || 0}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Filtres par statut */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {[
+            { k: "all", label: "Tous", n: counts.all },
+            { k: "published", label: "Publiés", n: counts.published },
+            { k: "pending", label: "En attente", n: counts.pending },
+          ].map(t => (
+            <button key={t.k} onClick={() => changeFilter(t.k)} data-testid={`blog-filter-${t.k}`}
+              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              style={{
+                background: statusFilter === t.k ? "#C9A45C" : "rgba(255,255,255,0.06)",
+                color: statusFilter === t.k ? "#081729" : "rgba(255,255,255,0.7)",
+              }}>
+              {t.label} <span className="opacity-70">({t.n})</span>
+            </button>
+          ))}
         </div>
 
         {/* Liste des articles */}
@@ -337,6 +417,12 @@ export default function AdminCitadelleBlog() {
 
                   {/* Actions */}
                   <div className="flex gap-1 flex-shrink-0">
+                    <button onClick={() => openStats(post)}
+                      className="p-2 rounded-lg transition-all hover:scale-110"
+                      style={{ color: "#60A5FA" }} title="Statistiques"
+                      data-testid={`blog-stats-${post.id}`}>
+                      <BarChart3 size={15} />
+                    </button>
                     <button onClick={() => togglePublish(post)}
                       className="p-2 rounded-lg transition-all hover:scale-110"
                       style={{ color: post.is_published ? "#22C55E" : "#6B7280" }}
@@ -362,7 +448,127 @@ export default function AdminCitadelleBlog() {
             })}
           </div>
         )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 pt-2" data-testid="blog-pagination">
+            <button disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="p-2 rounded-lg transition-all disabled:opacity-30 hover:scale-110"
+              style={{ background: "rgba(255,255,255,0.06)" }} data-testid="blog-page-prev">
+              <ChevronLeft size={16} />
+            </button>
+            <span className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>
+              Page {page} / {totalPages}
+            </span>
+            <button disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              className="p-2 rounded-lg transition-all disabled:opacity-30 hover:scale-110"
+              style={{ background: "rgba(255,255,255,0.06)" }} data-testid="blog-page-next">
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* ── Modale statistiques d'un article ── */}
+      {statsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.65)" }}
+          onClick={() => setStatsModal(null)} data-testid="blog-stats-modal">
+          <div className="w-full max-w-lg rounded-2xl overflow-hidden" style={{ background: "#0F2039", border: "1px solid rgba(201,164,92,0.25)" }}
+            onClick={e => e.stopPropagation()}>
+            {/* En-tête */}
+            <div className="flex items-start justify-between gap-3 p-5" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(96,165,250,0.15)" }}>
+                  <BarChart3 size={17} style={{ color: "#60A5FA" }} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold truncate">{statsModal.post.title}</p>
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Statistiques d'audience</p>
+                </div>
+              </div>
+              <button onClick={() => setStatsModal(null)} className="p-1 rounded-lg hover:bg-white/10" data-testid="blog-stats-close">
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Sélecteur de période */}
+            <div className="flex items-center gap-1.5 px-5 pt-4 flex-wrap">
+              {[["7d", "7 j"], ["30d", "30 j"], ["90d", "90 j"], ["365d", "1 an"], ["all", "Tout"]].map(([p, l]) => (
+                <button key={p} onClick={() => changeStatsPeriod(p)}
+                  className="px-3 py-1 rounded-lg text-xs font-semibold transition-all"
+                  style={{ background: statsModal.period === p ? "#60A5FA" : "rgba(255,255,255,0.06)", color: statsModal.period === p ? "#081729" : "rgba(255,255,255,0.6)" }}>
+                  {l}
+                </button>
+              ))}
+            </div>
+
+            <div className="p-5">
+              {statsModal.loading || !statsModal.data ? (
+                <div className="py-10 flex justify-center">
+                  <div className="w-6 h-6 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: "#60A5FA" }} />
+                </div>
+              ) : (
+                <>
+                  {/* KPIs */}
+                  <div className="grid grid-cols-3 gap-3 mb-5">
+                    {[
+                      { icon: Eye, label: "Impressions", value: statsModal.data.impressions, color: "#60A5FA" },
+                      { icon: Users, label: "Visiteurs uniques", value: statsModal.data.unique_visitors, color: "#22C55E" },
+                      { icon: TrendingUp, label: "Vues cumulées", value: statsModal.data.view_count_total, color: "#C9A45C" },
+                    ].map((k, i) => (
+                      <div key={i} className="p-3 rounded-xl text-center" style={{ background: "rgba(255,255,255,0.04)" }}>
+                        <k.icon size={14} style={{ color: k.color }} className="mx-auto mb-1" />
+                        <p className="text-lg font-black">{k.value}</p>
+                        <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>{k.label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Provenance de l'audience */}
+                  <p className="text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    <Globe size={12} /> Provenance de l'audience
+                  </p>
+                  {statsModal.data.provenance.length === 0 ? (
+                    <p className="text-xs italic mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>
+                      Aucune donnée d'audience sur cette période.
+                    </p>
+                  ) : (
+                    <div className="space-y-1.5 mb-5">
+                      {statsModal.data.provenance.map((p, i) => {
+                        const pct = statsModal.data.impressions ? Math.round((p.count / statsModal.data.impressions) * 100) : 0;
+                        return (
+                          <div key={i} className="flex items-center gap-2 text-xs">
+                            <span className="w-40 truncate" style={{ color: "rgba(255,255,255,0.7)" }}>{p.source}</span>
+                            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "#60A5FA" }} />
+                            </div>
+                            <span className="w-14 text-right" style={{ color: "rgba(255,255,255,0.5)" }}>{p.count} · {pct}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Appareils */}
+                  <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>Appareils</p>
+                  <div className="flex gap-3">
+                    <div className="flex-1 p-2.5 rounded-xl flex items-center gap-2" style={{ background: "rgba(255,255,255,0.04)" }}>
+                      <Monitor size={14} style={{ color: "#94A3B8" }} />
+                      <span className="text-sm font-bold">{statsModal.data.devices.desktop}</span>
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>ordinateur</span>
+                    </div>
+                    <div className="flex-1 p-2.5 rounded-xl flex items-center gap-2" style={{ background: "rgba(255,255,255,0.04)" }}>
+                      <Smartphone size={14} style={{ color: "#94A3B8" }} />
+                      <span className="text-sm font-bold">{statsModal.data.devices.mobile}</span>
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>mobile</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Panneau d'édition plein écran — thème clair ── */}
       {editPanel && (
