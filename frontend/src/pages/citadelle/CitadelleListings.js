@@ -202,6 +202,17 @@ export default function CitadelleListings() {
         {/* Carrousel « À la Une » — indépendant des filtres (sous le bandeau) */}
         <ListingsCarousel variant="light" title="À la Une" limit={8} />
 
+        {/* ── Séparateur élégant entre « À la Une » et la grille ─────────── */}
+        <div className="flex items-center gap-4 mt-16 mb-10" data-testid="listings-section-divider">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <span className="inline-block w-2.5 h-2.5 rotate-45 rounded-[2px]" style={{ background: CITADELLE_COLORS.gold }} />
+            <h2 className="text-sm font-bold uppercase tracking-[0.2em]" style={{ color: CITADELLE_COLORS.blue }}>
+              Toutes les annonces
+            </h2>
+          </div>
+          <div className="flex-1 h-px" style={{ background: `linear-gradient(to right, ${CITADELLE_COLORS.gold}, rgba(201,164,92,0))` }} />
+        </div>
+
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
