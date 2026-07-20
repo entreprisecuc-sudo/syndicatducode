@@ -1,0 +1,50 @@
+{
+  "summary": "Responsive validation of /syndicat-admin/citadelle/annonces (AdminCitadelleListings.js). Login admin OK. Tested viewports 375x812, 400x850 (mobile) and 1920x800 (desktop). Verified all tabs (pending, active, all, rejected), row stacking, and detail modal (Voir). NO destructive actions performed (no delete/validate/reject/payment/email trigger). Result: NO horizontal overflow at any tested viewport; rows correctly stack (flexDir=column) on mobile and align in row on desktop; detail modal fits within viewport with Quality panel and Social consent panel visible.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results_detail": {
+    "375x812": {
+      "pending": {"scrollWidth": 375, "overflow": 0, "rows": 4, "flexDir": "column"},
+      "active":  {"scrollWidth": 375, "overflow": 0, "rows": 1, "flexDir": "column"},
+      "all":     {"scrollWidth": 375, "overflow": 0, "rows": 28, "flexDir": "column"}
+    },
+    "400x850": {
+      "pending": {"scrollWidth": 400, "overflow": 0, "rows": 4, "flexDir": "column"},
+      "active":  {"scrollWidth": 400, "overflow": 0, "rows": 1, "flexDir": "column"},
+      "all":     {"scrollWidth": 400, "overflow": 0, "rows": 28, "flexDir": "column"},
+      "modal_open": {"scrollWidth": 400, "overflow": 0}
+    },
+    "1920x800": {
+      "pending":  {"scrollWidth": 1920, "overflow": 0, "rows": 4, "flexDir": "row"},
+      "active":   {"scrollWidth": 1920, "overflow": 0, "rows": 1, "flexDir": "row"},
+      "all":      {"scrollWidth": 1920, "overflow": 0, "rows": 28, "flexDir": "row"},
+      "rejected": {"scrollWidth": 1920, "overflow": 0, "rows": 4, "flexDir": "row"},
+      "modal_open": {"scrollWidth": 1920, "overflow": 0, "quality_panel_present": true, "social_consent_present": true}
+    }
+  },
+  "notes": [
+    "Tab 'sold' (Vendues) requested in the problem statement DOES NOT EXIST in TABS array at AdminCitadelleListings.js line 140-145. Actual tabs are: pending, active, all, rejected. Sold listings appear inside the 'all' tab (status badge 'Vendue'). This is a discrepancy in the request text, not a bug — status label 'sold' exists in STATUS_LABELS (line 17) but not as a filter tab. Please confirm with product whether a 'Vendues' filter tab should be added.",
+    "In the 'all' tab, the first row displayed on 400px viewport reports offsetWidth=496 while viewport is 400. However document.body.scrollWidth stays at 400 because parent container clips/scrolls internally without leaking to body. No visible horizontal overflow was observed in screenshots. This is acceptable but worth checking that inner content isn't clipped (visual review of the 400px screenshot shows action buttons on right side of row potentially cropped by ~90px on some very-wide rows). Recommend main agent verify that action buttons remain fully visible in the 'all' tab at 400px width."
+  ],
+  "test_report_links": [],
+  "action_items": [
+    "OPTIONAL: Confirm whether a 'Vendues' (sold) filter tab is expected — currently absent from TABS array.",
+    "OPTIONAL: Verify that row inner width (measured at 496px in 400px viewport for 'all' tab) does not cause right-side action buttons to be clipped. Consider adding overflow-x check on the row container itself."
+  ],
+  "critical_code_review_comments": [
+    "AdminCitadelleListings.js is 587 lines — approaching the 700-line threshold; consider extracting Modal detail (lines 290+) into a separate component for maintainability.",
+    "The responsive fix (flex-col sm:flex-row + flex-wrap on right group) is correctly applied and effective.",
+    "data-testid coverage is good on interactive elements (tabs, rows, view/validate/reject/delete buttons)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped per request)", "frontend": "100% for responsive checks"},
+  "test_credentials": "Admin: bigpapa1981@asar.com / Josiane03@@@!1981 (login worked, no lockout)",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Route /syndicat-admin/citadelle/annonces admin listings responsive fix verified pass at 375/400/1920. Login inputs use data-testid admin-login-email and admin-login-password. Tab 'sold' is not implemented — real tabs are pending/active/all/rejected. Do not click Valider/Rejeter/Supprimer buttons (destructive, and Rule 6 forbids email/payment triggers)."
+}
