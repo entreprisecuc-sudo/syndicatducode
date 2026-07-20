@@ -722,3 +722,10 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Refactor DRY** : logique de score extraite dans `config/listingQuality.js` (`computeListingQuality`, gère technologies string OU tableau) ; `ListingQualityHelper` refactorisé pour l'utiliser.
 - **Admin** (`AdminCitadelleListings.js`) : badge score coloré (%) sur chaque ligne d'annonce (`QualityBadge`) + panneau détaillé dans la modale (`QualityPanel` : barre, libellé, liste des éléments manquants à suggérer au vendeur).
 - **Validé (screenshot)** : 28 badges affichés, panneau détail fonctionnel (ex : 35% · À enrichir + éléments manquants). 100% front. Testing agent NON utilisé (Règle 6).
+
+## 🐛 Session 20/07/2026 — Liens de partage forcés sur lacitadellenumerique.fr
+- **Bug** : le lien de partage utilisait REACT_APP_BACKEND_URL (syndicatducode.fr).
+- **Backend** (`social.py`) : la page OG utilise désormais `settings.CITADELLE_URL` (défaut https://lacitadellenumerique.fr) pour canonical, og:url, image et redirection — indépendant du domaine d'accès.
+- **Frontend** : nouveau var `REACT_APP_CITADELLE_URL=https://lacitadellenumerique.fr` (frontend/.env) ; `CitadelleListingDetail.js` construit le lien ShareBar avec ce var.
+- **Validé (curl + screenshot)** : og:url/canonical/redirect = lacitadellenumerique.fr ; boutons de partage pointent sur lacitadellenumerique.fr (0 syndicatducode). Testing agent NON utilisé (Règle 6).
+- ⚠️ Déploiement : ajouter `REACT_APP_CITADELLE_URL=https://lacitadellenumerique.fr` au frontend/.env du VPS (gitignoré) puis rebuild. lacitadellenumerique.fr doit proxifier /api vers le backend.

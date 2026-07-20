@@ -246,7 +246,7 @@ export default function CitadelleListingDetail() {
             {/* Partage de l'annonce */}
             <div className="py-1">
               <ShareBar
-                url={`${process.env.REACT_APP_BACKEND_URL}/api/citadelle/listings/${listing.slug}/share`}
+                url={`${process.env.REACT_APP_CITADELLE_URL}/api/citadelle/listings/${listing.slug}/share`}
                 title={listing.title}
               />
             </div>

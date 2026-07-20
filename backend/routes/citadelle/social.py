@@ -13,6 +13,7 @@ import json
 import logging
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
+from config.settings import CITADELLE_URL
 
 logger = logging.getLogger(__name__)
 
@@ -26,11 +27,9 @@ def set_database(database):
     db = database
 
 
-def _base_url(request: Request) -> str:
-    """URL externe (respecte le proxy) sans slash final."""
-    proto = request.headers.get("x-forwarded-proto", request.url.scheme)
-    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.netloc
-    return f"{proto}://{host}"
+def _base_url() -> str:
+    """Domaine canonique de La Citadelle (indépendant du domaine d'accès)."""
+    return CITADELLE_URL.rstrip("/")
 
 
 def _abs_image(base: str, path: str) -> str:
@@ -49,7 +48,7 @@ def _abs_image(base: str, path: str) -> str:
 @router.get("/listings/{slug}/share", response_class=HTMLResponse)
 async def listing_share(slug: str, request: Request):
     """Page Open Graph d'une annonce + redirection vers la fiche réelle."""
-    base = _base_url(request)
+    base = _base_url()
     canonical = f"{base}/citadelle/annonces/{slug}"
 
     listing = await db.citadelle_listings.find_one(
