@@ -340,8 +340,9 @@ export default function AdminCitadelleBlog() {
             <button key={t.k} onClick={() => changeFilter(t.k)} data-testid={`blog-filter-${t.k}`}
               className="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={{
-                background: statusFilter === t.k ? "#C9A45C" : "rgba(255,255,255,0.06)",
-                color: statusFilter === t.k ? "#081729" : "rgba(255,255,255,0.7)",
+                background: statusFilter === t.k ? "#C9A45C" : "#F1F5F9",
+                color: statusFilter === t.k ? "#081729" : "#475569",
+                border: statusFilter === t.k ? "1px solid #C9A45C" : "1px solid #E2E8F0",
               }}>
               {t.label} <span className="opacity-70">({t.n})</span>
             </button>
