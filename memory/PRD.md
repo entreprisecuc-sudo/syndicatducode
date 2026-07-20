@@ -712,3 +712,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 ## ✨ Session 20/07/2026 — Carrousel « Dernières annonces » sur l'accueil (PREVIEW)
 - **Frontend** : composant `HeroListingsCarousel` dans `CitadelleHome.js`, inséré sous la barre de recherche/stats du hero. Récupère `/listings?limit=10&sort=recent`, filtre les annonces **actives**, affiche des mini-cartes glassmorphism (fond sombre du hero, bordure or) : image/placeholder, badge « Recommandé », titre, prix (or), revenu mensuel. Défilement horizontal (snap) + flèches prev/next, lien « Voir tout → ». Aucune modif backend.
 - **Validé (screenshot)** : rendu élégant, cohérent avec le style du hero. N'affiche que les annonces actives (1 seule active dans le dataset de preview). Testing agent NON utilisé (Règle 6).
+
+## ✨ Session 20/07/2026 — Aide à l'optimisation des annonces (score + conseils)
+- **Frontend** : nouveau composant `ListingQualityHelper.jsx` (100% front, indicatif) intégré dans `CitadelleCreateListing.js` (par étape via prop `step`) et `CitadelleEditListing.js` (page unique, `step={3}` → checklist complète).
+- Contient : (A) **conseils contextuels bienveillants** par étape (ton pédagogue, icônes ampoule) + (B) **score de qualité en temps réel** (barre or, %, libellé À enrichir/À compléter/Bonne/Excellente) calculé sur des critères pondérés (titre clair + chiffre, accroche ≥80, revenus, trafic, ancienneté, niche, description ≥300, technologies, image, URL). Critères image/URL exclus pour contenu adulte. Purement indicatif (ne bloque PAS la publication).
+- **Validé (screenshot)** : score dynamique 0%→28% en remplissant, conseils et checklist affichés, message de félicitations quand l'étape est complète. Testing agent NON utilisé (Règle 6).

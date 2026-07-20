@@ -9,6 +9,7 @@ import { Globe, ShoppingCart, Cloud, Monitor, Users, ChevronRight, ChevronLeft, 
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CitadelleImageUpload } from "@/components/citadelle/CitadelleImageUpload";
 import CommissionInfoPopup from "@/components/citadelle/CommissionInfoPopup";
+import ListingQualityHelper from "@/components/citadelle/ListingQualityHelper";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
@@ -256,6 +257,9 @@ export default function CitadelleCreateListing() {
             <AlertCircle size={16} /> {error}
           </div>
         )}
+
+        {/* Score de qualité + conseils bienveillants */}
+        <ListingQualityHelper form={form} step={step} />
 
         {/* Étape 1 */}
         {step === 0 && (
