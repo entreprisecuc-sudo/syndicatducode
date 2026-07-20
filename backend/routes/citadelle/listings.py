@@ -284,6 +284,25 @@ async def my_listings(current_user: dict = Depends(require_citadelle_user)):
     return {"listings": listings}
 
 
+@router.get("/listings/{slug}/siblings", summary="Annonce précédente / suivante")
+async def get_listing_siblings(slug: str):
+    """Renvoie l'annonce précédente et suivante selon le tri par défaut (récentes d'abord)."""
+    docs = await db.citadelle_listings.find(
+        {"status": {"$in": ["active", "sold"]}},
+        {"_id": 0, "slug": 1, "title": 1}
+    ).sort([("is_featured", -1), ("published_at", -1)]).to_list(1000)
+    idx = next((i for i, d in enumerate(docs) if d.get("slug") == slug), None)
+    if idx is None:
+        return {"prev": None, "next": None}
+
+    def light(d):
+        return {"slug": d["slug"], "title": d.get("title", "")} if d else None
+
+    prev = docs[idx - 1] if idx > 0 else None
+    nxt = docs[idx + 1] if idx < len(docs) - 1 else None
+    return {"prev": light(prev), "next": light(nxt)}
+
+
 @router.get("/listings/{slug}", summary="Détail d'une annonce publique")
 async def get_listing(slug: str):
     """Détail d'une annonce active — URL du site visible seulement si le vendeur l'a autorisée"""

@@ -698,3 +698,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Refonte** de `components/citadelle/CitadelleImageUpload.js` : remplacement des 5 champs URL par une **zone de glisser-déposer** visuelle (drag & drop + clic pour parcourir), upload **multiple**, aperçus en grille (vignette image ou icône PDF/DOC), badge « Principale » sur le 1er fichier, bouton de suppression par vignette, compteur X/5, gestion d'erreurs (format/taille/quota). Option repliée « Ajouter plutôt via une URL » conservée.
 - Props inchangées (`images`, `onChange`, `inputStyle`, `labelStyle`) → aucun changement dans `CitadelleCreateListing.js` / `CitadelleEditListing.js`. Même endpoint `POST /api/citadelle/upload-image`, mêmes contraintes (5 max, 10 Mo, JPEG/PNG/WebP/GIF/PDF/DOC).
 - **Validé (screenshot)** : dropzone rendue correctement à l'étape 3 du wizard de création. Testing agent NON utilisé (Règle 6).
+
+## ✨ Session 20/07/2026 — Navigation annonce précédente/suivante (PREVIEW)
+- **Backend** : `GET /api/citadelle/listings/{slug}/siblings` → `{prev, next}` (slug+title) selon le tri par défaut (is_featured desc, published_at desc) sur les annonces active+sold.
+- **Frontend** : barre de navigation dans `CitadelleListingDetail.js` (sous le breadcrumb) — boutons « Annonce précédente » / « Annonce suivante » (désactivés en début/fin de liste) + lien « Toutes les annonces ». Scroll top au changement d'annonce.
+- **Validé (curl + screenshot)** : endpoint OK, navigation next fonctionnelle. Testing agent NON utilisé (Règle 6).

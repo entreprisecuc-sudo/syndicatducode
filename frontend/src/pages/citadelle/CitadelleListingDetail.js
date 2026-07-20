@@ -55,6 +55,7 @@ export default function CitadelleListingDetail() {
   const { isAuthenticated, user } = useCitadelleAuth();
   const { canTransact } = useCitadelleModeration();
   const [listing, setListing] = useState(null);
+  const [siblings, setSiblings] = useState({ prev: null, next: null });
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
   const [offerModal, setOfferModal] = useState(false);
@@ -76,6 +77,10 @@ export default function CitadelleListingDetail() {
 
   useEffect(() => {
     fetchListing();
+    citadelleApi.get(`/listings/${slug}/siblings`)
+      .then(res => setSiblings(res.data))
+      .catch(() => setSiblings({ prev: null, next: null }));
+    window.scrollTo(0, 0);
   }, [slug]);
 
   const fetchListing = async () => {
@@ -158,6 +163,46 @@ export default function CitadelleListingDetail() {
           <Link to="/citadelle/annonces" className="hover:opacity-80">Annonces</Link>
           <span>/</span>
           <span style={{ color: CITADELLE_COLORS.blue }} className="truncate max-w-xs">{listing.title}</span>
+        </div>
+
+        {/* Navigation entre annonces */}
+        <div className="flex items-center justify-between gap-3 mb-6" data-testid="listing-nav">
+          <button
+            type="button"
+            disabled={!siblings.prev}
+            onClick={() => siblings.prev && navigate(`/citadelle/annonces/${siblings.prev.slug}`)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-85"
+            style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue, background: "#fff" }}
+            data-testid="listing-prev-btn"
+            title={siblings.prev?.title || ""}
+          >
+            <ArrowLeft size={15} />
+            <span className="hidden sm:inline">Annonce précédente</span>
+            <span className="sm:hidden">Précédente</span>
+          </button>
+
+          <Link
+            to="/citadelle/annonces"
+            className="text-xs font-medium hover:opacity-80 hidden md:inline"
+            style={{ color: CITADELLE_COLORS.textMuted }}
+            data-testid="listing-back-all"
+          >
+            Toutes les annonces
+          </Link>
+
+          <button
+            type="button"
+            disabled={!siblings.next}
+            onClick={() => siblings.next && navigate(`/citadelle/annonces/${siblings.next.slug}`)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-85"
+            style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue, background: "#fff" }}
+            data-testid="listing-next-btn"
+            title={siblings.next?.title || ""}
+          >
+            <span className="hidden sm:inline">Annonce suivante</span>
+            <span className="sm:hidden">Suivante</span>
+            <ArrowLeft size={15} style={{ transform: "rotate(180deg)" }} />
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
