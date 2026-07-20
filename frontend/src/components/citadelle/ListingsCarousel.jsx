@@ -7,7 +7,7 @@
  */
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, Star, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { TrendingUp, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
 
@@ -88,10 +88,6 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
                 ) : (
                   <img src={cover} alt={l.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     onError={(e) => { e.target.src = PLACEHOLDER; }} />
-                )}
-                {l.is_featured && (
-                  <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold"
-                    style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}><Star size={9} /> Recommandé</span>
                 )}
               </div>
               <div className="p-3">
