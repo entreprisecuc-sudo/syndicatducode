@@ -207,7 +207,7 @@ export default function AdminCitadelleListings() {
                   {/* Infos */}
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{listing.title}</p>
-                    <p className="text-xs opacity-50 mt-0.5">
+                    <p className="text-xs opacity-50 mt-0.5 truncate">
                       {TYPE_LABELS[listing.type] || listing.type} · {listing.price?.toLocaleString("fr-FR")} € · {listing.seller_email} · {new Date(listing.created_at).toLocaleDateString("fr-FR")}
                     </p>
                     {listing.rejection_reason && (

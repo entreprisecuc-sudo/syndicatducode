@@ -741,3 +741,8 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Frontend édition** : même choix Oui/Non (chargé depuis l'annonce, modifiable).
 - **Admin** (`AdminCitadelleListings.js`) : statut du consentement affiché dans la modale détail + bouton bascule (Autorisé/Non autorisé).
 - **Validé (curl + screenshot)** : création stocke true, toggle admin flippe, blocage soumission sans choix confirmé. Testing agent NON utilisé (Règle 6).
+
+## 🐛 Session 20/07/2026 — Responsive admin + relooking helper qualité
+- **Helper qualité** (`ListingQualityHelper.jsx`) : cadre bleu Citadelle (#0F2747) + texte blanc, barre de progression VERTE (#16A34A→#22C55E), ligne « Score indicatif… » en vert + plus grande, score global en vert. Libellés renommés avec « Score » (`listingQuality.js`) : Score de départ / Score à compléter / Bon score / Score excellent. Barre admin `QualityPanel` aussi verte.
+- **Responsive admin (cause racine)** : `AdminLayout.js` — ajout `min-w-0` sur le conteneur principal `flex-1` + `min-w-0 overflow-x-hidden` sur `<main>`. Corrige TOUTES les pages admin (le conteneur s'élargissait au contenu). `AdminCitadelleListings.js` : lignes en `flex-col sm:flex-row`, groupe gauche (miniature+infos) / groupe droit (statut+score+actions `flex-wrap`), ligne meta tronquée.
+- **Testing agent** (accord explicite du client, Règle 6) : PASS — 0 débordement à 375/400/1920, empilement OK, modale OK. Caveat résiduel (boutons rognés onglet Toutes) corrigé par le min-w-0 → largeur ligne 496→368px vérifiée.

@@ -312,7 +312,7 @@ const AdminLayout = ({ children }) => {
       </aside>
 
       {/* Contenu principal */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
         {/* Header */}
         <header 
           className="sticky top-0 z-30 px-4 lg:px-6 py-3 flex items-center justify-between transition-colors duration-300"
@@ -372,7 +372,7 @@ const AdminLayout = ({ children }) => {
 
         {/* Contenu */}
         <main 
-          className="flex-1 p-4 lg:p-6 admin-theme-context"
+          className="flex-1 p-4 lg:p-6 admin-theme-context min-w-0 overflow-x-hidden"
           style={{
             "--admin-bg": currentTheme.bg,
             "--admin-bg-card": currentTheme.bgCard,
