@@ -734,3 +734,10 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Sitemap** (`routes/sitemaps.py`) : déjà DYNAMIQUE (interroge la base à chaque requête → auto-à-jour à chaque nouvelle annonce active, sans cron). Refactor : `CITADELLE_DOMAIN`/`SYNDICAT_DOMAIN` tirés de `settings.CITADELLE_URL`/`FRONTEND_URL` (fin du hardcode). Routes : `/api/sitemap-citadelle.xml`, `/api/sitemap-syndicat.xml`.
 - **Emails Citadelle** : vérifié — tous les liens utilisent déjà `CITADELLE_URL` (lacitadellenumerique.fr). Aucun lien via FRONTEND_URL. Rien à changer.
 - **Validé (curl)** : sitemap 100% lacitadellenumerique.fr, 0 syndicatducode, annonces actives listées dynamiquement. Testing agent NON utilisé (Règle 6).
+
+## ✨ Session 20/07/2026 — Consentement partage réseaux sociaux (dépôt d'annonce)
+- **Backend** (`listings.py`) : champ `allow_social_share` (bool) sur `ListingCreate` + `ListingUpdate` + stocké dans le doc annonce. Nouvel endpoint admin `PATCH /citadelle/admin/listings/{id}/social-share` (toggle).
+- **Frontend création** : choix **Oui/Non obligatoire** dans le récapitulatif (« Souhaitez-vous que nous partagions votre annonce sur nos réseaux sociaux ? ») ; soumission bloquée tant qu'aucun choix (`allow_social_share === null`).
+- **Frontend édition** : même choix Oui/Non (chargé depuis l'annonce, modifiable).
+- **Admin** (`AdminCitadelleListings.js`) : statut du consentement affiché dans la modale détail + bouton bascule (Autorisé/Non autorisé).
+- **Validé (curl + screenshot)** : création stocke true, toggle admin flippe, blocage soumission sans choix confirmé. Testing agent NON utilisé (Règle 6).

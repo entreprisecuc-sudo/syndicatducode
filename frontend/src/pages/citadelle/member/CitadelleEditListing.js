@@ -90,6 +90,7 @@ export default function CitadelleEditListing() {
         url_public: !!listing.url_public,
         images: [...(listing.images || []), "", "", "", "", ""].slice(0, 5),
         is_adult: !!listing.is_adult,
+        allow_social_share: !!listing.allow_social_share,
       });
     } catch {
       setNotFound(true);
@@ -136,6 +137,7 @@ export default function CitadelleEditListing() {
         url_public: form.is_adult ? false : !!form.url_public,
         images: form.is_adult ? [] : form.images.filter(Boolean),
         is_adult: form.is_adult,
+        allow_social_share: !!form.allow_social_share,
       };
       await citadelleApi.patch(`/listings/${id}`, payload);
       navigate("/citadelle/espace-membre/mes-annonces");
@@ -395,6 +397,33 @@ export default function CitadelleEditListing() {
               />
             </>
           )}
+
+          {/* Consentement partage réseaux sociaux */}
+          <div className="p-4 rounded-xl" style={{ background: "rgba(201,164,92,0.06)", border: `1px solid rgba(201,164,92,0.2)` }} data-testid="edit-social-share">
+            <p className="text-sm font-semibold mb-1" style={{ color: CITADELLE_COLORS.blue }}>
+              Partage sur nos réseaux sociaux
+            </p>
+            <p className="text-xs mb-3" style={labelStyle}>
+              Autorisez-vous La Citadelle Numérique à mettre en avant votre annonce sur ses réseaux (LinkedIn, Facebook, X…) ?
+            </p>
+            <div className="flex gap-3">
+              {[{ v: true, label: "Oui, partagez-la" }, { v: false, label: "Non merci" }].map(opt => {
+                const active = !!form.allow_social_share === opt.v;
+                return (
+                  <button key={String(opt.v)} type="button" onClick={() => set("allow_social_share", opt.v)}
+                    className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all"
+                    style={{
+                      background: active ? CITADELLE_COLORS.gold : "transparent",
+                      color: active ? CITADELLE_COLORS.night : CITADELLE_COLORS.blue,
+                      border: `1px solid ${active ? CITADELLE_COLORS.gold : CITADELLE_COLORS.border}`,
+                    }}
+                    data-testid={`edit-social-share-${opt.v ? "yes" : "no"}`}>
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Boutons d'action */}

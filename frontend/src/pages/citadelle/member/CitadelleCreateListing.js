@@ -49,6 +49,7 @@ const initialForm = {
   description: "", technologies: "", url_preview: "", url_public: false,
   images: ["", "", "", "", ""],
   is_adult: false,
+  allow_social_share: null,
   // Enchères
   is_auction: false,
   auction_show_reserve: false,
@@ -150,6 +151,10 @@ export default function CitadelleCreateListing() {
   const prev = () => { setStep(s => s - 1); setError(""); };
 
   const handleSubmit = async () => {
+    if (form.allow_social_share === null) {
+      setError("Merci d'indiquer si nous pouvons partager votre annonce sur nos réseaux sociaux.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -169,6 +174,7 @@ export default function CitadelleCreateListing() {
         url_public: form.is_adult ? false : !!form.url_public,
         images: form.is_adult ? [] : form.images.filter(Boolean),
         is_adult: form.is_adult,
+        allow_social_share: !!form.allow_social_share,
         // Enchères
         is_auction: form.is_auction,
         auction_show_reserve: form.auction_show_reserve,
@@ -533,6 +539,37 @@ export default function CitadelleCreateListing() {
             </div>
             <div className="p-4 rounded-xl text-sm" style={{ background: "rgba(201,164,92,0.07)", border: `1px solid rgba(201,164,92,0.2)`, color: CITADELLE_COLORS.textMuted }}>
               Votre annonce sera soumise à validation (sous 24h) avant publication. Commission de 5% uniquement si la vente aboutit.
+            </div>
+
+            {/* Consentement partage réseaux sociaux — choix obligatoire */}
+            <div className="p-4 rounded-2xl" style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }} data-testid="social-share-consent">
+              <p className="text-sm font-semibold mb-1" style={{ color: CITADELLE_COLORS.blue }}>
+                Souhaitez-vous que nous partagions votre annonce sur nos réseaux sociaux ? <span style={{ color: "#DC2626" }}>*</span>
+              </p>
+              <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
+                La Citadelle Numérique pourra mettre en avant votre annonce sur ses comptes (LinkedIn, Facebook, X…) pour maximiser sa visibilité. Choix obligatoire.
+              </p>
+              <div className="flex gap-3">
+                {[{ v: true, label: "Oui, partagez-la" }, { v: false, label: "Non merci" }].map(opt => {
+                  const active = form.allow_social_share === opt.v;
+                  return (
+                    <button
+                      key={String(opt.v)}
+                      type="button"
+                      onClick={() => set("allow_social_share", opt.v)}
+                      className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all"
+                      style={{
+                        background: active ? CITADELLE_COLORS.gold : "transparent",
+                        color: active ? CITADELLE_COLORS.night : CITADELLE_COLORS.blue,
+                        border: `1px solid ${active ? CITADELLE_COLORS.gold : CITADELLE_COLORS.border}`,
+                      }}
+                      data-testid={`social-share-${opt.v ? "yes" : "no"}`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}

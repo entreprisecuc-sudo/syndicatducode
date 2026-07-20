@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Star, Eye, Filter, AlertCircle, Trash2, X, ExternalLink, Globe, BarChart2, Calendar, TrendingUp, Hammer, FileText, ShieldCheck } from "lucide-react";
+import { CheckCircle, XCircle, Star, Eye, Filter, AlertCircle, Trash2, X, ExternalLink, Globe, BarChart2, Calendar, TrendingUp, Hammer, FileText, ShieldCheck, Share2 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
 import { getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@/config/citadelleConstants";
@@ -105,6 +105,19 @@ export default function AdminCitadelleListings() {
       await fetchListings();
     } catch (err) {
       alert("Erreur badge La Garde");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const toggleSocialShare = async (id) => {
+    setActionLoading(id + "_social");
+    try {
+      await api.patch(`/citadelle/admin/listings/${id}/social-share`);
+      await fetchListings();
+      setDetailModal(prev => prev && prev.id === id ? { ...prev, allow_social_share: !prev.allow_social_share } : prev);
+    } catch (err) {
+      alert("Erreur consentement partage");
     } finally {
       setActionLoading(null);
     }
@@ -360,6 +373,34 @@ export default function AdminCitadelleListings() {
 
               {/* Score de qualité (aide à l'accompagnement du vendeur) */}
               <QualityPanel listing={detailModal} />
+
+              {/* Consentement partage réseaux sociaux */}
+              <div className="flex items-center justify-between gap-3 p-4 rounded-xl"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                data-testid="admin-social-consent">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Share2 size={15} style={{ color: "#C9A45C" }} className="flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">Partage réseaux sociaux</p>
+                    <p className="text-xs opacity-50">
+                      {detailModal.allow_social_share
+                        ? "Le vendeur autorise le partage de son annonce."
+                        : "Le vendeur n'a pas autorisé le partage."}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => toggleSocialShare(detailModal.id)}
+                  disabled={actionLoading === detailModal.id + "_social"}
+                  className="text-xs px-3 py-1.5 rounded-lg font-semibold flex-shrink-0 transition-all hover:scale-105 disabled:opacity-60"
+                  style={{
+                    background: detailModal.allow_social_share ? "rgba(34,197,94,0.12)" : "rgba(220,38,38,0.1)",
+                    color: detailModal.allow_social_share ? "#22C55E" : "#DC2626",
+                  }}
+                  data-testid="admin-social-toggle">
+                  {detailModal.allow_social_share ? "Autorisé ✓" : "Non autorisé"}
+                </button>
+              </div>
 
               {/* Enchère */}
               {detailModal.is_auction && (

@@ -165,6 +165,7 @@ class ListingCreate(BaseModel):
     url_public: bool = False
     images: Optional[List[str]] = []
     is_adult: bool = False
+    allow_social_share: bool = False
     # Enchères
     is_auction: bool = False
     auction_show_reserve: bool = False
@@ -191,6 +192,7 @@ class ListingUpdate(BaseModel):
     url_public: Optional[bool] = None
     images: Optional[List[str]] = None
     is_adult: Optional[bool] = None
+    allow_social_share: Optional[bool] = None
     # Enchères
     is_auction: Optional[bool] = None
     auction_show_reserve: Optional[bool] = None
@@ -399,6 +401,7 @@ async def create_listing(
         "url_public": False if data.is_adult else data.url_public,
         "images": [] if data.is_adult else (data.images or []),
         "is_adult": data.is_adult,
+        "allow_social_share": data.allow_social_share,
         "is_featured": False,
         "is_verified": False,
         "views_count": 0,
@@ -697,6 +700,24 @@ async def admin_garde_verify_listing(
 
     action = "Badge La Garde activé" if new_value else "Badge La Garde retiré"
     return {"message": action, "garde_verified": new_value}
+
+
+@router.patch("/admin/listings/{listing_id}/social-share", summary="Admin — Toggle consentement partage réseaux sociaux")
+async def admin_toggle_social_share(
+    listing_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """Admin : active/désactive l'autorisation de partage de l'annonce sur les réseaux sociaux."""
+    listing = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0, "allow_social_share": 1})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+
+    new_value = not listing.get("allow_social_share", False)
+    await db.citadelle_listings.update_one(
+        {"id": listing_id},
+        {"$set": {"allow_social_share": new_value, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"message": "Consentement partage mis à jour", "allow_social_share": new_value}
 
 
 @router.delete("/admin/listings/{listing_id}", summary="Admin — Supprimer une annonce")
