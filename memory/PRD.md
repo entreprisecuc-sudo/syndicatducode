@@ -708,3 +708,7 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Backend** : refactor DRY `_build_listings_query()` partagé par `list_listings` et `siblings`. `GET /listings/{slug}/siblings` accepte désormais q, type, budget(_min/_max), sort → prev/next calculés dans le sous-ensemble filtré/trié. Fallback sur le classement global si l'annonce est hors périmètre du filtre.
 - **Frontend** : `ListingCard` reçoit `search` et l'ajoute au lien détail ; `CitadelleListings` passe `?${searchParams}`. `CitadelleListingDetail` lit `location.search` (hors `page`), le transmet à `siblings` et le conserve dans les boutons prev/next + lien « Toutes les annonces ».
 - **Validé (curl + screenshot)** : filtre type=saas restreint la navigation aux SaaS ; navigation e2e conserve `?sort=price_desc` dans l'URL. Testing agent NON utilisé (Règle 6).
+
+## ✨ Session 20/07/2026 — Carrousel « Dernières annonces » sur l'accueil (PREVIEW)
+- **Frontend** : composant `HeroListingsCarousel` dans `CitadelleHome.js`, inséré sous la barre de recherche/stats du hero. Récupère `/listings?limit=10&sort=recent`, filtre les annonces **actives**, affiche des mini-cartes glassmorphism (fond sombre du hero, bordure or) : image/placeholder, badge « Recommandé », titre, prix (or), revenu mensuel. Défilement horizontal (snap) + flèches prev/next, lien « Voir tout → ». Aucune modif backend.
+- **Validé (screenshot)** : rendu élégant, cohérent avec le style du hero. N'affiche que les annonces actives (1 seule active dans le dataset de preview). Testing agent NON utilisé (Règle 6).
