@@ -11,6 +11,7 @@ import { CitadelleImageUpload } from "@/components/citadelle/CitadelleImageUploa
 import CommissionInfoPopup from "@/components/citadelle/CommissionInfoPopup";
 import ListingQualityHelper from "@/components/citadelle/ListingQualityHelper";
 import BoostModal from "@/components/citadelle/BoostModal";
+import SellerServicesUpsell from "@/components/citadelle/SellerServicesUpsell";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
@@ -66,11 +67,12 @@ export default function CitadelleCreateListing() {
   const [submitted, setSubmitted] = useState(false);
   const [createdListing, setCreatedListing] = useState(null);
   const [boostModal, setBoostModal] = useState(false);
+  const [upsellStep, setUpsellStep] = useState("boost"); // "boost" | "services" | "done"
   const [showCommissionPopup, setShowCommissionPopup] = useState(false);
   const [commissionAcknowledged, setCommissionAcknowledged] = useState(false);
   const [commission, setCommission] = useState({ rate: 0.05, minimum_eur: 49 });
   const [showOtherPanel, setShowOtherPanel] = useState(false);
-  const { isAuthenticated } = useCitadelleAuth();
+  const { isAuthenticated, user } = useCitadelleAuth();
   const navigate = useNavigate();
 
   // "Autre" est actif si le type sélectionné appartient aux catégories supplémentaires
@@ -211,8 +213,8 @@ export default function CitadelleCreateListing() {
             Votre annonce est en attente de validation par notre équipe. Vous recevrez une notification dès sa publication (sous 24h).
           </p>
 
-          {/* Proposition « Annonce à la Une » */}
-          {createdListing?.id && (
+          {/* Proposition « Annonce à la Une » puis services vendeur */}
+          {createdListing?.id && upsellStep === "boost" && (
             <div className="p-5 rounded-2xl mb-6 text-left" data-testid="post-submit-boost"
               style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.25)" }}>
               <div className="flex items-center gap-2 mb-1">
@@ -232,7 +234,19 @@ export default function CitadelleCreateListing() {
                 data-testid="post-submit-boost-btn">
                 <Star size={14} /> Mettre à la Une
               </button>
+              <button
+                type="button"
+                onClick={() => setUpsellStep("services")}
+                className="w-full mt-2 py-2 text-xs font-semibold"
+                style={{ color: CITADELLE_COLORS.textMuted }}
+                data-testid="post-submit-boost-decline">
+                Non merci
+              </button>
             </div>
+          )}
+
+          {createdListing?.id && upsellStep === "services" && (
+            <SellerServicesUpsell user={user} onDecline={() => setUpsellStep("done")} />
           )}
 
           <div className="flex gap-3 justify-center">

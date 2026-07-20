@@ -13,8 +13,15 @@
 - **Fiche détail** (`pages/citadelle/CitadelleListingDetail.js`) : encart propriétaire (`user.id === listing.seller_id`) sous le bloc Titre/Prix — si NON boostée & non vendue → bouton doré « Mettre à la Une » (`btn-boost-listing`) ouvrant `BoostModal` ; si DÉJÀ boostée → badge navy « Votre annonce est à la Une » avec date d'expiration (`owner-boost-active`). Boost jugé actif si `boost_plan==="until_sale"` OU `boost_expires_at > now`.
 - **Après soumission d'annonce** (`pages/citadelle/member/CitadelleCreateListing.js`) : capture de l'annonce créée (`res.data`) → écran de succès propose « Mettre à la Une » (`post-submit-boost-btn`) ouvrant la même `BoostModal`.
 - **Backend (déjà en place, vérifié)** : `BOOST_PLANS` + `POST /payments/boost/checkout` (ownership + plan validés) + activation du boost dans `_finalize_paid_transaction` (`source==citadelle_boost` → pose `boost_plan/boost_started_at/boost_expires_at` + facture). Carrousel `GET /listings/carousel` mixe annonces boostées (aléatoire) + complément aléatoire.
-- **Testé (muet, Règle 6)** : cURL — boost valide → 200 + vraie URL Stripe Checkout ; plan invalide → 400 ; annonce inexistante → 404 ; sans auth → 403. Screenshots : carrousel « À la Une », badge propriétaire boosté (date d'expiration), CTA propriétaire non boosté, modale 2 formules. Aucun testing_agent, aucun email de test.
 - **⚠️ NON DÉPLOYÉ SUR LE VPS** : Save to Github → `git pull` → `yarn build` → `pm2 restart syndicat-backend`.
+
+## ⭐ Session 20/07/2026 (suite) — Redesign carrousel + upsell services vendeur (PREVIEW)
+- **Carrousel `ListingsCarousel.jsx` redesigné (blueprint design_agent `design_guidelines.json`)** : cartes premium navy/or, hover cinématique (zoom image 700 ms + lift + bordure or), ligne « X vues » séparée par un filet, flèches raffinées. **AUCUNE pastille** sur les cartes (ni « Recommandé » ni « À la Une ») — retiré à la demande du client.
+- **Placeholder sans image différencié par variante** : accueil (variante `dark`) → **fond blanc + logo Citadelle** (`CITADELLE_CONFIG.logo`) ; page annonces (variante `light`) → **fond bleu navy** (dégradé + motif de points dorés + icône `Castle`).
+- **Upsell services vendeur après soumission d'annonce** (`CitadelleCreateListing.js` + nouveau `components/citadelle/SellerServicesUpsell.jsx`) : écran de succès à 3 étapes (`upsellStep` = boost | services | done). Étape boost = « Mettre à la Une » + bouton **Non merci** (`post-submit-boost-decline`) → étape services = 3 cartes (**Estimation Expert 149 €, Vérification La Garde 99 €, Accompagnement Vente Premium 399 €**, récupérées par titre depuis `/services`, DRY) avec bouton « Acheter » → `POST /payments/service/checkout` (redirection Stripe) + « Voir tous les services » + bouton **Non merci** (`upsell-decline`).
+- **Testé (muet, Règle 6)** : cURL service checkout → 200 + URL Stripe réelle. Screenshots : carrousel dark (logo blanc) & light (fond bleu), flux complet soumission → boost + Non merci → 3 services + Non merci (data-testids validés). Annonce de test supprimée. Aucun testing_agent.
+- **⚠️ NON DÉPLOYÉ SUR LE VPS** : Save to Github → `git pull` → `yarn build` → `pm2 restart syndicat-backend`.
+
 
 ## 🔗 Session 09/07/2026 — Bouton de partage des articles (PREVIEW)
 - **Besoin** : bouton « Partager » sur les articles pour augmenter l'audience.
