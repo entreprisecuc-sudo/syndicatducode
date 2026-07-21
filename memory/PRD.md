@@ -39,6 +39,10 @@
   - Vérifié : `https://lacitadellenumerique.fr/sitemap.xml` sert bien le dynamique (GET 200, 93 loc, 20 annonces). NOTE : requête HEAD → 405 (backend GET-only) ; sans impact GSC. Option future : ajouter support HEAD au endpoint.
   - **[RÉSOLU 20/07 soir]** Support `HEAD` ajouté aux 2 routes sitemap (`@router.api_route(..., methods=["GET","HEAD"])` dans `backend/routes/sitemaps.py`). Déployé backend (Save to Github → git pull commit 768bea3 → `pm2 restart syndicat-backend`). Vérifié prod : HEAD `/sitemap.xml` → 200, GET → 93 loc / 20 annonces. Sitemap prêt pour Google Search Console.
   - **[CONFIRMÉ déployé]** Carrousel refondu (flèches latérales + 3 cartes centrées) est EN LIGNE en production (vérifié par screenshot lacitadellenumerique.fr/citadelle).
+
+## ⭐ Session 21/07/2026 — Lightbox image annonce ✅
+- **Agrandissement image (lightbox)** sur la page détail annonce (`pages/citadelle/CitadelleListingDetail.js`) : clic sur l'image principale → overlay plein écran (fond `rgba(8,23,41,0.92)` + blur), indice « Agrandir » (icône ZoomIn) au survol. Fermeture au clic **n'importe où** sur l'overlay OU sur la croix ✕. State `lightbox`. Pas de zoom sur annonces `is_adult` ni sur placeholder (uniquement si `displayImages[activeImg]` existe). `data-testid`: `listing-image-zoom`, `listing-lightbox`, `listing-lightbox-close`.
+- Déployé (frontend) et **testé/validé en production par le client**.
   - `robots.txt` pointe vers `sitemap-citadelle.xml` (Citadelle) et `syndicatducode.fr/sitemap-syndicat.xml` (Syndicat). Le domaine syndicatducode.fr n'a PAS encore reçu le même traitement proxy (statique encore servi côté Syndicat).
 
 
