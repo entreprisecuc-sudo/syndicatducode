@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, BarChart2,
-  Calendar, ShieldCheck, Star, ArrowLeft, Eye, Share2, Lock, FileText, Download, Send, AlertCircle, Hammer, Clock, Zap
+  Calendar, ShieldCheck, Star, ArrowLeft, Eye, Share2, Lock, FileText, Download, Send, AlertCircle, Hammer, Clock, Zap, X, ZoomIn
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
@@ -61,6 +61,7 @@ export default function CitadelleListingDetail() {
   const [siblings, setSiblings] = useState({ prev: null, next: null });
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
+  const [lightbox, setLightbox] = useState(false);
   const [offerModal, setOfferModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState("");
   const [offerMessage, setOfferMessage] = useState("");
@@ -238,7 +239,14 @@ export default function CitadelleListingDetail() {
                   </span>
                 </div>
               ) : displayImages[activeImg] ? (
-                <img src={getListingImageUrl(displayImages[activeImg])} alt={listing.title} className="w-full h-full object-cover" onError={e => e.target.style.display="none"} />
+                <button type="button" onClick={() => setLightbox(true)} data-testid="listing-image-zoom"
+                  className="group relative w-full h-full block cursor-zoom-in">
+                  <img src={getListingImageUrl(displayImages[activeImg])} alt={listing.title} className="w-full h-full object-cover" onError={e => e.target.style.display="none"} />
+                  <span className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: "rgba(8,23,41,0.8)", color: "#fff", backdropFilter: "blur(4px)" }}>
+                    <ZoomIn size={14} /> Agrandir
+                  </span>
+                </button>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <span className="text-6xl">🏰</span>
@@ -838,6 +846,19 @@ export default function CitadelleListingDetail() {
               }}
             />
           </div>
+        </div>
+      )}
+      {lightbox && !listing.is_adult && displayImages[activeImg] && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-zoom-out"
+          style={{ background: "rgba(8,23,41,0.92)", backdropFilter: "blur(6px)" }}
+          onClick={() => setLightbox(false)} data-testid="listing-lightbox">
+          <button type="button" aria-label="Fermer"
+            className="absolute top-5 right-5 flex items-center justify-center w-11 h-11 rounded-full transition-transform hover:scale-110"
+            style={{ background: "rgba(255,255,255,0.14)", color: "#fff" }} data-testid="listing-lightbox-close">
+            <X size={22} />
+          </button>
+          <img src={getListingImageUrl(displayImages[activeImg])} alt={listing.title}
+            className="max-w-[92vw] max-h-[88vh] object-contain rounded-lg shadow-2xl" />
         </div>
       )}
     </CitadelleLayout>
