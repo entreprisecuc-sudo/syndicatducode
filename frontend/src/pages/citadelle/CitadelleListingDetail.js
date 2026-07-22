@@ -407,7 +407,7 @@ export default function CitadelleListingDetail() {
                   )}
                   {listing.auction_show_reserve && (
                     <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      Prix de réserve : {listing.price?.toLocaleString("fr-FR")} €
+                      Prix de réserve confidentiel
                     </p>
                   )}
 
