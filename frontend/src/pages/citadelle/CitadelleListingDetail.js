@@ -660,6 +660,7 @@ export default function CitadelleListingDetail() {
               <SellerServicesUpsell
                 user={user}
                 stacked
+                chooser
                 testid="buyer-estimation-upsell"
                 targetServices={BUYER_ESTIMATION_SERVICES}
                 heading="Ce site vaut-il le coup ?"
