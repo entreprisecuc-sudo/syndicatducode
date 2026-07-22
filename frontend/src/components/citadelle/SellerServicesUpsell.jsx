@@ -126,11 +126,18 @@ export default function SellerServicesUpsell({
               <div className="grid grid-cols-1 gap-3">
                 {services.map((svc) => {
                   const Icon = svc.icon;
+                  const isExpert = (svc.title || "").trim() === "Estimation Expert";
                   return (
                     <button key={svc.id} type="button" onClick={() => buy(svc)} disabled={loadingId === svc.id}
-                      className="flex items-center gap-3 p-4 rounded-xl text-left transition-all hover:scale-[1.01] disabled:opacity-60"
-                      style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}
+                      className="relative flex items-start gap-3 p-4 rounded-xl text-left transition-all hover:scale-[1.01] disabled:opacity-60"
+                      style={{ background: isExpert ? "rgba(201,164,92,0.06)" : CITADELLE_COLORS.bg, border: isExpert ? `2px solid ${CITADELLE_COLORS.gold}` : `1px solid ${CITADELLE_COLORS.border}` }}
                       data-testid={`estimation-choose-${svc.id}`}>
+                      {isExpert && (
+                        <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide flex items-center gap-1"
+                          style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }} data-testid="estimation-recommended-badge">
+                          <Star size={9} /> Recommandé
+                        </span>
+                      )}
                       <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(201,164,92,0.12)" }}>
                         <Icon size={16} style={{ color: CITADELLE_COLORS.gold }} />
                       </div>
@@ -142,6 +149,11 @@ export default function SellerServicesUpsell({
                           </span>
                         </div>
                         <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>{svc.short_description}</p>
+                        {isExpert && (
+                          <p className="text-[11px] mt-1.5 flex items-center gap-1 font-semibold" style={{ color: CITADELLE_COLORS.gold }}>
+                            <ShieldCheck size={11} /> Rapport PDF professionnel · livré sous 48h
+                          </p>
+                        )}
                       </div>
                       {loadingId === svc.id && (
                         <div className="w-4 h-4 rounded-full border-2 border-transparent animate-spin flex-shrink-0" style={{ borderTopColor: CITADELLE_COLORS.gold }} />

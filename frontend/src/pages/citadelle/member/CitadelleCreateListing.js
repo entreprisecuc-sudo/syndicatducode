@@ -457,13 +457,6 @@ export default function CitadelleCreateListing() {
 
               {form.is_auction && (
                 <div className="space-y-4 mt-3">
-                  <div className="flex items-center gap-3 ml-1">
-                    <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: CITADELLE_COLORS.blue }}>
-                      <input type="checkbox" checked={form.auction_show_reserve} onChange={e => set("auction_show_reserve", e.target.checked)} className="w-4 h-4 rounded" />
-                      Afficher le prix de départ publiquement
-                    </label>
-                  </div>
-
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold mb-2" style={labelStyle}>Durée de l'enchère (jours)</label>
