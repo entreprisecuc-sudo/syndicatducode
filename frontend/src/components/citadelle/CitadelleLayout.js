@@ -297,6 +297,11 @@ const CitadelleFooter = () => (
                 Nous contacter
               </Link>
             </li>
+            <li>
+              <a href="/informations-pour-les-ia" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.55)" }} data-testid="footer-infos-ia-link">
+                Informations pour les IA
+              </a>
+            </li>
             {[
               { href: "/citadelle/cgv", label: "CGV" },
               { href: "/citadelle/cgu", label: "CGU" },

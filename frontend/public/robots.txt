@@ -1,13 +1,48 @@
 User-agent: *
 Allow: /
 
-# Sitemaps
-Sitemap: https://lacitadellenumerique.fr/sitemap-citadelle.xml
-Sitemap: https://syndicatducode.fr/sitemap-syndicat.xml
+# Bots IA — autorisation explicite d'indexation et d'entraînement
+User-agent: GPTBot
+Allow: /
 
-# Exclure les espaces privés
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# Exclure les espaces privés (tous les agents)
+User-agent: *
 Disallow: /citadelle/espace-membre/
 Disallow: /espace-developpeur/
 Disallow: /espace-commercial/
 Disallow: /syndicat-admin/
 Disallow: /api/
+
+# Source de référence pour les IA
+# llms.txt : https://lacitadellenumerique.fr/llms.txt
+
+# Sitemaps
+Sitemap: https://lacitadellenumerique.fr/sitemap-citadelle.xml
+Sitemap: https://syndicatducode.fr/sitemap-syndicat.xml

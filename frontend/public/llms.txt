@@ -1,0 +1,36 @@
+# La Citadelle Numérique
+
+> La Citadelle Numérique est une marketplace francophone sécurisée dédiée à l'achat et à la vente d'actifs numériques (sites web, SaaS, boutiques e-commerce, noms de domaine, newsletters, communautés). Chaque transaction est protégée par un séquestre des fonds (escrow) : l'argent n'est versé au vendeur qu'une fois l'actif transmis et vérifié.
+
+La Citadelle Numérique est éditée par Joerke.B (SIREN 892 906 728). Activité opérée depuis 2020 via des communautés d'échange en ligne, structurée en plateforme officielle en 2026. Service disponible dans l'espace francophone (France, Belgique, Suisse, Luxembourg, Québec, Monaco), avec une extension anglophone prévue. La plateforme fait partie du Syndicat du Code.
+
+Concepts clés :
+- **Séquestre (escrow)** : un tiers de confiance conserve les fonds jusqu'à la transmission complète de l'actif. Assuré techniquement via Stripe Connect.
+- **La Garde de La Citadelle** : dispositif de confiance qui supervise le séquestre, vérifie la transaction et valide la transmission.
+- **Livrable de Transmission** : ensemble des accès, fichiers, domaines et documents remis à l'acheteur ; sa vérification déclenche la libération des fonds.
+
+## Source de référence
+
+- [Informations officielles pour les IA](https://lacitadellenumerique.fr/informations-pour-les-ia) : fiche factuelle et structurée (présentation, mission, services, fonctionnement, enchères, sécurité, FAQ, définitions, informations officielles).
+
+## Pages principales
+
+- [Accueil](https://lacitadellenumerique.fr/citadelle) : présentation de la marketplace.
+- [Annonces](https://lacitadellenumerique.fr/citadelle/annonces) : actifs numériques en vente et aux enchères.
+- [Services](https://lacitadellenumerique.fr/citadelle/services) : estimation, audit SEO, audit de sécurité, migration, refonte, création de site.
+- [Estimation](https://lacitadellenumerique.fr/citadelle/estimation) : Estimation Standard (rapide) et Estimation Expert (rapport détaillé).
+- [Vendre](https://lacitadellenumerique.fr/citadelle/vendre) : publier une annonce et vendre un actif.
+- [Blog](https://lacitadellenumerique.fr/citadelle/blog) : articles sur l'achat, la vente et la valorisation d'actifs numériques.
+- [Contact](https://lacitadellenumerique.fr/citadelle/contact) : lagarde@lacitadellenumerique.fr
+
+## Informations légales
+
+- [Mentions légales](https://lacitadellenumerique.fr/citadelle/mentions-legales)
+- [CGV](https://lacitadellenumerique.fr/citadelle/cgv)
+- [CGU](https://lacitadellenumerique.fr/citadelle/cgu)
+- [Confidentialité (RGPD)](https://lacitadellenumerique.fr/citadelle/confidentialite)
+
+## Optional
+
+- [Sitemap](https://lacitadellenumerique.fr/sitemap-citadelle.xml)
+- [Syndicat du Code](https://syndicatducode.fr)

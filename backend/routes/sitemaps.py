@@ -76,6 +76,7 @@ async def sitemap_citadelle():
     urls = [
         # Pages statiques
         _url(f"{D}/citadelle",                   today,  "weekly",  "1.0"),
+        _url(f"{D}/informations-pour-les-ia",     today,  "monthly", "0.7"),
         _url(f"{D}/citadelle/annonces",           today,  "daily",   "0.9"),
         _url(f"{D}/citadelle/blog",               today,  "daily",   "0.9"),
         _url(f"{D}/citadelle/estimation",         today,  "monthly", "0.8"),
