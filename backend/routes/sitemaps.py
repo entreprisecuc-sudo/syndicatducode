@@ -70,6 +70,10 @@ async def sitemap_citadelle():
         {"slug": 1, "updated_at": 1, "_id": 0},
     ).to_list(length=500)
 
+    help_articles = await db.citadelle_help_articles.find(
+        {}, {"slug": 1, "updated_at": 1, "_id": 0},
+    ).to_list(length=1000)
+
     client.close()
 
     D = CITADELLE_DOMAIN
@@ -77,6 +81,7 @@ async def sitemap_citadelle():
         # Pages statiques
         _url(f"{D}/citadelle",                   today,  "weekly",  "1.0"),
         _url(f"{D}/informations-pour-les-ia",     today,  "monthly", "0.7"),
+        _url(f"{D}/aide",                         today,  "weekly",  "0.8"),
         _url(f"{D}/citadelle/annonces",           today,  "daily",   "0.9"),
         _url(f"{D}/citadelle/blog",               today,  "daily",   "0.9"),
         _url(f"{D}/citadelle/estimation",         today,  "monthly", "0.8"),
@@ -102,6 +107,13 @@ async def sitemap_citadelle():
         updated = _fmt_date(lst.get("updated_at"))
         if slug:
             urls.append(_url(f"{D}/citadelle/annonces/{slug}", updated, "weekly", "0.8"))
+
+    # Centre d'aide (pages générées)
+    for art in help_articles:
+        slug    = art.get("slug", "")
+        updated = _fmt_date(art.get("updated_at"))
+        if slug:
+            urls.append(_url(f"{D}/aide/{slug}", updated, "monthly", "0.7"))
 
     return Response(content=_build_xml(urls), media_type="application/xml")
 

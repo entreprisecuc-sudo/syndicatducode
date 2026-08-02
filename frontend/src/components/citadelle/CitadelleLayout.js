@@ -302,6 +302,11 @@ const CitadelleFooter = () => (
                 Informations pour les IA
               </a>
             </li>
+            <li>
+              <a href="/aide" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.55)" }} data-testid="footer-aide-link">
+                Aide &amp; FAQ
+              </a>
+            </li>
             {[
               { href: "/citadelle/cgv", label: "CGV" },
               { href: "/citadelle/cgu", label: "CGU" },
