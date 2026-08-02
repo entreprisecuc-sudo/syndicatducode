@@ -18,6 +18,13 @@ Base de connaissances premium optimisée UX / SEO / GEO / AEO, rendue en HTML c�
 - `scripts/gen_help_center.py` : génère les articles (600-1200 mots, HTML propre, meta, lead, FAQ 3-4 Q) à partir d'un prompt système bourré de faits plateforme (séquestre, La Garde, Livrable, Stripe Connect, pas de garantie de rentabilité, etc.). Idempotent (`--force`), par catégorie ou `all`.
 - **Phase 1 livrée** : catégorie **« Transactions sécurisées »** (8/8 articles générés, ~800 mots chacun, 4 FAQ, qualité factuelle validée). Index unique MongoDB sur `slug` (dédoublonnage effectué).
 
+### ✅ Phase 2 (02/08/2026) — Génération complète du contenu
+- **103/103 articles générés** sur les 11 catégories (Acheter 15, Vendre 32, Estimation 9, Transactions sécurisées 8, La Garde 4, Livrable 5, Enchères 5, Mon compte 8, Paiements 5, Services 6, Juridique 6).
+- **~86 080 mots** au total (~800-900 mots/article en moyenne), 0 article court, tous avec 3-4 FAQ complémentaires + lead (réponse directe AEO).
+- Script fiabilisé : **upsert idempotent** (plus de DuplicateKeyError), parseur JSON robuste aux échappements invalides. NB : la passerelle LLM sérialise les requêtes (~47s/article), la génération complète prend ~1h15.
+- Sitemap : 103 pages `/aide/*` incluses. Index `/aide` : 100% des catégories disponibles.
+- Validé (Règle 6, sans testing_agent) : stats DB, curl (JSON-LD FAQPage+BreadcrumbList valides), screenshot (rendu premium, recherche instantanée OK).
+
 **Validé (Règle 6 respectée : aucun testing_agent)** : curl (HTTP 200, 2 JSON-LD valides, canonical/H1/fil d'Ariane/maillage OK) + screenshots (index premium à la charte, recherche instantanée = 1 résultat pour « sequestre », page article complète).
 
 ### ⚠️ Déploiement (VPS)

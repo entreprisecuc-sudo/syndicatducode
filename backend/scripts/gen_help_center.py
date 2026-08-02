@@ -66,14 +66,15 @@ def _extract_json(text: str) -> dict:
     if t.startswith("```"):
         t = re.sub(r"^```[a-zA-Z]*\n?", "", t)
         t = re.sub(r"\n?```$", "", t.strip())
-    # Tenter direct, sinon extraire le premier objet {...}
+    m = re.search(r"\{.*\}", t, re.S)
+    if m:
+        t = m.group(0)
     try:
         return json.loads(t)
     except Exception:
-        m = re.search(r"\{.*\}", t, re.S)
-        if m:
-            return json.loads(m.group(0))
-        raise
+        # Corrige les backslashes invalides (échappements non JSON, ex. \e, \x)
+        fixed = re.sub(r'\\(?!["\\/bfnrtu])', r'\\\\', t)
+        return json.loads(fixed)
 
 
 async def generate_one(question: str) -> dict:
@@ -102,49 +103,54 @@ async def main():
 
     db = AsyncIOMotorClient(os.environ["MONGO_URL"])[os.environ["DB_NAME"]]
     flat, by_slug, by_category = build_registry()
-    created = updated = skipped = failed = 0
+    counters = {"created": 0, "updated": 0, "skipped": 0, "failed": 0}
+    sem = asyncio.Semaphore(5)  # 5 générations en parallèle
 
-    for cat_key in cats:
-        cat = get_category(cat_key)
-        print(f"\n=== Catégorie : {cat['label']} ({len(by_category[cat_key])} questions) ===")
-        for it in by_category[cat_key]:
-            slug, question = it["slug"], it["question"]
-            existing = await db.citadelle_help_articles.find_one({"slug": slug}, {"_id": 0, "id": 1})
-            if existing and not force:
-                skipped += 1
-                print(f"  ↷ déjà présent : {slug}")
-                continue
+    async def process(cat_key, it):
+        slug, question = it["slug"], it["question"]
+        existing = await db.citadelle_help_articles.find_one({"slug": slug}, {"_id": 0, "id": 1})
+        if existing and not force:
+            counters["skipped"] += 1
+            return
+        async with sem:
             try:
                 data = await generate_one(question)
             except Exception as e:
-                failed += 1
-                print(f"  ✗ ÉCHEC {slug} : {e}")
-                continue
-            now = datetime.now(timezone.utc).isoformat()
-            doc = {
-                "slug": slug,
-                "category_key": cat_key,
-                "question": question,
-                "meta_title": (data.get("meta_title") or question)[:70],
-                "meta_description": (data.get("meta_description") or "")[:160],
-                "lead": (data.get("lead") or "")[:300],
-                "answer_html": data.get("answer_html") or "",
-                "faq": [{"q": f.get("q", ""), "a": f.get("a", "")} for f in (data.get("faq") or [])][:4],
-                "view_count": (existing or {}).get("view_count", 0) if existing else 0,
-                "updated_at": now,
-            }
-            if existing:
-                await db.citadelle_help_articles.update_one({"slug": slug}, {"$set": doc})
-                updated += 1
-                print(f"  ↻ mis à jour : {slug}")
-            else:
-                doc["id"] = str(uuid.uuid4())
-                doc["created_at"] = now
-                await db.citadelle_help_articles.insert_one(doc)
-                created += 1
-                print(f"  ✓ créé : {slug}")
+                counters["failed"] += 1
+                print(f"  ✗ ÉCHEC {slug} : {e}", flush=True)
+                return
+        now = datetime.now(timezone.utc).isoformat()
+        fields = {
+            "category_key": cat_key,
+            "question": question,
+            "meta_title": (data.get("meta_title") or question)[:70],
+            "meta_description": (data.get("meta_description") or "")[:160],
+            "lead": (data.get("lead") or "")[:300],
+            "answer_html": data.get("answer_html") or "",
+            "faq": [{"q": f.get("q", ""), "a": f.get("a", "")} for f in (data.get("faq") or [])][:4],
+            "updated_at": now,
+        }
+        res = await db.citadelle_help_articles.update_one(
+            {"slug": slug},
+            {
+                "$set": fields,
+                "$setOnInsert": {"id": str(uuid.uuid4()), "slug": slug, "view_count": 0, "created_at": now},
+            },
+            upsert=True,
+        )
+        if res.upserted_id is not None:
+            counters["created"] += 1
+            print(f"  ✓ créé : {slug}", flush=True)
+        else:
+            counters["updated"] += 1
+            print(f"  ↻ mis à jour : {slug}", flush=True)
 
-    print(f"\nTerminé — {created} créé(s), {updated} mis à jour, {skipped} ignoré(s), {failed} échec(s).")
+    tasks = [process(cat_key, it) for cat_key in cats for it in by_category[cat_key]]
+    print(f"Traitement de {len(tasks)} question(s), 5 en parallèle…", flush=True)
+    await asyncio.gather(*tasks)
+
+    print(f"\nTerminé — {counters['created']} créé(s), {counters['updated']} mis à jour, "
+          f"{counters['skipped']} ignoré(s), {counters['failed']} échec(s).", flush=True)
 
 
 if __name__ == "__main__":
