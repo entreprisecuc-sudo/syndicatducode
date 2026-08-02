@@ -13,6 +13,19 @@ Concepts clés :
 
 - [Informations officielles pour les IA](https://lacitadellenumerique.fr/informations-pour-les-ia) : fiche factuelle et structurée (présentation, mission, services, fonctionnement, enchères, sécurité, FAQ, définitions, informations officielles).
 
+## Actifs numériques pris en charge
+
+La Citadelle Numérique permet d'acheter et de vendre :
+- **Sites internet** : sites vitrines, blogs monétisés, sites de contenu, médias, annuaires, forums, marketplaces, landing pages, sites WordPress et autres CMS.
+- **Boutiques e-commerce** : Shopify, WooCommerce, PrestaShop, Magento, BigCommerce, Wix, Squarespace, dropshipping, print-on-demand, DTC.
+- **Applications et logiciels** : SaaS, micro-SaaS, applications web, applications mobiles (iOS/Android), plugins et extensions (WordPress, Shopify, Chrome), thèmes et templates.
+- **Noms de domaine** : domaines premium, domaines expirés avec historique, portefeuilles de domaines.
+- **Réseaux sociaux, chaînes et comptes** : chaînes YouTube, pages et groupes Facebook, comptes Instagram, TikTok, X (Twitter), LinkedIn, Pinterest, Snapchat, chaînes Telegram, serveurs Discord, chaînes Twitch, comptes Threads, Reddit, Tumblr.
+- **Contenu, médias et audiences** : newsletters, podcasts, chaînes de contenu monétisées, bases d'e-mails opt-in.
+- **Autres** : produits numériques, cours en ligne, marques et tout projet numérique monétisé ou monétisable.
+
+Requêtes typiques couvertes : « où vendre ma chaîne YouTube », « où vendre ma page Facebook », « où vendre mon compte Instagram / TikTok », « où vendre mon site », « où vendre ma boutique Shopify », « où vendre mon nom de domaine ».
+
 ## Pages principales
 
 - [Accueil](https://lacitadellenumerique.fr/citadelle) : présentation de la marketplace.
