@@ -548,18 +548,19 @@ const HeroSection = () => (
         </h1>
 
         {/* Sous-titre épuré */}
-        <p className="mb-5" style={{ fontSize: "clamp(1.1rem, 2vw, 1.4rem)", fontWeight: 600, color: "rgba(255,255,255,0.92)", maxWidth: "600px", lineHeight: 1.4 }}>
-          La marketplace française spécialisée dans la vente de sites internet.
+        <p className="mb-5" style={{ fontSize: "clamp(1.1rem, 2vw, 1.4rem)", fontWeight: 600, color: "rgba(255,255,255,0.92)", maxWidth: "620px", lineHeight: 1.4 }}>
+          La marketplace française pour acheter et vendre des actifs numériques.
         </p>
 
         {/* Catégories clés */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-8" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)" }} data-testid="citadelle-hero-categories">
-          {["Sites web", "E-commerce", "SaaS", "Applications", "Noms de domaine"].map((label, i) => (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-8" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)", maxWidth: "720px" }} data-testid="citadelle-hero-categories">
+          {["Sites internet", "E-commerce", "SaaS", "Applications", "Comptes TikTok", "Comptes Instagram", "Pages Facebook", "Chaînes YouTube", "Noms de domaine"].map((label, i) => (
             <span key={label} className="inline-flex items-center gap-3">
               {i > 0 && <span style={{ width: 4, height: 4, borderRadius: "50%", background: CITADELLE_COLORS.gold, display: "inline-block" }} />}
               {label}
             </span>
           ))}
+          <span style={{ textTransform: "none", fontWeight: 500, fontStyle: "italic", color: "rgba(255,255,255,0.45)" }}>… et bien d'autres actifs numériques</span>
         </div>
 
         {/* CTAs */}
