@@ -679,27 +679,31 @@ const SEO_BUY_STEPS = [
 const SeoContentSection = () => (
   <section className="py-24" style={{ background: "white" }} data-testid="citadelle-seo-content">
     <div className="max-w-6xl mx-auto px-4 md:px-6">
-      {/* En-tête */}
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <p className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: CITADELLE_COLORS.gold, fontFamily: "'Montserrat', sans-serif" }}>
-          La marketplace des actifs numériques
-        </p>
-        <h2 className="font-bold mb-6" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(1.7rem, 4vw, 2.4rem)", color: CITADELLE_COLORS.blue, lineHeight: 1.2 }}>
-          Acheter ou vendre un site internet en toute sécurité
-        </h2>
-        <p className="leading-relaxed" style={{ fontSize: "1.1rem", color: CITADELLE_COLORS.textMuted }}>
-          La Citadelle Numérique est la marketplace française spécialisée dans la <strong style={{ color: CITADELLE_COLORS.blue }}>vente de sites internet</strong>. Que vous souhaitiez <strong style={{ color: CITADELLE_COLORS.blue }}>vendre un site internet</strong> rentable, <strong style={{ color: CITADELLE_COLORS.blue }}>acheter un site internet</strong> déjà positionné, ou céder un SaaS, une boutique e-commerce ou une application, nous sécurisons chaque transaction grâce au séquestre et à l'accompagnement de La Garde.
-        </p>
-      </div>
+      {/* En-tête + intro éditoriale — bandeau navy (cohérence avec « Nos garanties ») */}
+      <div className="rounded-3xl p-8 md:p-14 mb-20 relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, #C9A45C 1px, transparent 0)", backgroundSize: "36px 36px" }} />
+        <div className="relative">
+          <div className="text-center max-w-3xl mx-auto mb-10">
+            <p className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: CITADELLE_COLORS.gold, fontFamily: "'Montserrat', sans-serif" }}>
+              La marketplace des actifs numériques
+            </p>
+            <h2 className="font-bold mb-6" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(1.7rem, 4vw, 2.4rem)", color: "white", lineHeight: 1.2 }}>
+              Acheter ou vendre un site internet en toute sécurité
+            </h2>
+            <p className="leading-relaxed" style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.8)" }}>
+              La Citadelle Numérique est la marketplace française spécialisée dans la <strong style={{ color: "white" }}>vente de sites internet</strong>. Que vous souhaitiez <strong style={{ color: "white" }}>vendre un site internet</strong> rentable, <strong style={{ color: "white" }}>acheter un site internet</strong> déjà positionné, ou céder un SaaS, une boutique e-commerce ou une application, nous sécurisons chaque transaction grâce au séquestre et à l'accompagnement de La Garde.
+            </p>
+          </div>
 
-      {/* Intro éditoriale */}
-      <div className="max-w-3xl mx-auto mb-20 space-y-5" style={{ color: "#3A4658", fontSize: "1.02rem", lineHeight: 1.8 }}>
-        <p>
-          Le marché de la <strong>vente de business en ligne</strong> n'a jamais été aussi actif. Chaque jour, des entrepreneurs cherchent un <strong>site internet à vendre</strong> pour accélérer leur croissance, tandis que d'autres souhaitent valoriser des années de travail en cédant leur projet. Trouver le bon acheteur ou le bon actif reste pourtant difficile : prix opaques, absence de garanties, transmission des accès risquée. La Citadelle Numérique a été pensée pour lever ces freins.
-        </p>
-        <p>
-          Sur notre <strong>marketplace de sites internet</strong>, vous accédez à des sites web, des boutiques e-commerce, des SaaS, des applications et des noms de domaine soigneusement présentés. Chaque annonce peut détailler le trafic, le chiffre d'affaires et la technologie employée, pour que la <strong>vente de SaaS</strong>, la <strong>vente de boutiques e-commerce</strong> ou la <strong>vente d'applications</strong> se fasse sur des bases claires. Notre estimateur gratuit vous aide à situer la valeur d'un actif avant même de faire une offre.
-        </p>
+          <div className="max-w-3xl mx-auto space-y-5" style={{ color: "rgba(255,255,255,0.72)", fontSize: "1.02rem", lineHeight: 1.8 }}>
+            <p>
+              Le marché de la <strong style={{ color: "white" }}>vente de business en ligne</strong> n'a jamais été aussi actif. Chaque jour, des entrepreneurs cherchent un <strong style={{ color: "white" }}>site internet à vendre</strong> pour accélérer leur croissance, tandis que d'autres souhaitent valoriser des années de travail en cédant leur projet. Trouver le bon acheteur ou le bon actif reste pourtant difficile : prix opaques, absence de garanties, transmission des accès risquée. La Citadelle Numérique a été pensée pour lever ces freins.
+            </p>
+            <p>
+              Sur notre <strong style={{ color: "white" }}>marketplace de sites internet</strong>, vous accédez à des sites web, des boutiques e-commerce, des SaaS, des applications et des noms de domaine soigneusement présentés. Chaque annonce peut détailler le trafic, le chiffre d'affaires et la technologie employée, pour que la <strong style={{ color: "white" }}>vente de SaaS</strong>, la <strong style={{ color: "white" }}>vente de boutiques e-commerce</strong> ou la <strong style={{ color: "white" }}>vente d'applications</strong> se fasse sur des bases claires. Notre estimateur gratuit vous aide à situer la valeur d'un actif avant même de faire une offre.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Pourquoi choisir */}
