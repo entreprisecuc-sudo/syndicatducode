@@ -2,6 +2,12 @@
 
 > Journal des sessions. Le PRD historique complet reste dans PRD.md.
 
+## 🚀 Session 03/08/2026 — DÉPLOIEMENT VPS RÉUSSI (branche main-projet-9)
+- Code déployé : git checkout main-projet-9 + yarn build + pm2 restart syndicat-backend (OK).
+- Nginx Dynamic Rendering EN PRODUCTION : `map $lcn_is_bot` dans `/etc/nginx/conf.d/lcn_prerender.conf` + 4 `location` (scope `/citadelle*`) insérées avant `location /api` dans `sites-available/lacitadellenumerique.fr` (sauvegarde `.bak_prerender`). `nginx -t` OK + reload OK.
+- Validation prod (curl) : robot /citadelle/annonces → prérendu SSR ✅ ; humain → SPA (`id=root`) ✅ ; robot accueil → title correct ✅ ; /aide 200 ✅ ; /api sitemap 200 ✅.
+- ✅ Phase A + Phase B + refonte Hero = TOUT EN LIGNE. Reste optionnel : aligner le contenu SEO riche de l'accueil côté prérendu (`STATIC_PAGES["/citadelle"]`), et demander l'indexation dans Google Search Console.
+
 ## 🎨 Session 03/08/2026 (suite 2) — Refonte Hero accueil (UX premium + SEO déplacé)
 Le client a jugé le Hero surchargé de texte (« c'est moche »). Rééquilibrage UX/SEO/conversion dans `pages/citadelle/CitadelleHome.js` :
 - **Hero épuré** : H1 « Achetez. Vendez. Sécurisez. » conservé + sous-titre court « La marketplace française spécialisée dans la vente de sites internet. » + ligne de catégories à puces dorées (Sites web • E-commerce • SaaS • Applications • Noms de domaine). Les 2 longs paragraphes SEO ont été RETIRÉS du Hero. Rendu premium, aéré, minimaliste.
