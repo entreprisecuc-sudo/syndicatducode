@@ -2,6 +2,11 @@
 
 > Journal des sessions. Le PRD historique complet reste dans PRD.md.
 
+## 🩹 Session 03/08/2026 — Correctif prod : Centre d'aide (/aide) page blanche
+- **Cause 1 (routage)** : `/aide` est rendu par le backend (`/api/aide`, pas de route React). Le VPS n'avait AUCUN proxy Nginx `/aide` → le SPA se chargeait sans route → page blanche. Ajout dans `sites-available/lacitadellenumerique.fr` : `location = /aide` + `location ^~ /aide/` → proxy vers `127.0.0.1:8001/api/aide`. nginx -t OK + reload OK. `/aide` renvoie 200 avec « Centre d'aide ».
+- **Cause 2 (données)** : la collection `citadelle_help_articles` était VIDE en prod (103 articles générés seulement sur preview, jamais copiés). Export versionné `backend/scripts/seed/help_articles.json` (879 KB, 103 articles) + script idempotent `backend/scripts/seed_help_articles.py` (upsert par slug, lit MONGO_URL/DB_NAME). À exécuter une fois sur le VPS pour peupler /aide.
+
+
 ## 🚀 Session 03/08/2026 — DÉPLOIEMENT VPS RÉUSSI (branche main-projet-9)
 - Code déployé : git checkout main-projet-9 + yarn build + pm2 restart syndicat-backend (OK).
 - Nginx Dynamic Rendering EN PRODUCTION : `map $lcn_is_bot` dans `/etc/nginx/conf.d/lcn_prerender.conf` + 4 `location` (scope `/citadelle*`) insérées avant `location /api` dans `sites-available/lacitadellenumerique.fr` (sauvegarde `.bak_prerender`). `nginx -t` OK + reload OK.
