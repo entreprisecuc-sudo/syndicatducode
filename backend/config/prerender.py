@@ -143,3 +143,31 @@ STATIC_PAGES = {
         "intro": "La protection de vos données personnelles est une priorité. Cette politique, conforme au RGPD, détaille les données collectées et vos droits.",
     },
 }
+
+
+# Contenu SEO éditorial riche de l'accueil (aligné sur la section React SeoContentSection)
+HOME_SEO = {
+    "h2": "Acheter ou vendre un site internet en toute sécurité",
+    "intro": [
+        "La Citadelle Numérique est la marketplace française spécialisée dans la vente de sites internet. Que vous souhaitiez vendre un site internet rentable, acheter un site internet déjà positionné, ou céder un SaaS, une boutique e-commerce ou une application, nous sécurisons chaque transaction grâce au séquestre et à l'accompagnement de La Garde.",
+        "Le marché de la vente de business en ligne n'a jamais été aussi actif. Chaque jour, des entrepreneurs cherchent un site internet à vendre pour accélérer leur croissance, tandis que d'autres souhaitent valoriser des années de travail en cédant leur projet. Trouver le bon acheteur ou le bon actif reste pourtant difficile : prix opaques, absence de garanties, transmission des accès risquée. La Citadelle Numérique a été pensée pour lever ces freins.",
+        "Sur notre marketplace de sites internet, vous accédez à des sites web, des boutiques e-commerce, des SaaS, des applications et des noms de domaine soigneusement présentés. Chaque annonce peut détailler le trafic, le chiffre d'affaires et la technologie employée, pour que la vente de SaaS, la vente de boutiques e-commerce ou la vente d'applications se fasse sur des bases claires. Notre estimateur gratuit vous aide à situer la valeur d'un actif avant même de faire une offre.",
+    ],
+    "why": [
+        ("Transactions sécurisées par séquestre", "Les fonds de l'acheteur sont conservés en séquestre jusqu'à la vérification complète et la transmission des accès. Vendeur et acheteur sont protégés à chaque étape."),
+        ("Vérification par La Garde", "Notre équipe contrôle les annonces et accompagne la cession de A à Z, pour des actifs numériques fiables et une vente de site internet en toute confiance."),
+        ("Estimation professionnelle", "Estimez gratuitement la valeur de votre site internet, SaaS ou boutique e-commerce, puis affinez avec une expertise réalisée par nos analystes."),
+        ("100 % française", "Une marketplace de sites internet basée en France, avec facturation conforme, médiation en français et un interlocuteur dédié : La Garde."),
+    ],
+    "sell_steps": [
+        "Estimez la valeur de votre actif avec notre outil gratuit, puis publiez gratuitement votre annonce (site web, e-commerce, SaaS, application ou nom de domaine).",
+        "Recevez les offres des acheteurs et échangez en toute sécurité via la messagerie ; acceptez l'offre qui vous convient ou lancez une vente aux enchères.",
+        "L'acheteur paie via le séquestre, La Garde vérifie la transmission des accès, puis les fonds vous sont versés. La cession est protégée du début à la fin.",
+    ],
+    "buy_steps": [
+        "Parcourez les sites internet à vendre et filtrez par type, budget, trafic ou revenus pour trouver le business en ligne qui correspond à votre projet.",
+        "Contactez le vendeur, demandez les informations complémentaires et faites une offre — ou enchérissez sur les actifs proposés aux enchères.",
+        "Réglez en séquestre : vos fonds ne sont débloqués qu'une fois les accès reçus et vérifiés. Vous achetez un site internet l'esprit tranquille.",
+    ],
+    "garanties": "Chaque vente de site internet est protégée par un séquestre : l'argent de l'acheteur n'est libéré qu'après la vérification et la transmission des accès par La Garde. En cas de désaccord, notre équipe assure une médiation et délivre une attestation de transmission qui officialise la cession. Vendeurs et acheteurs bénéficient ainsi d'un cadre professionnel, transparent et entièrement sécurisé pour acheter ou vendre un business en ligne.",
+}

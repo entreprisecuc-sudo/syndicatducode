@@ -21,7 +21,7 @@ from config.seo_theme import (
 )
 from config.prerender import (
     LISTING_TYPE_LABELS, BLOG_CATEGORY_LABELS, STATIC_PAGES,
-    GUIDES_CATEGORY, CHRONIQUES_CATEGORY,
+    GUIDES_CATEGORY, CHRONIQUES_CATEGORY, HOME_SEO,
 )
 
 router = APIRouter(tags=["Pré-rendu SEO"])
@@ -72,6 +72,50 @@ def _crumb_nav(items: list[tuple[str, str]]) -> str:
         else:
             parts.append(f'<a href="{url}">{esc(name)}</a>')
     return '<nav class="crumb" aria-label="Fil d\'Ariane">' + " › ".join(parts) + "</nav>"
+
+
+# ── Rendu : accueil (contenu SEO riche, aligné sur la section React) ───────────
+
+def _render_home() -> HTMLResponse:
+    meta = STATIC_PAGES[C]
+    why_html = "".join(
+        f"<li><strong>{esc(t)}.</strong> {esc(d)}</li>" for t, d in HOME_SEO["why"]
+    )
+    sell_html = "".join(f"<li>{esc(s)}</li>" for s in HOME_SEO["sell_steps"])
+    buy_html = "".join(f"<li>{esc(s)}</li>" for s in HOME_SEO["buy_steps"])
+    intro_html = "".join(f"<p>{esc(p)}</p>" for p in HOME_SEO["intro"])
+
+    body = f"""
+<main>
+  <h1>{esc(meta['h1'])}</h1>
+  <p class="lead">{esc(meta['intro'])}</p>
+
+  <section class="article">
+    <h2>{esc(HOME_SEO['h2'])}</h2>
+    {intro_html}
+
+    <h3>Pourquoi choisir La Citadelle Numérique</h3>
+    <ul>{why_html}</ul>
+
+    <h3>Comment vendre un site internet</h3>
+    <ol>{sell_html}</ol>
+    <p><a class="cta" href="{DOMAIN}{C}/vendre">Vendre mon site</a></p>
+
+    <h3>Comment acheter un site internet</h3>
+    <ol>{buy_html}</ol>
+    <p><a class="cta" href="{DOMAIN}{C}/annonces">Voir les annonces</a></p>
+
+    <h3>Nos garanties</h3>
+    <p>{esc(HOME_SEO['garanties'])}</p>
+  </section>
+  {maillage_block()}
+</main>"""
+    crumbs = [("Accueil", f"{DOMAIN}{C}")]
+    return HTMLResponse(render_page(
+        title=meta["title"], description=meta["description"],
+        canonical=_canonical(C), body=body,
+        extra_head=_breadcrumb_schema(crumbs),
+    ))
 
 
 # ── Rendu : pages statiques (contenu éditorial fixe) ───────────────────────────
@@ -403,6 +447,8 @@ async def prerender(full_path: str):
         return await _render_blog_post(m.group(1))
 
     # Index dynamiques
+    if path == "/citadelle":
+        return _render_home()
     if path == "/citadelle/annonces":
         return await _render_listings_index()
     if path == "/citadelle/blog":
