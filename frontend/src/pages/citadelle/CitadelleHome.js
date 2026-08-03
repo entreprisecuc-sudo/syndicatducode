@@ -536,20 +536,23 @@ const HeroSection = () => (
           Plateforme française sécurisée
         </div>
 
-        {/* Titre */}
+        {/* Titre (H1 optimisé SEO) */}
         <h1 className="font-bold leading-tight mb-6" style={{
           fontFamily: "'Montserrat', sans-serif",
-          fontSize: "clamp(2.5rem, 6vw, 4rem)",
           color: "white"
         }}>
-          Achetez.{" "}
-          <span style={{ color: CITADELLE_COLORS.gold }}>Vendez.</span>{" "}
-          Sécurisez.
+          <span style={{ display: "block", fontSize: "clamp(2.5rem, 6vw, 4rem)" }}>
+            Achetez.{" "}
+            <span style={{ color: CITADELLE_COLORS.gold }}>Vendez.</span>{" "}
+            Sécurisez.
+          </span>
+          <span style={{ display: "block", marginTop: "0.9rem", fontSize: "clamp(1.05rem, 2vw, 1.35rem)", fontWeight: 600, color: "rgba(255,255,255,0.9)", maxWidth: "700px" }}>
+            La marketplace française pour acheter et vendre des sites internet, SaaS, boutiques e-commerce, chaînes YouTube et actifs numériques
+          </span>
         </h1>
 
-        <p className="mb-8 leading-relaxed" style={{ fontSize: "1.15rem", color: "rgba(255,255,255,0.7)", maxWidth: "560px" }}>
-          {CITADELLE_CONFIG.description}
-          {" "}Des milliers d'actifs numériques vérifiés, des transactions entièrement sécurisées.
+        <p className="mb-8 leading-relaxed" style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.7)", maxWidth: "620px" }}>
+          La plateforme française dédiée à l'achat et à la vente d'actifs numériques — sites web, chaînes YouTube, comptes et pages de réseaux sociaux, SaaS, boutiques e-commerce et noms de domaine. Des actifs vérifiés, des transactions entièrement sécurisées.
         </p>
 
         {/* CTAs */}
@@ -781,14 +784,55 @@ const CTASection = () => (
 
 // ── Page principale ───────────────────────────────────────────────────────────
 
+const HOME_FAQ = [
+  { q: "Comment vendre un site internet sur La Citadelle Numérique ?", a: "Créez un compte gratuit, publiez votre annonce (activité, technologies, trafic, revenus, prix) et validez-la. Une fois un acheteur trouvé, le paiement est bloqué sous séquestre : vous transmettez le site, puis les fonds vous sont versés après vérification." },
+  { q: "Comment acheter un site internet ou un business en ligne ?", a: "Parcourez les annonces vérifiées, échangez avec le vendeur, puis payez via la plateforme. Vos fonds restent sous séquestre par La Garde de La Citadelle jusqu'à la transmission complète et vérifiée de l'actif." },
+  { q: "Quels types d'actifs numériques puis-je acheter ou vendre ?", a: "Sites internet, blogs, boutiques e-commerce (Shopify, WooCommerce, PrestaShop), SaaS et applications, noms de domaine, chaînes YouTube, comptes et pages de réseaux sociaux, serveurs Discord, newsletters, podcasts et autres projets numériques monétisables." },
+  { q: "Comment fonctionne le paiement sécurisé (séquestre) ?", a: "L'acheteur paie via la plateforme ; les fonds sont conservés par un tiers de confiance (La Garde de La Citadelle) et ne sont versés au vendeur qu'une fois l'actif transmis et vérifié. Le séquestre est assuré techniquement via Stripe Connect." },
+  { q: "Combien coûte la publication d'une annonce ?", a: "La publication d'une annonce est gratuite. Une commission n'est prélevée qu'en cas de vente réussie." },
+  { q: "Comment est estimée la valeur d'un site ou d'un SaaS ?", a: "La Citadelle propose une Estimation Standard (rapide) et une Estimation Expert (rapport détaillé). L'estimation repose sur un multiple des revenus, ajusté selon le trafic, la diversité des revenus, la technologie et la stabilité de l'activité." },
+];
+
+const FaqSection = () => (
+  <section className="py-16 md:py-24" style={{ background: "#FAFAF7" }} data-testid="home-faq">
+    <div className="max-w-3xl mx-auto px-4 md:px-6">
+      <h2 className="font-bold mb-8" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(1.6rem, 3vw, 2.2rem)", color: CITADELLE_COLORS.night }}>
+        Questions fréquentes
+      </h2>
+      <div className="space-y-4">
+        {HOME_FAQ.map((item, i) => (
+          <details key={i} className="rounded-xl bg-white p-5" style={{ border: "1px solid #E6E9EF" }} data-testid={`home-faq-item-${i}`}>
+            <summary className="font-semibold cursor-pointer" style={{ fontFamily: "'Montserrat', sans-serif", color: CITADELLE_COLORS.night, listStyle: "none" }}>
+              {item.q}
+            </summary>
+            <p className="mt-3 leading-relaxed" style={{ color: "#5A6B7E" }}>{item.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: HOME_FAQ.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      }) }}
+    />
+  </section>
+);
+
 export default function CitadelleHome() {
   return (
-    <CitadelleLayout pageTitle="Accueil">
+    <CitadelleLayout>
       <Helmet>
-        <title>La Citadelle Numérique | Marketplace d'actifs numériques</title>
-        <meta name="description" content="Achetez et vendez des sites web, SaaS, boutiques e-commerce et actifs numériques en toute sécurité. La marketplace française de référence pour les transactions d'actifs digitaux." />
-        <meta property="og:title" content="La Citadelle Numérique | Marketplace d'actifs numériques" />
-        <meta property="og:description" content="Achetez et vendez des sites web, SaaS, boutiques e-commerce et actifs numériques en toute sécurité. La marketplace française de référence." />
+        <title>Acheter et vendre un site internet, un SaaS ou un e-commerce | La Citadelle Numérique</title>
+        <meta name="description" content="La Citadelle Numérique, marketplace française pour vendre et acheter des sites internet, SaaS, boutiques e-commerce, chaînes YouTube et actifs numériques. Transactions sécurisées par séquestre." />
+        <meta property="og:title" content="Acheter et vendre un site internet, un SaaS ou un e-commerce | La Citadelle Numérique" />
+        <meta property="og:description" content="Marketplace française pour vendre et acheter des sites internet, SaaS, e-commerce et actifs numériques. Transactions sécurisées par séquestre." />
         <meta property="og:url" content="https://lacitadellenumerique.fr/citadelle" />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle" />
@@ -799,6 +843,7 @@ export default function CitadelleHome() {
       <EstimatorSection />
       <ServicesSection />
       <NewsletterSection />
+      <FaqSection />
       <CTASection />
     </CitadelleLayout>
   );

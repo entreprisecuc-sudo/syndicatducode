@@ -57,7 +57,7 @@ export default function CitadelleGuides() {
   }, []);
 
   return (
-    <CitadelleLayout pageTitle="Le Guide de La Citadelle">
+    <CitadelleLayout>
       <Helmet>
         <title>Le Guide de La Citadelle — Guides pratiques pour acheter et vendre des actifs numériques</title>
         <meta name="description" content="Les guides pratiques de La Citadelle : vendre, acheter, estimer, migrer et sécuriser un site, un SaaS ou une application. Des méthodes complètes, étape par étape, chaque samedi." />

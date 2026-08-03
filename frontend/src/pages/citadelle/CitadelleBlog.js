@@ -71,7 +71,7 @@ export default function CitadelleBlog() {
   const hasSearch = searchQuery.trim().length > 0;
 
   return (
-    <CitadelleLayout pageTitle="Blog">
+    <CitadelleLayout>
       <Helmet>
         <title>Blog — Achat, vente et valorisation d'actifs numériques | La Citadelle Numérique</title>
         <meta name="description" content="Conseils, analyses et guides sur l'achat et la vente de sites web, SaaS, boutiques e-commerce. Retrouvez nos articles experts pour maximiser la valeur de vos actifs numériques." />

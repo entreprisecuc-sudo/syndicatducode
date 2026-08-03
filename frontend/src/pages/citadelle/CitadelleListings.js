@@ -83,7 +83,7 @@ export default function CitadelleListings() {
   };
 
   return (
-    <CitadelleLayout pageTitle="Annonces">
+    <CitadelleLayout>
       <Helmet>
         <title>Annonces — Sites web, SaaS et actifs numériques | La Citadelle Numérique</title>
         <meta name="description" content="Parcourez toutes les annonces de vente de sites web, SaaS, boutiques e-commerce et actifs numériques. Trouvez votre prochain actif digital sur La Citadelle Numérique." />

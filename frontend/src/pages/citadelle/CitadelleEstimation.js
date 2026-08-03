@@ -859,7 +859,7 @@ export default function CitadelleEstimation() {
   usePageSchemas();
 
   return (
-    <CitadelleLayout pageTitle="Estimation de valeur de site internet — La Citadelle Numérique">
+    <CitadelleLayout>
       <Helmet>
         <title>Estimation gratuite de votre site web ou SaaS | La Citadelle Numérique</title>
         <meta name="description" content="Estimez gratuitement la valeur de votre site web, SaaS ou boutique e-commerce avec notre outil d'estimation avancé. Estimation Pro avec rapport personnalisé disponible." />

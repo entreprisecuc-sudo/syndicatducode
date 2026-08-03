@@ -46,7 +46,7 @@ export default function CitadelleChroniques() {
   }, []);
 
   return (
-    <CitadelleLayout pageTitle="Les Chroniques de La Garde">
+    <CitadelleLayout>
       <Helmet>
         <title>Les Chroniques de La Garde — Analyses d'experts sur les actifs numériques | La Citadelle Numérique</title>
         <meta name="description" content="La rubrique premium de La Garde : analyses d'experts, retours d'expérience et conseils sur l'achat, la vente et la transmission d'actifs numériques. Une nouvelle chronique chaque jeudi." />

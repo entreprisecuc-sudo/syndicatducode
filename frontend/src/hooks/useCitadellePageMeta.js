@@ -14,25 +14,26 @@ const CITADELLE_DEFAULT_TITLE = "La Citadelle Numérique | Marketplace d'actifs 
 
 export function useCitadellePageMeta(pageTitle) {
   useEffect(() => {
-    // Sauvegarde des valeurs originales (Syndicat du Code)
-    const originalTitle = document.title;
+    // Favicon Citadelle (toujours appliqué)
     const faviconElements = Array.from(document.querySelectorAll("link[rel*='icon']"));
     const originalFavicons = faviconElements.map(el => ({
       el,
       href: el.getAttribute("href"),
     }));
-
-    // Application du titre Citadelle
-    document.title = pageTitle
-      ? `${pageTitle} | La Citadelle Numérique`
-      : CITADELLE_DEFAULT_TITLE;
-
-    // Remplacement des favicons par le logo Citadelle
     faviconElements.forEach(el => el.setAttribute("href", CITADELLE_FAVICON));
 
-    // Restauration à la sortie des pages Citadelle
+    // Titre : uniquement si pageTitle fourni. Sinon, on laisse React Helmet
+    // (ou le SEO propre à la page) gérer le <title>, sans l'écraser.
+    let originalTitle;
+    if (pageTitle) {
+      originalTitle = document.title;
+      document.title = `${pageTitle} | La Citadelle Numérique`;
+    }
+
     return () => {
-      document.title = originalTitle;
+      if (pageTitle && originalTitle !== undefined) {
+        document.title = originalTitle;
+      }
       originalFavicons.forEach(({ el, href }) => el.setAttribute("href", href));
     };
   }, [pageTitle]);
