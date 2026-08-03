@@ -256,6 +256,7 @@ from routes.invoices import router as invoices_router, set_database as set_invoi
 from routes.citadelle import router as citadelle_router, set_database as set_citadelle_db
 from routes.sitemaps import router as sitemaps_router
 from routes.help_center import router as help_center_router, set_database as set_help_center_db
+from routes.prerender import router as prerender_router, set_database as set_prerender_db
 
 # Injecter la base de données dans les modules
 set_auth_db(db)
@@ -274,6 +275,7 @@ set_project_rooms_db(db)
 set_invoices_db(db)
 set_citadelle_db(db)
 set_help_center_db(db)
+set_prerender_db(db)
 
 # Inclure les routes
 api_router.include_router(auth_router)
@@ -293,6 +295,7 @@ api_router.include_router(invoices_router)
 api_router.include_router(citadelle_router)
 api_router.include_router(sitemaps_router)
 api_router.include_router(help_center_router)
+api_router.include_router(prerender_router)
 
 
 # ============================================

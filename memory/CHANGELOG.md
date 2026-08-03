@@ -2,6 +2,24 @@
 
 > Journal des sessions. Le PRD historique complet reste dans PRD.md.
 
+## 🔍 Session 03/08/2026 (suite) — Phase A finalisée + Phase B (Dynamic Rendering) livrée
+Reprise du chantier SEO. Règle 6 respectée : validations en muet (screenshots + curl) + 1 passe `testing_agent` sur la Phase A **autorisée explicitement par le client**.
+
+### ✅ Phase A — SEO on-page TERMINÉE (testing_agent iteration_25 : 100% des critères)
+- **P7 — noindex pages privées** : nouveau composant DRY `components/citadelle/SeoNoIndex.jsx` (`<meta name="robots" content="noindex, follow">`) ajouté sur Login, Register, ForgotPassword, ResetPassword, GoogleCallback, PaymentSuccess (6/6 vérifiés).
+- **P4 — Helmet pages légales** : `<Helmet>` (title littéral + meta description + canonical) sur CGU, CGV, Mentions, Confidentialité, Contact (5/5). Prop `pageTitle` retirée de Contact (conflit hook). URL canonique centralisée : `CITADELLE_PUBLIC_URL` (env `REACT_APP_CITADELLE_URL`, repli domaine) dans `citadelleConstants.js`.
+- **P5 — ALT images** : audit complet → **toutes** les images publiques ont déjà un `alt` (0 manquant : 17 sur /annonces, 61 sur /blog). Rien à corriger.
+- ⚠️ **Doublon `meta description`** (préexistant) : `index.html` a une description statique NON remplacée par Helmet (Helmet en ajoute une 2ᵉ). Le client a validé de **laisser tel quel** — les bots reçoivent la bonne description unique via le SSR Phase B.
+
+### ✅ Phase B — Dynamic Rendering (Stratégie 2b, sans Puppeteer) — backend LIVRÉ + vérifié (curl Googlebot)
+- **`config/seo_theme.py`** (nouveau) : gabarit HTML SEO partagé (STYLE, `render_page`, `maillage_block`, `esc`, `fmt_price`, topnav). ⚠️ Dette technique (Règle 11) : `help_center.py` conserve sa propre copie du gabarit (non refactoré pour ne pas risquer le déployé) — à consolider plus tard.
+- **`config/prerender.py`** (nouveau) : libellés types d'actifs + catégories blog + métadonnées (title/description/H1/intro) des pages statiques. Zéro hardcoding (Règle 5).
+- **`routes/prerender.py`** (nouveau) : `GET /api/prerender/{path}` (GET+HEAD). Dispatcher → rendus : accueil, annonces (liste+fiche, JSON-LD Product/Offer), blog (liste+article, markdown-it → HTML, JSON-LD Article), guides, chroniques, parutions, services, pages légales/statiques. BreadcrumbList partout, canonical vers l'URL React réelle, OG. Fiches non actives/adulte → noindex. 404 propre sur route/slug inconnu.
+- **`server.py`** : router `prerender` enregistré (import + set_database + include).
+- **Vérifié (curl -A Googlebot)** : 13 routes → 200, HTML rempli (title/desc/canonical/robots/H1/JSON-LD uniques), markdown rendu intégral (ex. article 4533→5223 car.), 404 sur inconnus, HEAD OK.
+- **Nginx VPS** : snippet d'aiguillage bot→prérendu / humain→SPA fourni dans `/app/memory/nginx_prerender_citadelle.md` (à déployer côté VPS, scope strict `/citadelle*`, repli SPA si 404).
+
+
 ## 🔍 Session 03/08/2026 — Chantier SEO (en cours)
 Suite à un audit SEO (cause racine identifiée : SPA React CSR → HTML vide au crawl → "Crawled - currently not indexed"). Stratégie validée par le client : **2b hybride** (pages dynamiques en rendu backend on-demand + prerendering pages stables), **sans Puppeteer** (privilégier le rendu backend, pattern /aide) car annonces fréquentes → fraîcheur requise.
 
@@ -13,15 +31,15 @@ Suite à un audit SEO (cause racine identifiée : SPA React CSR → HTML vide au
 - **P8 — Image OG par défaut** : `public/og-default.png` (1200×630, charte Citadelle) créée + référencée dans `index.html` (og:image + twitter:image + dimensions).
 - **P6 (partiel)** — `index.html` : `apple-mobile-web-app-title` corrigé (« Papa en Mousse » → « La Citadelle Numérique »).
 
-### 🚧 Reste à faire (Phase A on-page)
-- P3 : Home optimisée (H1 « marketplace… », H2, contenu, liens internes, FAQ + Schema FAQPage). Accroche validée client.
-- P4 : Helmet (titres littéraux) sur pages légales (Mentions, CGU, CGV, Confidentialité, Contact).
-- P5 : ALT descriptifs sur ~26 images publiques (ListingCard, listes annonces/blog, bannière partenaires).
-- P7 : noindex sur pages privées/techniques (login, register, forgot, reset, callback Google, payment-success, vérif transmission, admin).
-- P6 (reste) : manifest public propre (⚠️ sans casser la PWA admin « Papa en Mousse » — un seul manifest partagé → à trancher).
+### ✅ Phase A on-page — TERMINÉE (voir session 03/08 suite ci-dessus)
+- P3 : Home optimisée (fait session précédente).
+- P4 : Helmet pages légales — ✅ FAIT.
+- P5 : ALT images — ✅ déjà couvert (0 manquant).
+- P7 : noindex pages privées — ✅ FAIT (composant `SeoNoIndex`).
+- P6 (reste) : manifest public propre (⚠️ sans casser la PWA admin « Papa en Mousse ») — laissé tel quel (client : ne pas toucher au manifest admin).
 
-### 🚧 Phase B (déblocage indexation) — après check VPS client
-- Rendu backend on-demand (pattern /aide) pour détail annonce + articles blog, servi aux bots via dynamic rendering Nginx (User-Agent). Pas de Puppeteer. Contenu toujours frais.
+### ✅ Phase B (déblocage indexation) — backend LIVRÉ (voir session 03/08 suite)
+- Rendu backend on-demand (pattern /aide) pour toutes les routes publiques, servi aux bots via dynamic rendering Nginx (User-Agent). Pas de Puppeteer. Snippet Nginx dans `/app/memory/nginx_prerender_citadelle.md`. **Reste : déploiement VPS par le client.**
 
 ## ✨ Session 02/08/2026 — Centre d'aide (Phase 1 : architecture + catégorie exemple)
 Base de connaissances premium optimisée UX / SEO / GEO / AEO, rendue en HTML côté serveur (lisible par Google et les IA sans JS).
