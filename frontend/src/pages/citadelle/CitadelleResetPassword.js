@@ -9,6 +9,7 @@ import { Shield, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
+import { SeoNoIndex } from "@/components/citadelle/SeoNoIndex";
 
 export default function CitadelleResetPassword() {
   const [searchParams] = useSearchParams();
@@ -63,6 +64,7 @@ export default function CitadelleResetPassword() {
       className="min-h-screen flex items-center justify-center px-4"
       style={{ background: CITADELLE_COLORS.night }}
     >
+      <SeoNoIndex />
       <div className="w-full max-w-md">
 
         {/* Logo */}

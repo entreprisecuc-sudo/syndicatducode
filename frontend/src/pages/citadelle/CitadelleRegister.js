@@ -11,6 +11,7 @@ import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 import CGUAcceptanceModal from "@/components/citadelle/CGUAcceptanceModal";
+import { SeoNoIndex } from "@/components/citadelle/SeoNoIndex";
 
 export default function CitadelleRegister() {
   const [form, setForm] = useState({ first_name: "", last_name: "", email: "", password: "", confirm: "" });
@@ -86,6 +87,7 @@ export default function CitadelleRegister() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12"
       style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
+      <SeoNoIndex />
 
       <div className="fixed inset-0 opacity-5" style={{
         backgroundImage: "radial-gradient(circle at 1px 1px, #C9A45C 1px, transparent 0)",

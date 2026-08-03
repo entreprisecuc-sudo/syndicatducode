@@ -11,6 +11,7 @@ import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import CGUAcceptanceModal from "@/components/citadelle/CGUAcceptanceModal";
+import { SeoNoIndex } from "@/components/citadelle/SeoNoIndex";
 import { GOOGLE_REDIRECT_PATH } from "@/services/citadelleGoogleAuth";
 import { Loader } from "lucide-react";
 
@@ -92,6 +93,7 @@ export default function CitadelleGoogleCallback() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4"
       style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
+      <SeoNoIndex />
       {error ? (
         <p className="text-sm text-red-400">{error}</p>
       ) : (

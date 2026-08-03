@@ -15,6 +15,10 @@ export const CITADELLE_CONFIG = {
   email: "lagarde@lacitadellenumerique.fr",
 };
 
+// URL publique canonique (SEO) — pilotée par l'environnement, repli sur le domaine officiel
+export const CITADELLE_PUBLIC_URL =
+  process.env.REACT_APP_CITADELLE_URL || `https://${CITADELLE_CONFIG.domain}`;
+
 // Palette de couleurs — charte graphique officielle
 export const CITADELLE_COLORS = {
   blue: "#0F2747",

@@ -7,7 +7,8 @@ import { useState } from "react";
 import { Mail, Send, Clock, Shield, CheckCircle, Swords } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
-import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
+import { Helmet } from "react-helmet-async";
+import { CITADELLE_COLORS, CITADELLE_CONFIG, CITADELLE_PUBLIC_URL } from "@/config/citadelleConstants";
 
 const SUJETS = [
   "Question générale",
@@ -40,7 +41,12 @@ export default function CitadelleContact() {
   };
 
   return (
-    <CitadelleLayout pageTitle="La Garde — La Citadelle Numérique">
+    <CitadelleLayout>
+      <Helmet>
+        <title>Contact | La Citadelle Numérique</title>
+        <meta name="description" content="Contactez La Garde de La Citadelle Numérique pour toute question sur l'achat, la vente ou la sécurisation de vos actifs numériques." />
+        <link rel="canonical" href={`${CITADELLE_PUBLIC_URL}/citadelle/contact`} />
+      </Helmet>
       <div className="min-h-screen" style={{ background: CITADELLE_COLORS.bg }}>
 
         {/* Hero */}

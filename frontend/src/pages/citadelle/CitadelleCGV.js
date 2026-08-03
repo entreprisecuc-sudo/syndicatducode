@@ -2,7 +2,8 @@
  * CGV — Conditions Générales de Vente — La Citadelle Numérique
  */
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
-import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { Helmet } from "react-helmet-async";
+import { CITADELLE_COLORS, CITADELLE_PUBLIC_URL } from "@/config/citadelleConstants";
 
 const Section = ({ num, title, children }) => (
   <div className="mb-8">
@@ -31,6 +32,11 @@ const InfoBox = ({ children }) => (
 export default function CitadelleCGV() {
   return (
     <CitadelleLayout>
+      <Helmet>
+        <title>Conditions Générales de Vente | La Citadelle Numérique</title>
+        <meta name="description" content="Conditions Générales de Vente de La Citadelle Numérique : modalités de cession d'actifs numériques, séquestre, paiement sécurisé, commission et garanties." />
+        <link rel="canonical" href={`${CITADELLE_PUBLIC_URL}/citadelle/cgv`} />
+      </Helmet>
       <div className="py-14 text-center" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
         <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: CITADELLE_COLORS.gold }}>La Citadelle Numérique</p>
         <h1 className="font-black text-3xl" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>Conditions Générales de Vente</h1>

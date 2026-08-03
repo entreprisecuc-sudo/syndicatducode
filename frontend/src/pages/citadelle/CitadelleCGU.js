@@ -4,7 +4,8 @@
  * Ajout : Transaction Sécurisée, Séquestre, Commission, Stripe Connect, KYC
  */
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
-import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { Helmet } from "react-helmet-async";
+import { CITADELLE_COLORS, CITADELLE_PUBLIC_URL } from "@/config/citadelleConstants";
 
 const Section = ({ num, title, children }) => (
   <div className="mb-8">
@@ -33,6 +34,11 @@ const Highlight = ({ children }) => (
 export default function CitadelleCGU() {
   return (
     <CitadelleLayout>
+      <Helmet>
+        <title>Conditions Générales d'Utilisation | La Citadelle Numérique</title>
+        <meta name="description" content="Conditions Générales d'Utilisation de La Citadelle Numérique : accès à la plateforme, transaction sécurisée, séquestre, commission, Stripe Connect et vérification KYC." />
+        <link rel="canonical" href={`${CITADELLE_PUBLIC_URL}/citadelle/cgu`} />
+      </Helmet>
       <div className="py-14 text-center" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
         <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: CITADELLE_COLORS.gold }}>La Citadelle Numérique</p>
         <h1 className="font-black text-3xl" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>Conditions Générales d'Utilisation</h1>

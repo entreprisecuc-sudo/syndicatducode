@@ -12,6 +12,7 @@ import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants"
 import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 import CGUAcceptanceModal from "@/components/citadelle/CGUAcceptanceModal";
 import { startCitadelleGoogleLogin } from "@/services/citadelleGoogleAuth";
+import { SeoNoIndex } from "@/components/citadelle/SeoNoIndex";
 
 export default function CitadelleLogin() {
   const [form, setForm] = useState({ email: "", password: "", remember_me: false });
@@ -77,6 +78,7 @@ export default function CitadelleLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12"
       style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
+      <SeoNoIndex />
 
       {/* Motif de fond */}
       <div className="fixed inset-0 opacity-5" style={{

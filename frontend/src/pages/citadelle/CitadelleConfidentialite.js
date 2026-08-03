@@ -2,7 +2,8 @@
  * Politique de Confidentialité (RGPD) — La Citadelle Numérique
  */
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
-import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { Helmet } from "react-helmet-async";
+import { CITADELLE_COLORS, CITADELLE_PUBLIC_URL } from "@/config/citadelleConstants";
 
 const Section = ({ num, title, children }) => (
   <div className="mb-8">
@@ -33,6 +34,11 @@ const TableRow = ({ col1, col2, col3 }) => (
 export default function CitadelleConfidentialite() {
   return (
     <CitadelleLayout>
+      <Helmet>
+        <title>Politique de Confidentialité (RGPD) | La Citadelle Numérique</title>
+        <meta name="description" content="Politique de confidentialité de La Citadelle Numérique conforme au RGPD : données collectées, finalités, durée de conservation et exercice de vos droits." />
+        <link rel="canonical" href={`${CITADELLE_PUBLIC_URL}/citadelle/confidentialite`} />
+      </Helmet>
       <div className="py-14 text-center" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
         <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: CITADELLE_COLORS.gold }}>La Citadelle Numérique</p>
         <h1 className="font-black text-3xl" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>Politique de Confidentialité</h1>

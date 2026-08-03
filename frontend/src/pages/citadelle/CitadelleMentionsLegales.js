@@ -2,7 +2,8 @@
  * Mentions Légales — La Citadelle Numérique
  */
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
-import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { Helmet } from "react-helmet-async";
+import { CITADELLE_COLORS, CITADELLE_PUBLIC_URL } from "@/config/citadelleConstants";
 
 const Section = ({ title, children }) => (
   <div className="mb-8">
@@ -25,6 +26,11 @@ const Row = ({ label, value }) => (
 export default function CitadelleMentionsLegales() {
   return (
     <CitadelleLayout>
+      <Helmet>
+        <title>Mentions Légales | La Citadelle Numérique</title>
+        <meta name="description" content="Mentions légales de La Citadelle Numérique : éditeur du site, hébergeur, propriété intellectuelle et coordonnées de l'entreprise." />
+        <link rel="canonical" href={`${CITADELLE_PUBLIC_URL}/citadelle/mentions-legales`} />
+      </Helmet>
       {/* En-tête */}
       <div className="py-14 text-center" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
         <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: CITADELLE_COLORS.gold }}>La Citadelle Numérique</p>

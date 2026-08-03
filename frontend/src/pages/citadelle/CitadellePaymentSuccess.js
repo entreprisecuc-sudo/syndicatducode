@@ -10,6 +10,7 @@ import citadelleApi from "@/services/citadelleApi";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
+import { SeoNoIndex } from "@/components/citadelle/SeoNoIndex";
 
 const MAX_POLLS = 8;
 const POLL_INTERVAL_MS = 2500;
@@ -61,6 +62,7 @@ export default function CitadellePaymentSuccess() {
 
   return (
     <CitadelleLayout>
+      <SeoNoIndex />
       <div
         className="min-h-screen flex items-center justify-center px-4"
         style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}
