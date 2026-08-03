@@ -560,7 +560,7 @@ const HeroSection = () => (
               {label}
             </span>
           ))}
-          <span style={{ textTransform: "none", fontWeight: 500, fontStyle: "italic", color: "rgba(255,255,255,0.45)" }}>… et bien d'autres actifs numériques</span>
+          <span style={{ textTransform: "none", fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>… et bien d'autres actifs numériques</span>
         </div>
 
         {/* CTAs */}
