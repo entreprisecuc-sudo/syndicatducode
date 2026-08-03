@@ -19,6 +19,8 @@ import ShareBar from "@/components/citadelle/ShareBar";
 import BoostModal from "@/components/citadelle/BoostModal";
 import SellerServicesUpsell, { BUYER_ESTIMATION_SERVICES } from "@/components/citadelle/SellerServicesUpsell";
 
+const SEO_DOMAIN = "https://lacitadellenumerique.fr";
+
 // ── Hook : compte à rebours ──────────────────────────────────────────────────
 
 function useTempsRestant(auctionEndsAt) {
@@ -105,6 +107,95 @@ export default function CitadelleListingDetail() {
       setLoading(false);
     }
   };
+
+  // SEO complet (title, meta, canonical, OG, Twitter, JSON-LD Product + Breadcrumb) via le DOM
+  useEffect(() => {
+    if (!listing) return;
+    const cfg = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
+    const imgs = (listing.images || []).filter(f => f && isImageFile(f));
+    const canonical = `${SEO_DOMAIN}/citadelle/annonces/${listing.slug}`;
+    const price = listing.is_auction ? (listing.auction_current_bid || listing.price) : listing.price;
+    const ogImg = imgs.length > 0 ? getListingImageUrl(imgs[0]) : `${SEO_DOMAIN}/og-default.png`;
+    const seoTitle = `${listing.title} — ${cfg.label} à vendre | La Citadelle Numérique`.slice(0, 65);
+    const parts = [
+      `${cfg.label} à vendre`,
+      listing.technologies?.length ? `Technologies : ${listing.technologies.slice(0, 3).join(", ")}` : null,
+      listing.monthly_traffic != null ? `${listing.monthly_traffic.toLocaleString("fr-FR")} visiteurs/mois` : null,
+      listing.monthly_revenue != null ? `${listing.monthly_revenue.toLocaleString("fr-FR")} €/mois de CA` : null,
+      price != null ? `Prix : ${price.toLocaleString("fr-FR")} €` : null,
+    ].filter(Boolean);
+    const seoDesc = `${parts.join(" · ")}. Transaction sécurisée par séquestre sur La Citadelle Numérique.`
+      .replace(/\s+/g, " ").slice(0, 200);
+
+    const setMeta = (name, content) => {
+      let el = document.querySelector(`meta[name="${name}"]`);
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.setAttribute("content", content);
+    };
+    const setOg = (prop, content) => {
+      let el = document.querySelector(`meta[property="${prop}"]`);
+      if (!el) { el = document.createElement("meta"); el.setAttribute("property", prop); document.head.appendChild(el); }
+      el.setAttribute("content", content);
+    };
+    const setLink = (rel, href) => {
+      let el = document.querySelector(`link[rel="${rel}"]`);
+      if (!el) { el = document.createElement("link"); el.rel = rel; document.head.appendChild(el); }
+      el.setAttribute("href", href);
+    };
+
+    document.title = seoTitle;
+    setMeta("description", seoDesc);
+    setMeta("robots", listing.is_adult ? "noindex, follow" : "index, follow");
+    setOg("og:type", "product");
+    setOg("og:site_name", "La Citadelle Numérique");
+    setOg("og:title", seoTitle);
+    setOg("og:description", seoDesc);
+    setOg("og:url", canonical);
+    setOg("og:image", ogImg);
+    setMeta("twitter:card", "summary_large_image");
+    setMeta("twitter:title", seoTitle);
+    setMeta("twitter:description", seoDesc);
+    setMeta("twitter:image", ogImg);
+    setLink("canonical", canonical);
+
+    const schemas = [
+      {
+        "@context": "https://schema.org", "@type": "Product",
+        name: listing.title,
+        description: (listing.description || seoDesc).slice(0, 500),
+        category: cfg.label,
+        ...(imgs.length > 0 ? { image: ogImg } : {}),
+        offers: {
+          "@type": "Offer", price, priceCurrency: "EUR",
+          availability: listing.status === "sold" ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+          url: canonical,
+          seller: { "@type": "Organization", name: "La Citadelle Numérique" },
+        },
+      },
+      {
+        "@context": "https://schema.org", "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Accueil", item: `${SEO_DOMAIN}/citadelle` },
+          { "@type": "ListItem", position: 2, name: "Annonces", item: `${SEO_DOMAIN}/citadelle/annonces` },
+          { "@type": "ListItem", position: 3, name: listing.title, item: canonical },
+        ],
+      },
+    ];
+    const nodes = schemas.map(s => {
+      const el = document.createElement("script");
+      el.type = "application/ld+json";
+      el.setAttribute("data-listing-seo", "1");
+      el.textContent = JSON.stringify(s);
+      document.head.appendChild(el);
+      return el;
+    });
+    return () => {
+      nodes.forEach(n => n.remove());
+      document.title = "La Citadelle Numérique";
+      const rb = document.querySelector('meta[name="robots"]');
+      if (rb) rb.setAttribute("content", "index, follow");
+    };
+  }, [listing]);
 
   if (loading) return (
     <CitadelleLayout>

@@ -2,6 +2,27 @@
 
 > Journal des sessions. Le PRD historique complet reste dans PRD.md.
 
+## 🔍 Session 03/08/2026 — Chantier SEO (en cours)
+Suite à un audit SEO (cause racine identifiée : SPA React CSR → HTML vide au crawl → "Crawled - currently not indexed"). Stratégie validée par le client : **2b hybride** (pages dynamiques en rendu backend on-demand + prerendering pages stables), **sans Puppeteer** (privilégier le rendu backend, pattern /aide) car annonces fréquentes → fraîcheur requise.
+
+### ⚠️ Piège technique découvert
+`react-helmet-async@3.0.0` **plante** avec `<title>{variableJSX}</title>` ("Helmet expects a string as a child of <title>"). Les titres LITTÉRAUX passent. → Pour les titres/meta DYNAMIQUES, utiliser la manipulation DOM dans un `useEffect` (pattern déjà utilisé par `CitadelleBlogPost.js`), PAS `<Helmet>`.
+
+### ✅ Fait & vérifié (screenshot/curl, Règle 6 respectée)
+- **P2 — Détail d'annonce** (`CitadelleListingDetail.js`) : SEO dynamique complet via useEffect DOM → title (« … à vendre »), meta description (type, techno, trafic, CA, prix), canonical, robots (noindex si adulte), OpenGraph + Twitter, **JSON-LD Product/Offer + BreadcrumbList**. Cleanup au démontage.
+- **P8 — Image OG par défaut** : `public/og-default.png` (1200×630, charte Citadelle) créée + référencée dans `index.html` (og:image + twitter:image + dimensions).
+- **P6 (partiel)** — `index.html` : `apple-mobile-web-app-title` corrigé (« Papa en Mousse » → « La Citadelle Numérique »).
+
+### 🚧 Reste à faire (Phase A on-page)
+- P3 : Home optimisée (H1 « marketplace… », H2, contenu, liens internes, FAQ + Schema FAQPage). Accroche validée client.
+- P4 : Helmet (titres littéraux) sur pages légales (Mentions, CGU, CGV, Confidentialité, Contact).
+- P5 : ALT descriptifs sur ~26 images publiques (ListingCard, listes annonces/blog, bannière partenaires).
+- P7 : noindex sur pages privées/techniques (login, register, forgot, reset, callback Google, payment-success, vérif transmission, admin).
+- P6 (reste) : manifest public propre (⚠️ sans casser la PWA admin « Papa en Mousse » — un seul manifest partagé → à trancher).
+
+### 🚧 Phase B (déblocage indexation) — après check VPS client
+- Rendu backend on-demand (pattern /aide) pour détail annonce + articles blog, servi aux bots via dynamic rendering Nginx (User-Agent). Pas de Puppeteer. Contenu toujours frais.
+
 ## ✨ Session 02/08/2026 — Centre d'aide (Phase 1 : architecture + catégorie exemple)
 Base de connaissances premium optimisée UX / SEO / GEO / AEO, rendue en HTML côté serveur (lisible par Google et les IA sans JS).
 
