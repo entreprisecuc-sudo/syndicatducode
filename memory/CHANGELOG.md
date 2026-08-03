@@ -2,6 +2,13 @@
 
 > Journal des sessions. Le PRD historique complet reste dans PRD.md.
 
+## 🎨 Session 03/08/2026 (suite 2) — Refonte Hero accueil (UX premium + SEO déplacé)
+Le client a jugé le Hero surchargé de texte (« c'est moche »). Rééquilibrage UX/SEO/conversion dans `pages/citadelle/CitadelleHome.js` :
+- **Hero épuré** : H1 « Achetez. Vendez. Sécurisez. » conservé + sous-titre court « La marketplace française spécialisée dans la vente de sites internet. » + ligne de catégories à puces dorées (Sites web • E-commerce • SaaS • Applications • Noms de domaine). Les 2 longs paragraphes SEO ont été RETIRÉS du Hero. Rendu premium, aéré, minimaliste.
+- **Nouvelle section SEO éditoriale** `SeoContentSection` (composant, ~900 mots) placée APRÈS les catégories : eyebrow + H2 « Acheter ou vendre un site internet en toute sécurité », intro riche (mots-clés naturels : vente/achat de site internet, site internet à vendre, marketplace de sites internet, vente de SaaS/e-commerce/applications, business en ligne), grille « Pourquoi choisir » (4 cartes à icônes), colonnes « Comment vendre » / « Comment acheter » (étapes numérotées + CTA), bandeau navy « Nos garanties ». Design cohérent charte navy/or, non « blog ».
+- FAQ (FaqSection + Schema FAQPage) déjà présente, conservée. Vérifié par screenshots desktop (Hero + section SEO). Frontend compilé. Aucune régression backend.
+
+
 ## 🔍 Session 03/08/2026 (suite) — Phase A finalisée + Phase B (Dynamic Rendering) livrée
 Reprise du chantier SEO. Règle 6 respectée : validations en muet (screenshots + curl) + 1 passe `testing_agent` sur la Phase A **autorisée explicitement par le client**.
 

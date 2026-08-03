@@ -536,24 +536,31 @@ const HeroSection = () => (
           Plateforme française sécurisée
         </div>
 
-        {/* Titre (H1 optimisé SEO) */}
-        <h1 className="font-bold leading-tight mb-6" style={{
+        {/* Titre (H1) */}
+        <h1 className="font-bold leading-tight mb-5" style={{
           fontFamily: "'Montserrat', sans-serif",
-          color: "white"
+          color: "white",
+          fontSize: "clamp(2.5rem, 6vw, 4rem)"
         }}>
-          <span style={{ display: "block", fontSize: "clamp(2.5rem, 6vw, 4rem)" }}>
-            Achetez.{" "}
-            <span style={{ color: CITADELLE_COLORS.gold }}>Vendez.</span>{" "}
-            Sécurisez.
-          </span>
-          <span style={{ display: "block", marginTop: "0.9rem", fontSize: "clamp(1.05rem, 2vw, 1.35rem)", fontWeight: 600, color: "rgba(255,255,255,0.9)", maxWidth: "700px" }}>
-            La marketplace française pour acheter et vendre des sites internet, SaaS, boutiques e-commerce, chaînes YouTube et actifs numériques
-          </span>
+          Achetez.{" "}
+          <span style={{ color: CITADELLE_COLORS.gold }}>Vendez.</span>{" "}
+          Sécurisez.
         </h1>
 
-        <p className="mb-8 leading-relaxed" style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.7)", maxWidth: "620px" }}>
-          La plateforme française dédiée à l'achat et à la vente d'actifs numériques — sites web, chaînes YouTube, comptes et pages de réseaux sociaux, SaaS, boutiques e-commerce et noms de domaine. Des actifs vérifiés, des transactions entièrement sécurisées.
+        {/* Sous-titre épuré */}
+        <p className="mb-5" style={{ fontSize: "clamp(1.1rem, 2vw, 1.4rem)", fontWeight: 600, color: "rgba(255,255,255,0.92)", maxWidth: "600px", lineHeight: 1.4 }}>
+          La marketplace française spécialisée dans la vente de sites internet.
         </p>
+
+        {/* Catégories clés */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-8" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)" }} data-testid="citadelle-hero-categories">
+          {["Sites web", "E-commerce", "SaaS", "Applications", "Noms de domaine"].map((label, i) => (
+            <span key={label} className="inline-flex items-center gap-3">
+              {i > 0 && <span style={{ width: 4, height: 4, borderRadius: "50%", background: CITADELLE_COLORS.gold, display: "inline-block" }} />}
+              {label}
+            </span>
+          ))}
+        </div>
 
         {/* CTAs */}
         <div className="flex flex-wrap gap-4 mb-8">
@@ -643,6 +650,121 @@ const CategoriesSection = () => (
             </Link>
           );
         })}
+      </div>
+    </div>
+  </section>
+);
+
+// ── Section SEO éditoriale (contenu riche déplacé sous les catégories) ─────────
+
+const SEO_WHY = [
+  { icon: Lock, title: "Transactions sécurisées par séquestre", desc: "Les fonds de l'acheteur sont conservés en séquestre jusqu'à la vérification complète et la transmission des accès. Vendeur et acheteur sont protégés à chaque étape." },
+  { icon: ShieldCheck, title: "Vérification par La Garde", desc: "Notre équipe contrôle les annonces et accompagne la cession de A à Z, pour des actifs numériques fiables et une vente de site internet en toute confiance." },
+  { icon: TrendingUp, title: "Estimation professionnelle", desc: "Estimez gratuitement la valeur de votre site internet, SaaS ou boutique e-commerce, puis affinez avec une expertise réalisée par nos analystes." },
+  { icon: Globe, title: "100 % française", desc: "Une marketplace de sites internet basée en France, avec facturation conforme, médiation en français et un interlocuteur dédié : La Garde." },
+];
+
+const SEO_SELL_STEPS = [
+  "Estimez la valeur de votre actif avec notre outil gratuit, puis publiez gratuitement votre annonce (site web, e-commerce, SaaS, application ou nom de domaine).",
+  "Recevez les offres des acheteurs et échangez en toute sécurité via la messagerie ; acceptez l'offre qui vous convient ou lancez une vente aux enchères.",
+  "L'acheteur paie via le séquestre, La Garde vérifie la transmission des accès, puis les fonds vous sont versés. La cession est protégée du début à la fin.",
+];
+
+const SEO_BUY_STEPS = [
+  "Parcourez les sites internet à vendre et filtrez par type, budget, trafic ou revenus pour trouver le business en ligne qui correspond à votre projet.",
+  "Contactez le vendeur, demandez les informations complémentaires et faites une offre — ou enchérissez sur les actifs proposés aux enchères.",
+  "Réglez en séquestre : vos fonds ne sont débloqués qu'une fois les accès reçus et vérifiés. Vous achetez un site internet l'esprit tranquille.",
+];
+
+const SeoContentSection = () => (
+  <section className="py-24" style={{ background: "white" }} data-testid="citadelle-seo-content">
+    <div className="max-w-6xl mx-auto px-4 md:px-6">
+      {/* En-tête */}
+      <div className="text-center max-w-3xl mx-auto mb-16">
+        <p className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: CITADELLE_COLORS.gold, fontFamily: "'Montserrat', sans-serif" }}>
+          La marketplace des actifs numériques
+        </p>
+        <h2 className="font-bold mb-6" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(1.7rem, 4vw, 2.4rem)", color: CITADELLE_COLORS.blue, lineHeight: 1.2 }}>
+          Acheter ou vendre un site internet en toute sécurité
+        </h2>
+        <p className="leading-relaxed" style={{ fontSize: "1.1rem", color: CITADELLE_COLORS.textMuted }}>
+          La Citadelle Numérique est la marketplace française spécialisée dans la <strong style={{ color: CITADELLE_COLORS.blue }}>vente de sites internet</strong>. Que vous souhaitiez <strong style={{ color: CITADELLE_COLORS.blue }}>vendre un site internet</strong> rentable, <strong style={{ color: CITADELLE_COLORS.blue }}>acheter un site internet</strong> déjà positionné, ou céder un SaaS, une boutique e-commerce ou une application, nous sécurisons chaque transaction grâce au séquestre et à l'accompagnement de La Garde.
+        </p>
+      </div>
+
+      {/* Intro éditoriale */}
+      <div className="max-w-3xl mx-auto mb-20 space-y-5" style={{ color: "#3A4658", fontSize: "1.02rem", lineHeight: 1.8 }}>
+        <p>
+          Le marché de la <strong>vente de business en ligne</strong> n'a jamais été aussi actif. Chaque jour, des entrepreneurs cherchent un <strong>site internet à vendre</strong> pour accélérer leur croissance, tandis que d'autres souhaitent valoriser des années de travail en cédant leur projet. Trouver le bon acheteur ou le bon actif reste pourtant difficile : prix opaques, absence de garanties, transmission des accès risquée. La Citadelle Numérique a été pensée pour lever ces freins.
+        </p>
+        <p>
+          Sur notre <strong>marketplace de sites internet</strong>, vous accédez à des sites web, des boutiques e-commerce, des SaaS, des applications et des noms de domaine soigneusement présentés. Chaque annonce peut détailler le trafic, le chiffre d'affaires et la technologie employée, pour que la <strong>vente de SaaS</strong>, la <strong>vente de boutiques e-commerce</strong> ou la <strong>vente d'applications</strong> se fasse sur des bases claires. Notre estimateur gratuit vous aide à situer la valeur d'un actif avant même de faire une offre.
+        </p>
+      </div>
+
+      {/* Pourquoi choisir */}
+      <div className="mb-20">
+        <h3 className="font-bold text-center mb-10" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(1.3rem, 3vw, 1.7rem)", color: CITADELLE_COLORS.blue }}>
+          Pourquoi choisir La Citadelle Numérique
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {SEO_WHY.map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="flex gap-5 p-7 rounded-2xl transition-all duration-200 hover:-translate-y-1"
+              style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(201,164,92,0.14)" }}>
+                <Icon size={22} style={{ color: CITADELLE_COLORS.gold }} />
+              </div>
+              <div>
+                <p className="font-bold mb-2" style={{ fontFamily: "'Montserrat', sans-serif", color: CITADELLE_COLORS.blue, fontSize: "1.05rem" }}>{title}</p>
+                <p className="leading-relaxed" style={{ color: CITADELLE_COLORS.textMuted, fontSize: "0.95rem" }}>{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Comment vendre / Comment acheter */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
+        {[
+          { title: "Comment vendre un site internet", steps: SEO_SELL_STEPS, icon: TrendingUp, cta: { to: "/citadelle/vendre", label: "Vendre mon site" } },
+          { title: "Comment acheter un site internet", steps: SEO_BUY_STEPS, icon: Search, cta: { to: "/citadelle/annonces", label: "Voir les annonces" } },
+        ].map(({ title, steps, icon: Icon, cta }) => (
+          <div key={title} className="p-8 rounded-2xl" style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: CITADELLE_COLORS.blue }}>
+                <Icon size={20} style={{ color: CITADELLE_COLORS.gold }} />
+              </div>
+              <h3 className="font-bold" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "1.2rem", color: CITADELLE_COLORS.blue }}>{title}</h3>
+            </div>
+            <ol className="space-y-5">
+              {steps.map((step, i) => (
+                <li key={i} className="flex gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{ background: "rgba(201,164,92,0.15)", color: CITADELLE_COLORS.gold, fontFamily: "'Montserrat', sans-serif" }}>{i + 1}</span>
+                  <p className="leading-relaxed" style={{ color: "#3A4658", fontSize: "0.97rem" }}>{step}</p>
+                </li>
+              ))}
+            </ol>
+            <Link to={cta.to} className="inline-flex items-center gap-2 mt-7 font-semibold text-sm transition-colors" style={{ color: CITADELLE_COLORS.blue }}>
+              {cta.label} <ArrowRight size={16} />
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      {/* Nos garanties */}
+      <div className="rounded-3xl p-10 md:p-14 text-center relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, #C9A45C 1px, transparent 0)", backgroundSize: "36px 36px" }} />
+        <div className="relative max-w-3xl mx-auto">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-6" style={{ background: "rgba(201,164,92,0.15)", border: "1px solid rgba(201,164,92,0.3)" }}>
+            <Shield size={26} style={{ color: CITADELLE_COLORS.gold }} />
+          </div>
+          <h3 className="font-bold mb-5" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(1.3rem, 3vw, 1.8rem)", color: "white" }}>
+            Nos garanties
+          </h3>
+          <p className="leading-relaxed" style={{ color: "rgba(255,255,255,0.75)", fontSize: "1.05rem" }}>
+            Chaque vente de site internet est protégée par un <strong style={{ color: "white" }}>séquestre</strong> : l'argent de l'acheteur n'est libéré qu'après la vérification et la transmission des accès par La Garde. En cas de désaccord, notre équipe assure une <strong style={{ color: "white" }}>médiation</strong> et délivre une <strong style={{ color: "white" }}>attestation de transmission</strong> qui officialise la cession. Vendeurs et acheteurs bénéficient ainsi d'un cadre professionnel, transparent et entièrement sécurisé pour acheter ou vendre un business en ligne.
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -839,6 +961,7 @@ export default function CitadelleHome() {
       </Helmet>
       <HeroSection />
       <CategoriesSection />
+      <SeoContentSection />
       <HowItWorksSection />
       <EstimatorSection />
       <ServicesSection />
