@@ -7,7 +7,7 @@ import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, BarChart2,
   Calendar, ShieldCheck, Star, ArrowLeft, Eye, Share2, Lock, FileText, Download, Send, AlertCircle, Hammer, Clock, Zap, X, ZoomIn,
-  DollarSign, Linkedin, Twitter, Facebook, Link2, CheckCircle, AlertTriangle, MapPin, UserCheck
+  DollarSign, Linkedin, Twitter, Facebook, Link2, CheckCircle, AlertTriangle, MapPin, UserCheck, Mail, MessageCircle
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
@@ -384,6 +384,39 @@ export default function CitadelleListingDetail() {
               </div>
             )}
 
+            {/* ── Barre de partage — sous l'image ─────────────────────────────── */}
+            {(() => {
+              const pageUrl = encodeURIComponent(`${SEO_DOMAIN}/citadelle/annonces/${listing.slug}`);
+              const pageTitle = encodeURIComponent(listing.title);
+              const shareLinks = [
+                { href: `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`, bg: "#0A66C2", icon: Linkedin, label: "LinkedIn" },
+                { href: `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`, bg: "#1877F2", icon: Facebook, label: "Facebook" },
+                { href: `https://twitter.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`, bg: "#000", icon: Twitter, label: "X" },
+                { href: `https://wa.me/?text=${pageTitle}%20${pageUrl}`, bg: "#25D366", icon: MessageCircle, label: "WhatsApp" },
+                { href: `mailto:?subject=${pageTitle}&body=${decodeURIComponent(pageUrl)}`, bg: "rgba(15,39,71,0.12)", icon: Mail, label: "Email", color: CITADELLE_COLORS.blue },
+              ];
+              return (
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
+                  <Share2 size={14} style={{ color: CITADELLE_COLORS.textMuted }} />
+                  <span className="text-sm font-semibold mr-1" style={{ color: CITADELLE_COLORS.textMuted }}>Partager :</span>
+                  <div className="flex items-center gap-2">
+                    {shareLinks.map(({ href, bg, icon: Icon, label, color }) => (
+                      <a key={label} href={href} target={href.startsWith("mailto") ? undefined : "_blank"} rel="noopener noreferrer"
+                        className="w-9 h-9 rounded-full flex items-center justify-center transition-opacity hover:opacity-75 flex-shrink-0"
+                        style={{ background: bg, color: color || "#fff" }} title={label}>
+                        <Icon size={15} />
+                      </a>
+                    ))}
+                    <button onClick={() => navigator.clipboard.writeText(`${SEO_DOMAIN}/citadelle/annonces/${listing.slug}`)}
+                      className="w-9 h-9 rounded-full flex items-center justify-center transition-opacity hover:opacity-75"
+                      style={{ background: "rgba(15,39,71,0.12)", color: CITADELLE_COLORS.blue }} title="Copier le lien">
+                      <Link2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Documents joints */}
             {documents.length > 0 && (
               <div className="p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
@@ -582,39 +615,6 @@ export default function CitadelleListingDetail() {
                 </div>
               </div>
             )}
-
-            {/* ── Partage social ───────────────────────────────────────────────── */}
-            {(() => {
-              const pageUrl = encodeURIComponent(`${SEO_DOMAIN}/citadelle/annonces/${listing.slug}`);
-              const pageTitle = encodeURIComponent(listing.title);
-              return (
-                <div className="p-5 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
-                  <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>Partager cette annonce</p>
-                  <div className="flex gap-2 flex-wrap">
-                    <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-opacity hover:opacity-80"
-                      style={{ background: "#0A66C2", color: "#fff" }}>
-                      <Linkedin size={13} /> LinkedIn
-                    </a>
-                    <a href={`https://twitter.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-opacity hover:opacity-80"
-                      style={{ background: "#000", color: "#fff" }}>
-                      <Twitter size={13} /> X
-                    </a>
-                    <a href={`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-opacity hover:opacity-80"
-                      style={{ background: "#1877F2", color: "#fff" }}>
-                      <Facebook size={13} /> Facebook
-                    </a>
-                    <button onClick={() => { navigator.clipboard.writeText(decodeURIComponent(pageUrl)); }}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-opacity hover:opacity-80"
-                      style={{ background: "rgba(15,39,71,0.07)", color: CITADELLE_COLORS.blue }}>
-                      <Link2 size={13} /> Copier le lien
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
 
             {/* Technologies (section désormais intégrée dans Infos techniques — kept for compatibility) */}
             {false && listing.technologies?.length > 0 && (
