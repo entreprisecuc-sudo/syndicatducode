@@ -21,6 +21,12 @@ import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 
 const C = CITADELLE_COLORS;
 
+const WITHDRAW_REASONS = [
+  { key: "sold",              label: "Le bien est vendu" },
+  { key: "not_exist",         label: "Le bien n'existe plus" },
+  { key: "no_longer_selling", label: "Je ne souhaite plus le vendre" },
+];
+
 /* Carte KPI cliquable — chiffre clé + libellé, navigue au clic */
 function KpiCard({ icon: Icon, label, value, href, testId }) {
   return (
@@ -77,6 +83,9 @@ export default function CitadelleDashboard() {
   const [unreadTransactions, setUnreadTransactions] = useState(0);
   const [activeListings, setActiveListings]         = useState(0);
   const [myListings, setMyListings]                 = useState([]);
+  const [withdrawModal, setWithdrawModal]           = useState({ open: false, listingId: null, listingTitle: "" });
+  const [withdrawReason, setWithdrawReason]         = useState(null);
+  const [withdrawing, setWithdrawing]               = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -100,6 +109,23 @@ export default function CitadelleDashboard() {
     const interval = setInterval(fetchCounts, 10000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
+
+  const openWithdrawModal = (listing) => {
+    setWithdrawReason(null);
+    setWithdrawModal({ open: true, listingId: listing.id, listingTitle: listing.title });
+  };
+
+  const handleWithdraw = async () => {
+    if (!withdrawReason) return;
+    setWithdrawing(true);
+    try {
+      await citadelleApi.post(`/listings/${withdrawModal.listingId}/withdraw`, { reason: withdrawReason });
+      setMyListings((prev) => prev.filter((l) => l.id !== withdrawModal.listingId));
+      setWithdrawModal({ open: false, listingId: null, listingTitle: "" });
+      setWithdrawReason(null);
+    } catch { /* silence */ }
+    finally { setWithdrawing(false); }
+  };
 
   if (!isAuthenticated) {
     navigate("/citadelle/connexion");
@@ -326,6 +352,13 @@ export default function CitadelleDashboard() {
                             title="Modifier">
                             <Edit2 size={14} />
                           </Link>
+                          <button onClick={() => openWithdrawModal(listing)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
+                            style={{ background: "rgba(100,116,139,0.1)", color: "#64748B" }}
+                            title="Retirer l'annonce de la vente"
+                            data-testid={`dashboard-withdraw-btn-${listing.id}`}>
+                            <LogOut size={13} /> Retirer
+                          </button>
                         </div>
                       </div>
                     );
@@ -336,6 +369,69 @@ export default function CitadelleDashboard() {
           </div>
         </div>
       </div>
+      {/* ── Modal retrait annonce ─────────────────────────────────────────── */}
+      {withdrawModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(8,23,41,0.75)" }}
+          data-testid="dashboard-withdraw-modal">
+          <div className="w-full max-w-md rounded-2xl overflow-hidden"
+            style={{ background: "white", boxShadow: "0 24px 64px rgba(15,39,71,0.25)" }}>
+            {/* En-tête modal */}
+            <div className="flex items-center justify-between px-6 py-4"
+              style={{ background: C.night, borderBottom: `1px solid rgba(201,164,92,0.2)` }}>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-0.5"
+                  style={{ color: C.gold }}>Retrait d'annonce</p>
+                <h2 className="text-base font-black text-white">Retirer l'annonce de la vente</h2>
+              </div>
+              <button onClick={() => setWithdrawModal({ open: false, listingId: null, listingTitle: "" })}
+                className="p-1.5 rounded-lg opacity-60 hover:opacity-100 transition-opacity"
+                style={{ color: "white" }}
+                data-testid="dashboard-withdraw-modal-close">
+                <X size={18} />
+              </button>
+            </div>
+            {/* Corps modal */}
+            <div className="px-6 py-5">
+              <p className="text-sm mb-1" style={{ color: C.textMuted }}>Annonce :</p>
+              <p className="text-sm font-bold mb-5 truncate" style={{ color: C.blue }}>
+                "{withdrawModal.listingTitle}"
+              </p>
+              <p className="text-sm font-semibold mb-3" style={{ color: C.blue }}>
+                Quelle est la raison du retrait ?
+              </p>
+              <div className="flex flex-col gap-2 mb-6">
+                {WITHDRAW_REASONS.map(({ key, label }) => (
+                  <button key={key}
+                    onClick={() => setWithdrawReason(key)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left transition-all"
+                    style={{
+                      border: `1.5px solid ${withdrawReason === key ? C.blue : C.border}`,
+                      background: withdrawReason === key ? "rgba(15,39,71,0.05)" : "white",
+                      color: C.blue,
+                      fontWeight: withdrawReason === key ? "600" : "400",
+                    }}>
+                    <span className="w-4 h-4 rounded-full flex-shrink-0 border-2 flex items-center justify-center"
+                      style={{ borderColor: withdrawReason === key ? C.blue : C.border }}>
+                      {withdrawReason === key && (
+                        <span className="w-2 h-2 rounded-full" style={{ background: C.blue }} />
+                      )}
+                    </span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <button onClick={handleWithdraw}
+                disabled={!withdrawReason || withdrawing}
+                className="w-full py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-40"
+                style={{ background: C.blue, color: "white" }}
+                data-testid="dashboard-withdraw-confirm-btn">
+                {withdrawing ? "Retrait en cours…" : "Confirmer le retrait"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </CitadelleLayout>
   );
 }
