@@ -13,6 +13,7 @@ import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CitadelleImageUpload } from "@/components/citadelle/CitadelleImageUpload";
 import CommissionInfoPopup from "@/components/citadelle/CommissionInfoPopup";
 import ListingQualityHelper from "@/components/citadelle/ListingQualityHelper";
+import SecurityContactNotice from "@/components/citadelle/SecurityContactNotice";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
@@ -256,6 +257,8 @@ export default function CitadelleEditListing() {
               {form.short_description.length}/300
             </p>
           </div>
+
+          <SecurityContactNotice />
 
           {/* Prix */}
           <div className="grid grid-cols-2 gap-4">

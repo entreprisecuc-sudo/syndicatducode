@@ -7,6 +7,16 @@
 
 ---
 
+## ⭐ Session 08/2026 — Filtre automatique anti-coordonnées sur les annonces ✅ (PREVIEW)
+- **Besoin client** : retirer silencieusement les coordonnées directes (email / téléphone) des descriptions d'annonces, à la création ET à l'édition, avec un message de sécurité **systématique** rappelant que toute communication doit rester sur La Citadelle. Champs concernés : `short_description` + `description` uniquement. Filtrage : email + téléphone seulement (pas les liens messagerie).
+- **Backend** (`routes/citadelle/listings.py`) : réutilisation (DRY, règle 4) du helper existant `utils/message_sanitizer.py::sanitiser_message` (masque email + téléphone → `[contact masqué par La Citadelle]`). Appliqué dans `create_listing` (les 2 descriptions) et `update_listing` (si champ présent dans les updates). Nouvelle constante centralisée `AVIS_SECURITE_ANNONCE` (règle 5, zéro hardcoding) renvoyée **systématiquement** dans la réponse via `security_notice`.
+- **Frontend** : nouveau composant réutilisable `components/citadelle/SecurityContactNotice.jsx` (bandeau or + icône bouclier, mobile first, `data-testid=security-contact-notice`). Intégré dans `CitadelleCreateListing.js` (sous l'accroche + sur l'écran de succès) et `CitadelleEditListing.js` (sous l'accroche).
+- **Testé (muet, curl + screenshot)** : création → email + tél masqués dans les 2 descriptions + `security_notice` présent ; édition → masquage OK + `security_notice` ; annonce de test supprimée (nettoyage). Screenshot : bandeau affiché correctement. ⚠️ Le test de **création** a déclenché l'email de notification admin « nouvelle annonce » (`send_citadelle_admin_new_listing_email`) — email interne admin, pas un email de test vers un tiers.
+- **⚠️ NON DÉPLOYÉ SUR LE VPS** : Save to Github → `git pull` → `cd frontend && yarn build` → `pm2 restart syndicat-backend` → `systemctl reload nginx`.
+
+---
+
+
 ## ⭐ Session 20/07/2026 (soir) — Correctif logo encart partenaire + DÉPLOIEMENT VPS ✅
 - **Correctif (P0)** : dans `pages/citadelle/CitadelleListings.js`, l'encart partenaire « Le projet de vos rêves… » affichait le `logo.png` (tons sombres) sur un carré **fond bleu marine** → logo invisible. Fond du carré passé en **blanc** + bordure dorée 2px, logo agrandi (`w-full h-full object-contain`) et carré agrandi (`w-28/h-28 md:w-32/h-32`). Vérifié par screenshot preview PUIS en production.
 - **DÉPLOYÉ SUR LE VPS ✅** (première fois avec le client, guidage pas à pas). Process réel confirmé :

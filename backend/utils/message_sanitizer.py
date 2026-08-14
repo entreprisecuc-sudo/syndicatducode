@@ -10,6 +10,14 @@ import re
 # ── Marqueur de remplacement ───────────────────────────────────────────────────
 MASQUE = "[contact masqué par La Citadelle]"
 
+# ── Avis de sécurité affiché lors de la soumission d'une annonce ────────────────
+# Message systématique rappelant que toute communication doit rester sur la plateforme.
+AVIS_SECURITE_ANNONCE = (
+    "Pour votre sécurité, toute communication doit rester sur La Citadelle. "
+    "Les coordonnées directes (adresse email, numéro de téléphone) ne sont pas "
+    "autorisées dans les descriptions et sont automatiquement retirées."
+)
+
 # ── Patterns interdits ─────────────────────────────────────────────────────────
 _PATTERNS = [
     # Adresse email

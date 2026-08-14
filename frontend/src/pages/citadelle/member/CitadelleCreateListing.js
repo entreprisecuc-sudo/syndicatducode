@@ -12,6 +12,7 @@ import CommissionInfoPopup from "@/components/citadelle/CommissionInfoPopup";
 import ListingQualityHelper from "@/components/citadelle/ListingQualityHelper";
 import BoostModal from "@/components/citadelle/BoostModal";
 import SellerServicesUpsell from "@/components/citadelle/SellerServicesUpsell";
+import SecurityContactNotice from "@/components/citadelle/SecurityContactNotice";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
@@ -213,6 +214,8 @@ export default function CitadelleCreateListing() {
             Votre annonce est en attente de validation par notre équipe. Vous recevrez une notification dès sa publication (sous 24h).
           </p>
 
+          <SecurityContactNotice className="mb-6 text-left" />
+
           {/* Proposition « Annonce à la Une » puis services vendeur */}
           {createdListing?.id && upsellStep === "boost" && (
             <div className="p-5 rounded-2xl mb-6 text-left" data-testid="post-submit-boost"
@@ -410,6 +413,7 @@ export default function CitadelleCreateListing() {
                 data-testid="create-listing-short-desc" />
               <p className="text-xs mt-1 text-right" style={{ color: form.short_description.length >= 290 ? "#ef4444" : CITADELLE_COLORS.textMuted }}>{form.short_description.length}/300</p>
             </div>
+            <SecurityContactNotice />
           </div>
         )}
 

@@ -14,6 +14,7 @@ import logging
 from routes.citadelle.dependencies import require_admin, require_citadelle_user, require_can_transact
 from services.auth_service import decode_access_token
 from utils.notif_prefs import email_notifications_enabled
+from utils.message_sanitizer import sanitiser_message, AVIS_SECURITE_ANNONCE
 from services.email_service import (
     send_citadelle_listing_approved_email,
     send_citadelle_listing_rejected_email,
@@ -427,13 +428,17 @@ async def create_listing(
     listing_id = generate_listing_id()
     slug = generate_slug(data.title)
 
+    # Sécurité — retrait silencieux des coordonnées (email / téléphone) des descriptions
+    short_description_propre, _ = sanitiser_message(data.short_description)
+    description_propre, _ = sanitiser_message(data.description)
+
     listing_doc = {
         "id": listing_id,
         "slug": slug,
         "title": data.title,
         "type": data.type,
-        "short_description": data.short_description,
-        "description": data.description,
+        "short_description": short_description_propre,
+        "description": description_propre,
         "seller_id": current_user.get("sub"),
         "seller_email": current_user.get("email"),
         "status": "pending",
@@ -485,6 +490,8 @@ async def create_listing(
         is_auction=data.is_auction,
     )
 
+    # Avis de sécurité systématique renvoyé au frontend
+    listing_doc["security_notice"] = AVIS_SECURITE_ANNONCE
     return listing_doc
 
 
@@ -505,6 +512,12 @@ async def update_listing(
     if not updates:
         return listing
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Sécurité — retrait silencieux des coordonnées (email / téléphone) des descriptions
+    if "short_description" in updates:
+        updates["short_description"], _ = sanitiser_message(updates["short_description"])
+    if "description" in updates:
+        updates["description"], _ = sanitiser_message(updates["description"])
 
     # Contenu adulte : ni images ni lien ne sont conservés
     effective_adult = updates.get("is_adult", listing.get("is_adult", False))
@@ -540,6 +553,7 @@ async def update_listing(
 
     await db.citadelle_listings.update_one({"id": listing_id}, {"$set": updates})
     updated = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
+    updated["security_notice"] = AVIS_SECURITE_ANNONCE
     return updated
 
 
