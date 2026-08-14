@@ -52,14 +52,15 @@ export default function AdminInstallApp() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: NIGHT }} data-testid="admin-install-page">
-      <header className="px-4 py-4 flex items-center gap-3 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+      <header className="px-4 py-3 flex items-center gap-3 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
         <button onClick={() => navigate("/admin-live")} data-testid="install-back-btn"
-          className="p-2 rounded-xl hover:opacity-70 transition-opacity" style={{ background: "rgba(255,255,255,0.06)" }}>
-          <ArrowLeft size={16} style={{ color: "rgba(255,255,255,0.6)" }} />
+          className="w-10 h-10 flex items-center justify-center rounded-xl transition-opacity active:scale-95"
+          style={{ background: "rgba(255,255,255,0.06)" }}>
+          <ArrowLeft size={18} style={{ color: "rgba(255,255,255,0.6)" }} />
         </button>
         <div className="flex items-center gap-2">
           <Smartphone size={18} style={{ color: GOLD }} />
-          <h1 className="text-white font-bold">Installer l'application</h1>
+          <h1 className="text-white font-bold text-base">Installer l'application</h1>
         </div>
       </header>
 

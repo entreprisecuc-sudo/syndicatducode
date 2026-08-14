@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { 
   X, Info, CheckCircle, AlertTriangle, XCircle, ExternalLink
 } from "lucide-react";
@@ -152,8 +153,8 @@ const AlertPopup = ({ alert, onDismiss }) => {
   );
 };
 
-// Composant principal
-const GlobalAlerts = () => {
+// Composant interne — logique des alertes (hooks toujours appelés)
+const GlobalAlertsInner = () => {
   const [alerts, setAlerts] = useState([]);
   const [dismissed, setDismissed] = useState(() => {
     const saved = localStorage.getItem('dismissed_alerts');
@@ -163,7 +164,6 @@ const GlobalAlerts = () => {
   const fetchAlerts = async () => {
     const token = getToken();
     if (!token) return;
-    
     try {
       const response = await api.get('/alerts/');
       setAlerts(response.data.alerts);
@@ -173,68 +173,49 @@ const GlobalAlerts = () => {
   };
 
   useEffect(() => {
-    // Fetch initial si token présent
     fetchAlerts();
-
-    // Polling léger pour détecter les connexions
     const interval = setInterval(() => {
       const token = getToken();
-      if (token && alerts.length === 0) {
-        fetchAlerts();
-      }
+      if (token && alerts.length === 0) fetchAlerts();
     }, 2000);
-
     return () => clearInterval(interval);
   }, [alerts.length]);
 
   const handleDismiss = async (alertId) => {
-    // Mettre à jour localement
     const newDismissed = [...dismissed, alertId];
     setDismissed(newDismissed);
     localStorage.setItem('dismissed_alerts', JSON.stringify(newDismissed));
-    
-    // Notifier le serveur
     try {
-      await api.post(`/alerts/${alertId}/dismiss`,  {});
-    } catch (err) {
-      // Silencieux
-    }
+      await api.post(`/alerts/${alertId}/dismiss`, {});
+    } catch { /* silencieux */ }
   };
 
-  // Filtrer les alertes déjà fermées
   const visibleAlerts = alerts.filter(a => !dismissed.includes(a.id));
-  
-  // Séparer bannières et popups
   const banners = visibleAlerts.filter(a => a.alert_type === "banner");
-  const popups = visibleAlerts.filter(a => a.alert_type === "popup");
-  
-  // Afficher un seul popup à la fois (le plus récent)
+  const popups  = visibleAlerts.filter(a => a.alert_type === "popup");
   const activePopup = popups.length > 0 ? popups[0] : null;
 
   return (
     <>
-      {/* Bannières en haut */}
       {banners.length > 0 && (
         <div className="sticky top-0 z-40">
           {banners.map(alert => (
-            <AlertBanner 
-              key={alert.id} 
-              alert={alert} 
-              onDismiss={handleDismiss}
-            />
+            <AlertBanner key={alert.id} alert={alert} onDismiss={handleDismiss} />
           ))}
         </div>
       )}
-      
-      {/* Popup modal */}
       {activePopup && (
-        <AlertPopup 
-          alert={activePopup} 
-          onDismiss={handleDismiss}
-        />
+        <AlertPopup alert={activePopup} onDismiss={handleDismiss} />
       )}
     </>
   );
+};
+
+// Composant principal — ne s'affiche pas sur la PWA admin (/admin-live)
+const GlobalAlerts = () => {
+  const location = useLocation();
+  if (location.pathname.startsWith("/admin-live")) return null;
+  return <GlobalAlertsInner />;
 };
 
 export default GlobalAlerts;

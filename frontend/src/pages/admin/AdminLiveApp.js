@@ -104,8 +104,8 @@ const AlertCard = ({ type, alertData, onAction }) => {
       {/* Liste des items */}
       <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
         {alertData.items.slice(0, 5).map((item) => (
-          <div key={item.id} className="flex items-center justify-between px-4 py-2.5">
-            <p className="text-xs text-white truncate flex-1 mr-3">
+          <div key={item.id} className="flex items-center justify-between px-4 py-3 gap-2">
+            <p className="text-xs text-white truncate flex-1 min-w-0">
               {item.title || item.listing_title || item.service_title ||
                `${item.first_name || ""} ${item.last_name || item.user_name || item.email || item.id}`.trim()}
             </p>
@@ -113,8 +113,8 @@ const AlertCard = ({ type, alertData, onAction }) => {
               <button onClick={() => handleAction("validate", item.id)}
                 disabled={!!loading}
                 data-testid={`validate-${type}-${item.id}`}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all hover:scale-105 disabled:opacity-50"
-                style={{ background: "rgba(52,211,153,0.15)", color: "#34d399" }}>
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+                style={{ background: "rgba(52,211,153,0.15)", color: "#34d399", minHeight: "36px" }}>
                 {loading === `validate-${item.id}` ? <RefreshCw size={11} className="animate-spin" /> : <CheckCircle size={11} />}
                 OK
               </button>
@@ -122,8 +122,8 @@ const AlertCard = ({ type, alertData, onAction }) => {
                 <button onClick={() => handleAction("reject", item.id)}
                   disabled={!!loading}
                   data-testid={`reject-${type}-${item.id}`}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition-all hover:scale-105 disabled:opacity-50"
-                  style={{ background: "rgba(239,68,68,0.15)", color: "#f87171" }}>
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+                  style={{ background: "rgba(239,68,68,0.15)", color: "#f87171", minHeight: "36px" }}>
                   {loading === `reject-${item.id}` ? <RefreshCw size={11} className="animate-spin" /> : <XCircle size={11} />}
                   Non
                 </button>
@@ -132,7 +132,7 @@ const AlertCard = ({ type, alertData, onAction }) => {
           </div>
         ))}
         {alertData.count > 5 && (
-          <p className="text-center text-xs py-2" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <p className="text-center text-xs py-2.5" style={{ color: "rgba(255,255,255,0.35)" }}>
             +{alertData.count - 5} autres — voir dans l'admin complet
           </p>
         )}
@@ -229,55 +229,52 @@ export default function AdminLiveApp() {
       style={{ background: "linear-gradient(180deg, #0a0f1e 0%, #0d1528 100%)", fontFamily: "'Inter', sans-serif" }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between"
+      <header className="sticky top-0 z-40 px-3 py-2.5 flex items-center justify-between"
         style={{ background: "rgba(10,15,30,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(201,164,92,0.15)" }}>
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 flex-shrink-0 rounded-xl flex items-center justify-center"
             style={{ background: "rgba(201,164,92,0.15)" }}>
             <Sword size={16} style={{ color: "#C9A45C" }} />
           </div>
-          <div>
-            <p className="text-sm font-black text-white leading-none">Papa en Mousse</p>
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-              {lastRefresh ? `Màj ${lastRefresh.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : "Chargement…"}
+          <div className="min-w-0">
+            <p className="text-sm font-black text-white leading-none truncate">Papa en Mousse</p>
+            <p className="text-xs leading-none mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+              {lastRefresh
+                ? `Màj ${lastRefresh.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
+                : "Chargement…"}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 flex-shrink-0 ml-2">
           {/* Badge total */}
           {totalAlerts > 0 && (
             <span className="min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-xs font-black"
               style={{ background: "#ef4444", color: "white" }}>
-              {totalAlerts}
+              {totalAlerts > 99 ? "99+" : totalAlerts}
             </span>
           )}
 
           {/* Notifications push */}
           <button onClick={enablePush} disabled={pushEnabled} data-testid="enable-push-btn"
             title={pushEnabled ? "Notifications activées" : "Activer les notifications"}
-            className="p-2 rounded-xl transition-all hover:opacity-70 disabled:opacity-40"
+            className="w-9 h-9 flex items-center justify-center rounded-xl transition-all active:scale-95 disabled:opacity-40"
             style={{ background: pushEnabled ? "rgba(52,211,153,0.15)" : "rgba(255,255,255,0.06)" }}>
-            {pushEnabled ? <Bell size={15} style={{ color: "#34d399" }} /> : <BellOff size={15} style={{ color: "rgba(255,255,255,0.5)" }} />}
-          </button>
-
-          {/* Installation / QR */}
-          <button onClick={() => navigate("/admin-live/installer")} data-testid="show-qr-btn"
-            className="p-2 rounded-xl transition-all hover:opacity-70"
-            style={{ background: "rgba(255,255,255,0.06)" }}>
-            <QrCode size={15} style={{ color: "rgba(255,255,255,0.5)" }} />
+            {pushEnabled
+              ? <Bell size={15} style={{ color: "#34d399" }} />
+              : <BellOff size={15} style={{ color: "rgba(255,255,255,0.5)" }} />}
           </button>
 
           {/* Rafraîchir */}
           <button onClick={() => { setLoading(true); fetchSummary(); }} data-testid="refresh-btn"
-            className="p-2 rounded-xl transition-all hover:opacity-70"
+            className="w-9 h-9 flex items-center justify-center rounded-xl transition-all active:scale-95"
             style={{ background: "rgba(255,255,255,0.06)" }}>
             <RefreshCw size={15} className={loading ? "animate-spin" : ""} style={{ color: "rgba(255,255,255,0.5)" }} />
           </button>
 
           {/* Déconnexion */}
           <button onClick={() => { logout(); navigate("/"); }} data-testid="logout-btn"
-            className="p-2 rounded-xl transition-all hover:opacity-70"
+            className="w-9 h-9 flex items-center justify-center rounded-xl transition-all active:scale-95"
             style={{ background: "rgba(255,255,255,0.06)" }}>
             <LogOut size={15} style={{ color: "rgba(255,255,255,0.5)" }} />
           </button>
