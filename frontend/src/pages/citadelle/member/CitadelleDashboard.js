@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Shield, LogOut, PlusCircle, LayoutList, ArrowRightLeft,
   MessageSquare, ShieldCheck, Briefcase, User, FileText, ChevronRight,
+  Eye, Edit2, Clock,
 } from "lucide-react";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { useCitadelleModeration } from "@/hooks/useCitadelleModeration";
@@ -75,6 +76,7 @@ export default function CitadelleDashboard() {
   const [unreadMessages, setUnreadMessages]         = useState(0);
   const [unreadTransactions, setUnreadTransactions] = useState(0);
   const [activeListings, setActiveListings]         = useState(0);
+  const [myListings, setMyListings]                 = useState([]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -88,7 +90,9 @@ export default function CitadelleDashboard() {
         ]);
         setUnreadMessages(resMsg.data.unread || 0);
         setUnreadTransactions(resTx.data.unread || 0);
-        setActiveListings((resListings.data.listings || []).filter((l) => l.status === "active").length);
+        const listings = resListings.data.listings || [];
+        setActiveListings(listings.filter((l) => l.status === "active").length);
+        setMyListings(listings.filter((l) => ["active", "pending"].includes(l.status)));
       } catch { /* silence */ }
     };
 
@@ -232,6 +236,102 @@ export default function CitadelleDashboard() {
                     href="/citadelle/espace-membre/mes-services" testId="nav-mes-services" />
                 </div>
               </div>
+            </div>
+
+            {/* ── Annonces en cours de publication ──────────────────── */}
+            <div className="rounded-2xl p-5 md:p-6" style={{ border: `1.5px solid ${C.border}`, background: "white" }}
+              data-testid="dashboard-active-listings">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-bold uppercase tracking-wider" style={{ color: C.blue }}>
+                  Mes annonces en cours de publication
+                </h2>
+                <Link to="/citadelle/espace-membre/mes-annonces"
+                  className="text-xs font-semibold flex items-center gap-1 transition-opacity hover:opacity-70"
+                  style={{ color: C.gold }}>
+                  Toutes mes annonces <ChevronRight size={13} />
+                </Link>
+              </div>
+
+              {myListings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 gap-3">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ background: "rgba(201,164,92,0.08)" }}>
+                    <LayoutList size={22} strokeWidth={1.5} style={{ color: C.gold }} />
+                  </div>
+                  <p className="text-sm text-center" style={{ color: C.textMuted }}>
+                    Aucune annonce active pour le moment
+                  </p>
+                  <Link to="/citadelle/espace-membre/mes-annonces/creer"
+                    className="text-xs font-bold px-4 py-2 rounded-lg transition-all hover:opacity-80"
+                    style={{ background: C.blue, color: "white" }}>
+                    Publier une annonce
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {myListings.map((listing) => {
+                    const isActive  = listing.status === "active";
+                    const isPending = listing.status === "pending";
+                    return (
+                      <div key={listing.id}
+                        className="flex items-center gap-4 p-3 rounded-xl"
+                        style={{ background: C.bg, border: `1px solid ${C.border}` }}
+                        data-testid={`dashboard-listing-${listing.id}`}>
+
+                        {/* Vignette */}
+                        <div className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden"
+                          style={{ background: "#E8EEF5" }}>
+                          {listing.images?.[0]
+                            ? <img src={listing.images[0]} alt="" className="w-full h-full object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center text-lg">🏷️</div>
+                          }
+                        </div>
+
+                        {/* Infos */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate" style={{ color: C.blue }}>
+                            {listing.title}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            {/* Badge statut */}
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                              style={{
+                                background: isActive ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)",
+                                color:      isActive ? "#16A34A" : "#B45309",
+                              }}>
+                              {isPending && <Clock size={11} />}
+                              {isActive ? "Publiée" : "En attente de validation"}
+                            </span>
+                            {listing.price && (
+                              <span className="text-xs font-bold" style={{ color: C.gold }}>
+                                {Number(listing.price).toLocaleString("fr-FR")} €
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {isActive && (
+                            <Link to={`/citadelle/annonces/${listing.slug}`}
+                              className="p-2 rounded-lg transition-all hover:scale-110"
+                              style={{ background: "rgba(15,39,71,0.06)", color: C.blue }}
+                              title="Voir l'annonce">
+                              <Eye size={14} />
+                            </Link>
+                          )}
+                          <Link to={`/citadelle/espace-membre/mes-annonces/${listing.id}/modifier`}
+                            className="p-2 rounded-lg transition-all hover:scale-110"
+                            style={{ background: "rgba(15,39,71,0.06)", color: C.blue }}
+                            title="Modifier">
+                            <Edit2 size={14} />
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
