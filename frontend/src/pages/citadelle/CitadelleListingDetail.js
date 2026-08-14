@@ -389,28 +389,29 @@ export default function CitadelleListingDetail() {
               const pageUrl = encodeURIComponent(`${SEO_DOMAIN}/citadelle/annonces/${listing.slug}`);
               const pageTitle = encodeURIComponent(listing.title);
               const shareLinks = [
-                { href: `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`, bg: "#0A66C2", icon: Linkedin, label: "LinkedIn" },
-                { href: `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`, bg: "#1877F2", icon: Facebook, label: "Facebook" },
-                { href: `https://twitter.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`, bg: "#000", icon: Twitter, label: "X" },
-                { href: `https://wa.me/?text=${pageTitle}%20${pageUrl}`, bg: "#25D366", icon: MessageCircle, label: "WhatsApp" },
-                { href: `mailto:?subject=${pageTitle}&body=${decodeURIComponent(pageUrl)}`, bg: "rgba(15,39,71,0.12)", icon: Mail, label: "Email", color: CITADELLE_COLORS.blue },
+                { href: `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`, icon: Linkedin, label: "LinkedIn" },
+                { href: `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`, icon: Facebook, label: "Facebook" },
+                { href: `https://twitter.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`, icon: Twitter, label: "X" },
+                { href: `https://wa.me/?text=${pageTitle}%20${pageUrl}`, icon: MessageCircle, label: "WhatsApp" },
+                { href: `mailto:?subject=${pageTitle}&body=${decodeURIComponent(pageUrl)}`, icon: Mail, label: "Email" },
               ];
+              const btnStyle = { background: "#F0F2F5", color: CITADELLE_COLORS.blue, border: "1px solid #C4D0DC" };
               return (
                 <div className="flex items-center gap-3 py-3">
                   <Share2 size={14} style={{ color: CITADELLE_COLORS.textMuted }} />
                   <span className="text-sm font-semibold mr-1" style={{ color: CITADELLE_COLORS.textMuted }}>Partager :</span>
                   <div className="flex items-center gap-2">
-                    {shareLinks.map(({ href, bg, icon: Icon, label, color }) => (
+                    {shareLinks.map(({ href, icon: Icon, label }) => (
                       <a key={label} href={href} target={href.startsWith("mailto") ? undefined : "_blank"} rel="noopener noreferrer"
-                        className="w-9 h-9 rounded-full flex items-center justify-center transition-opacity hover:opacity-75 flex-shrink-0"
-                        style={{ background: bg, color: color || "#fff" }} title={label}>
-                        <Icon size={15} />
+                        className="w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70 flex-shrink-0"
+                        style={btnStyle} title={label}>
+                        <Icon size={14} />
                       </a>
                     ))}
                     <button onClick={() => navigator.clipboard.writeText(`${SEO_DOMAIN}/citadelle/annonces/${listing.slug}`)}
-                      className="w-9 h-9 rounded-full flex items-center justify-center transition-opacity hover:opacity-75"
-                      style={{ background: "rgba(15,39,71,0.12)", color: CITADELLE_COLORS.blue }} title="Copier le lien">
-                      <Link2 size={15} />
+                      className="w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
+                      style={btnStyle} title="Copier le lien">
+                      <Link2 size={14} />
                     </button>
                   </div>
                 </div>
