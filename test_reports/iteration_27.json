@@ -1,0 +1,49 @@
+{
+  "summary": "Tests du flux complet de notifications email de la messagerie — La Citadelle Numérique. 28/28 tests pytest passent. FLUX 1-6 tous validés : envoi premier message (201 + last_notified vendeur), réponse vendeur (200 + last_notified acheteur), anti-spam 24h côté vendeur et acheteur (notation pointée MongoDB), helper _should_notify (8 cas limites), check_unanswered_conversations (async, double-participant, digest). Cleanup automatique des conversations de test (fixture autouse scope=module).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "asyncio.create_task dans send_message / reply_message",
+        "issue": "L'envoi SMTP (send_new_message_notification_email) est synchrone/bloquant à l'intérieur d'un asyncio.create_task. Acceptable pour faible volume, mais peut bloquer l'event loop en cas de latence SMTP élevée. Considérer l'usage de run_in_executor pour un SMTP non-bloquant.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_messaging_email_notifications.py",
+    "/app/test_reports/pytest/messaging_email_notif.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "FLUX 1 OK : POST /api/citadelle/messages/send retourne 201 avec conversation_id. last_notified[seller_id] mis à jour en DB après envoi email async (confirmé par attente 4s).",
+    "FLUX 2 OK : POST /api/citadelle/messages/{conv_id}/reply retourne 200. last_notified[buyer_id] mis à jour en DB après envoi email async.",
+    "FLUX 3 OK : Anti-spam 24h vendeur — _should_notify utilise conv chargé AVANT le update_one (lignes ~162-164 messages.py). Si last_notified[seller] récent dans conv_for_check, aucun asyncio.create_task créé → last_notified reste inchangé en DB. Logique correcte.",
+    "FLUX 4 OK : Anti-spam 24h acheteur — même logique dans reply_message (lignes ~248-269). conv chargé au début, _should_notify évalué, task non créée si cooldown actif.",
+    "FLUX 5 OK : _should_notify gère correctement tous les cas — None, user absent, dans cooldown, hors cooldown, timestamp naïf, timestamp invalide (failsafe True), champ manquant.",
+    "FLUX 6 OK : check_unanswered_conversations est bien async, itère sur buyer_id ET seller_id, vérifie threshold_24h, respecte last_notified anti-spam, appelle send_unread_messages_digest_email exporté depuis services.email_service.",
+    "SMTP synchrone dans tâche async : send_new_message_notification_email est synchrone — appelé depuis _notify_seller/_notify_reply qui sont des coroutines lancées via asyncio.create_task. L'appel SMTP bloquant est dans la task, pas dans le handler principal — acceptable pour faible charge."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_messaging_email_notifications.py (nouveau)"
+  ],
+  "success_rate": {
+    "backend": "100% (28/28)",
+    "frontend": "non testé (backend uniquement)"
+  },
+  "test_credentials": {
+    "acheteur": "marie.testui@citadelle-test.fr / TestUI2026! (ID: 26c042ac-fbdc-471e-b791-edd15325de7e)",
+    "vendeur_test": "arnaudaube@gmail.com / ArnaudTest2026! (ID: 7bd37587-6ef6-49ff-aa09-cdc4083a8637)",
+    "annonce_active_utilisée": "b2da91e6-aafd-406e-a186-fbe7ac517dbe (Test boost annonce a la une)"
+  },
+  "seed_data_creation": "Conversations de test créées entre marie.testui (acheteur) et arnaudaube (vendeur) sur annonce b2da91e6. Toutes supprimées automatiquement en fin de module par fixture autouse cleanup_test_conversations.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Suite réutilisable : /app/backend/tests/test_messaging_email_notifications.py — tests messagerie complète + notifications email. Comptes opérationnels : marie.testui (acheteur) / arnaudaube (vendeur), annonce active b2da91e6. Note : jean.test.citadelle@test.fr (vendeur listing ef23ccce) n'a pas de mot de passe connu — impossible de s'authentifier. La fonction check_unanswered_conversations est schedulée toutes les heures (CronTrigger minute=0), visible dans init_newsletter_scheduler().",
+  "rca_of_issues": "Aucun bug trouvé — toute la logique de notification/anti-spam est correctement implémentée. Le seul point d'attention est le SMTP synchrone dans les tasks async, mais ce pattern est déjà utilisé dans tout le projet et n'est pas un bug."
+}
