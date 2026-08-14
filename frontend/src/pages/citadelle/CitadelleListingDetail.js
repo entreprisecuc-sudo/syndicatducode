@@ -343,7 +343,7 @@ export default function CitadelleListingDetail() {
           );
         })()}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 rounded-3xl p-6" style={{ background: "#E8EEF5" }}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Colonne gauche — Images + Description */}
           <div className="lg:col-span-2 space-y-10 min-w-0">
             {/* Image principale */}
