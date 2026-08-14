@@ -5,6 +5,7 @@ Gestion de l'envoi automatique du digest d'annonces via APScheduler
 
 import logging
 import asyncio
+import re
 import uuid
 from datetime import datetime, timezone, timedelta
 
@@ -22,6 +23,7 @@ NEWSLETTER_JOB_ID = "citadelle_newsletter_digest"
 BLOG_SCHEDULER_JOB_ID = "citadelle_blog_scheduled_publish"
 AUCTION_CHECK_JOB_ID = "citadelle_auction_check"
 AUCTION_DIGEST_JOB_ID = "citadelle_auction_daily_digest"
+LISTING_RELANCE_JOB_ID = "citadelle_listing_relance_check"
 
 LISTING_TYPE_LABELS = {
     "website": "Site internet",
@@ -590,6 +592,151 @@ async def send_auction_daily_digests():
         logger.error(f"[Enchère Scheduler] Erreur send_auction_daily_digests: {e}")
 
 
+def _compute_listing_quality(listing: dict) -> dict:
+    """
+    Calcule le score de qualité d'une annonce — miroir Python de listingQuality.js.
+    Retourne {'pct': int, 'label': str, 'missing': list[str]}
+    """
+    def has_number(s):
+        return bool(re.search(r'\d', s or ""))
+
+    def length(s):
+        return len((s or "").strip())
+
+    def tech_filled(t):
+        return len([x for x in t if x]) > 0 if isinstance(t, list) else length(str(t)) > 0
+
+    nb_images = len([img for img in (listing.get("images") or []) if img])
+
+    criteria = [
+        {"weight": 10, "done": length(listing.get("title")) >= 15,
+         "label": "Un titre clair d'au moins 15 caractères"},
+        {"weight": 8,  "done": has_number(listing.get("title")),
+         "label": "Un chiffre clé dans le titre (revenu, trafic…)"},
+        {"weight": 10, "done": length(listing.get("short_description")) >= 80,
+         "label": "Une accroche d'au moins 80 caractères"},
+        {"weight": 12, "done": bool(listing.get("monthly_revenue")) and float(listing.get("monthly_revenue") or 0) > 0,
+         "label": "Les revenus mensuels"},
+        {"weight": 5,  "done": listing.get("monthly_charges") is not None and listing.get("monthly_charges") != "",
+         "label": "Les charges mensuelles"},
+        {"weight": 8,  "done": bool(listing.get("monthly_traffic")) and float(listing.get("monthly_traffic") or 0) > 0,
+         "label": "Le trafic mensuel"},
+        {"weight": 4,  "done": length(listing.get("traffic_sources")) > 0,
+         "label": "Les sources de trafic"},
+        {"weight": 6,  "done": bool(listing.get("age_months")),
+         "label": "L'ancienneté de l'actif"},
+        {"weight": 6,  "done": length(listing.get("niche")) > 0,
+         "label": "La niche / le secteur"},
+        {"weight": 14, "done": length(listing.get("description")) >= 300,
+         "label": "Une description d'au moins 300 caractères"},
+        {"weight": 6,  "done": tech_filled(listing.get("technologies") or []),
+         "label": "Les technologies utilisées"},
+        {"weight": 5,  "done": length(listing.get("ideal_buyer")) >= 30,
+         "label": "Le profil du repreneur idéal"},
+        {"weight": 4,  "done": length(listing.get("weaknesses")) >= 20,
+         "label": "Les points faibles (honnêteté valorisée)"},
+    ]
+
+    if not listing.get("is_adult"):
+        criteria.append({"weight": 14, "done": nb_images > 0,
+                          "label": "Au moins une image (visuel de vente)"})
+        criteria.append({"weight": 6,  "done": length(listing.get("url_preview")) > 0,
+                          "label": "L'URL ou une démo du site"})
+
+    total   = sum(c["weight"] for c in criteria)
+    done    = sum(c["weight"] for c in criteria if c["done"])
+    pct     = round((done / total) * 100) if total > 0 else 0
+    missing = [c["label"] for c in criteria if not c["done"]]
+
+    if pct >= 90:   label = "Score excellent"
+    elif pct >= 70: label = "Bon score"
+    elif pct >= 40: label = "Score à compléter"
+    else:           label = "Score de départ"
+
+    return {"pct": pct, "label": label, "missing": missing}
+
+
+async def check_listing_relances():
+    """
+    Job quotidien (10h) — Envoie une relance aux vendeurs dont l'annonce active
+    est en ligne depuis plus de 31 jours sans relance (ou relance > 60 jours).
+    L'email inclut le score de qualité et des conseils personnalisés.
+    """
+    if _db is None:
+        logger.error("[Relance Annonces] DB non initialisée, job annulé.")
+        return
+
+    from services.email_service.citadelle.listings import send_citadelle_listing_relance_email
+
+    now        = datetime.now(timezone.utc)
+    seuil_31j  = (now - timedelta(days=31)).isoformat()
+    seuil_60j  = (now - timedelta(days=60)).isoformat()
+
+    # Annonces actives depuis > 31 jours, sans relance envoyée ou relance > 60 jours
+    cursor = _db.citadelle_listings.find(
+        {
+            "status": "active",
+            "$and": [
+                {
+                    "$or": [
+                        {"approved_at": {"$lt": seuil_31j}},
+                        {"approved_at": {"$exists": False}, "created_at": {"$lt": seuil_31j}},
+                    ]
+                },
+                {
+                    "$or": [
+                        {"relance_sent_at": {"$exists": False}},
+                        {"relance_sent_at": None},
+                        {"relance_sent_at": {"$lt": seuil_60j}},
+                    ]
+                },
+            ],
+        },
+        {"_id": 0},
+    )
+    listings = await cursor.to_list(200)
+
+    if not listings:
+        logger.info("[Relance Annonces] Aucune annonce candidate à la relance.")
+        return
+
+    sent = 0
+    for listing in listings:
+        seller_email = listing.get("seller_email")
+        if not seller_email:
+            continue
+
+        # Calcul ancienneté
+        date_ref_str = listing.get("approved_at") or listing.get("created_at")
+        try:
+            date_ref    = datetime.fromisoformat(date_ref_str.replace("Z", "+00:00"))
+            days_online = (now - date_ref).days
+        except Exception:
+            days_online = 31
+
+        quality = _compute_listing_quality(listing)
+
+        ok = send_citadelle_listing_relance_email(
+            to_email         = seller_email,
+            seller_name      = seller_email,
+            listing_title    = listing.get("title", ""),
+            listing_slug     = listing.get("slug", ""),
+            days_online      = days_online,
+            quality_pct      = quality["pct"],
+            quality_label    = quality["label"],
+            missing_criteria = quality["missing"],
+        )
+
+        if ok:
+            await _db.citadelle_listings.update_one(
+                {"id": listing["id"]},
+                {"$set": {"relance_sent_at": now.isoformat()}},
+            )
+            sent += 1
+
+    logger.info(f"[Relance Annonces] {sent} email(s) de relance envoyé(s).")
+
+
 async def init_newsletter_scheduler():
     """
     Initialise le scheduler au démarrage de l'application.
@@ -647,9 +794,18 @@ async def init_newsletter_scheduler():
         replace_existing=True,
     )
 
+    # ── Job 6 : Relance annonces actives > 31 jours (10h chaque matin) ──────────
+    scheduler.add_job(
+        check_listing_relances,
+        CronTrigger(hour=10, minute=0),
+        id=LISTING_RELANCE_JOB_ID,
+        replace_existing=True,
+    )
+
     scheduler.start()
     logger.info(
         f"[Scheduler] Démarré — Newsletter: jour={config.get('day_of_week', 4)}, heure={config.get('hour', 16)}h | "
         f"Relances conversations: toutes les heures | Blog planifié: toutes les heures | "
-        f"Enchères: vérification toutes les 30min | Digest enchères: 9h."
+        f"Enchères: vérification toutes les 5min | Digest enchères: 9h | "
+        f"Relances annonces: 10h quotidien."
     )

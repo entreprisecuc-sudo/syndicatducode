@@ -313,6 +313,19 @@ async def admin_send_now(current_user: dict = Depends(require_admin)):
     return {"message": "Envoi du digest déclenché. Les emails partiront dans quelques instants."}
 
 
+@router.post("/admin/listings/trigger-relance", summary="Admin — Déclenche les relances 31j manuellement")
+async def admin_trigger_listing_relance(current_user: dict = Depends(require_admin)):
+    """
+    Admin : déclenche immédiatement le job de relance des annonces actives > 31 jours.
+    Utile pour les tests sans attendre 10h.
+    Les emails partent sur TEST_EMAIL_OVERRIDE si défini dans .env.
+    """
+    import asyncio
+    from services.newsletter_scheduler import check_listing_relances
+    asyncio.create_task(check_listing_relances())
+    return {"message": "Job de relance déclenché. Les emails partiront dans quelques instants."}
+
+
 @router.get(
     "/admin/newsletter/preview",
     summary="Admin — Prévisualisation HTML de l'email",

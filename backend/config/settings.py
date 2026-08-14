@@ -44,6 +44,8 @@ CITADELLE_ADMIN_EMAIL = os.environ.get('CITADELLE_ADMIN_EMAIL', CITADELLE_FROM_E
 # Credentials SMTP dédiés La Citadelle Numérique (serveur Hostinger partagé, compte séparé)
 CITADELLE_SMTP_USER = os.environ.get('CITADELLE_SMTP_USER', CITADELLE_FROM_EMAIL)
 CITADELLE_SMTP_PASSWORD = os.environ.get('CITADELLE_SMTP_PASSWORD', SMTP_PASSWORD)
+# Adresse de substitution pour les tests — si défini, tous les emails automatiques partent ici
+TEST_EMAIL_OVERRIDE = os.environ.get('TEST_EMAIL_OVERRIDE')
 
 # URL publique du backend (utilisée dans les emails pour les images d'annonces)
 # En production : identique à CITADELLE_URL (K8s route /api/* vers le backend)
