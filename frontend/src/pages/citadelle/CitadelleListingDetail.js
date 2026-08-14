@@ -396,7 +396,7 @@ export default function CitadelleListingDetail() {
                 { href: `mailto:?subject=${pageTitle}&body=${decodeURIComponent(pageUrl)}`, bg: "rgba(15,39,71,0.12)", icon: Mail, label: "Email", color: CITADELLE_COLORS.blue },
               ];
               return (
-                <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
+                <div className="flex items-center gap-3 py-3">
                   <Share2 size={14} style={{ color: CITADELLE_COLORS.textMuted }} />
                   <span className="text-sm font-semibold mr-1" style={{ color: CITADELLE_COLORS.textMuted }}>Partager :</span>
                   <div className="flex items-center gap-2">
