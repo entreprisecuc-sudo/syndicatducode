@@ -11,12 +11,13 @@ import { getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@
 import { computeListingQuality } from "@/config/listingQuality";
 
 const STATUS_LABELS = {
-  pending:  { label: "En attente", color: "#F59E0B", bg: "rgba(245,158,11,0.1)" },
-  active:   { label: "Publiée",    color: "#22C55E", bg: "rgba(34,197,94,0.1)" },
-  rejected: { label: "Rejetée",    color: "#DC2626", bg: "rgba(220,38,38,0.1)" },
-  sold:     { label: "Vendue",     color: "#C9A45C", bg: "rgba(201,164,92,0.1)" },
-  expired:  { label: "Expirée",    color: "#6B7280", bg: "rgba(107,114,128,0.1)" },
-  draft:    { label: "Brouillon",  color: "#6B7280", bg: "rgba(107,114,128,0.1)" },
+  pending:   { label: "En attente", color: "#F59E0B", bg: "rgba(245,158,11,0.1)" },
+  active:    { label: "Publiée",    color: "#22C55E", bg: "rgba(34,197,94,0.1)" },
+  rejected:  { label: "Rejetée",   color: "#DC2626", bg: "rgba(220,38,38,0.1)" },
+  sold:      { label: "Vendue",     color: "#C9A45C", bg: "rgba(201,164,92,0.1)" },
+  expired:   { label: "Expirée",   color: "#6B7280", bg: "rgba(107,114,128,0.1)" },
+  draft:     { label: "Brouillon", color: "#6B7280", bg: "rgba(107,114,128,0.1)" },
+  withdrawn: { label: "Retirée",   color: "#64748B", bg: "rgba(100,116,139,0.12)" },
 };
 
 const TYPE_LABELS = {
@@ -138,10 +139,12 @@ export default function AdminCitadelleListings() {
   };
 
   const TABS = [
-    { key: "pending", label: "En attente", count: counts.pending },
-    { key: "active",  label: "Publiées",   count: counts.active },
-    { key: "all",     label: "Toutes",     count: null },
-    { key: "rejected",label: "Rejetées",   count: counts.rejected },
+    { key: "pending",   label: "En attente", count: counts.pending },
+    { key: "active",    label: "Publiées",   count: counts.active },
+    { key: "withdrawn", label: "Retirées",   count: counts.withdrawn },
+    { key: "sold",      label: "Vendues",    count: counts.sold },
+    { key: "all",       label: "Toutes",     count: null },
+    { key: "rejected",  label: "Rejetées",   count: counts.rejected },
   ];
 
   return (

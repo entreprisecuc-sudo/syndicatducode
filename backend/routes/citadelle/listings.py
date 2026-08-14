@@ -145,7 +145,7 @@ LISTING_TYPES = [
     "forum", "blog", "online_media", "ai_automation",
     "template_plugin", "database_api",
 ]
-LISTING_STATUSES = ["draft", "pending", "active", "sold", "expired", "rejected"]
+LISTING_STATUSES = ["draft", "pending", "active", "sold", "expired", "rejected", "withdrawn"]
 
 LISTING_EXPIRY_DAYS = 90  # Durée de validité d'une annonce active
 
@@ -609,6 +609,51 @@ async def delete_listing(
 
     await db.citadelle_listings.delete_one({"id": listing_id})
     return {"message": "Annonce supprimée avec succès"}
+
+
+WITHDRAWAL_REASONS = {
+    "sold":               "Le bien est vendu",
+    "not_exist":          "Le bien n'existe plus",
+    "no_longer_selling":  "Je ne souhaite plus vendre",
+}
+
+@router.post("/listings/{listing_id}/withdraw", summary="Retirer une annonce de la vente")
+async def withdraw_listing(
+    listing_id: str,
+    body: dict,
+    current_user: dict = Depends(require_citadelle_user)
+):
+    """
+    Permet au vendeur de retirer son annonce active de la marketplace.
+    - reason=sold          → statut "sold"
+    - reason=not_exist     → statut "withdrawn"
+    - reason=no_longer_selling → statut "withdrawn"
+    Enregistre withdrawn_at et withdrawal_reason.
+    """
+    reason = body.get("reason")
+    if reason not in WITHDRAWAL_REASONS:
+        raise HTTPException(status_code=400, detail="Raison de retrait invalide")
+
+    listing = await db.citadelle_listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Annonce introuvable")
+    if listing["seller_id"] != current_user.get("sub") and current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Accès non autorisé")
+    if listing["status"] not in ("active", "pending"):
+        raise HTTPException(status_code=400, detail="Seules les annonces actives peuvent être retirées")
+
+    new_status = "sold" if reason == "sold" else "withdrawn"
+    now = datetime.now(timezone.utc).isoformat()
+
+    await db.citadelle_listings.update_one(
+        {"id": listing_id},
+        {"$set": {
+            "status":           new_status,
+            "withdrawn_at":     now,
+            "withdrawal_reason": reason,
+        }}
+    )
+    return {"message": "Annonce retirée avec succès", "new_status": new_status}
 
 
 # ── Routes Admin ──────────────────────────────────────────────────────────────

@@ -30,7 +30,7 @@ export default function AdminCitadelle() {
   };
 
   const modules = [
-    { icon: Globe, label: "Annonces", desc: "Gérer et valider les annonces de vente", status: "Actif", count: stats?.listings?.total ?? null, href: "/syndicat-admin/citadelle/annonces" },
+    { icon: Globe, label: "Annonces", desc: `${stats?.listings?.pending_validation ?? 0} en attente · ${stats?.listings?.withdrawn ?? 0} retirées`, status: "Actif", count: stats?.listings?.total ?? null, href: "/syndicat-admin/citadelle/annonces" },
     { icon: ShoppingCart, label: "Transactions", desc: "Suivre les transactions en cours", status: "Actif", count: stats?.transactions?.total ?? null, href: "/syndicat-admin/citadelle/transactions" },
     { icon: Flag, label: "Signalements", desc: "Conversations signalées par les utilisateurs", status: "Actif", count: null, href: "/syndicat-admin/citadelle/signalements" },
     { icon: Users, label: "Utilisateurs", desc: "Membres inscrits sur La Citadelle", status: "Actif", count: stats?.users?.total ?? null, href: null },

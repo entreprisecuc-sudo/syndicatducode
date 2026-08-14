@@ -161,9 +161,10 @@ async def get_citadelle_stats(current_user: dict = Depends(get_current_user)):
     """Statistiques globales de La Citadelle Numérique pour le dashboard admin."""
 
     # Annonces
-    listings_total    = await db.citadelle_listings.count_documents({})
-    listings_active   = await db.citadelle_listings.count_documents({"status": "active"})
-    listings_pending  = await db.citadelle_listings.count_documents({"status": "pending"})
+    listings_total     = await db.citadelle_listings.count_documents({})
+    listings_active    = await db.citadelle_listings.count_documents({"status": "active"})
+    listings_pending   = await db.citadelle_listings.count_documents({"status": "pending"})
+    listings_withdrawn = await db.citadelle_listings.count_documents({"status": "withdrawn"})
 
     # Transactions
     tx_active_statuses = ["payment_done", "credentials_submitted", "admin_verified", "disputed"]
@@ -201,6 +202,7 @@ async def get_citadelle_stats(current_user: dict = Depends(get_current_user)):
             "total":              listings_total,
             "active":             listings_active,
             "pending_validation": listings_pending,
+            "withdrawn":          listings_withdrawn,
         },
         "transactions": {
             "total":          transactions_total,
