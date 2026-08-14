@@ -483,6 +483,91 @@ def send_citadelle_listing_relance_email(
 
             {conseils_bloc}
 
+            <!-- Baisser le prix -->
+            <table width="100%" cellpadding="0" cellspacing="0"
+              style="background:#fff8ed;border:1px solid #f0d080;border-radius:12px;margin-bottom:24px;">
+              <tr><td style="padding:18px 24px;">
+                <p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#b45309;">
+                  💡 Conseil — Prix de vente
+                </p>
+                <p style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#374151;">
+                  Votre annonce est en ligne depuis <strong>{days_online} jours</strong> sans transaction.
+                  Une réduction de prix, même légère, peut <strong>relancer significativement l'intérêt des acheteurs</strong>.
+                </p>
+                <a href="{edit_url}"
+                  style="display:inline-block;background:#b45309;color:#ffffff;font-size:13px;font-weight:700;text-decoration:none;padding:10px 22px;border-radius:8px;">
+                  Modifier mon prix →
+                </a>
+              </td></tr>
+            </table>
+
+            <!-- Estimations -->
+            <p style="margin:0 0 14px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#0f2747;">
+              Obtenez une valorisation professionnelle
+            </p>
+            <p style="margin:0 0 16px;font-size:13px;line-height:1.6;color:#6b7280;">
+              Vous n'êtes pas sûr de votre prix ? Nos experts évaluent votre actif et vous donnent une valeur juste pour vendre au bon prix.
+            </p>
+
+            <!-- 2 cartes estimation côte à côte -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+              <tr valign="top">
+                <!-- Estimation Standard -->
+                <td width="48%" style="padding-right:8px;">
+                  <table width="100%" cellpadding="0" cellspacing="0"
+                    style="border:1.5px solid #e2e8f0;border-radius:12px;background:#f8fafc;">
+                    <tr><td style="padding:18px 16px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;">
+                        <tr>
+                          <td>
+                            <span style="display:inline-block;background:#e2e8f0;color:#475569;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">01</span>
+                          </td>
+                          <td align="right">
+                            <span style="font-size:13px;font-weight:800;color:#0f2747;">49 €</span>
+                          </td>
+                        </tr>
+                      </table>
+                      <p style="margin:0 0 6px;font-size:14px;font-weight:800;color:#0f2747;">Estimation Standard</p>
+                      <p style="margin:0 0 14px;font-size:12px;line-height:1.5;color:#6b7280;">
+                        Obtenez une première estimation de la valeur de votre site sous 72h.
+                      </p>
+                      <a href="{CITADELLE_URL}/citadelle/estimation"
+                        style="display:block;text-align:center;background:#c9a45c;color:#0f2747;font-size:12px;font-weight:800;text-decoration:none;padding:10px 0;border-radius:8px;">
+                        Acheter →
+                      </a>
+                    </td></tr>
+                  </table>
+                </td>
+
+                <!-- Estimation Expert -->
+                <td width="48%" style="padding-left:8px;">
+                  <table width="100%" cellpadding="0" cellspacing="0"
+                    style="border:1.5px solid #c9a45c;border-radius:12px;background:#f8fafc;">
+                    <tr><td style="padding:18px 16px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;">
+                        <tr>
+                          <td>
+                            <span style="display:inline-block;background:#e2e8f0;color:#475569;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">02</span>
+                          </td>
+                          <td align="right">
+                            <span style="font-size:13px;font-weight:800;color:#0f2747;">149 €</span>
+                          </td>
+                        </tr>
+                      </table>
+                      <p style="margin:0 0 6px;font-size:14px;font-weight:800;color:#0f2747;">Estimation Expert</p>
+                      <p style="margin:0 0 14px;font-size:12px;line-height:1.5;color:#6b7280;">
+                        Valorisation complète et détaillée avec rapport PDF professionnel.
+                      </p>
+                      <a href="{CITADELLE_URL}/citadelle/estimation"
+                        style="display:block;text-align:center;background:#c9a45c;color:#0f2747;font-size:12px;font-weight:800;text-decoration:none;padding:10px 0;border-radius:8px;">
+                        Acheter →
+                      </a>
+                    </td></tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
             <!-- CTA -->
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
               <tr>
