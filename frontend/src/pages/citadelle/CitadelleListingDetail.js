@@ -6,7 +6,8 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, BarChart2,
-  Calendar, ShieldCheck, Star, ArrowLeft, Eye, Share2, Lock, FileText, Download, Send, AlertCircle, Hammer, Clock, Zap, X, ZoomIn
+  Calendar, ShieldCheck, Star, ArrowLeft, Eye, Share2, Lock, FileText, Download, Send, AlertCircle, Hammer, Clock, Zap, X, ZoomIn,
+  DollarSign, Linkedin, Twitter, Facebook, Link2, CheckCircle, AlertTriangle, MapPin, UserCheck
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
@@ -15,7 +16,6 @@ import { useCitadelleModeration } from "@/hooks/useCitadelleModeration";
 import { CITADELLE_COLORS, getListingImageUrl, isImageFile, isDocumentFile, getFileLabel } from "@/config/citadelleConstants";
 import CitadelleAuthModal from "@/components/citadelle/CitadelleAuthModal";
 import { ReportBidButton } from "@/components/citadelle/ReportBidButton";
-import ShareBar from "@/components/citadelle/ShareBar";
 import BoostModal from "@/components/citadelle/BoostModal";
 import SellerServicesUpsell, { BUYER_ESTIMATION_SERVICES } from "@/components/citadelle/SellerServicesUpsell";
 
@@ -314,9 +314,38 @@ export default function CitadelleListingDetail() {
           </button>
         </div>
 
+        {/* ── Barre métriques clés (full-width) ───────────────────────────────── */}
+        {(() => {
+          const ca12 = listing.monthly_revenue ? listing.monthly_revenue * 12 : null;
+          const rentab = (listing.monthly_revenue != null && listing.monthly_charges != null)
+            ? listing.monthly_revenue - listing.monthly_charges : null;
+          const fmt = (n) => n?.toLocaleString("fr-FR") ?? null;
+          const NC = <span style={{ color: "rgba(255,255,255,0.3)" }}>NC</span>;
+          const metrics = [
+            { icon: DollarSign, label: "Prix de vente", value: `${parseFloat(listing.price).toLocaleString("fr-FR")} €`, color: CITADELLE_COLORS.gold },
+            { icon: BarChart2,  label: "CA 12 mois",    value: ca12    ? `${fmt(ca12)} €`    : "NC", color: "#34d399" },
+            { icon: TrendingUp, label: "Rentabilité/mois", value: rentab  ? `${fmt(rentab)} €` : "NC", color: "#34d399" },
+            { icon: Eye,        label: "Visiteurs/mois", value: listing.monthly_traffic ? fmt(listing.monthly_traffic) : "NC", color: "#60a5fa" },
+          ];
+          return (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6" data-testid="listing-metrics-bar">
+              {metrics.map(({ icon: Icon, label, value, color }) => (
+                <div key={label} className="rounded-2xl p-4 flex flex-col gap-1"
+                  style={{ background: CITADELLE_COLORS.night, border: `1px solid rgba(201,164,92,0.25)` }}>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Icon size={13} style={{ color }} />
+                    <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.55)" }}>{label}</span>
+                  </div>
+                  <p className="text-base font-black" style={{ color: "#fff" }}>{value}</p>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Colonne gauche — Images + Description */}
-          <div className="lg:col-span-2 space-y-6 min-w-0">
+          <div className="lg:col-span-2 space-y-5 min-w-0">
             {/* Image principale */}
             <div className="rounded-2xl overflow-hidden" style={{ height: "320px", background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
               {listing.is_adult ? (
@@ -355,14 +384,6 @@ export default function CitadelleListingDetail() {
               </div>
             )}
 
-            {/* Partage de l'annonce */}
-            <div className="py-1">
-              <ShareBar
-                url={`${process.env.REACT_APP_CITADELLE_URL}/api/citadelle/listings/${listing.slug}/share`}
-                title={listing.title}
-              />
-            </div>
-
             {/* Documents joints */}
             {documents.length > 0 && (
               <div className="p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
@@ -393,8 +414,210 @@ export default function CitadelleListingDetail() {
               <p className="text-sm leading-relaxed whitespace-pre-line break-words" style={{ color: CITADELLE_COLORS.textMuted, overflowWrap: "anywhere" }}>{listing.description}</p>
             </div>
 
-            {/* Technologies */}
-            {listing.technologies?.length > 0 && (
+            {/* ── Chiffres financiers ──────────────────────────────────────────── */}
+            {(listing.monthly_revenue || listing.monthly_charges != null || listing.monthly_traffic) && (
+              <div className="p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                <h2 className="font-bold mb-4 flex items-center gap-2" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                  <BarChart2 size={16} style={{ color: "#C9A45C" }} /> Chiffres financiers
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {listing.monthly_revenue > 0 && (
+                    <div className="p-3 rounded-xl" style={{ background: "rgba(15,39,71,0.04)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Revenus/mois</p>
+                      <p className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{(listing.monthly_revenue).toLocaleString("fr-FR")} €</p>
+                    </div>
+                  )}
+                  {listing.monthly_charges != null && (
+                    <div className="p-3 rounded-xl" style={{ background: "rgba(15,39,71,0.04)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Charges/mois</p>
+                      <p className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{(listing.monthly_charges).toLocaleString("fr-FR")} €</p>
+                    </div>
+                  )}
+                  {listing.monthly_revenue > 0 && listing.monthly_charges != null && (
+                    <div className="p-3 rounded-xl" style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#16a34a" }}>Bénéfice net/mois</p>
+                      <p className="font-bold" style={{ color: "#16a34a" }}>{(listing.monthly_revenue - listing.monthly_charges).toLocaleString("fr-FR")} €</p>
+                    </div>
+                  )}
+                  {listing.monthly_traffic > 0 && (
+                    <div className="p-3 rounded-xl" style={{ background: "rgba(15,39,71,0.04)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Visiteurs/mois</p>
+                      <p className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{listing.monthly_traffic.toLocaleString("fr-FR")}</p>
+                    </div>
+                  )}
+                  {listing.monthly_revenue > 0 && (
+                    <div className="p-3 rounded-xl" style={{ background: "rgba(15,39,71,0.04)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>CA 12 mois</p>
+                      <p className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{(listing.monthly_revenue * 12).toLocaleString("fr-FR")} €</p>
+                    </div>
+                  )}
+                  {listing.age_months > 0 && (
+                    <div className="p-3 rounded-xl" style={{ background: "rgba(15,39,71,0.04)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Ancienneté</p>
+                      <p className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>
+                        {listing.age_months >= 12 ? `${Math.floor(listing.age_months / 12)} an${Math.floor(listing.age_months / 12) > 1 ? "s" : ""}` : `${listing.age_months} mois`}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Trafic & référencement ───────────────────────────────────────── */}
+            {(listing.traffic_sources || listing.main_keywords) && (
+              <div className="p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                <h2 className="font-bold mb-4 flex items-center gap-2" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                  <TrendingUp size={16} style={{ color: "#C9A45C" }} /> Trafic &amp; référencement
+                </h2>
+                <div className="space-y-3">
+                  {listing.traffic_sources && (
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>Sources de trafic</span>
+                      <span className="text-sm font-semibold text-right" style={{ color: CITADELLE_COLORS.blue }}>{listing.traffic_sources}</span>
+                    </div>
+                  )}
+                  {listing.main_keywords && (
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>Mots-clés principaux</span>
+                      <span className="text-sm font-semibold text-right" style={{ color: CITADELLE_COLORS.blue }}>{listing.main_keywords}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Informations techniques ──────────────────────────────────────── */}
+            {(listing.technologies?.length > 0 || listing.region || listing.registered_clients != null || listing.niche) && (
+              <div className="p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                <h2 className="font-bold mb-4 flex items-center gap-2" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                  <Globe size={16} style={{ color: "#C9A45C" }} /> Informations techniques
+                </h2>
+                <div className="space-y-3">
+                  {listing.niche && (
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>Secteur / Niche</span>
+                      <span className="text-sm font-semibold text-right" style={{ color: CITADELLE_COLORS.blue }}>{listing.niche}</span>
+                    </div>
+                  )}
+                  {listing.region && (
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><MapPin size={12} /> Région</span>
+                      <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{listing.region}</span>
+                    </div>
+                  )}
+                  {listing.registered_clients != null && (
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><Users size={12} /> Clients enregistrés</span>
+                      <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{listing.registered_clients.toLocaleString("fr-FR")}</span>
+                    </div>
+                  )}
+                  {listing.url_preview && listing.url_public && (
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><Globe size={12} /> URL du site</span>
+                      <a href={listing.url_preview} target="_blank" rel="noopener noreferrer"
+                        className="text-sm font-semibold truncate max-w-[200px] hover:underline" style={{ color: "#C9A45C" }}>
+                        {listing.url_preview.replace(/^https?:\/\//, "")}
+                      </a>
+                    </div>
+                  )}
+                  {listing.technologies?.length > 0 && (
+                    <div>
+                      <p className="text-sm mb-2" style={{ color: CITADELLE_COLORS.textMuted }}>Technologies</p>
+                      <div className="flex flex-wrap gap-2">
+                        {listing.technologies.map(t => (
+                          <span key={t} className="px-3 py-1 rounded-lg text-xs font-semibold"
+                            style={{ background: "rgba(15,39,71,0.06)", color: CITADELLE_COLORS.blue }}>{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Détails de la cession ────────────────────────────────────────── */}
+            {(listing.ideal_buyer || listing.weekly_hours != null) && (
+              <div className="p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                <h2 className="font-bold mb-4 flex items-center gap-2" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
+                  <UserCheck size={16} style={{ color: "#C9A45C" }} /> Détails de la cession
+                </h2>
+                <div className="space-y-3">
+                  {listing.ideal_buyer && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Repreneur idéal</p>
+                      <p className="text-sm leading-relaxed" style={{ color: CITADELLE_COLORS.blue }}>{listing.ideal_buyer}</p>
+                    </div>
+                  )}
+                  {listing.weekly_hours != null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><Clock size={12} /> Temps consacré / semaine</span>
+                      <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{listing.weekly_hours}h</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Points forts / Points faibles ───────────────────────────────── */}
+            {(listing.strengths || listing.weaknesses) && (
+              <div className="p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                <h2 className="font-bold mb-4" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Points forts &amp; faibles</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {listing.strengths && (
+                    <div className="p-4 rounded-xl" style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                      <p className="text-xs font-bold uppercase tracking-wide mb-2 flex items-center gap-1" style={{ color: "#16a34a" }}>
+                        <CheckCircle size={12} /> Points forts
+                      </p>
+                      <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: "#1a4731" }}>{listing.strengths}</p>
+                    </div>
+                  )}
+                  {listing.weaknesses && (
+                    <div className="p-4 rounded-xl" style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                      <p className="text-xs font-bold uppercase tracking-wide mb-2 flex items-center gap-1" style={{ color: "#dc2626" }}>
+                        <AlertTriangle size={12} /> Points faibles
+                      </p>
+                      <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: "#7f1d1d" }}>{listing.weaknesses}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Partage social ───────────────────────────────────────────────── */}
+            {(() => {
+              const pageUrl = encodeURIComponent(`${SEO_DOMAIN}/citadelle/annonces/${listing.slug}`);
+              const pageTitle = encodeURIComponent(listing.title);
+              return (
+                <div className="p-5 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
+                  <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>Partager cette annonce</p>
+                  <div className="flex gap-2 flex-wrap">
+                    <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-opacity hover:opacity-80"
+                      style={{ background: "#0A66C2", color: "#fff" }}>
+                      <Linkedin size={13} /> LinkedIn
+                    </a>
+                    <a href={`https://twitter.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-opacity hover:opacity-80"
+                      style={{ background: "#000", color: "#fff" }}>
+                      <Twitter size={13} /> X
+                    </a>
+                    <a href={`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-opacity hover:opacity-80"
+                      style={{ background: "#1877F2", color: "#fff" }}>
+                      <Facebook size={13} /> Facebook
+                    </a>
+                    <button onClick={() => { navigator.clipboard.writeText(decodeURIComponent(pageUrl)); }}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-opacity hover:opacity-80"
+                      style={{ background: "rgba(15,39,71,0.07)", color: CITADELLE_COLORS.blue }}>
+                      <Link2 size={13} /> Copier le lien
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Technologies (section désormais intégrée dans Infos techniques — kept for compatibility) */}
+            {false && listing.technologies?.length > 0 && (
               <div className="p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
                 <h2 className="font-bold mb-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Technologies</h2>
                 <div className="flex flex-wrap gap-2">
@@ -408,7 +631,7 @@ export default function CitadelleListingDetail() {
           </div>
 
           {/* Colonne droite — Infos & CTA */}
-          <div className="space-y-4">
+          <div className="space-y-5">
             {/* Badge Vérifié La Garde — bannière proéminente */}
             {listing.garde_verified && (
               <div

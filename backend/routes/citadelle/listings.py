@@ -158,6 +158,7 @@ class ListingCreate(BaseModel):
     price: float = Field(..., gt=0)
     price_negotiable: bool = False
     monthly_revenue: Optional[float] = None
+    monthly_charges: Optional[float] = None           # Charges mensuelles
     monthly_traffic: Optional[int] = None
     age_months: Optional[int] = None
     niche: Optional[str] = Field(None, max_length=100)
@@ -167,6 +168,17 @@ class ListingCreate(BaseModel):
     images: Optional[List[str]] = []
     is_adult: bool = False
     allow_social_share: bool = False
+    # Trafic & référencement
+    traffic_sources: Optional[str] = Field(None, max_length=200)   # "SEO, Social, Direct"
+    main_keywords: Optional[str] = Field(None, max_length=200)     # Mots-clés principaux
+    # Informations techniques
+    region: Optional[str] = Field(None, max_length=100)            # "France", "Paris"
+    registered_clients: Optional[int] = None                        # Clients enregistrés
+    # Détails de la cession
+    ideal_buyer: Optional[str] = Field(None, max_length=500)       # Profil du repreneur idéal
+    weekly_hours: Optional[int] = None                              # Heures/semaine requises
+    strengths: Optional[str] = Field(None, max_length=1000)        # Points forts
+    weaknesses: Optional[str] = Field(None, max_length=500)        # Points faibles
     # Enchères
     is_auction: bool = False
     auction_show_reserve: bool = False
@@ -185,6 +197,7 @@ class ListingUpdate(BaseModel):
     price: Optional[float] = Field(None, gt=0)
     price_negotiable: Optional[bool] = None
     monthly_revenue: Optional[float] = None
+    monthly_charges: Optional[float] = None
     monthly_traffic: Optional[int] = None
     age_months: Optional[int] = None
     niche: Optional[str] = None
@@ -194,6 +207,17 @@ class ListingUpdate(BaseModel):
     images: Optional[List[str]] = None
     is_adult: Optional[bool] = None
     allow_social_share: Optional[bool] = None
+    # Trafic & référencement
+    traffic_sources: Optional[str] = None
+    main_keywords: Optional[str] = None
+    # Informations techniques
+    region: Optional[str] = None
+    registered_clients: Optional[int] = None
+    # Détails de la cession
+    ideal_buyer: Optional[str] = None
+    weekly_hours: Optional[int] = None
+    strengths: Optional[str] = None
+    weaknesses: Optional[str] = None
     # Enchères
     is_auction: Optional[bool] = None
     auction_show_reserve: Optional[bool] = None
@@ -445,6 +469,7 @@ async def create_listing(
         "price": data.price,
         "price_negotiable": data.price_negotiable,
         "monthly_revenue": data.monthly_revenue,
+        "monthly_charges": data.monthly_charges,
         "monthly_traffic": data.monthly_traffic,
         "age_months": data.age_months,
         "niche": data.niche,
@@ -454,6 +479,17 @@ async def create_listing(
         "images": [] if data.is_adult else (data.images or []),
         "is_adult": data.is_adult,
         "allow_social_share": data.allow_social_share,
+        # Trafic & référencement
+        "traffic_sources": data.traffic_sources,
+        "main_keywords": data.main_keywords,
+        # Informations techniques
+        "region": data.region,
+        "registered_clients": data.registered_clients,
+        # Détails de la cession
+        "ideal_buyer": data.ideal_buyer,
+        "weekly_hours": data.weekly_hours,
+        "strengths": data.strengths,
+        "weaknesses": data.weaknesses,
         "is_featured": False,
         "is_verified": False,
         "views_count": 0,

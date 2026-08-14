@@ -12,18 +12,28 @@ const techFilled = (t) => (Array.isArray(t) ? t.filter(Boolean).length > 0 : len
 export function buildCriteria(data) {
   const nbImages = (data.images || []).filter(Boolean).length;
   const criteria = [
-    { step: 0, weight: 10, done: len(data.title) >= 15, label: "Un titre clair d'au moins 15 caractères" },
-    { step: 0, weight: 8,  done: hasNumber(data.title), label: "Un chiffre clé dans le titre (revenu, trafic…)" },
-    { step: 0, weight: 10, done: len(data.short_description) >= 80, label: "Une accroche d'au moins 80 caractères" },
+    // ── Titre & accroche ─────────────────────────────────────────────────
+    { step: 0, weight: 10, done: len(data.title) >= 15,              label: "Un titre clair d'au moins 15 caractères" },
+    { step: 0, weight: 8,  done: hasNumber(data.title),               label: "Un chiffre clé dans le titre (revenu, trafic…)" },
+    { step: 0, weight: 10, done: len(data.short_description) >= 80,  label: "Une accroche d'au moins 80 caractères" },
+    // ── Données financières ───────────────────────────────────────────────
     { step: 1, weight: 12, done: !!data.monthly_revenue && parseFloat(data.monthly_revenue) > 0, label: "Les revenus mensuels" },
+    { step: 1, weight: 5,  done: data.monthly_charges != null && data.monthly_charges !== "",    label: "Les charges mensuelles (+5 pts)" },
+    // ── Trafic ────────────────────────────────────────────────────────────
     { step: 1, weight: 8,  done: !!data.monthly_traffic && parseFloat(data.monthly_traffic) > 0, label: "Le trafic mensuel" },
-    { step: 1, weight: 6,  done: !!data.age_months, label: "L'ancienneté de l'actif" },
-    { step: 1, weight: 6,  done: len(data.niche) > 0, label: "La niche / le secteur" },
-    { step: 2, weight: 14, done: len(data.description) >= 300, label: "Une description détaillée d'au moins 300 caractères" },
-    { step: 2, weight: 6,  done: techFilled(data.technologies), label: "Les technologies utilisées" },
+    { step: 1, weight: 4,  done: len(data.traffic_sources) > 0,      label: "Les sources de trafic (+4 pts)" },
+    // ── Données générales ─────────────────────────────────────────────────
+    { step: 1, weight: 6,  done: !!data.age_months,                   label: "L'ancienneté de l'actif" },
+    { step: 1, weight: 6,  done: len(data.niche) > 0,                 label: "La niche / le secteur" },
+    // ── Description & techno ──────────────────────────────────────────────
+    { step: 2, weight: 14, done: len(data.description) >= 300,        label: "Une description détaillée d'au moins 300 caractères" },
+    { step: 2, weight: 6,  done: techFilled(data.technologies),       label: "Les technologies utilisées" },
+    // ── Cession ────────────────────────────────────────────────────────────
+    { step: 2, weight: 5,  done: len(data.ideal_buyer) >= 30,         label: "Le profil du repreneur idéal (+5 pts)" },
+    { step: 2, weight: 4,  done: len(data.weaknesses) >= 20,          label: "Les points faibles — honnêteté valorisée (+4 pts)" },
   ];
   if (!data.is_adult) {
-    criteria.push({ step: 2, weight: 14, done: nbImages > 0, label: "Au moins une image (visuel de vente)" });
+    criteria.push({ step: 2, weight: 14, done: nbImages > 0,          label: "Au moins une image (visuel de vente)" });
     criteria.push({ step: 2, weight: 6,  done: len(data.url_preview) > 0, label: "L'URL ou une démo du site" });
   }
   return criteria;
@@ -43,3 +53,4 @@ export function computeListingQuality(data) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   return { pct, criteria, label: scoreLabel(pct), missing: criteria.filter(c => !c.done) };
 }
+

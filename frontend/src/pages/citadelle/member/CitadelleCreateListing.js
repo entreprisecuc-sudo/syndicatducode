@@ -48,7 +48,12 @@ const STEPS = ["Type & Titre", "Données clés", "Détails", "Récapitulatif"];
 const initialForm = {
   type: "", title: "", short_description: "",
   price: "", price_negotiable: false,
-  monthly_revenue: "", monthly_traffic: "", age_months: "", niche: "",
+  monthly_revenue: "", monthly_charges: "", monthly_traffic: "",
+  age_months: "", niche: "",
+  traffic_sources: "", main_keywords: "",
+  region: "", registered_clients: "",
+  ideal_buyer: "", weekly_hours: "",
+  strengths: "", weaknesses: "",
   description: "", technologies: "", url_preview: "", url_public: false,
   images: ["", "", "", "", ""],
   is_adult: false,
@@ -172,6 +177,7 @@ export default function CitadelleCreateListing() {
         price: parseFloat(form.price),
         price_negotiable: form.price_negotiable,
         monthly_revenue: form.monthly_revenue ? parseFloat(form.monthly_revenue) : null,
+        monthly_charges: form.monthly_charges !== "" ? parseFloat(form.monthly_charges) : null,
         monthly_traffic: form.monthly_traffic ? parseInt(form.monthly_traffic) : null,
         age_months: form.age_months ? parseInt(form.age_months) : null,
         niche: form.niche.trim() || null,
@@ -181,6 +187,17 @@ export default function CitadelleCreateListing() {
         images: form.is_adult ? [] : form.images.filter(Boolean),
         is_adult: form.is_adult,
         allow_social_share: !!form.allow_social_share,
+        // Trafic & référencement
+        traffic_sources: form.traffic_sources.trim() || null,
+        main_keywords: form.main_keywords.trim() || null,
+        // Informations techniques
+        region: form.region.trim() || null,
+        registered_clients: form.registered_clients ? parseInt(form.registered_clients) : null,
+        // Détails de la cession
+        ideal_buyer: form.ideal_buyer.trim() || null,
+        weekly_hours: form.weekly_hours ? parseInt(form.weekly_hours) : null,
+        strengths: form.strengths.trim() || null,
+        weaknesses: form.weaknesses.trim() || null,
         // Enchères
         is_auction: form.is_auction,
         auction_show_reserve: form.auction_show_reserve,
@@ -481,19 +498,43 @@ export default function CitadelleCreateListing() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold mb-2" style={labelStyle}>Revenus mensuels (€)</label>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>
+                  Revenus mensuels (€)
+                  <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+12 pts</span>
+                </label>
                 <input type="number" value={form.monthly_revenue} onChange={e => set("monthly_revenue", e.target.value)}
                   placeholder="1200" min="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2" style={labelStyle}>Trafic mensuel (visiteurs)</label>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>
+                  Charges mensuelles (€) <span className="font-normal text-xs">(optionnel)</span>
+                  <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+5 pts</span>
+                </label>
+                <input type="number" value={form.monthly_charges} onChange={e => set("monthly_charges", e.target.value)}
+                  placeholder="350" min="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>
+                  Trafic mensuel (visiteurs)
+                  <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+8 pts</span>
+                </label>
                 <input type="number" value={form.monthly_traffic} onChange={e => set("monthly_traffic", e.target.value)}
                   placeholder="15000" min="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
               </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>
+                  Sources de trafic <span className="font-normal text-xs">(optionnel)</span>
+                  <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+4 pts</span>
+                </label>
+                <input value={form.traffic_sources} onChange={e => set("traffic_sources", e.target.value)}
+                  placeholder="SEO, réseaux sociaux, email…" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>Ancienneté (mois)</label>
                 <input type="number" value={form.age_months} onChange={e => set("age_months", e.target.value)}
@@ -505,12 +546,64 @@ export default function CitadelleCreateListing() {
                   placeholder="Cuisine, Finance, Sport..." className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
               </div>
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>Région <span className="font-normal text-xs">(optionnel)</span></label>
+                <input value={form.region} onChange={e => set("region", e.target.value)}
+                  placeholder="France, Paris, Europe…" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>Clients enregistrés <span className="font-normal text-xs">(optionnel)</span></label>
+                <input type="number" value={form.registered_clients} onChange={e => set("registered_clients", e.target.value)}
+                  placeholder="250" min="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+              </div>
+            </div>
           </div>
         )}
 
         {/* Étape 3 */}
         {step === 2 && (
           <div className="space-y-5">
+            {/* Repreneur idéal + Temps consacré */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>
+                  Repreneur idéal <span className="font-normal text-xs">(optionnel)</span>
+                  <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+5 pts</span>
+                </label>
+                <textarea value={form.ideal_buyer} onChange={e => set("ideal_buyer", e.target.value)}
+                  rows={3} placeholder="Entrepreneur avec une expérience en SEO, ou agence digitale cherchant à acquérir du trafic qualifié…"
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>
+                  Temps consacré / semaine <span className="font-normal text-xs">(optionnel)</span>
+                </label>
+                <input type="number" value={form.weekly_hours} onChange={e => set("weekly_hours", e.target.value)}
+                  placeholder="5" min="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>En heures par semaine</p>
+              </div>
+            </div>
+            {/* Points forts / Points faibles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>Points forts <span className="font-normal text-xs">(optionnel)</span></label>
+                <textarea value={form.strengths} onChange={e => set("strengths", e.target.value)}
+                  rows={4} placeholder="Trafic SEO stable depuis 3 ans, communauté email engagée de 8 000 abonnés…"
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={{ ...inputStyle, borderColor: "rgba(34,197,94,0.3)" }} />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>
+                  Points faibles <span className="font-normal text-xs">(optionnel)</span>
+                  <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+4 pts</span>
+                </label>
+                <textarea value={form.weaknesses} onChange={e => set("weaknesses", e.target.value)}
+                  rows={4} placeholder="Forte dépendance à Google Ads, site vieillissant à moderniser…"
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={{ ...inputStyle, borderColor: "rgba(239,68,68,0.3)" }} />
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>L'honnêteté renforce la confiance des acheteurs</p>
+              </div>
+            </div>
+            {/* Description + Techno */}
             <div>
               <label className="block text-sm font-semibold mb-2" style={labelStyle}>Description détaillée * <span className="font-normal text-xs">(minimum 50 caractères)</span></label>
               <textarea value={form.description} onChange={e => set("description", e.target.value)}
