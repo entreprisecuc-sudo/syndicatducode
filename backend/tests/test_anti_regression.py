@@ -22,7 +22,7 @@ import jwt as pyjwt
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://syndicate-code.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://syndicat-code-hub.preview.emergentagent.com").rstrip("/")
 
 ADMIN_EMAIL = "admin@syndicatducode.fr"
 ADMIN_PASSWORD = "AdminSyndicat2025!"

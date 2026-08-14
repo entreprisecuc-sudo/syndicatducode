@@ -20,7 +20,7 @@ load_dotenv("/app/backend/.env")
 sys.path.insert(0, "/app/backend")
 
 # ---- Config ----
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://syndicate-code.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://syndicat-code-hub.preview.emergentagent.com").rstrip("/")
 ADMIN_EMAIL = "bigpapa1981@asar.com"
 ADMIN_PASSWORD = "Josiane03@@@!1981"
 

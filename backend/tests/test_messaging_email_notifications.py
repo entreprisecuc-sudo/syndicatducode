@@ -31,7 +31,7 @@ load_dotenv('/app/backend/.env')
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
     # Fallback from frontend .env
-    BASE_URL = "https://syndicate-code.preview.emergentagent.com"
+    BASE_URL = "https://syndicat-code-hub.preview.emergentagent.com"
 
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 DB_NAME = os.environ.get('DB_NAME', 'syndicat_base')
