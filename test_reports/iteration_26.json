@@ -1,0 +1,32 @@
+{
+  "summary": "Testé le filtre anti-coordonnées sur POST/PATCH /api/citadelle/listings. 14/14 tests pytest passent. Masquage silencieux des emails et téléphones (formats multiples FR/international) dans short_description/description, préservation du titre et de la niche, security_notice systématique dans les réponses de création et édition, non-régression 403 non propriétaire et 404 introuvable. Toutes les annonces de test créées ont été supprimées via DELETE (teardown fixture).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_listing_sanitizer.py",
+    "/app/test_reports/pytest/sanitizer_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "sanitiser_message est correctement appliqué en création (lignes 432-433) et édition (517-520) de listings.py sur short_description et description uniquement — conforme au choix client (titre/niche non filtrés).",
+    "security_notice est bien renvoyé systématiquement dans create_listing (ligne 494) et update_listing (ligne 556), même quand aucune coordonnée n'est présente.",
+    "Le retour du booléen 'modifie' de sanitiser_message est ignoré (`_`) — comportement volontaire (masquage silencieux), OK.",
+    "Le pattern téléphone international peut laisser visible le préfixe '+33 6' mais masque la séquence principale de chiffres — comportement documenté et accepté."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_listing_sanitizer.py (nouveau)"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "not tested (skipped per request)"},
+  "test_credentials": "marie.testui@citadelle-test.fr / TestUI2026! et test.acheteur@citadelle.fr / DemoAcheteur2026!",
+  "seed_data_creation": "Aucune donnée persistante — 10 annonces de test créées et toutes supprimées via fixture de teardown.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Suite de tests réutilisable pour le sanitizer d'annonces: /app/backend/tests/test_listing_sanitizer.py. Le teardown supprime automatiquement les annonces créées (statut pending — delete autorisé)."
+}
