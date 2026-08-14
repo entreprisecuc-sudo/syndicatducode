@@ -9,7 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Shield, LogOut, PlusCircle, LayoutList, ArrowRightLeft,
   MessageSquare, ShieldCheck, Briefcase, User, FileText, ChevronRight,
-  Eye, Edit2, Clock,
+  Eye, Edit2, Clock, CheckCircle, ShoppingBag, X,
 } from "lucide-react";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { useCitadelleModeration } from "@/hooks/useCitadelleModeration";
