@@ -1,0 +1,50 @@
+{
+  "summary": "Tests complets du système de relance automatique des annonces > 31j (La Citadelle Numérique). 24/24 tests pytest passent. Validation complète : endpoint admin accessible avec token admin, protection auth (401/403 sans token / non-admin), email override TEST_EMAIL_OVERRIDE=arnaudasarcsg@gmail.com confirmé via logs SMTP, relance_sent_at persisté en MongoDB, logique éligibilité 31j/60j correcte, score qualité _compute_listing_quality validé (8 tests de critères).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "services/newsletter_scheduler.py — check_listing_relances()",
+        "issue": "Potential future bug: La requête MongoDB utilise {approved_at: {$exists: False}} pour détecter les annonces sans date d'approbation. Si un code path venait à stocker approved_at: null (None) explicitement dans un document, ces annonces NE seraient PAS traitées par le job (null $lt string = false en MongoDB, $exists: false ne matche pas les champs null). Actuellement, les vraies annonces n'ont pas le champ du tout ($exists: False correct). Mitigation: ajouter {approved_at: None} comme 3e condition dans le $or de la requête.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_listing_relance.py",
+    "/app/test_reports/pytest/listing_relance_iter28.xml"
+  ],
+  "action_items": [
+    "OPTIONNEL: Ajouter {relance_sent_at: None} déjà présent dans la query — vérifier si {approved_at: None} devrait aussi être ajouté dans le $or pour robustesse future (ligne ~682 newsletter_scheduler.py)"
+  ],
+  "critical_code_review_comments": [
+    "Endpoint POST /api/citadelle/admin/listings/trigger-relance : utilise asyncio.create_task() → réponse immédiate (fire-and-forget). Comportement correct pour éviter timeout HTTP sur gros volumes.",
+    "TEST_EMAIL_OVERRIDE : implémentation correcte dans send_citadelle_listing_relance_email — recipient = TEST_EMAIL_OVERRIDE or to_email. Confirmé via logs SMTP : emails partent toujours à arnaudasarcsg@gmail.com.",
+    "relance_sent_at persisté UNIQUEMENT si ok=True (SMTP réussi). Correct — évite de marquer une annonce si l'email a échoué.",
+    "Score qualité : pondération par critères (titre=10+8, description=14, revenus=12, images=14, etc). Total variable selon is_adult (64 critères pour adult, 84 pour non-adult). Correct.",
+    "Critère adult : is_adult=True exclut les critères image et URL. Validé par test.",
+    "Query éligibilité MongoDB : $and [seuil_31j OR, relance_sent_at OR] — correct pour les cas actuels. Minor: null approved_at non géré (voir action_item)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_listing_relance.py (nouveau — 24 tests)"
+  ],
+  "success_rate": {
+    "backend": "100% (24/24)",
+    "frontend": "non testé (backend uniquement)"
+  },
+  "test_credentials": {
+    "admin": "bigpapa1981@asar.com / Josiane03@@@!1981",
+    "test_email_override": "arnaudasarcsg@gmail.com",
+    "login_endpoint": "POST /api/citadelle/auth/login"
+  },
+  "seed_data_creation": "Listings de test créés avec marqueur test_relance_marker=True pendant les tests. Tous supprimés automatiquement après le module via fixture autouse cleanup_test_listings.",
+  "retest_needed": false,
+  "main_agent_can_self_test": false,
+  "context_for_next_testing_agent": "Suite réutilisable : /app/backend/tests/test_listing_relance.py — 24 tests relance annonces complète. Comptes opérationnels. Note importante : les vraies annonces en production n'ont PAS le champ approved_at dans leur document MongoDB (il n'est pas stocké si jamais approuvé via le workflow normal). La query $exists: False est donc correcte pour l'usage actuel. Les tests créent des listings sans le champ approved_at (comportement réel).",
+  "rca_of_issues": "Les tests initiaux échouaient car les listings de test inséraient approved_at: None (champ présent mais null), alors que les vraies annonces en production n'ont pas du tout le champ. MongoDB: {field: {$exists: False}} ne matche PAS {field: null}. Fix: supprimer la clé approved_at du document de test insert pour reproduire le comportement réel (champ absent = $exists: False)."
+}

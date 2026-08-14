@@ -681,6 +681,7 @@ async def check_listing_relances():
                     "$or": [
                         {"approved_at": {"$lt": seuil_31j}},
                         {"approved_at": {"$exists": False}, "created_at": {"$lt": seuil_31j}},
+                        {"approved_at": None, "created_at": {"$lt": seuil_31j}},
                     ]
                 },
                 {

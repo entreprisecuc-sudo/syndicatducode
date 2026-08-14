@@ -7,7 +7,32 @@
 
 ---
 
-## ⭐ Session 08/2026 — Filtre automatique anti-coordonnées sur les annonces ✅ (PREVIEW)
+## ⭐ Session 14/08/2026 — Email relance automatique 31j + Barre de partage + Espacement cartes ✅
+
+### 1. Espacement des cartes — CitadelleListingDetail.js ✅
+- **Problème** : cartes blanches sur fond blanc, `space-y-16` (margin-top) se coalescait → cartes visuellement collées
+- **Fix** : remplacement de `space-y-16` / `space-y-10` par `flex flex-col gap-10` / `flex flex-col gap-8` (gap CSS garanti, sans coalescence)
+- **Fond cartes** : `#F5F7FA` (légèrement grisé) sur fond de page blanc → contraste visible
+- **Bordures cartes** : `1.5px solid #94A8BB` (plus visible que l'ancien `#DDE3EA`)
+
+### 2. Barre de partage — sous l'image ✅
+- **Ancienne position** : carte "PARTAGER CETTE ANNONCE" en bas de colonne (supprimée)
+- **Nouvelle position** : barre inline directement sous l'image principale
+- **Design** : icônes rondes neutres (fond `#F0F2F5`, pas de couleurs de marque), `Share2` + "Partager :"
+- **Réseaux** : LinkedIn, Facebook, X/Twitter, WhatsApp (MessageCircle), Email (Mail), Copier le lien
+- **Imports ajoutés** : `Mail`, `MessageCircle` depuis lucide-react
+
+### 3. Email automatique relance 31j ✅ (testé 24/24)
+- **Déclencheur** : job APScheduler quotidien à 10h (LISTING_RELANCE_JOB_ID)
+- **Logique** : annonces `status=active` publiées > 31 jours, sans `relance_sent_at` ou relance > 60 jours
+- **Contenu email** : ancienneté, barre de progression score qualité, conseils personnalisés (critères manquants)
+- **Score qualité** : `_compute_listing_quality()` — miroir Python de `listingQuality.js` (DRY côté backend)
+- **TEST_EMAIL_OVERRIDE** : tous les emails de test → `arnaudasarcsg@gmail.com`
+- **Endpoint admin** : `POST /api/citadelle/admin/listings/trigger-relance` (déclenche manuellement)
+- **Persistance** : `relance_sent_at` mis à jour sur listing après envoi SMTP réussi
+- **Fichiers modifiés** : `settings.py`, `.env`, `email_service/citadelle/listings.py`, `newsletter_scheduler.py`, `routes/citadelle/newsletter.py`
+
+---
 - **Besoin client** : retirer silencieusement les coordonnées directes (email / téléphone) des descriptions d'annonces, à la création ET à l'édition, avec un message de sécurité **systématique** rappelant que toute communication doit rester sur La Citadelle. Champs concernés : `short_description` + `description` uniquement. Filtrage : email + téléphone seulement (pas les liens messagerie).
 - **Backend** (`routes/citadelle/listings.py`) : réutilisation (DRY, règle 4) du helper existant `utils/message_sanitizer.py::sanitiser_message` (masque email + téléphone → `[contact masqué par La Citadelle]`). Appliqué dans `create_listing` (les 2 descriptions) et `update_listing` (si champ présent dans les updates). Nouvelle constante centralisée `AVIS_SECURITE_ANNONCE` (règle 5, zéro hardcoding) renvoyée **systématiquement** dans la réponse via `security_notice`.
 - **Frontend** : nouveau composant réutilisable `components/citadelle/SecurityContactNotice.jsx` (bandeau or + icône bouclier, mobile first, `data-testid=security-contact-notice`). Intégré dans `CitadelleCreateListing.js` (sous l'accroche + sur l'écran de succès) et `CitadelleEditListing.js` (sous l'accroche).
