@@ -832,3 +832,18 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Fix 2 — AdminLiveApp.js** : Header compact (`gap-1`, boutons `w-9 h-9`), icône QR retirée du header (doublon du bouton bas de page), temps de mise à jour formaté `HH:MM` (sans secondes), `min-w-0` + `truncate` sur le titre gauche. Boutons OK/Non : `px-3 py-2` + `minHeight: 36px` (vs `px-2 py-1` auparavant) → cibles tactiles conformes aux guidelines mobile. `active:scale-95` pour retour haptique.
 - **Fix 3 — AdminInstallApp.js** : Bouton retour passé à `w-10 h-10` (40px) pour la cible tactile.
 - **Validé (screenshots mobile 390px)** : bandeau absent, header propre, boutons lisibles. Testing agent NON utilisé (Règle 6).
+
+## ✨ Session 14/08/2026 — Notifications email messagerie Citadelle (bidirectionnelle + anti-spam)
+- **Problème** : seul le 1er message acheteur→vendeur déclenchait un email. Aucune notification pour les réponses du vendeur, les messages suivants, ni pour l'acheteur. La relance 24h était "one-shot" (jamais répétée).
+- **Architecture ajoutée** :
+  - Champ `last_notified: {user_id: iso_timestamp}` dans chaque conversation (anti-spam 24h par participant)
+  - Constante `NOTIFICATION_COOLDOWN_SECONDS = 86400` dans `messages.py`
+  - Fonction helper `_should_notify(conv, user_id) -> bool` (DRY)
+- **Fix 1 — messages.py** :
+  - `send_message` : notifie le vendeur sur TOUS les messages (pas seulement le 1er), avec anti-spam 24h via `last_notified`
+  - `reply_message` : notifie l'autre participant (acheteur OU vendeur), avec anti-spam 24h. Supprime l'ancien hack `reminder_sent_at` (qui désactivait définitivement les relances)
+- **Fix 2 — transactions.py** : `send_new_message_notification_email` généralisée (vendeur OU acheteur) — paramètres `seller_email`/`buyer_email` → `recipient_email`/`sender_email`. Texte neutre.
+- **Fix 3 — transactions.py** : nouvelle fonction `send_unread_messages_digest_email(recipient_email, conversations)` — email groupé HTML pour la relance multi-conversations.
+- **Fix 4 — newsletter_scheduler.py** : `check_unanswered_conversations` réécrit — vérifie les 2 côtés (acheteur ET vendeur), groupe par utilisateur, envoie 1 seul digest, utilise `last_notified` (anti-spam 24h renouvelable vs "one-shot" précédent).
+- **Fix 5 — email_service/__init__.py** : export de `send_unread_messages_digest_email`.
+- **Validé** : imports Python OK, backend redémarré sans erreur, endpoint reply retourne 404 propre. Testing agent NON utilisé (Règle 6).

@@ -26,6 +26,12 @@ def set_database(database):
     db = database
 
 
+# ── Constante anti-spam ────────────────────────────────────────────────────────
+
+# Délai minimum entre deux emails de notification pour la même conversation et le même destinataire
+NOTIFICATION_COOLDOWN_SECONDS = 86400  # 24 heures
+
+
 # ── Modèles ────────────────────────────────────────────────────────────────────
 
 class MessageCreate(BaseModel):
@@ -39,6 +45,23 @@ class MessageReply(BaseModel):
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+
+def _should_notify(conv: dict, user_id: str) -> bool:
+    """
+    Vérifie si un email de notification peut être envoyé à cet utilisateur
+    pour cette conversation (anti-spam : 1 email max toutes les 24h par conversation).
+    """
+    last_ts = conv.get("last_notified", {}).get(str(user_id))
+    if not last_ts:
+        return True
+    try:
+        last_dt = datetime.fromisoformat(last_ts)
+        if last_dt.tzinfo is None:
+            last_dt = last_dt.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - last_dt).total_seconds() > NOTIFICATION_COOLDOWN_SECONDS
+    except (ValueError, TypeError):
+        return True
+
 
 # require_citadelle_user importé depuis routes/citadelle/dependencies (DRY)
 
@@ -124,32 +147,48 @@ async def send_message(
             "last_read": {sender_id: now},
             "created_at": now,
             "updated_at": now,
-            # Champs de suivi des notifications email
-            "seller_notified_at": None,
+            # Suivi notifications email (last_notified = dict {user_id: iso_timestamp})
+            "last_notified": {},
+            "seller_notified_at": None,  # conservé pour rétrocompatibilité
             "reminder_sent_at": None,
         }
         await db.citadelle_conversations.insert_one(conversation)
         logger.info(f"[Citadelle] Conversation créée: {conv_id} — {current_user.get('email')} → {listing.get('seller_email')}")
 
-        # Notifier le vendeur par email (premier message — fire and forget)
-        seller_email = listing.get("seller_email", "")
-        if seller_email:
-            async def _notify_seller():
-                success = send_new_message_notification_email(
-                    seller_email=seller_email,
-                    listing_title=listing["title"],
-                    buyer_email=current_user.get("email", ""),
-                    message_preview=contenu or "[Pièce jointe]",
-                    conversation_id=conv_id,
+    # ── Notification email au vendeur (nouvelles ET messages suivants) ──────────
+    # Anti-spam : 1 email max par conversation par 24h (champ last_notified)
+    seller_id   = listing["seller_id"]
+    seller_email = listing.get("seller_email", "")
+    conv_for_check = conv if conv else {"last_notified": {}}
+
+    if seller_email and _should_notify(conv_for_check, seller_id):
+        async def _notify_seller(r_email, s_email, title, preview, cid, sid):
+            success = send_new_message_notification_email(
+                recipient_email=r_email,
+                listing_title=title,
+                sender_email=s_email,
+                message_preview=preview,
+                conversation_id=cid,
+            )
+            if success:
+                notif_ts = datetime.now(timezone.utc).isoformat()
+                await db.citadelle_conversations.update_one(
+                    {"id": cid},
+                    {"$set": {
+                        f"last_notified.{sid}": notif_ts,
+                        "seller_notified_at": notif_ts,  # rétrocompatibilité
+                    }}
                 )
-                if success:
-                    await db.citadelle_conversations.update_one(
-                        {"id": conv_id},
-                        {"$set": {"seller_notified_at": datetime.now(timezone.utc).isoformat()}}
-                    )
-            asyncio.create_task(_notify_seller())
-        else:
-            logger.warning(f"[Citadelle] Seller email manquant pour la conversation {conv_id}")
+        asyncio.create_task(_notify_seller(
+            seller_email,
+            current_user.get("email", ""),
+            listing["title"],
+            contenu or "[Pièce jointe]",
+            conv_id,
+            seller_id,
+        ))
+    elif not seller_email:
+        logger.warning(f"[Citadelle] Seller email manquant pour la conversation {conv_id}")
 
     return {"conversation_id": conv_id, "message": msg, "sanitized": sanitized, "created": is_new_conversation}
 
@@ -201,13 +240,33 @@ async def reply_message(
         {"$push": {"messages": msg}, "$set": {"updated_at": now, f"last_read.{user_id}": now}}
     )
 
-    # Si c'est le vendeur qui répond → désactiver toute future relance automatique
-    # (une seule relance 24h par conversation est possible)
-    if user_id == conv.get("seller_id") and conv.get("reminder_sent_at") is None:
-        await db.citadelle_conversations.update_one(
-            {"id": conversation_id},
-            {"$set": {"reminder_sent_at": now}},
-        )
+    # ── Notification email à l'autre participant (anti-spam 24h) ───────────────
+    is_seller   = (user_id == conv.get("seller_id"))
+    recipient_id    = conv["buyer_id"]    if is_seller else conv["seller_id"]
+    recipient_email = conv.get("buyer_email", "") if is_seller else conv.get("seller_email", "")
+
+    if recipient_email and _should_notify(conv, recipient_id):
+        async def _notify_reply(r_email, s_email, title, preview, cid, rid):
+            success = send_new_message_notification_email(
+                recipient_email=r_email,
+                listing_title=title,
+                sender_email=s_email,
+                message_preview=preview,
+                conversation_id=cid,
+            )
+            if success:
+                await db.citadelle_conversations.update_one(
+                    {"id": cid},
+                    {"$set": {f"last_notified.{rid}": datetime.now(timezone.utc).isoformat()}}
+                )
+        asyncio.create_task(_notify_reply(
+            recipient_email,
+            current_user.get("email", ""),
+            conv.get("listing_title", ""),
+            contenu or "[Pièce jointe]",
+            conversation_id,
+            recipient_id,
+        ))
 
     return {"message": msg, "sanitized": sanitized}
 

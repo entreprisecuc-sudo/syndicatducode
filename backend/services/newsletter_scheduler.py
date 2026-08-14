@@ -122,95 +122,123 @@ async def publish_scheduled_posts():
 
 async def check_unanswered_conversations():
     """
-    Job horaire — Détecte les conversations où le vendeur n'a pas répondu depuis 24h.
-    Envoie UNE SEULE relance par conversation dormante, jamais deux fois.
+    Job horaire — Détecte les messages non lus depuis > 24h et envoie
+    un email digest groupé à chaque utilisateur concerné (acheteur OU vendeur).
+
+    Règles :
+    - 1 email max par conversation par utilisateur toutes les 24h (last_notified)
+    - Si un utilisateur a plusieurs conversations en attente → 1 seul email groupé
     """
     if _db is None:
         logger.error("[Relances] DB non initialisée, check annulé.")
         return
 
-    from services.email_service import send_conversation_reminder_email
+    from services.email_service import send_unread_messages_digest_email
 
     now = datetime.now(timezone.utc)
-    threshold_24h = now - timedelta(hours=24)
+    threshold_24h = (now - timedelta(hours=24)).isoformat()
 
-    # Conversations notifiées initialement mais sans relance encore envoyée
+    # Chercher toutes les conversations actives ayant eu une activité il y a > 24h
     cursor = _db.citadelle_conversations.find(
         {
-            "seller_notified_at": {"$ne": None},
-            "reminder_sent_at": None,
+            "updated_at": {"$lt": threshold_24h},
+            "is_blocked": {"$ne": True},
         },
-        {"_id": 0, "id": 1, "seller_email": 1, "buyer_email": 1, "listing_title": 1,
-         "seller_id": 1, "buyer_id": 1, "messages": 1},
+        {"_id": 0},
     )
-    conversations = await cursor.to_list(1000)
+    conversations = await cursor.to_list(500)
 
     if not conversations:
-        logger.debug("[Relances] Aucune conversation éligible à la relance.")
+        logger.debug("[Relances] Aucune conversation candidate à la relance.")
         return
 
-    reminders_sent = 0
+    # Regrouper les conversations en attente par utilisateur
+    # Format : {user_id: {"email": str, "conversations": [conv_info, ...]}}
+    pending_by_user: dict = {}
 
     for conv in conversations:
-        messages = conv.get("messages", [])
-        if not messages:
-            continue
-
-        # Dernier message de la conversation
-        last_msg = messages[-1]
-        last_sender_id = last_msg.get("sender_id")
-        last_sent_at_str = last_msg.get("sent_at")
-
-        if not last_sent_at_str:
-            continue
-
-        # Analyser si c'est un message de l'acheteur (pas du vendeur, pas du système)
+        buyer_id  = conv.get("buyer_id")
         seller_id = conv.get("seller_id")
-        if last_sender_id == seller_id or last_sender_id == "system":
-            # Vendeur a déjà répondu ou dernier message est système → pas de relance
-            continue
+        messages  = conv.get("messages", [])
+        last_read = conv.get("last_read", {})
+        last_notified = conv.get("last_notified", {})
 
-        # Convertir la date du dernier message
-        try:
-            last_sent_dt = datetime.fromisoformat(last_sent_at_str.replace("Z", "+00:00"))
-        except (ValueError, AttributeError):
-            continue
+        for participant_id, participant_email in [
+            (buyer_id,  conv.get("buyer_email",  "")),
+            (seller_id, conv.get("seller_email", "")),
+        ]:
+            if not participant_id or not participant_email:
+                continue
 
-        # Vérifier si plus de 24h sans réponse du vendeur
-        if last_sent_dt > threshold_24h:
-            continue  # Moins de 24h, pas encore le moment
+            # Messages non lus par ce participant, envoyés il y a > 24h
+            user_last_read = last_read.get(str(participant_id), "1970-01-01T00:00:00+00:00")
+            unread_old = [
+                m for m in messages
+                if m.get("sender_id") != participant_id          # pas ses propres messages
+                and m.get("sent_at", "") > user_last_read         # non lu
+                and m.get("sent_at", "") < threshold_24h          # > 24h sans réponse
+            ]
 
-        # Calculer le nombre d'heures écoulées
-        hours_since = int((now - last_sent_dt).total_seconds() / 3600)
+            if not unread_old:
+                continue
 
-        # Envoyer la relance
-        seller_email = conv.get("seller_email", "")
-        if not seller_email:
-            logger.warning(f"[Relances] seller_email manquant pour conversation {conv['id']}")
-            continue
+            # Anti-spam : vérifier last_notified pour cette conversation
+            last_ts = last_notified.get(str(participant_id))
+            if last_ts:
+                try:
+                    last_dt = datetime.fromisoformat(last_ts)
+                    if last_dt.tzinfo is None:
+                        last_dt = last_dt.replace(tzinfo=timezone.utc)
+                    if (now - last_dt).total_seconds() < 86400:
+                        continue  # Notifié trop récemment pour cette conversation
+                except (ValueError, TypeError):
+                    pass
 
-        success = send_conversation_reminder_email(
-            seller_email=seller_email,
-            listing_title=conv.get("listing_title", "Votre annonce"),
-            buyer_email=conv.get("buyer_email", ""),
-            conversation_id=conv["id"],
-            hours_since=hours_since,
+            # Collecter les infos pour le digest
+            last_msg = unread_old[-1]
+            conv_info = {
+                "conv_id":       conv.get("id"),
+                "listing_title": conv.get("listing_title", ""),
+                "unread_count":  len(unread_old),
+                "last_preview":  (last_msg.get("content") or "")[:150],
+            }
+
+            if participant_id not in pending_by_user:
+                pending_by_user[participant_id] = {"email": participant_email, "conversations": []}
+            pending_by_user[participant_id]["conversations"].append(conv_info)
+
+    if not pending_by_user:
+        logger.debug("[Relances] Aucun utilisateur à relancer ce cycle.")
+        return
+
+    # Envoyer 1 email digest par utilisateur
+    reminders_sent = 0
+    notif_ts = now.isoformat()
+
+    for participant_id, data in pending_by_user.items():
+        recipient_email = data["email"]
+        convs = data["conversations"]
+
+        success = send_unread_messages_digest_email(
+            recipient_email=recipient_email,
+            conversations=convs,
         )
 
         if success:
-            # Marquer comme relancé → ne jamais renvoyer
-            await _db.citadelle_conversations.update_one(
-                {"id": conv["id"]},
-                {"$set": {"reminder_sent_at": now.isoformat()}},
-            )
             reminders_sent += 1
+            # Mettre à jour last_notified pour toutes les conversations incluses
+            for conv_info in convs:
+                await _db.citadelle_conversations.update_one(
+                    {"id": conv_info["conv_id"]},
+                    {"$set": {f"last_notified.{participant_id}": notif_ts}}
+                )
             logger.info(
-                f"[Relances] Relance envoyée à {seller_email} "
-                f"pour conversation {conv['id']} ({hours_since}h sans réponse)."
+                f"[Relances] Digest envoyé à {recipient_email} "
+                f"— {len(convs)} conversation(s) en attente."
             )
 
     if reminders_sent > 0:
-        logger.info(f"[Relances] {reminders_sent} relance(s) envoyée(s) ce cycle.")
+        logger.info(f"[Relances] {reminders_sent} digest(s) envoyé(s) ce cycle.")
 
 
 

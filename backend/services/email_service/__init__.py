@@ -28,6 +28,7 @@ from services.email_service.citadelle.transactions import (
     send_new_message_notification_email,
     send_new_offer_notification_email,
     send_conversation_reminder_email,
+    send_unread_messages_digest_email,
     send_citadelle_offer_auto_cancelled_email,
 )
 from services.email_service.citadelle.services import (

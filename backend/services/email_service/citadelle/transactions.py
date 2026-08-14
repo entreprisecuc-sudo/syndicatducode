@@ -82,20 +82,20 @@ Marketplace française d'actifs numériques
 
 # Mapping slug → libellé français des types d'annonces
 def send_new_message_notification_email(
-    seller_email: str,
+    recipient_email: str,
     listing_title: str,
-    buyer_email: str,
+    sender_email: str,
     message_preview: str,
     conversation_id: str,
 ) -> bool:
     """
-    Notifie le vendeur qu'un acheteur lui a envoyé son premier message
-    sur l'une de ses annonces.
+    Notifie un participant (acheteur OU vendeur) qu'il a reçu un nouveau message.
+    Utilisé lors de l'envoi et des réponses dans une conversation.
 
     Args:
-        seller_email: Email du vendeur destinataire
-        listing_title: Titre de l'annonce concernée
-        buyer_email: Email de l'acheteur qui a écrit
+        recipient_email: Email du destinataire (celui qui n'a pas encore lu)
+        listing_title:   Titre de l'annonce concernée
+        sender_email:    Email de l'expéditeur du message
         message_preview: Début du message (tronqué à 200 chars)
         conversation_id: ID de la conversation (pour le lien CTA)
     """
@@ -105,7 +105,7 @@ def send_new_message_notification_email(
 
         body_html = f"""
         <p style="color:#1A2A3A;font-size:15px;line-height:1.6;margin:0 0 20px 0;">
-          Un acheteur vous a envoy&#233; un message concernant votre annonce&#160;:
+          Vous avez re&#231;u un nouveau message concernant votre annonce&#160;:
         </p>
 
         <!-- Titre annonce -->
@@ -119,7 +119,7 @@ def send_new_message_notification_email(
         <!-- Expéditeur + message -->
         <div style="background:#F7F9FC;border-radius:10px;padding:16px 18px;margin-bottom:24px;">
           <p style="color:#5F6672;font-size:12px;margin:0 0 8px 0;">
-            <strong style="color:#0F2747;">{buyer_email}</strong> vous &#233;crit&#160;:
+            <strong style="color:#0F2747;">{sender_email}</strong> vous &#233;crit&#160;:
           </p>
           <p style="color:#374151;font-size:14px;line-height:1.6;margin:0;font-style:italic;">
             &#8220;{preview}&#8221;
@@ -127,7 +127,7 @@ def send_new_message_notification_email(
         </div>
 
         <p style="color:#5F6672;font-size:13px;line-height:1.6;margin:0;">
-          R&#233;pondez rapidement pour ne pas laisser cet acheteur potentiel sans nouvelles.
+          R&#233;pondez rapidement pour ne pas laisser votre interlocuteur sans nouvelles.
         </p>"""
 
         html = _build_notification_base(
@@ -141,17 +141,17 @@ def send_new_message_notification_email(
 
         msg = MIMEMultipart("alternative")
         msg["From"] = CITADELLE_FROM_EMAIL
-        msg["To"] = seller_email
+        msg["To"] = recipient_email
         msg["Subject"] = f"[Citadelle] Nouveau message sur votre annonce : {listing_title}"
 
         msg.attach(MIMEText(html, "html", "utf-8"))
         _envoyer_email(msg)
 
-        logger.info(f"[Notif] Email nouveau message envoyé à {seller_email} pour annonce '{listing_title}'")
+        logger.info(f"[Notif] Email nouveau message envoyé à {recipient_email} pour annonce '{listing_title}'")
         return True
 
     except Exception as e:
-        logger.error(f"[Notif] Erreur envoi notification message à {seller_email} : {e}")
+        logger.error(f"[Notif] Erreur envoi notification message à {recipient_email} : {e}")
         return False
 
 
@@ -318,6 +318,92 @@ def send_conversation_reminder_email(
 
     except Exception as e:
         logger.error(f"[Notif] Erreur envoi relance à {seller_email} : {e}")
+        return False
+
+
+def send_unread_messages_digest_email(
+    recipient_email: str,
+    conversations: list,
+) -> bool:
+    """
+    Email de relance digest : regroupe TOUTES les conversations avec messages non lus
+    en un seul email. Respecte la règle anti-spam (1 email / conversation / 24h géré par l'appelant).
+
+    Args:
+        recipient_email: Email du destinataire
+        conversations:   Liste de dicts [{conv_id, listing_title, unread_count, last_preview}]
+    """
+    if not conversations:
+        return False
+
+    try:
+        nb = len(conversations)
+        messages_url = f"{CITADELLE_URL}/citadelle/espace-membre/messages"
+
+        # Construire la liste des conversations en HTML
+        conv_items_html = ""
+        for conv in conversations:
+            conv_url = f"{messages_url}/{conv['conv_id']}"
+            title    = conv.get("listing_title", "Conversation")
+            preview  = conv.get("last_preview", "")
+            unread   = conv.get("unread_count", 1)
+            badge    = (
+                f'<span style="background:#C9A45C;color:#0F2747;font-size:11px;'
+                f'font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px;">'
+                f'{unread} msg</span>'
+            ) if unread > 1 else ""
+            preview_block = (
+                f'<p style="color:#374151;font-size:13px;line-height:1.5;'
+                f'margin:6px 0 10px 0;font-style:italic;">&#8220;{preview[:150]}&#8221;</p>'
+            ) if preview else ""
+
+            conv_items_html += f"""
+            <div style="background:#F7F9FC;border-left:4px solid #C9A45C;
+                        border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:12px;">
+              <p style="color:#0F2747;font-size:14px;font-weight:700;margin:0 0 4px 0;">
+                {title}{badge}
+              </p>
+              {preview_block}
+              <a href="{conv_url}"
+                 style="color:#C9A45C;font-size:12px;font-weight:700;text-decoration:none;">
+                R&#233;pondre &#8594;
+              </a>
+            </div>"""
+
+        body_html = f"""
+        <p style="color:#1A2A3A;font-size:15px;line-height:1.6;margin:0 0 20px 0;">
+          Vous avez <strong>{nb} conversation{"s" if nb > 1 else ""}</strong>
+          avec des messages en attente de r&#233;ponse depuis plus de 24&#160;h.
+        </p>
+        {conv_items_html}
+        <p style="color:#5F6672;font-size:13px;line-height:1.6;margin:16px 0 0 0;">
+          Cliquez sur chaque conversation pour r&#233;pondre directement depuis votre espace membre.
+        </p>"""
+
+        html = _build_notification_base(
+            title="Messages en attente",
+            subtitle=f"{nb} conversation{'s' if nb > 1 else ''} sans r&#233;ponse",
+            badge_color="#F59E0B",
+            body_html=body_html,
+            cta_url=messages_url,
+            cta_label="Voir mes messages",
+        )
+
+        msg = MIMEMultipart("alternative")
+        msg["From"] = CITADELLE_FROM_EMAIL
+        msg["To"]   = recipient_email
+        msg["Subject"] = (
+            f"[Citadelle] Vous avez {nb} message{'s' if nb > 1 else ''} en attente de r\u00e9ponse"
+        )
+
+        msg.attach(MIMEText(html, "html", "utf-8"))
+        _envoyer_email(msg)
+
+        logger.info(f"[Relance] Digest envoyé à {recipient_email} — {nb} conversation(s)")
+        return True
+
+    except Exception as e:
+        logger.error(f"[Relance] Erreur envoi digest à {recipient_email} : {e}")
         return False
 
 
