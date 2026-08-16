@@ -416,16 +416,16 @@ export default function CitadelleVendre() {
                   }}
                   data-testid={`etape-${etape.num}`}
                 >
-                  {/* Badge numéro avec glow */}
+                  {/* Badge numéro — fond doré plein pour lisibilité maximale */}
                   <div className="flex-shrink-0 relative z-10">
                     <div
-                      className="w-[3.25rem] h-[3.25rem] rounded-2xl flex items-center justify-center font-black text-sm transition-all duration-300 group-hover:scale-110"
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center font-black transition-all duration-300 group-hover:scale-110"
                       style={{
-                        background: "linear-gradient(135deg, rgba(201,164,92,0.22), rgba(201,164,92,0.08))",
-                        color: CITADELLE_COLORS.gold,
+                        background: CITADELLE_COLORS.gold,
+                        color: CITADELLE_COLORS.night,
                         fontFamily: "'Montserrat', sans-serif",
-                        border: "1.5px solid rgba(201,164,92,0.45)",
-                        boxShadow: "0 0 20px rgba(201,164,92,0.12), inset 0 1px 0 rgba(201,164,92,0.2)",
+                        fontSize: "1rem",
+                        boxShadow: "0 4px 18px rgba(201,164,92,0.35)",
                       }}
                     >
                       {etape.num}
