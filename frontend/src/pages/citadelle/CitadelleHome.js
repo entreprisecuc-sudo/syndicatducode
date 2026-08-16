@@ -6,7 +6,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import {
   Shield, TrendingUp, Lock, Globe, ShoppingCart, Cloud,
   Monitor, Users, ArrowRight, Star, Search, SlidersHorizontal,
@@ -953,17 +952,12 @@ const FaqSection = () => (
 );
 
 export default function CitadelleHome() {
+  useEffect(() => {
+    document.title = "Acheter et vendre un site internet, un SaaS ou un e-commerce | La Citadelle Numérique";
+  }, []);
+
   return (
     <CitadelleLayout>
-      <Helmet>
-        <title>Acheter et vendre un site internet, un SaaS ou un e-commerce | La Citadelle Numérique</title>
-        <meta name="description" content="La Citadelle Numérique, marketplace française pour vendre et acheter des sites internet, SaaS, boutiques e-commerce, chaînes YouTube et actifs numériques. Transactions sécurisées par séquestre." />
-        <meta property="og:title" content="Acheter et vendre un site internet, un SaaS ou un e-commerce | La Citadelle Numérique" />
-        <meta property="og:description" content="Marketplace française pour vendre et acheter des sites internet, SaaS, e-commerce et actifs numériques. Transactions sécurisées par séquestre." />
-        <meta property="og:url" content="https://lacitadellenumerique.fr/citadelle" />
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle" />
-      </Helmet>
       <HeroSection />
       <CategoriesSection />
       <SeoContentSection />

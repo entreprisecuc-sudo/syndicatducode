@@ -345,7 +345,7 @@ export default function CitadelleListingDetail() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Colonne gauche — Images + Description */}
-          <div className="lg:col-span-2 flex flex-col gap-10 min-w-0">
+          <div className="lg:col-span-2 flex flex-col gap-10 min-w-0 order-2 lg:order-1">
             {/* Image principale */}
             <div className="rounded-2xl overflow-hidden" style={{ height: "320px", background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
               {listing.is_adult ? (
@@ -632,7 +632,7 @@ export default function CitadelleListingDetail() {
           </div>
 
           {/* Colonne droite — Infos & CTA */}
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-8 order-1 lg:order-2">
             {/* Badge Vérifié La Garde — bannière proéminente */}
             {listing.garde_verified && (
               <div
