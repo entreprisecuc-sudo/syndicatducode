@@ -823,7 +823,7 @@ export default function CitadelleListingDetail() {
                   </div>
                   {listing.price_negotiable && <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>Prix négociable</p>}
 
-                  <div className="space-y-2 mt-5">
+                  <div className="space-y-3 mt-5">
                     {listing.status === "sold" ? (
                       <AnnonceSoldee listing={listing} user={user} />
                     ) : isAuthenticated && user?.id !== listing.seller_id && canTransact ? (
