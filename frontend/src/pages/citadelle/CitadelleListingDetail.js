@@ -829,7 +829,7 @@ export default function CitadelleListingDetail() {
                     ) : isAuthenticated && user?.id !== listing.seller_id && canTransact ? (
                       <>
                         <button onClick={() => setOfferModal(true)}
-                          className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"
+                          className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02] mb-3"
                           style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                           data-testid="btn-make-offer">
                           Faire une offre
