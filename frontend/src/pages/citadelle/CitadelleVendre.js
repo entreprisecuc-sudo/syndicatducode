@@ -412,11 +412,12 @@ export default function CitadelleVendre() {
                   key={etape.num}
                   className="relative flex gap-6 md:gap-10 py-7 group transition-all duration-300"
                   style={{
-                    borderBottom: i < ETAPES.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                    borderBottom: i < ETAPES.length - 1 ? "2px solid rgba(201,164,92,0.25)" : "none",
                   }}
                   data-testid={`etape-${etape.num}`}
                 >
                   {/* Badge numéro — fond doré plein pour lisibilité maximale */}
+
                   <div className="flex-shrink-0 relative z-10">
                     <div
                       className="w-14 h-14 rounded-2xl flex items-center justify-center font-black transition-all duration-300 group-hover:scale-110"
@@ -434,19 +435,6 @@ export default function CitadelleVendre() {
 
                   {/* Contenu */}
                   <div className="flex-1 min-w-0 pt-1 transition-transform duration-300 group-hover:-translate-y-0.5">
-                    {/* Numéro fantôme en fond */}
-                    <span
-                      className="absolute right-0 top-4 font-black select-none pointer-events-none hidden md:block"
-                      style={{
-                        fontSize: "4.5rem",
-                        color: "rgba(201,164,92,0.05)",
-                        fontFamily: "'Montserrat', sans-serif",
-                        lineHeight: 1,
-                      }}
-                    >
-                      {etape.num}
-                    </span>
-
                     <h3
                       className="font-bold mb-2 transition-colors duration-200"
                       style={{
