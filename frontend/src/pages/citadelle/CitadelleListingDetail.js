@@ -343,9 +343,9 @@ export default function CitadelleListingDetail() {
           );
         })()}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 lg:grid-rows-[auto_auto] gap-10">
           {/* Colonne gauche — Images + Description */}
-          <div className="lg:col-span-2 flex flex-col gap-10 min-w-0 order-2 lg:order-1">
+          <div className="lg:col-span-2 lg:col-start-1 lg:row-start-1 lg:row-span-2 flex flex-col gap-10 min-w-0 order-2">
             {/* Image principale */}
             <div className="rounded-2xl overflow-hidden" style={{ height: "320px", background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
               {listing.is_adult ? (
@@ -631,8 +631,8 @@ export default function CitadelleListingDetail() {
             )}
           </div>
 
-          {/* Colonne droite — Infos & CTA */}
-          <div className="flex flex-col gap-8 order-1 lg:order-2">
+          {/* Sidebar TOP — Badge + Prix + CTA + Adresse */}
+          <div className="flex flex-col gap-8 order-1 lg:col-start-3 lg:row-start-1">
             {/* Badge Vérifié La Garde — bannière proéminente */}
             {listing.garde_verified && (
               <div
@@ -971,6 +971,10 @@ export default function CitadelleListingDetail() {
             )}
 
             {/* Upsell estimations pour l'acheteur — « ce site vaut-il le coup ? » */}
+          </div>
+
+          {/* Sidebar BOTTOM — Ce site vaut-il le coup? + Estimateur (mobile: après l'image) */}
+          <div className="flex flex-col gap-8 order-3 lg:col-start-3 lg:row-start-2">
             {!isOwner && listing.status !== "sold" && (
               <SellerServicesUpsell
                 user={user}
