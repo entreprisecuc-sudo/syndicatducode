@@ -442,12 +442,6 @@ export default function CitadelleListingDetail() {
               </div>
             )}
 
-            {/* Description */}
-            <div className="p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
-              <h2 className="font-bold mb-4" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Description</h2>
-              <p className="text-sm leading-relaxed whitespace-pre-line break-words" style={{ color: CITADELLE_COLORS.textMuted, overflowWrap: "anywhere" }}>{listing.description}</p>
-            </div>
-
             {/* ── Chiffres financiers ──────────────────────────────────────────── */}
             {(listing.monthly_revenue || listing.monthly_charges != null || listing.monthly_traffic) && (
               <div className="p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
@@ -568,6 +562,12 @@ export default function CitadelleListingDetail() {
                 </div>
               </div>
             )}
+
+            {/* Description */}
+            <div className="p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
+              <h2 className="font-bold mb-4" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Description</h2>
+              <p className="text-sm leading-relaxed whitespace-pre-line break-words" style={{ color: CITADELLE_COLORS.textMuted, overflowWrap: "anywhere" }}>{listing.description}</p>
+            </div>
 
             {/* ── Détails de la cession ────────────────────────────────────────── */}
             {(listing.ideal_buyer || listing.weekly_hours != null) && (
