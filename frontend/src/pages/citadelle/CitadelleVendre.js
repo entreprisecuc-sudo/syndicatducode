@@ -393,42 +393,71 @@ export default function CitadelleVendre() {
             </SectionSubtitle>
           </div>
 
-          <div className="relative">
-            {/* Ligne verticale de connexion */}
+          <div className="relative max-w-3xl mx-auto">
+            {/* Ligne de connexion verticale dorée */}
             <div
-              className="absolute left-8 top-0 bottom-0 w-px hidden md:block"
-              style={{ background: "rgba(201,164,92,0.2)" }}
+              className="absolute hidden md:block"
+              style={{
+                left: "1.65rem",
+                top: "3.5rem",
+                bottom: "3.5rem",
+                width: "1px",
+                background: "linear-gradient(to bottom, transparent 0%, rgba(201,164,92,0.45) 8%, rgba(201,164,92,0.45) 92%, transparent 100%)",
+              }}
             />
 
-            <div className="space-y-6">
+            <div className="space-y-0">
               {ETAPES.map((etape, i) => (
                 <div
                   key={etape.num}
-                  className="relative flex gap-6 p-6 rounded-2xl"
+                  className="relative flex gap-6 md:gap-10 py-7 group transition-all duration-300"
                   style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(201,164,92,0.15)",
+                    borderBottom: i < ETAPES.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
                   }}
                   data-testid={`etape-${etape.num}`}
                 >
-                  {/* Numéro */}
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm relative z-10"
-                    style={{
-                      background: "rgba(201,164,92,0.15)",
-                      color: CITADELLE_COLORS.gold,
-                      fontFamily: "'Montserrat', sans-serif",
-                      border: "1px solid rgba(201,164,92,0.3)",
-                    }}
-                  >
-                    {etape.num}
+                  {/* Badge numéro avec glow */}
+                  <div className="flex-shrink-0 relative z-10">
+                    <div
+                      className="w-[3.25rem] h-[3.25rem] rounded-2xl flex items-center justify-center font-black text-sm transition-all duration-300 group-hover:scale-110"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(201,164,92,0.22), rgba(201,164,92,0.08))",
+                        color: CITADELLE_COLORS.gold,
+                        fontFamily: "'Montserrat', sans-serif",
+                        border: "1.5px solid rgba(201,164,92,0.45)",
+                        boxShadow: "0 0 20px rgba(201,164,92,0.12), inset 0 1px 0 rgba(201,164,92,0.2)",
+                      }}
+                    >
+                      {etape.num}
+                    </div>
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-base mb-1.5" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>
+                  {/* Contenu */}
+                  <div className="flex-1 min-w-0 pt-1 transition-transform duration-300 group-hover:-translate-y-0.5">
+                    {/* Numéro fantôme en fond */}
+                    <span
+                      className="absolute right-0 top-4 font-black select-none pointer-events-none hidden md:block"
+                      style={{
+                        fontSize: "4.5rem",
+                        color: "rgba(201,164,92,0.05)",
+                        fontFamily: "'Montserrat', sans-serif",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {etape.num}
+                    </span>
+
+                    <h3
+                      className="font-bold mb-2 transition-colors duration-200"
+                      style={{
+                        color: "white",
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontSize: "1.05rem",
+                      }}
+                    >
                       {etape.titre}
                     </h3>
-                    <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.62)" }}>
                       {etape.texte}
                     </p>
                     {etape.services.length > 0 && (
@@ -436,11 +465,11 @@ export default function CitadelleVendre() {
                         {etape.services.map(s => (
                           <span
                             key={s}
-                            className="text-xs px-3 py-1 rounded-full font-medium"
+                            className="text-xs px-3 py-1.5 rounded-full font-medium"
                             style={{
-                              background: "rgba(201,164,92,0.12)",
+                              background: "rgba(201,164,92,0.1)",
                               color: CITADELLE_COLORS.gold,
-                              border: "1px solid rgba(201,164,92,0.2)",
+                              border: "1px solid rgba(201,164,92,0.28)",
                             }}
                           >
                             {s}
