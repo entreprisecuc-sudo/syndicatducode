@@ -7,7 +7,7 @@
 import { useState, useEffect } from "react";
 import {
   Plus, Edit2, Trash2, Eye, EyeOff, Star, Save, X,
-  ShoppingBag, CheckCircle, Clock, AlertCircle, Ban
+  ShoppingBag, CheckCircle, Clock, AlertCircle, Ban, Tag
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import PromoConfigCard from "@/components/admin/PromoConfigCard";
@@ -49,7 +49,7 @@ const EMPTY_FORM = {
 // ── Composant principal ─────────────────────────────────────────────────────────
 
 export default function AdminCitadelleServices() {
-  const [activeTab, setActiveTab] = useState("services"); // "services" | "orders"
+  const [activeTab, setActiveTab] = useState("services"); // "services" | "orders" | "promo-codes"
 
   // État onglet Services
   const [services, setServices] = useState([]);
@@ -65,12 +65,57 @@ export default function AdminCitadelleServices() {
   const [filterStatus, setFilterStatus] = useState("");
   const [updatingOrder, setUpdatingOrder] = useState(null);
 
+  // État onglet Codes promo
+  const [promoCodes, setPromoCodes]         = useState([]);
+  const [loadingPromos, setLoadingPromos]   = useState(false);
+  const [newCode, setNewCode]               = useState("");
+  const [newDiscount, setNewDiscount]       = useState("");
+  const [savingPromo, setSavingPromo]       = useState(false);
+  const [promoError, setPromoError]         = useState("");
+  const [deletingCode, setDeletingCode]     = useState(null);
+
   useEffect(() => { fetchServices(); }, []);
   useEffect(() => {
     if (activeTab === "orders") fetchOrders();
+    if (activeTab === "promo-codes") fetchPromoCodes();
   }, [activeTab, filterStatus]);
 
   // ── Fonctions Services ────────────────────────────────────────────────────────
+
+  const fetchPromoCodes = async () => {
+    setLoadingPromos(true);
+    try {
+      const res = await api.get("/citadelle/payments/promo-codes");
+      setPromoCodes(res.data.codes || []);
+    } catch { setPromoCodes([]); }
+    finally { setLoadingPromos(false); }
+  };
+
+  const handleCreatePromoCode = async () => {
+    const code = newCode.trim().toUpperCase();
+    const pct  = parseInt(newDiscount, 10);
+    if (!code || code.length < 2) { setPromoError("Code trop court (min 2 caractères)."); return; }
+    if (isNaN(pct) || pct < 1 || pct > 99) { setPromoError("Réduction entre 1% et 99%."); return; }
+    setSavingPromo(true);
+    setPromoError("");
+    try {
+      await api.post("/citadelle/payments/promo-codes", { code, discount_percent: pct });
+      setNewCode(""); setNewDiscount("");
+      await fetchPromoCodes();
+    } catch (e) {
+      setPromoError(e.response?.data?.detail || "Erreur lors de la création.");
+    } finally { setSavingPromo(false); }
+  };
+
+  const handleDeletePromoCode = async (code) => {
+    if (!window.confirm(`Supprimer le code "${code}" ?`)) return;
+    setDeletingCode(code);
+    try {
+      await api.delete(`/citadelle/payments/promo-codes/${code}`);
+      await fetchPromoCodes();
+    } catch { /* silence */ }
+    finally { setDeletingCode(null); }
+  };
 
   const fetchServices = async () => {
     setLoadingServices(true);
@@ -209,6 +254,21 @@ export default function AdminCitadelleServices() {
               <span className="text-xs px-1.5 py-0.5 rounded-full font-bold"
                 style={{ background: "#F59E0B", color: "#000" }}>
                 {orders.filter(o => o.status === "en_attente").length}
+              </span>
+            )}
+          </button>
+          <button onClick={() => setActiveTab("promo-codes")}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            style={{
+              background: activeTab === "promo-codes" ? "rgba(201,164,92,0.15)" : "transparent",
+              color: activeTab === "promo-codes" ? "#C9A45C" : "var(--admin-text-muted)"
+            }}
+            data-testid="tab-promo-codes">
+            <Tag size={14} /> Codes promo
+            {promoCodes.length > 0 && (
+              <span className="text-xs px-1.5 py-0.5 rounded-full font-bold"
+                style={{ background: "rgba(201,164,92,0.2)", color: "#C9A45C" }}>
+                {promoCodes.length}
               </span>
             )}
           </button>
@@ -565,6 +625,97 @@ export default function AdminCitadelleServices() {
           </div>
         </div>
       )}
+        {/* ── Onglet Codes promo ── */}
+        {activeTab === "promo-codes" && (
+          <div className="space-y-6">
+            {/* Formulaire création */}
+            <div className="p-5 rounded-xl" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
+              <h3 className="font-bold text-sm mb-4 flex items-center gap-2" style={{ color: "var(--admin-text)" }}>
+                <Tag size={14} style={{ color: "#C9A45C" }} /> Nouveau code promo
+              </h3>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  value={newCode}
+                  onChange={e => { setNewCode(e.target.value.toUpperCase()); setPromoError(""); }}
+                  placeholder="CODE (ex : SUMMER25)"
+                  className="flex-1 px-3 py-2 rounded-lg text-sm font-mono tracking-wider outline-none"
+                  style={{ background: "var(--admin-bg)", border: "1px solid var(--admin-border)", color: "var(--admin-text)" }}
+                  data-testid="admin-promo-code-input"
+                />
+                <input
+                  value={newDiscount}
+                  onChange={e => { setNewDiscount(e.target.value); setPromoError(""); }}
+                  placeholder="Réduction %"
+                  type="number" min="1" max="99"
+                  className="w-full sm:w-36 px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ background: "var(--admin-bg)", border: "1px solid var(--admin-border)", color: "var(--admin-text)" }}
+                  data-testid="admin-promo-discount-input"
+                />
+                <button
+                  onClick={handleCreatePromoCode}
+                  disabled={savingPromo || !newCode.trim() || !newDiscount}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-40"
+                  style={{ background: "#C9A45C", color: "#0F2747" }}
+                  data-testid="admin-promo-create-btn">
+                  {savingPromo ? <span className="animate-spin">⟳</span> : <Plus size={14} />}
+                  Créer
+                </button>
+              </div>
+              {promoError && (
+                <p className="text-xs mt-2" style={{ color: "#DC2626" }} data-testid="admin-promo-error">
+                  {promoError}
+                </p>
+              )}
+            </div>
+
+            {/* Liste des codes */}
+            <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--admin-border)" }}>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ background: "var(--admin-bg-card)", borderBottom: "1px solid var(--admin-border)" }}>
+                    <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider" style={{ color: "var(--admin-text-muted)" }}>Code</th>
+                    <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider" style={{ color: "var(--admin-text-muted)" }}>Réduction</th>
+                    <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider" style={{ color: "var(--admin-text-muted)" }}>Créé le</th>
+                    <th className="px-4 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loadingPromos ? (
+                    <tr><td colSpan={4} className="text-center py-8 text-sm" style={{ color: "var(--admin-text-muted)" }}>Chargement…</td></tr>
+                  ) : promoCodes.length === 0 ? (
+                    <tr><td colSpan={4} className="text-center py-8 text-sm" style={{ color: "var(--admin-text-muted)" }}>Aucun code promo</td></tr>
+                  ) : promoCodes.map(pc => (
+                    <tr key={pc.code} style={{ borderBottom: "1px solid var(--admin-border)" }}>
+                      <td className="px-4 py-3 font-mono font-bold tracking-wider" style={{ color: "#C9A45C" }}>
+                        {pc.code}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold"
+                          style={{ background: "rgba(34,197,94,0.15)", color: "#16A34A" }}>
+                          -{pc.discount_percent}%
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs" style={{ color: "var(--admin-text-muted)" }}>
+                        {pc.created_at ? new Date(pc.created_at).toLocaleDateString("fr-FR") : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => handleDeletePromoCode(pc.code)}
+                          disabled={deletingCode === pc.code}
+                          className="p-1.5 rounded-lg transition-all hover:opacity-80 disabled:opacity-40"
+                          style={{ background: "rgba(220,38,38,0.1)", color: "#DC2626" }}
+                          data-testid={`admin-promo-delete-${pc.code}`}
+                          title="Supprimer ce code">
+                          <Trash2 size={13} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
     </AdminLayout>
   );
 }

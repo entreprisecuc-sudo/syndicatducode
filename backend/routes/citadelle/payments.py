@@ -17,7 +17,7 @@ import stripe as stripe_sdk
 from fastapi import APIRouter, HTTPException, Request, Depends
 from pydantic import BaseModel, EmailStr
 from datetime import timedelta
-from routes.citadelle.dependencies import require_citadelle_user
+from routes.citadelle.dependencies import require_citadelle_user, require_admin
 
 logger = logging.getLogger(__name__)
 
@@ -124,10 +124,9 @@ class _StripeClient:
 
 # ── Schémas ───────────────────────────────────────────────────────────────────
 
-# Code promo "EMERGENT" — 40% de réduction sur les services
-PROMO_CODES = {
-    "EMERGENT": 40,  # Pourcentage de réduction
-}
+class PromoCodeCreate(BaseModel):
+    code: str
+    discount_percent: int  # Entre 1 et 99
 
 class ServiceCheckoutRequest(BaseModel):
     service_id: str
@@ -140,7 +139,26 @@ class ServiceCheckoutRequest(BaseModel):
     promo_code: Optional[str] = None    # Code promo (ex: "EMERGENT")
 
 
-# ── Utilitaire Stripe ─────────────────────────────────────────────────────────
+
+async def _get_promo_discount(db, code: str) -> int:
+    """Retourne le % de réduction pour un code, ou 0 si invalide."""
+    if not code or not db:
+        return 0
+    doc = await db.citadelle_promo_codes.find_one({"code": code.strip().upper()}, {"_id": 0})
+    return int(doc.get("discount_percent", 0)) if doc else 0
+
+
+async def _seed_default_promo_codes(db):
+    """Insère le code EMERGENT si la collection est vide (migration initiale)."""
+    count = await db.citadelle_promo_codes.count_documents({})
+    if count == 0:
+        await db.citadelle_promo_codes.insert_one({
+            "code": "EMERGENT",
+            "discount_percent": 40,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        logger.info("[Citadelle] Code promo EMERGENT inséré en base (migration initiale).")
+
 
 def _get_stripe() -> _StripeClient:
     api_key = os.environ.get("STRIPE_API_KEY")
@@ -274,9 +292,9 @@ async def create_service_checkout(payload: ServiceCheckoutRequest):
     price = apply_promo(price, promo)
     promo_percent = promo.get("discount_percent", 0) if is_promo_active(promo) else 0
 
-    # Application du code promo personnalisé (s'applique après la promo globale)
+    # Application du code promo personnel (s'applique après la promo globale)
     code_used = (payload.promo_code or "").strip().upper()
-    code_discount_percent = PROMO_CODES.get(code_used, 0)
+    code_discount_percent = await _get_promo_discount(_db, code_used)
     if code_discount_percent > 0:
         price = round(price * (1 - code_discount_percent / 100), 2)
         logger.info(f"[Citadelle] Code promo '{code_used}' appliqué : -{code_discount_percent}% → {price} €")
@@ -412,11 +430,61 @@ async def create_boost_checkout(payload: BoostCheckoutRequest, current_user: dic
 @router.post("/promo/validate")
 async def validate_promo_code(payload: dict):
     """Valide un code promo et retourne le pourcentage de réduction."""
+    if _db is None:
+        raise HTTPException(status_code=500, detail="Base de données non initialisée.")
     code = (payload.get("code") or "").strip().upper()
-    discount = PROMO_CODES.get(code, 0)
+    discount = await _get_promo_discount(_db, code)
     if discount > 0:
         return {"valid": True, "code": code, "discount_percent": discount}
     return {"valid": False, "code": code, "discount_percent": 0}
+
+
+# ── GET /payments/promo-codes ─────────────────────────────────────────────────
+@router.get("/promo-codes")
+async def list_promo_codes(current_user: dict = Depends(require_admin)):
+    """Liste tous les codes promo (admin uniquement)."""
+    if _db is None:
+        raise HTTPException(status_code=500, detail="Base de données non initialisée.")
+    await _seed_default_promo_codes(_db)
+    codes = await _db.citadelle_promo_codes.find({}, {"_id": 0}).sort("created_at", -1).to_list(None)
+    return {"codes": codes}
+
+
+# ── POST /payments/promo-codes ────────────────────────────────────────────────
+@router.post("/promo-codes")
+async def create_promo_code(payload: PromoCodeCreate, current_user: dict = Depends(require_admin)):
+    """Crée un nouveau code promo (admin uniquement)."""
+    if _db is None:
+        raise HTTPException(status_code=500, detail="Base de données non initialisée.")
+    code = payload.code.strip().upper()
+    if not code or len(code) < 2:
+        raise HTTPException(status_code=400, detail="Le code doit contenir au moins 2 caractères.")
+    if not 1 <= payload.discount_percent <= 99:
+        raise HTTPException(status_code=400, detail="La réduction doit être entre 1% et 99%.")
+    existing = await _db.citadelle_promo_codes.find_one({"code": code})
+    if existing:
+        raise HTTPException(status_code=409, detail=f"Le code '{code}' existe déjà.")
+    doc = {
+        "code": code,
+        "discount_percent": payload.discount_percent,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await _db.citadelle_promo_codes.insert_one(doc)
+    logger.info(f"[Citadelle] Code promo '{code}' créé ({payload.discount_percent}%) par admin.")
+    return {"success": True, "code": doc["code"], "discount_percent": doc["discount_percent"]}
+
+
+# ── DELETE /payments/promo-codes/{code} ───────────────────────────────────────
+@router.delete("/promo-codes/{code}")
+async def delete_promo_code(code: str, current_user: dict = Depends(require_admin)):
+    """Supprime un code promo (admin uniquement)."""
+    if _db is None:
+        raise HTTPException(status_code=500, detail="Base de données non initialisée.")
+    result = await _db.citadelle_promo_codes.delete_one({"code": code.strip().upper()})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Code promo introuvable.")
+    logger.info(f"[Citadelle] Code promo '{code}' supprimé par admin.")
+    return {"success": True}
 
 
 # ── GET /payments/service/status/{session_id} ─────────────────────────────────
