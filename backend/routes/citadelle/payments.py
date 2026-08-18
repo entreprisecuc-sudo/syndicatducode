@@ -124,6 +124,11 @@ class _StripeClient:
 
 # ── Schémas ───────────────────────────────────────────────────────────────────
 
+# Code promo "EMERGENT" — 40% de réduction sur les services
+PROMO_CODES = {
+    "EMERGENT": 40,  # Pourcentage de réduction
+}
+
 class ServiceCheckoutRequest(BaseModel):
     service_id: str
     client_name: str
@@ -132,6 +137,7 @@ class ServiceCheckoutRequest(BaseModel):
     origin_url: str
     cancel_path: Optional[str] = "/citadelle/services"
     user_id: Optional[str] = None       # ID de l'utilisateur connecté (si disponible)
+    promo_code: Optional[str] = None    # Code promo (ex: "EMERGENT")
 
 
 # ── Utilitaire Stripe ─────────────────────────────────────────────────────────
@@ -268,6 +274,13 @@ async def create_service_checkout(payload: ServiceCheckoutRequest):
     price = apply_promo(price, promo)
     promo_percent = promo.get("discount_percent", 0) if is_promo_active(promo) else 0
 
+    # Application du code promo personnalisé (s'applique après la promo globale)
+    code_used = (payload.promo_code or "").strip().upper()
+    code_discount_percent = PROMO_CODES.get(code_used, 0)
+    if code_discount_percent > 0:
+        price = round(price * (1 - code_discount_percent / 100), 2)
+        logger.info(f"[Citadelle] Code promo '{code_used}' appliqué : -{code_discount_percent}% → {price} €")
+
     # Construction des URLs de retour
     origin = payload.origin_url.rstrip("/")
     success_url = f"{origin}/citadelle/paiement/confirmation?session_id={{CHECKOUT_SESSION_ID}}"
@@ -282,6 +295,7 @@ async def create_service_checkout(payload: ServiceCheckoutRequest):
         "client_email": payload.client_email,
         "client_message": payload.client_message or "",
         "source": "citadelle_services",
+        "promo_code": code_used if code_discount_percent > 0 else "",
     }
 
     stripe = _get_stripe()
@@ -392,6 +406,17 @@ async def create_boost_checkout(payload: BoostCheckoutRequest, current_user: dic
     })
     logger.info(f"Checkout boost créé : {session.id} pour annonce {payload.listing_id} ({payload.plan})")
     return {"checkout_url": session.url, "session_id": session.id}
+
+
+# ── POST /payments/promo/validate ────────────────────────────────────────────
+@router.post("/promo/validate")
+async def validate_promo_code(payload: dict):
+    """Valide un code promo et retourne le pourcentage de réduction."""
+    code = (payload.get("code") or "").strip().upper()
+    discount = PROMO_CODES.get(code, 0)
+    if discount > 0:
+        return {"valid": True, "code": code, "discount_percent": discount}
+    return {"valid": False, "code": code, "discount_percent": 0}
 
 
 # ── GET /payments/service/status/{session_id} ─────────────────────────────────
