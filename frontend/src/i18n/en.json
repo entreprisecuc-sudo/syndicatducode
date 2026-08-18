@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "listings": "Listings",
+    "sell": "Sell",
+    "services": "Services",
+    "parutions": "Publications",
+    "my_space": "My account",
+    "logout": "Log out",
+    "login": "Log in",
+    "register": "List for free",
+    "notifications": "My notifications"
+  },
+  "footer": {
+    "navigation": "Navigation",
+    "sellers": "Sellers",
+    "buyers": "Buyers",
+    "info": "Information",
+    "links": {
+      "listings": "Browse listings",
+      "sell": "Sell my asset",
+      "services": "Our services",
+      "blog": "Blog",
+      "contact": "Contact us",
+      "ia_info": "Information for AI",
+      "faq": "Help & FAQ",
+      "cgv": "Terms of Sale",
+      "cgu": "Terms of Use",
+      "privacy": "Privacy Policy (GDPR)",
+      "legal": "Legal Notice"
+    },
+    "seller_services": [
+      "Standard Valuation",
+      "Expert Valuation",
+      "La Garde Verification",
+      "Premium Sale Support",
+      "Auction Sale"
+    ],
+    "buyer_services": [
+      "SEO Audit",
+      "Security Audit",
+      "Site Migration",
+      "Redesign / Optimisation",
+      "Premium Secured Transaction"
+    ],
+    "syndicate": "A Syndicat du Code service",
+    "copyright": "All rights reserved.",
+    "tagline": "French platform — Secured transactions"
+  },
+  "lang_switcher": {
+    "label": "Language"
+  }
+}

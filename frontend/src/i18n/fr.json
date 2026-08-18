@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "listings": "Annonces",
+    "sell": "Vendre",
+    "services": "Services",
+    "parutions": "Les Parutions",
+    "my_space": "Mon espace",
+    "logout": "Déconnexion",
+    "login": "Connexion",
+    "register": "Publier gratuitement",
+    "notifications": "Mes notifications"
+  },
+  "footer": {
+    "navigation": "Navigation",
+    "sellers": "Vendeurs",
+    "buyers": "Acheteurs",
+    "info": "Informations",
+    "links": {
+      "listings": "Voir les annonces",
+      "sell": "Vendre mon actif",
+      "services": "Nos services",
+      "blog": "Blog",
+      "contact": "Nous contacter",
+      "ia_info": "Informations pour les IA",
+      "faq": "Aide & FAQ",
+      "cgv": "CGV",
+      "cgu": "CGU",
+      "privacy": "Confidentialité (RGPD)",
+      "legal": "Mentions légales"
+    },
+    "seller_services": [
+      "Estimation Standard",
+      "Estimation Expert",
+      "Vérification La Garde",
+      "Accompagnement Vente Premium",
+      "Vente aux enchères"
+    ],
+    "buyer_services": [
+      "Audit SEO",
+      "Audit Sécurité",
+      "Migration de site",
+      "Refonte / Optimisation",
+      "Transaction Sécurisée Premium"
+    ],
+    "syndicate": "Un service du Syndicat du Code",
+    "copyright": "Tous droits réservés.",
+    "tagline": "Plateforme française — Transactions sécurisées"
+  },
+  "lang_switcher": {
+    "label": "Langue"
+  }
+}
