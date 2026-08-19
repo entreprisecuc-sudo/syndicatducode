@@ -967,3 +967,11 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 ### PROCHAIN LOT (P0 restant, non commencé)
 - CitadelleVendre.js : contenu 100% en dur dans constantes JS (AVANTAGES, ETAPES, MODES_VENTE, SERVICES_VENDEUR, FAQ_ITEMS) + JSX. ~60 chaînes. Section i18n `vendre` à étendre.
 - CitadelleListingDetail.js (~50+ chaînes JS), CitadelleEstimation.js (1049 l.).
+
+### MAJ Session 19/08 (suite) — P0 quasi terminé
+- CitadelleVendre.js : TRADUIT intégralement (section vendre étendue, tableaux avantages/etapes/modes/services/faq). Vérifié rendu FR, parité OK, compile.
+- CitadelleListingDetail.js : TRADUIT intégralement (~100 clés ajoutées à listing_detail : nav, métriques, enchères, boost, chiffres clés, modals offre/contact, estimateur sidebar, annonce vendue). Parité OK, compile, zéro résidu FR.
+### RESTE
+- P0 : CitadelleEstimation.js (1049 lignes) — NON commencé.
+- P1 : espace membre (profil, mes-annonces, messages, transactions, factures, notifications...) + composants (MemberActivityPanel, MemberEarningsPanel...).
+- IMPORTANT : le FOOTER partagé (CitadelleLayout.js) contient encore du FR (NAVIGATION/VENDEURS/ACHETEURS + descriptions) — visible sur TOUTES les pages, à traduire (P1).

@@ -17,145 +17,15 @@ import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { useTranslation } from "react-i18next";
 
-// ── Données statiques ─────────────────────────────────────────────────────────
+// ── Icônes par section (le texte vient de i18n : section `vendre`) ────────────
 
-const AVANTAGES = [
-  {
-    icon: Shield,
-    titre: "Transaction sécurisée",
-    texte: "Toutes les ventes sont protégées par notre système de transaction sécurisée. Les fonds sont placés en séquestre jusqu'à la validation finale du transfert.",
-  },
-  {
-    icon: Users,
-    titre: "Réseau d'acheteurs qualifiés",
-    texte: "Votre projet est présenté à une audience ciblée d'investisseurs et d'entrepreneurs activement à la recherche d'actifs numériques.",
-  },
-  {
-    icon: TrendingUp,
-    titre: "Expertise indépendante",
-    texte: "Possibilité d'obtenir une évaluation professionnelle de votre projet par nos experts certifiés afin de valoriser votre annonce au juste prix.",
-  },
-  {
-    icon: HeartHandshake,
-    titre: "Accompagnement personnalisé",
-    texte: "La Garde et les partenaires du Syndicat du Code peuvent vous accompagner avant, pendant et après la vente selon vos besoins.",
-  },
+const AVANTAGES_ICONS = [Shield, Users, TrendingUp, HeartHandshake];
+const MODES_ICONS = [
+  { icon: Tag, badgeColor: CITADELLE_COLORS.gold },
+  { icon: ChevronRight, badgeColor: null },
+  { icon: Gavel, badgeColor: CITADELLE_COLORS.blue },
 ];
-
-const ETAPES = [
-  {
-    num: "01",
-    titre: "Publiez votre annonce gratuitement",
-    texte: "Créez votre annonce en quelques minutes. Publication gratuite, validation par notre équipe sous 24h.",
-    services: [],
-  },
-  {
-    num: "02",
-    titre: "Recevez les premières demandes",
-    texte: "Les acheteurs intéressés vous contactent directement via notre messagerie sécurisée. Répondez à leurs questions et échangez librement.",
-    services: [],
-  },
-  {
-    num: "03",
-    titre: "Choisissez les services adaptés",
-    texte: "Boostez votre vente avec les services professionnels de La Citadelle :",
-    services: ["Estimation Standard", "Estimation Expert", "Vérification La Garde", "Accompagnement Vente Premium"],
-  },
-  {
-    num: "04",
-    titre: "Finalisez via notre système sécurisé",
-    texte: "Acceptez l'offre de votre choix. Le paiement est sécurisé et les fonds bloqués jusqu'à la livraison complète du projet.",
-    services: [],
-  },
-  {
-    num: "05",
-    titre: "Transférez votre projet",
-    texte: "Transmettez les accès à l'acheteur avec ou sans assistance technique de nos partenaires. La Garde supervise la clôture.",
-    services: [],
-  },
-];
-
-const MODES_VENTE = [
-  {
-    icon: Tag,
-    titre: "Prix fixe",
-    texte: "Définissez librement le prix de vente de votre actif. L'acheteur peut contacter et acheter au prix affiché.",
-    badge: "Le plus courant",
-    badgeColor: CITADELLE_COLORS.gold,
-  },
-  {
-    icon: ChevronRight,
-    titre: "Prix négociable",
-    texte: "Les acheteurs peuvent proposer une offre inférieure à votre prix. Vous gardez le contrôle total en acceptant ou refusant.",
-    badge: null,
-    badgeColor: null,
-  },
-  {
-    icon: Gavel,
-    titre: "Vente aux enchères",
-    texte: "Définissez un prix minimum, une durée et laissez les acheteurs enchérir. La Transaction Sécurisée est active sur toutes les enchères.",
-    badge: "Popularité croissante",
-    badgeColor: CITADELLE_COLORS.blue,
-  },
-];
-
-const SERVICES_VENDEUR = [
-  {
-    icon: Star,
-    titre: "Estimation Standard",
-    texte: "Connaître rapidement la valeur de son projet grâce à notre méthode d'analyse propriétaire.",
-    type: "49 €",
-  },
-  {
-    icon: Award,
-    titre: "Estimation Expert",
-    texte: "Obtenir une expertise complète avec rapport PDF détaillé pour maximiser votre prix de vente.",
-    type: "149 €",
-  },
-  {
-    icon: BarChart2,
-    titre: "Vérification La Garde",
-    texte: "Obtenez le badge « Vérifié par La Garde » pour rassurer les acheteurs et accélérer la vente.",
-    type: "99 €",
-  },
-  {
-    icon: Wrench,
-    titre: "Accompagnement Vente Premium",
-    texte: "Soyez accompagné à chaque étape de la vente, de la rédaction de l'annonce jusqu'à la signature.",
-    type: "399 €",
-  },
-];
-
-const FAQ_ITEMS = [
-  {
-    question: "Combien coûte la publication d'une annonce ?",
-    reponse: "La publication d'une annonce est entièrement gratuite. Aucun frais n'est appliqué tant que votre projet n'est pas vendu.",
-  },
-  {
-    question: "Quel est le montant de la commission ?",
-    reponse: "La commission de La Citadelle est de 5% du prix de vente final, avec un minimum de 49 €. Elle est uniquement prélevée en cas de vente aboutie.",
-  },
-  {
-    question: "Puis-je vendre aux enchères ?",
-    reponse: "Oui. Lors de la création de votre annonce, activez le mode Enchères, définissez un prix de réserve et une durée. Les acheteurs enchérissent jusqu'à la clôture.",
-  },
-  {
-    question: "Puis-je faire évaluer mon projet ?",
-    reponse: "Absolument. Nos services d'évaluation (Standard et Expert Certifiée) sont accessibles depuis la page Services. Une évaluation professionnelle rassure les acheteurs et valorise votre projet.",
-  },
-  {
-    question: "Qui réalise les refontes ?",
-    reponse: "Les refontes sont réalisées par les partenaires certifiés du Syndicat du Code, sous supervision de La Garde. Chaque intervention fait l'objet d'un devis et d'un suivi personnalisé.",
-  },
-  {
-    question: "Comment fonctionne la transaction sécurisée ?",
-    reponse: "Lorsqu'une offre est acceptée, les fonds de l'acheteur sont bloqués dans notre système de séquestre. Le vendeur transmet les accès, La Garde vérifie, et les fonds sont libérés après validation. Aucun transfert sans confirmation.",
-  },
-  {
-    question: "Que se passe-t-il en cas de litige ?",
-    reponse: "La Garde dispose d'un système de gestion des litiges intégré. L'acheteur ou le vendeur peut ouvrir un litige. Nos experts analysent la situation et proposent une résolution juste dans les meilleurs délais.",
-  },
-];
+const SERVICES_ICONS = [Star, Award, BarChart2, Wrench];
 
 // ── Composants de sections ────────────────────────────────────────────────────
 
@@ -228,10 +98,18 @@ export default function CitadelleVendre() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = "Vendre | La Citadelle Numérique";
-  }, []);
+    document.title = t('vendre.hero_h1') + " | La Citadelle Numérique";
+  }, [t]);
 
   const toggleFaq = (index) => setOpenFaq(prev => prev === index ? null : index);
+
+  const avantages = t('vendre.avantages', { returnObjects: true });
+  const etapes = t('vendre.etapes', { returnObjects: true });
+  const modes = t('vendre.modes', { returnObjects: true });
+  const servicesVendeur = t('vendre.services', { returnObjects: true });
+  const faqItems = t('vendre.faq', { returnObjects: true });
+  const evalPoints = t('vendre.eval_points', { returnObjects: true });
+  const gardeChips = t('vendre.garde_chips', { returnObjects: true });
 
   return (
     <CitadelleLayout>
@@ -273,16 +151,15 @@ export default function CitadelleVendre() {
                 color: "white",
               }}
             >
-              Vendez votre projet numérique{" "}
-              <span style={{ color: CITADELLE_COLORS.gold }}>en toute confiance.</span>
+              {t('vendre.hero_h1')}{" "}
+              <span style={{ color: CITADELLE_COLORS.gold }}>{t('vendre.hero_h1_accent')}</span>
             </h1>
 
             <p
               className="mb-10 leading-relaxed"
               style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.7)", maxWidth: "540px" }}
             >
-              Sites internet, SaaS, e-commerce, applications web, noms de domaine ou tout autre actif numérique.
-              Publiez votre annonce gratuitement et bénéficiez d'un accompagnement professionnel.
+              {t('vendre.hero_sub2')}
             </p>
 
             <div className="flex flex-wrap gap-4 mb-12">
@@ -309,9 +186,9 @@ export default function CitadelleVendre() {
             {/* Stats */}
             <div className="flex flex-wrap gap-6">
               {[
-                { value: "Gratuit", label: "Publication d'annonce" },
-                { value: "5%", label: "Commission à la vente" },
-                { value: "100%", label: "Transactions sécurisées" },
+                { value: t('vendre.stat_free_v'), label: t('vendre.stat_free_l') },
+                { value: t('vendre.stat_comm_v'), label: t('vendre.stat_comm_l') },
+                { value: t('vendre.stat_sec_v'), label: t('vendre.stat_sec_l') },
               ].map(({ value, label }) => (
                 <div key={label} className="flex items-center gap-3">
                   <div
@@ -337,15 +214,17 @@ export default function CitadelleVendre() {
       <section className="py-20" style={{ background: CITADELLE_COLORS.bg }} data-testid="vendre-avantages">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="text-center mb-14">
-            <SectionLabel><Sparkles size={13} /> Nos engagements</SectionLabel>
-            <SectionTitle center>Pourquoi vendre sur La Citadelle ?</SectionTitle>
+            <SectionLabel><Sparkles size={13} /> {t('vendre.label_engagements')}</SectionLabel>
+            <SectionTitle center>{t('vendre.why_title')}</SectionTitle>
             <SectionSubtitle center>
-              Une plateforme pensée pour les vendeurs sérieux, avec les outils et l'accompagnement pour réussir chaque transaction.
+              {t('vendre.why_sub')}
             </SectionSubtitle>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {AVANTAGES.map(({ icon: Icon, titre, texte }) => (
+            {avantages.map(({ titre, texte }, idx) => {
+              const Icon = AVANTAGES_ICONS[idx];
+              return (
               <div
                 key={titre}
                 className="p-6 rounded-2xl transition-all duration-200 hover:-translate-y-1"
@@ -354,7 +233,7 @@ export default function CitadelleVendre() {
                   border: `1px solid ${CITADELLE_COLORS.border}`,
                   boxShadow: "0 2px 12px rgba(15,39,71,0.06)",
                 }}
-                data-testid={`avantage-${titre.substring(0, 10).replace(/\s/g, "-")}`}
+                data-testid={`avantage-${idx}`}
               >
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
@@ -369,7 +248,8 @@ export default function CitadelleVendre() {
                   {texte}
                 </p>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -384,7 +264,7 @@ export default function CitadelleVendre() {
       >
         <div className="max-w-5xl mx-auto px-4 md:px-8">
           <div className="text-center mb-14">
-            <SectionLabel><CheckCircle size={13} /> Processus</SectionLabel>
+            <SectionLabel><CheckCircle size={13} /> {t('vendre.label_process')}</SectionLabel>
             <SectionTitle light center>{t('vendre.process_title')}</SectionTitle>
             <SectionSubtitle light center>
               {t('vendre.process_sub')}
@@ -405,12 +285,12 @@ export default function CitadelleVendre() {
             />
 
             <div className="space-y-0">
-              {ETAPES.map((etape, i) => (
+              {etapes.map((etape, i) => (
                 <div
                   key={etape.num}
                   className="relative flex gap-6 md:gap-10 py-7 group transition-all duration-300"
                   style={{
-                    borderBottom: i < ETAPES.length - 1 ? "2px solid rgba(201,164,92,0.25)" : "none",
+                    borderBottom: i < etapes.length - 1 ? "2px solid rgba(201,164,92,0.25)" : "none",
                   }}
                   data-testid={`etape-${etape.num}`}
                 >
@@ -477,15 +357,17 @@ export default function CitadelleVendre() {
       <section className="py-20" style={{ background: "white" }} data-testid="vendre-modes">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="text-center mb-14">
-            <SectionLabel><Tag size={13} /> Flexibilité</SectionLabel>
-            <SectionTitle center>Modes de vente disponibles</SectionTitle>
+            <SectionLabel><Tag size={13} /> {t('vendre.label_flexibility')}</SectionLabel>
+            <SectionTitle center>{t('vendre.modes_title')}</SectionTitle>
             <SectionSubtitle center>
-              Choisissez le mode de vente adapté à votre stratégie et à la nature de votre actif.
+              {t('vendre.modes_sub')}
             </SectionSubtitle>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {MODES_VENTE.map(({ icon: Icon, titre, texte, badge, badgeColor }) => (
+            {modes.map(({ titre, texte, badge }, idx) => {
+              const { icon: Icon, badgeColor } = MODES_ICONS[idx];
+              return (
               <div
                 key={titre}
                 className="relative p-7 rounded-2xl transition-all duration-200 hover:-translate-y-1"
@@ -493,7 +375,7 @@ export default function CitadelleVendre() {
                   background: CITADELLE_COLORS.bg,
                   border: `1px solid ${CITADELLE_COLORS.border}`,
                 }}
-                data-testid={`mode-${titre.replace(/\s/g, "-").toLowerCase()}`}
+                data-testid={`mode-${idx}`}
               >
                 {badge && (
                   <span
@@ -516,7 +398,8 @@ export default function CitadelleVendre() {
                   {texte}
                 </p>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -531,15 +414,17 @@ export default function CitadelleVendre() {
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="text-center mb-14">
-            <SectionLabel><Star size={13} /> Services vendeurs</SectionLabel>
-            <SectionTitle light center>Services dédiés aux vendeurs</SectionTitle>
+            <SectionLabel><Star size={13} /> {t('vendre.label_seller_services')}</SectionLabel>
+            <SectionTitle light center>{t('vendre.seller_services_title')}</SectionTitle>
             <SectionSubtitle light center>
-              Valorisez votre projet et maximisez vos chances de vendre au meilleur prix.
+              {t('vendre.seller_services_sub')}
             </SectionSubtitle>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {SERVICES_VENDEUR.map(({ icon: Icon, titre, texte, type }, i) => (
+            {servicesVendeur.map(({ titre, texte, type }, i) => {
+              const Icon = SERVICES_ICONS[i];
+              return (
               <div
                 key={titre}
                 className="p-6 rounded-2xl flex flex-col gap-4 transition-all duration-200 hover:-translate-y-1"
@@ -571,7 +456,8 @@ export default function CitadelleVendre() {
                   <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>{texte}</p>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="text-center mt-10">
@@ -581,7 +467,7 @@ export default function CitadelleVendre() {
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
               data-testid="vendre-cta-voir-services"
             >
-              Voir tous les services
+              {t('vendre.see_all_services')}
               <ArrowRight size={18} />
             </Link>
           </div>
@@ -596,20 +482,14 @@ export default function CitadelleVendre() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Contenu */}
             <div>
-              <SectionLabel><Award size={13} /> Évaluation</SectionLabel>
-              <SectionTitle>Pourquoi faire évaluer son projet ?</SectionTitle>
+              <SectionLabel><Award size={13} /> {t('vendre.label_evaluation')}</SectionLabel>
+              <SectionTitle>{t('vendre.why_eval_title')}</SectionTitle>
               <p className="text-base leading-relaxed mb-8" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Un prix cohérent inspire confiance. Une évaluation professionnelle rassure les acheteurs
-                et raccourcit le délai de vente. Une valorisation réalisée par La Citadelle
-                améliore la visibilité de votre annonce dans notre réseau.
+                {t('vendre.why_eval_p')}
               </p>
 
               <div className="space-y-4">
-                {[
-                  "Un prix cohérent inspire immédiatement confiance aux acheteurs potentiels.",
-                  "Une évaluation professionnelle rassure et déclenche les offres sérieuses.",
-                  "Une valorisation ciblée améliore la visibilité de votre annonce dans notre réseau.",
-                ].map((point, i) => (
+                {evalPoints.map((point, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div
                       className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
@@ -638,10 +518,10 @@ export default function CitadelleVendre() {
                 </div>
                 <div>
                   <p className="font-black text-base" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                    Évalué par La Citadelle
+                    {t('vendre.badge_evaluated_title')}
                   </p>
                   <p className="text-sm mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    Badge affiché sur votre annonce — rassure les acheteurs et augmente la crédibilité.
+                    {t('vendre.badge_evaluated_desc')}
                   </p>
                 </div>
               </div>
@@ -659,16 +539,16 @@ export default function CitadelleVendre() {
                 </div>
                 <div>
                   <p className="font-black text-base" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                    Estimation Expert
+                    {t('vendre.badge_expert_title')}
                   </p>
                   <p className="text-sm mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    Rapport complet signé par un expert — référence pour les transactions importantes.
+                    {t('vendre.badge_expert_desc')}
                   </p>
                 </div>
               </div>
 
               <p className="text-xs text-center" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Ces badges sont attribués après validation par notre équipe. Non cessibles.
+                {t('vendre.badges_note')}
               </p>
             </div>
           </div>
@@ -693,31 +573,25 @@ export default function CitadelleVendre() {
             <Shield size={36} style={{ color: CITADELLE_COLORS.gold }} />
           </div>
 
-          <SectionLabel><Lock size={13} /> Sécurité & Confiance</SectionLabel>
+          <SectionLabel><Lock size={13} /> {t('vendre.label_security')}</SectionLabel>
 
           <h2
             className="font-bold mb-6 mt-4"
             style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.6rem)", color: "white" }}
           >
-            La Garde veille sur chaque transaction
+            {t('vendre.garde_title')}
           </h2>
 
           <p className="text-base leading-relaxed mb-4" style={{ color: "rgba(255,255,255,0.7)", maxWidth: "600px", margin: "0 auto 1rem" }}>
-            La Garde accompagne les vendeurs et les acheteurs afin d'assurer des transactions transparentes,
-            sécurisées et professionnelles.
+            {t('vendre.garde_p1')}
           </p>
 
           <p className="text-base leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.6)", maxWidth: "580px", margin: "0 auto 2.5rem" }}>
-            Nos experts peuvent intervenir depuis l'évaluation du projet jusqu'à la validation finale du transfert.
+            {t('vendre.garde_p2')}
           </p>
 
           <div className="flex flex-wrap justify-center gap-4">
-            {[
-              "Séquestre des fonds",
-              "Vérification des accès",
-              "Gestion des litiges",
-              "Transmission sécurisée",
-            ].map(item => (
+            {gardeChips.map(item => (
               <div
                 key={item}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
@@ -738,11 +612,11 @@ export default function CitadelleVendre() {
         <div className="max-w-3xl mx-auto px-4 md:px-8">
           <div className="text-center mb-14">
             <SectionLabel>{t('vendre.faq_title')}</SectionLabel>
-            <SectionTitle center>Vous avez des questions ?</SectionTitle>
+            <SectionTitle center>{t('vendre.faq_h2')}</SectionTitle>
           </div>
 
           <div className="space-y-3">
-            {FAQ_ITEMS.map((item, i) => (
+            {faqItems.map((item, i) => (
               <FaqItem
                 key={i}
                 item={item}
@@ -753,9 +627,9 @@ export default function CitadelleVendre() {
           </div>
 
           <p className="text-sm text-center mt-8" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Une question non répertoriée ?{" "}
+            {t('vendre.faq_not_listed')}{" "}
             <Link to="/citadelle/contact" className="font-semibold hover:underline" style={{ color: CITADELLE_COLORS.gold }}>
-              Contactez-nous
+              {t('vendre.faq_contact')}
             </Link>
           </p>
         </div>
@@ -780,10 +654,10 @@ export default function CitadelleVendre() {
             className="font-bold mb-5"
             style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(2rem, 5vw, 3rem)", color: "white" }}
           >
-            Prêt à vendre votre projet ?
+            {t('vendre.cta_title')}
           </h2>
           <p className="text-base mb-10 leading-relaxed" style={{ color: "rgba(255,255,255,0.7)", maxWidth: "500px", margin: "0 auto 2.5rem" }}>
-            Publiez votre annonce gratuitement et trouvez le bon acheteur grâce à La Citadelle Numérique.
+            {t('vendre.cta_sub')}
           </p>
           <Link
             to="/citadelle/espace-membre/mes-annonces/creer"
@@ -795,7 +669,7 @@ export default function CitadelleVendre() {
             <ArrowRight size={22} />
           </Link>
           <p className="mt-5 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Gratuit · Validé sous 24h · Commission 5% uniquement si la vente aboutit
+            {t('vendre.cta_note')}
           </p>
         </div>
       </section>

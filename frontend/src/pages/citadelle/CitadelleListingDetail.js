@@ -47,11 +47,11 @@ function useTempsRestant(auctionEndsAt) {
 }
 
 const TYPE_CONFIG = {
-  website:        { label: "Site internet",    icon: Globe },
-  ecommerce:      { label: "E-commerce",       icon: ShoppingCart },
-  saas:           { label: "SaaS",             icon: Cloud },
-  webapp:         { label: "Application web",  icon: Monitor },
-  social_account: { label: "Réseau social",    icon: Users },
+  website:        { key: "type_website",        icon: Globe },
+  ecommerce:      { key: "type_ecommerce",      icon: ShoppingCart },
+  saas:           { key: "type_saas",           icon: Cloud },
+  webapp:         { key: "type_webapp",         icon: Monitor },
+  social_account: { key: "type_social_account", icon: Users },
 };
 
 export default function CitadelleListingDetail() {
@@ -114,13 +114,15 @@ export default function CitadelleListingDetail() {
   useEffect(() => {
     if (!listing) return;
     const cfg = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
+    const typeLbl = t(`listing_detail.${cfg.key}`);
+    const forSale = t('listing_detail.for_sale_suffix');
     const imgs = (listing.images || []).filter(f => f && isImageFile(f));
     const canonical = `${SEO_DOMAIN}/citadelle/annonces/${listing.slug}`;
     const price = listing.is_auction ? (listing.auction_current_bid || listing.price) : listing.price;
     const ogImg = imgs.length > 0 ? getListingImageUrl(imgs[0]) : `${SEO_DOMAIN}/og-default.png`;
-    const seoTitle = `${listing.title} — ${cfg.label} à vendre | La Citadelle Numérique`.slice(0, 65);
+    const seoTitle = `${listing.title} — ${typeLbl} ${forSale} | La Citadelle Numérique`.slice(0, 65);
     const parts = [
-      `${cfg.label} à vendre`,
+      `${typeLbl} ${forSale}`,
       listing.technologies?.length ? `Technologies : ${listing.technologies.slice(0, 3).join(", ")}` : null,
       listing.monthly_traffic != null ? `${listing.monthly_traffic.toLocaleString("fr-FR")} visiteurs/mois` : null,
       listing.monthly_revenue != null ? `${listing.monthly_revenue.toLocaleString("fr-FR")} €/mois de CA` : null,
@@ -165,7 +167,7 @@ export default function CitadelleListingDetail() {
         "@context": "https://schema.org", "@type": "Product",
         name: listing.title,
         description: (listing.description || seoDesc).slice(0, 500),
-        category: cfg.label,
+        category: typeLbl,
         ...(imgs.length > 0 ? { image: ogImg } : {}),
         offers: {
           "@type": "Offer", price, priceCurrency: "EUR",
@@ -177,8 +179,8 @@ export default function CitadelleListingDetail() {
       {
         "@context": "https://schema.org", "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Accueil", item: `${SEO_DOMAIN}/citadelle` },
-          { "@type": "ListItem", position: 2, name: "Annonces", item: `${SEO_DOMAIN}/citadelle/annonces` },
+          { "@type": "ListItem", position: 1, name: t('listing_detail.bc_home'), item: `${SEO_DOMAIN}/citadelle` },
+          { "@type": "ListItem", position: 2, name: t('listing_detail.bc_listings'), item: `${SEO_DOMAIN}/citadelle/annonces` },
           { "@type": "ListItem", position: 3, name: listing.title, item: canonical },
         ],
       },
@@ -211,7 +213,7 @@ export default function CitadelleListingDetail() {
     <CitadelleLayout>
       <div className="max-w-xl mx-auto px-4 py-24 text-center">
         <p className="text-5xl mb-4">🏰</p>
-        <h1 className="text-xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>Annonce introuvable</h1>
+        <h1 className="text-xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>{t('listing_detail.not_found')}</h1>
         <Link to="/citadelle/annonces" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm" style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
           <ArrowLeft size={16} /> {t('listing_detail.back')}
         </Link>
@@ -229,16 +231,15 @@ export default function CitadelleListingDetail() {
             <span className="text-xl font-black">18+</span>
           </div>
           <h1 className="text-2xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-            Contenu adulte
+            {t('listing_detail.adult_title')}
           </h1>
           <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Cette annonce contient du contenu réservé aux adultes. La consultation du détail est réservée aux comptes vérifiés.
-            Connectez-vous ou créez un compte pour continuer.
+            {t('listing_detail.adult_desc')}
           </p>
           <div className="flex gap-3 justify-center">
             <Link to="/citadelle/connexion" className="px-5 py-2.5 rounded-xl text-sm font-bold"
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }} data-testid="adult-login-btn">
-              Se connecter
+              {t('listing_detail.adult_login')}
             </Link>
             <Link to="/citadelle/annonces" className="px-5 py-2.5 rounded-xl text-sm font-medium"
               style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
@@ -250,7 +251,8 @@ export default function CitadelleListingDetail() {
     );
   }
 
-  const { label: typeLabel, icon: TypeIcon } = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
+  const { key: typeKey, icon: TypeIcon } = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
+  const typeLabel = t(`listing_detail.${typeKey}`);
   const allFiles = listing.images?.filter(Boolean) || [];
   const images = allFiles.filter(f => isImageFile(f));
   const documents = allFiles.filter(f => isDocumentFile(f));
@@ -269,9 +271,9 @@ export default function CitadelleListingDetail() {
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-8" data-testid="listing-detail">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-          <Link to="/citadelle" className="hover:opacity-80">Accueil</Link>
+          <Link to="/citadelle" className="hover:opacity-80">{t('listing_detail.bc_home')}</Link>
           <span>/</span>
-          <Link to="/citadelle/annonces" className="hover:opacity-80">Annonces</Link>
+          <Link to="/citadelle/annonces" className="hover:opacity-80">{t('listing_detail.bc_listings')}</Link>
           <span>/</span>
           <span style={{ color: CITADELLE_COLORS.blue }} className="truncate max-w-xs">{listing.title}</span>
         </div>
@@ -288,8 +290,8 @@ export default function CitadelleListingDetail() {
             title={siblings.prev?.title || ""}
           >
             <ArrowLeft size={15} />
-            <span className="hidden sm:inline">Annonce précédente</span>
-            <span className="sm:hidden">Précédente</span>
+            <span className="hidden sm:inline">{t('listing_detail.nav_prev')}</span>
+            <span className="sm:hidden">{t('listing_detail.nav_prev_short')}</span>
           </button>
 
           <Link
@@ -298,7 +300,7 @@ export default function CitadelleListingDetail() {
             style={{ color: CITADELLE_COLORS.textMuted }}
             data-testid="listing-back-all"
           >
-            Toutes les annonces
+            {t('listing_detail.nav_all')}
           </Link>
 
           <button
@@ -310,8 +312,8 @@ export default function CitadelleListingDetail() {
             data-testid="listing-next-btn"
             title={siblings.next?.title || ""}
           >
-            <span className="hidden sm:inline">Annonce suivante</span>
-            <span className="sm:hidden">Suivante</span>
+            <span className="hidden sm:inline">{t('listing_detail.nav_next')}</span>
+            <span className="sm:hidden">{t('listing_detail.nav_next_short')}</span>
             <ArrowLeft size={15} style={{ transform: "rotate(180deg)" }} />
           </button>
         </div>
@@ -324,10 +326,10 @@ export default function CitadelleListingDetail() {
           const fmt = (n) => n?.toLocaleString("fr-FR") ?? null;
           const multipleCA = (ca12 && listing.price) ? (listing.price / ca12).toFixed(1) : null;
           const metrics = [
-            { icon: BarChart2,  label: "CA 12 mois",      value: ca12    ? `${fmt(ca12)} €`      : "NC", color: "#34d399" },
-            { icon: TrendingUp, label: "Rentabilité/mois", value: rentab  ? `${fmt(rentab)} €`    : "NC", color: "#34d399" },
-            { icon: Eye,        label: "Visiteurs/mois",   value: listing.monthly_traffic ? fmt(listing.monthly_traffic) : "NC", color: "#60a5fa" },
-            { icon: DollarSign, label: "Multiple CA",      value: multipleCA ? `${multipleCA}x`   : "NC", color: CITADELLE_COLORS.gold },
+            { icon: BarChart2,  label: t('listing_detail.metric_ca12'),      value: ca12    ? `${fmt(ca12)} €`      : t('listing_detail.metric_na'), color: "#34d399" },
+            { icon: TrendingUp, label: t('listing_detail.metric_profitability'), value: rentab  ? `${fmt(rentab)} €`    : t('listing_detail.metric_na'), color: "#34d399" },
+            { icon: Eye,        label: t('listing_detail.metric_visitors'),   value: listing.monthly_traffic ? fmt(listing.monthly_traffic) : t('listing_detail.metric_na'), color: "#60a5fa" },
+            { icon: DollarSign, label: t('listing_detail.metric_multiple'),      value: multipleCA ? `${multipleCA}x`   : t('listing_detail.metric_na'), color: CITADELLE_COLORS.gold },
           ];
           return (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6" data-testid="listing-metrics-bar">
@@ -355,9 +357,9 @@ export default function CitadelleListingDetail() {
                   style={{ background: "linear-gradient(135deg, #1a1626 0%, #2d1b2e 100%)" }} data-testid="adult-cover">
                   <span className="flex items-center justify-center w-16 h-16 rounded-full text-xl font-black"
                     style={{ background: "rgba(220,38,38,0.2)", color: "#f87171", border: "2px solid #f87171" }}>18+</span>
-                  <span className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.85)" }}>Contenu adulte</span>
+                  <span className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.85)" }}>{t('listing_detail.adult_cover_label')}</span>
                   <span className="text-xs max-w-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
-                    Aucune image ni lien du site n'est affiché pour les annonces à contenu adulte.
+                    {t('listing_detail.adult_cover_desc')}
                   </span>
                 </div>
               ) : displayImages[activeImg] ? (
@@ -366,7 +368,7 @@ export default function CitadelleListingDetail() {
                   <img src={getListingImageUrl(displayImages[activeImg])} alt={listing.title} className="w-full h-full object-cover" onError={e => e.target.style.display="none"} />
                   <span className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{ background: "rgba(8,23,41,0.8)", color: "#fff", backdropFilter: "blur(4px)" }}>
-                    <ZoomIn size={14} /> Agrandir
+                    <ZoomIn size={14} /> {t('listing_detail.enlarge')}
                   </span>
                 </button>
               ) : (
@@ -401,7 +403,7 @@ export default function CitadelleListingDetail() {
               return (
                 <div className="flex items-center gap-3 py-3">
                   <Share2 size={14} style={{ color: CITADELLE_COLORS.textMuted }} />
-                  <span className="text-sm font-semibold mr-1" style={{ color: CITADELLE_COLORS.textMuted }}>Partager :</span>
+                  <span className="text-sm font-semibold mr-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.share_label')}</span>
                   <div className="flex items-center gap-2">
                     {shareLinks.map(({ href, icon: Icon, label }) => (
                       <a key={label} href={href} target={href.startsWith("mailto") ? undefined : "_blank"} rel="noopener noreferrer"
@@ -412,7 +414,7 @@ export default function CitadelleListingDetail() {
                     ))}
                     <button onClick={() => navigator.clipboard.writeText(`${SEO_DOMAIN}/citadelle/annonces/${listing.slug}`)}
                       className="w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
-                      style={btnStyle} title="Copier le lien">
+                      style={btnStyle} title={t('listing_detail.copy_link')}>
                       <Link2 size={14} />
                     </button>
                   </div>
@@ -471,21 +473,21 @@ export default function CitadelleListingDetail() {
                   )}
                   {listing.monthly_traffic > 0 && (
                     <div className="p-3 rounded-xl" style={{ background: "rgba(15,39,71,0.04)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
-                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Visiteurs/mois</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.lbl_visitors_month')}</p>
                       <p className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{listing.monthly_traffic.toLocaleString("fr-FR")}</p>
                     </div>
                   )}
                   {listing.monthly_revenue > 0 && (
                     <div className="p-3 rounded-xl" style={{ background: "rgba(15,39,71,0.04)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
-                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>CA 12 mois</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.lbl_ca_12m')}</p>
                       <p className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{(listing.monthly_revenue * 12).toLocaleString("fr-FR")} €</p>
                     </div>
                   )}
                   {listing.age_months > 0 && (
                     <div className="p-3 rounded-xl" style={{ background: "rgba(15,39,71,0.04)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
-                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Ancienneté</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.lbl_seniority')}</p>
                       <p className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>
-                        {listing.age_months >= 12 ? `${Math.floor(listing.age_months / 12)} an${Math.floor(listing.age_months / 12) > 1 ? "s" : ""}` : `${listing.age_months} mois`}
+                        {listing.age_months >= 12 ? t(Math.floor(listing.age_months / 12) > 1 ? 'listing_detail.year_other' : 'listing_detail.year_one', { count: Math.floor(listing.age_months / 12) }) : `${listing.age_months} ${t('listing_detail.months_suffix')}`}
                       </p>
                     </div>
                   )}
@@ -502,13 +504,13 @@ export default function CitadelleListingDetail() {
                 <div className="space-y-3">
                   {listing.traffic_sources && (
                     <div className="flex items-start justify-between gap-4">
-                      <span className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>Sources de trafic</span>
+                      <span className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.lbl_traffic_sources')}</span>
                       <span className="text-sm font-semibold text-right" style={{ color: CITADELLE_COLORS.blue }}>{listing.traffic_sources}</span>
                     </div>
                   )}
                   {listing.main_keywords && (
                     <div className="flex items-start justify-between gap-4">
-                      <span className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>Mots-clés principaux</span>
+                      <span className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.lbl_keywords_main')}</span>
                       <span className="text-sm font-semibold text-right" style={{ color: CITADELLE_COLORS.blue }}>{listing.main_keywords}</span>
                     </div>
                   )}
@@ -525,25 +527,25 @@ export default function CitadelleListingDetail() {
                 <div className="space-y-3">
                   {listing.niche && (
                     <div className="flex items-start justify-between gap-4">
-                      <span className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>Secteur / Niche</span>
+                      <span className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.lbl_sector_niche')}</span>
                       <span className="text-sm font-semibold text-right" style={{ color: CITADELLE_COLORS.blue }}>{listing.niche}</span>
                     </div>
                   )}
                   {listing.region && (
                     <div className="flex items-start justify-between gap-4">
-                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><MapPin size={12} /> Région</span>
+                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><MapPin size={12} /> {t('listing_detail.lbl_region')}</span>
                       <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{listing.region}</span>
                     </div>
                   )}
                   {listing.registered_clients != null && (
                     <div className="flex items-start justify-between gap-4">
-                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><Users size={12} /> Clients enregistrés</span>
+                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><Users size={12} /> {t('listing_detail.lbl_registered_clients')}</span>
                       <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{listing.registered_clients.toLocaleString("fr-FR")}</span>
                     </div>
                   )}
                   {listing.url_preview && listing.url_public && (
                     <div className="flex items-start justify-between gap-4">
-                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><Globe size={12} /> URL du site</span>
+                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><Globe size={12} /> {t('listing_detail.lbl_url_site')}</span>
                       <a href={listing.url_preview} target="_blank" rel="noopener noreferrer"
                         className="text-sm font-semibold truncate max-w-[200px] hover:underline" style={{ color: "#C9A45C" }}>
                         {listing.url_preview.replace(/^https?:\/\//, "")}
@@ -552,7 +554,7 @@ export default function CitadelleListingDetail() {
                   )}
                   {listing.technologies?.length > 0 && (
                     <div>
-                      <p className="text-sm mb-2" style={{ color: CITADELLE_COLORS.textMuted }}>Technologies</p>
+                      <p className="text-sm mb-2" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.lbl_technologies')}</p>
                       <div className="flex flex-wrap gap-2">
                         {listing.technologies.map(t => (
                           <span key={t} className="px-3 py-1 rounded-lg text-xs font-semibold"
@@ -580,13 +582,13 @@ export default function CitadelleListingDetail() {
                 <div className="space-y-3">
                   {listing.ideal_buyer && (
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Repreneur idéal</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.ideal_buyer_label')}</p>
                       <p className="text-sm leading-relaxed" style={{ color: CITADELLE_COLORS.blue }}>{listing.ideal_buyer}</p>
                     </div>
                   )}
                   {listing.weekly_hours != null && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><Clock size={12} /> Temps consacré / semaine</span>
+                      <span className="text-sm flex items-center gap-1" style={{ color: CITADELLE_COLORS.textMuted }}><Clock size={12} /> {t('listing_detail.time_per_week')}</span>
                       <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{listing.weekly_hours}h</span>
                     </div>
                   )}
@@ -597,7 +599,7 @@ export default function CitadelleListingDetail() {
             {/* ── Points forts / Points faibles ───────────────────────────────── */}
             {(listing.strengths || listing.weaknesses) && (
               <div className="p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
-                <h2 className="font-bold mb-4" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Points forts &amp; faibles</h2>
+                <h2 className="font-bold mb-4" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>{t('listing_detail.strengths_weaknesses')}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {listing.strengths && (
                     <div className="p-4 rounded-xl" style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.2)" }}>
@@ -654,10 +656,10 @@ export default function CitadelleListingDetail() {
                 </div>
                 <div>
                   <p className="font-black text-sm" style={{ color: "#C9A45C", letterSpacing: "0.3px" }}>
-                    Vérifié par La Garde
+                    {t('listing_detail.garde_verified_title')}
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>
-                    Identité du vendeur, droits de propriété, revenus et accès contrôlés par notre équipe.
+                    {t('listing_detail.garde_verified_desc')}
                   </p>
                 </div>
               </div>
@@ -671,13 +673,13 @@ export default function CitadelleListingDetail() {
               {listing.is_verified && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
                   style={{ background: "rgba(34,197,94,0.1)", color: "#22C55E" }}>
-                  <ShieldCheck size={13} /> Vérifié
+                  <ShieldCheck size={13} /> {t('listing_detail.badge_verified')}
                 </span>
               )}
               {listing.is_featured && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
                   style={{ background: "rgba(201,164,92,0.15)", color: CITADELLE_COLORS.gold }}>
-                  <Star size={13} /> Recommandé
+                  <Star size={13} /> {t('listing_detail.badge_recommended')}
                 </span>
               )}
             </div>
@@ -697,7 +699,7 @@ export default function CitadelleListingDetail() {
                       style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)" }}>
                       <Clock size={14} style={{ color: "#DC2626" }} />
                       <span className="text-xs font-bold" style={{ color: "#DC2626" }}>
-                        Enchère en cours — {tempsRestant} restants
+                        {t('listing_detail.auction_ongoing', { time: tempsRestant })}
                       </span>
                     </div>
                   )}
@@ -705,14 +707,14 @@ export default function CitadelleListingDetail() {
                   {/* Enchère courante */}
                   <div className="mb-2">
                     <p className="text-xs font-semibold mb-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      {(listing.auction_bids?.length || 0) === 0 ? "Prix de départ" : "Enchère en cours"}
+                      {(listing.auction_bids?.length || 0) === 0 ? t('listing_detail.start_price') : t('listing_detail.current_bid')}
                     </p>
                     <span className="text-3xl font-black" style={{ color: "#DC2626", fontFamily: "'Montserrat', sans-serif" }}>
                       {(listing.auction_current_bid || listing.price)?.toLocaleString("fr-FR")} €
                     </span>
                     {listing.auction_bids?.length > 0 && (
                       <span className="ml-2 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                        ({listing.auction_bids.length} enchère{listing.auction_bids.length > 1 ? "s" : ""})
+                        {t(listing.auction_bids.length > 1 ? 'listing_detail.bids_count_other' : 'listing_detail.bids_count_one', { count: listing.auction_bids.length })}
                       </span>
                     )}
                   </div>
@@ -724,7 +726,7 @@ export default function CitadelleListingDetail() {
                   )}
                   {listing.auction_show_reserve && (
                     <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      Prix de réserve confidentiel
+                      {t('listing_detail.reserve_confidential')}
                     </p>
                   )}
 
@@ -734,7 +736,7 @@ export default function CitadelleListingDetail() {
                       style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.15)" }}>
                       <Zap size={13} style={{ color: "#22C55E" }} />
                       <span className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                        Achat immédiat : <strong style={{ color: CITADELLE_COLORS.blue }}>{listing.auction_buy_now_price.toLocaleString("fr-FR")} €</strong>
+                        {t('listing_detail.buy_now_immediate')} <strong style={{ color: CITADELLE_COLORS.blue }}>{listing.auction_buy_now_price.toLocaleString("fr-FR")} €</strong>
                       </span>
                     </div>
                   )}
@@ -744,7 +746,7 @@ export default function CitadelleListingDetail() {
                     <div className="space-y-3 mt-4">
                       {bidSuccess ? (
                         <div className="p-3 rounded-xl text-xs text-center" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", color: "#22C55E" }}>
-                          Votre enchère a bien été enregistrée ! Un email de confirmation vous a été envoyé.
+                          {t('listing_detail.bid_success')}
                         </div>
                       ) : (
                         <>
@@ -755,7 +757,7 @@ export default function CitadelleListingDetail() {
                           )}
                           <div>
                             <label className="block text-xs font-semibold mb-1" style={{ color: CITADELLE_COLORS.blue }}>
-                              Votre enchère (€) — minimum {((listing.auction_bids?.length || 0) === 0 ? (listing.auction_current_bid || listing.price) : (listing.auction_current_bid || listing.price) + 10).toLocaleString("fr-FR")} €
+                              {t('listing_detail.your_bid_label', { min: ((listing.auction_bids?.length || 0) === 0 ? (listing.auction_current_bid || listing.price) : (listing.auction_current_bid || listing.price) + 10).toLocaleString("fr-FR") })}
                             </label>
                             <input type="number" value={bidAmount} onChange={e => { setBidAmount(e.target.value); setBidError(""); }}
                               className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
@@ -765,7 +767,7 @@ export default function CitadelleListingDetail() {
                           <button onClick={async () => {
                             setBidError("");
                             const amount = parseFloat(bidAmount);
-                            if (!amount || amount <= 0) { setBidError("Montant invalide"); return; }
+                            if (!amount || amount <= 0) { setBidError(t('listing_detail.amount_invalid')); return; }
                             setBidLoading(true);
                             try {
                               const res = await citadelleApi.post(`/listings/${listing.id}/bid`, { amount });
@@ -774,21 +776,21 @@ export default function CitadelleListingDetail() {
                               setBidAmount("");
                               setTimeout(() => setBidSuccess(false), 5000);
                             } catch (err) {
-                              setBidError(err.response?.data?.detail || "Erreur lors de l'enchère");
+                              setBidError(err.response?.data?.detail || t('listing_detail.bid_error'));
                             } finally { setBidLoading(false); }
                           }} disabled={bidLoading}
                             className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-all hover:scale-[1.02] mt-3"
                             style={{ background: "#DC2626", color: "white" }}
                             data-testid="btn-place-bid">
                             {bidLoading ? <div className="w-4 h-4 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: "white" }} />
-                              : <><Hammer size={15} /> Enchérir</>}
+                              : <><Hammer size={15} /> {t('listing_detail.bid_place')}</>}
                           </button>
                           {listing.auction_buy_now_price && (
                             <button onClick={() => setOfferModal(true)}
                               className="w-full py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02] mt-3"
                               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                               data-testid="btn-buy-now">
-                              <Zap size={14} /> Acheter immédiatement — {listing.auction_buy_now_price.toLocaleString("fr-FR")} €
+                              <Zap size={14} /> {t('listing_detail.buy_now_btn', { price: listing.auction_buy_now_price.toLocaleString("fr-FR") })}
                             </button>
                           )}
                         </>
@@ -798,7 +800,7 @@ export default function CitadelleListingDetail() {
                     <AnnonceSoldee listing={listing} user={user} />
                   ) : isAuthenticated && !canTransact && user?.id !== listing.seller_id ? (
                     <div className="p-3 rounded-xl text-xs" style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.3)", color: "#9A3412" }} data-testid="action-restricted-notice">
-                      Actions indisponibles : votre compte fait l'objet d'une sanction. Vous ne pouvez pas enchérir pour le moment.
+                      {t('listing_detail.action_restricted_bid')}
                     </div>
                   ) : !isAuthenticated ? (
                     <button
@@ -806,7 +808,7 @@ export default function CitadelleListingDetail() {
                       className="block w-full py-3 rounded-xl font-bold text-sm text-center transition-all hover:scale-[1.02]"
                       style={{ background: "#DC2626", color: "white" }}
                       data-testid="btn-auth-encherir">
-                      Se connecter pour enchérir
+                      {t('listing_detail.login_to_bid')}
                     </button>
                   ) : null}
                 </div>
@@ -845,7 +847,7 @@ export default function CitadelleListingDetail() {
                       </>
                     ) : isAuthenticated && !canTransact && user?.id !== listing.seller_id ? (
                       <div className="p-3 rounded-xl text-xs" style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.3)", color: "#9A3412" }} data-testid="action-restricted-notice">
-                        Actions indisponibles : votre compte fait l'objet d'une sanction. Vous ne pouvez pas acheter ni faire d'offre pour le moment.
+                        {t('listing_detail.action_restricted_buy')}
                       </div>
                     ) : !isAuthenticated ? (
                       <button
@@ -870,13 +872,13 @@ export default function CitadelleListingDetail() {
                     <Star size={18} style={{ color: "#C9A45C" }} />
                   </div>
                   <div>
-                    <p className="font-black text-sm" style={{ color: "#C9A45C", letterSpacing: "0.3px" }}>Votre annonce est à la Une</p>
+                    <p className="font-black text-sm" style={{ color: "#C9A45C", letterSpacing: "0.3px" }}>{t('listing_detail.boost_active_title')}</p>
                     <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>
                       {listing.boost_plan === "until_sale"
-                        ? "Mise en avant jusqu'à la vente."
+                        ? t('listing_detail.boost_until_sale')
                         : listing.boost_expires_at
-                          ? `Mise en avant jusqu'au ${new Date(listing.boost_expires_at).toLocaleDateString("fr-FR")}.`
-                          : "Mise en avant active."}
+                          ? t('listing_detail.boost_until_date', { date: new Date(listing.boost_expires_at).toLocaleDateString("fr-FR") })
+                          : t('listing_detail.boost_active_generic')}
                     </p>
                   </div>
                 </div>
@@ -885,10 +887,10 @@ export default function CitadelleListingDetail() {
                   style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.25)" }}>
                   <div className="flex items-center gap-2 mb-1">
                     <Star size={15} style={{ color: CITADELLE_COLORS.gold }} />
-                    <p className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Boostez votre visibilité</p>
+                    <p className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>{t('listing_detail.boost_cta_title')}</p>
                   </div>
                   <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    Placez votre annonce dans le carrousel « À la Une » sur l'accueil et la liste des annonces. Dès 19 €.
+                    {t('listing_detail.boost_cta_desc')}
                   </p>
                   <button
                     type="button"
@@ -896,7 +898,7 @@ export default function CitadelleListingDetail() {
                     className="w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
                     style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                     data-testid="btn-boost-listing">
-                    <Star size={14} /> Mettre à la Une
+                    <Star size={14} /> {t('listing_detail.boost_cta_btn')}
                   </button>
                   {ownerUpsellStep === "boost" && (
                     <button
@@ -905,7 +907,7 @@ export default function CitadelleListingDetail() {
                       className="w-full mt-2 py-1.5 text-xs font-semibold"
                       style={{ color: CITADELLE_COLORS.textMuted }}
                       data-testid="owner-boost-decline">
-                      Non merci
+                      {t('listing_detail.no_thanks')}
                     </button>
                   )}
                 </div>
@@ -919,12 +921,12 @@ export default function CitadelleListingDetail() {
 
             {/* Métriques clés */}
             <div className="p-5 rounded-2xl space-y-3" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
-              <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>Chiffres clés</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.key_figures')}</h3>
               {[
-                { icon: TrendingUp, label: "Revenus mensuels", value: listing.monthly_revenue != null ? `${listing.monthly_revenue.toLocaleString("fr-FR")} €` : "Non communiqué" },
-                { icon: BarChart2, label: "Trafic mensuel", value: listing.monthly_traffic != null ? `${listing.monthly_traffic.toLocaleString("fr-FR")} visiteurs` : "Non communiqué" },
-                { icon: Calendar, label: "Ancienneté", value: listing.age_months != null ? `${listing.age_months} mois` : "Non communiqué" },
-                { icon: Eye, label: "Vues de l'annonce", value: listing.views_count ?? 0 },
+                { icon: TrendingUp, label: t('listing_detail.fig_revenue'), value: listing.monthly_revenue != null ? `${listing.monthly_revenue.toLocaleString("fr-FR")} €` : t('listing_detail.not_provided') },
+                { icon: BarChart2, label: t('listing_detail.fig_traffic'), value: listing.monthly_traffic != null ? `${listing.monthly_traffic.toLocaleString("fr-FR")} ${t('listing_detail.visitors_suffix')}` : t('listing_detail.not_provided') },
+                { icon: Calendar, label: t('listing_detail.fig_seniority'), value: listing.age_months != null ? `${listing.age_months} ${t('listing_detail.months_suffix')}` : t('listing_detail.not_provided') },
+                { icon: Eye, label: t('listing_detail.fig_views'), value: listing.views_count ?? 0 },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
@@ -940,7 +942,7 @@ export default function CitadelleListingDetail() {
               <div className="p-4 rounded-xl" style={{ background: "rgba(201,164,92,0.07)", border: `1px solid rgba(201,164,92,0.2)` }}>
                 <div className="flex items-center gap-2 mb-1.5">
                   <Globe size={16} style={{ color: CITADELLE_COLORS.gold }} />
-                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: CITADELLE_COLORS.textMuted }}>Adresse du site</span>
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.site_address')}</span>
                 </div>
                 <a href={listing.url_preview} target="_blank" rel="noopener noreferrer nofollow"
                   className="text-xs font-semibold underline break-all" style={{ color: CITADELLE_COLORS.blue }}
@@ -953,20 +955,20 @@ export default function CitadelleListingDetail() {
                 <div className="flex items-start gap-3">
                   <Lock size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0, marginTop: 2 }} />
                   <p className="text-xs leading-relaxed" style={{ color: CITADELLE_COLORS.textMuted }} data-testid="listing-url-hidden-msg">
-                    Par choix du vendeur, l'adresse du site reste confidentielle. Elle sera communiquée à l'acheteur dès qu'il manifeste un intérêt sérieux ou à l'entame du processus de vente sécurisé.
+                    {t('listing_detail.url_hidden_msg')}
                   </p>
                 </div>
                 {listing.status !== "sold" && user?.id !== listing.seller_id && (
                   <button
                     onClick={() => {
                       if (!isAuthenticated) { setAuthModal(true); return; }
-                      setContactMessage(`Bonjour, votre annonce « ${listing.title} » m'intéresse. Pourriez-vous me communiquer l'adresse du site afin que je puisse l'étudier plus en détail ? Merci d'avance.`);
+                      setContactMessage(t('listing_detail.contact_url_prefill', { title: listing.title }));
                       setContactModal(true);
                     }}
                     className="w-full mt-3 py-2.5 rounded-xl font-semibold text-xs transition-all hover:scale-[1.02]"
                     style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                     data-testid="btn-request-url">
-                    Demander l'adresse au vendeur
+                    {t('listing_detail.request_url_btn')}
                   </button>
                 )}
               </div>
@@ -984,8 +986,8 @@ export default function CitadelleListingDetail() {
                 chooser
                 testid="buyer-estimation-upsell"
                 targetServices={BUYER_ESTIMATION_SERVICES}
-                heading="Ce site vaut-il le coup ?"
-                subheading="Avant d'acheter, faites estimer cette annonce par nos experts pour investir en toute confiance."
+                heading={t('listing_detail.buyer_upsell_heading')}
+                subheading={t('listing_detail.buyer_upsell_sub')}
                 clientMessage={`Estimation acheteur pour l'annonce « ${listing.title} » (réf ${listing.id})`}
                 onRequireAuth={() => setAuthModal(true)}
               />
@@ -1005,8 +1007,8 @@ export default function CitadelleListingDetail() {
               {t('listing_detail.offer_modal_title')}
             </h3>
             <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Prix affiché : {listing.price?.toLocaleString("fr-FR")} €
-              {listing.price_negotiable && " (négociable)"}
+              {t('listing_detail.offer_price_shown')} {listing.price?.toLocaleString("fr-FR")} €
+              {listing.price_negotiable && t('listing_detail.negotiable_paren')}
             </p>
 
             {offerError && (
@@ -1027,7 +1029,7 @@ export default function CitadelleListingDetail() {
               <div>
                 <label className="block text-sm font-medium mb-1" style={{ color: CITADELLE_COLORS.blue }}>{t('listing_detail.offer_message')}</label>
                 <textarea value={offerMessage} onChange={e => setOfferMessage(e.target.value)} rows={4}
-                  placeholder="Présentez-vous et expliquez votre intérêt pour cet actif..."
+                  placeholder={t('listing_detail.offer_msg_ph')}
                   className="w-full px-4 py-2.5 rounded-xl text-sm outline-none resize-none"
                   style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
                   data-testid="offer-message" />
@@ -1042,8 +1044,8 @@ export default function CitadelleListingDetail() {
               </button>
               <button onClick={async () => {
                 setOfferError("");
-                if (!offerAmount || parseFloat(offerAmount) <= 0) { setOfferError("Montant invalide"); return; }
-                if (!offerMessage || offerMessage.length < 10) { setOfferError("Message trop court (min. 10 caractères)"); return; }
+                if (!offerAmount || parseFloat(offerAmount) <= 0) { setOfferError(t('listing_detail.amount_invalid')); return; }
+                if (!offerMessage || offerMessage.length < 10) { setOfferError(t('listing_detail.msg_too_short')); return; }
                 setOfferLoading(true);
                 try {
                   const res = await citadelleApi.post("/transactions/offer", {
@@ -1054,7 +1056,7 @@ export default function CitadelleListingDetail() {
                   setOfferModal(false);
                   navigate(`/citadelle/espace-membre/transactions/${res.data.id}`);
                 } catch (err) {
-                  setOfferError(err.response?.data?.detail || "Erreur lors de l'envoi de l'offre");
+                  setOfferError(err.response?.data?.detail || t('listing_detail.offer_error_send'));
                 } finally { setOfferLoading(false); }
               }} disabled={offerLoading}
                 className="flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60"
@@ -1063,7 +1065,7 @@ export default function CitadelleListingDetail() {
                 {offerLoading ? (
                   <div className="w-4 h-4 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
                 ) : (
-                  <><Send size={14} /> Envoyer l'offre</>
+                  <><Send size={14} /> {t('listing_detail.offer_send')}</>
                 )}
               </button>
             </div>
@@ -1077,7 +1079,7 @@ export default function CitadelleListingDetail() {
               {t('listing_detail.contact_title')}
             </h3>
             <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Posez vos questions avant de faire une offre.
+              {t('listing_detail.contact_subtitle')}
             </p>
 
             {contactError && (
@@ -1087,7 +1089,7 @@ export default function CitadelleListingDetail() {
             )}
 
             <textarea value={contactMessage} onChange={e => setContactMessage(e.target.value)} rows={4}
-              placeholder="Bonjour, j'aurais quelques questions sur votre annonce..."
+              placeholder={t('listing_detail.contact_msg_ph')}
               className="w-full px-4 py-2.5 rounded-xl text-sm outline-none resize-none"
               style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
               data-testid="contact-message" />
@@ -1100,7 +1102,7 @@ export default function CitadelleListingDetail() {
               </button>
               <button onClick={async () => {
                 setContactError("");
-                if (!contactMessage || contactMessage.trim().length < 1) { setContactError("Veuillez saisir un message"); return; }
+                if (!contactMessage || contactMessage.trim().length < 1) { setContactError(t('listing_detail.msg_required')); return; }
                 setContactLoading(true);
                 try {
                   const res = await citadelleApi.post("/messages/send", {
@@ -1117,7 +1119,7 @@ export default function CitadelleListingDetail() {
                     navigate(`/citadelle/espace-membre/messages/${res.data.conversation_id}`);
                   }
                 } catch (err) {
-                  setContactError(err.response?.data?.detail || "Erreur lors de l'envoi");
+                  setContactError(err.response?.data?.detail || t('listing_detail.contact_error_send'));
                 } finally { setContactLoading(false); }
               }} disabled={contactLoading || !contactMessage.trim()}
                 className="flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60"
@@ -1126,7 +1128,7 @@ export default function CitadelleListingDetail() {
                 {contactLoading ? (
                   <div className="w-4 h-4 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
                 ) : (
-                  <><Send size={14} /> Envoyer</>
+                  <><Send size={14} /> {t('listing_detail.contact_send')}</>
                 )}
               </button>
             </div>
@@ -1158,8 +1160,8 @@ export default function CitadelleListingDetail() {
               user={user}
               testid="contact-estimation-upsell"
               targetServices={BUYER_ESTIMATION_SERVICES}
-              heading="Votre message est bien parti !"
-              subheading="Avant d'investir, assurez-vous que ce site tient toutes ses promesses. Nos experts de La Garde en estiment la vraie valeur — pour négocier et acheter en toute sérénité."
+              heading={t('listing_detail.popup_heading')}
+              subheading={t('listing_detail.popup_sub')}
               clientMessage={`Estimation acheteur pour l'annonce « ${listing.title} » (réf ${listing.id})`}
               onRequireAuth={() => setAuthModal(true)}
               onDecline={() => {
@@ -1174,7 +1176,7 @@ export default function CitadelleListingDetail() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-zoom-out"
           style={{ background: "rgba(8,23,41,0.92)", backdropFilter: "blur(6px)" }}
           onClick={() => setLightbox(false)} data-testid="listing-lightbox">
-          <button type="button" aria-label="Fermer"
+          <button type="button" aria-label={t('listing_detail.lightbox_close')}
             className="absolute top-5 right-5 flex items-center justify-center w-11 h-11 rounded-full transition-transform hover:scale-110"
             style={{ background: "rgba(255,255,255,0.14)", color: "#fff" }} data-testid="listing-lightbox-close">
             <X size={22} />
@@ -1200,10 +1202,10 @@ const ESTIM_TYPE_MAP = {
 };
 
 const ESTIM_MULTIPLES = {
-  saas:      { low: 14, high: 26, label: "SaaS / App" },
-  ecommerce: { low: 12, high: 22, label: "E-commerce" },
-  contenu:   { low: 12, high: 20, label: "Contenu / Blog" },
-  social:    { low: 5,  high: 12, label: "Réseau social" },
+  saas:      { low: 14, high: 26, labelKey: "estim_label_saas" },
+  ecommerce: { low: 12, high: 22, labelKey: "estim_label_ecommerce" },
+  contenu:   { low: 12, high: 20, labelKey: "estim_label_contenu" },
+  social:    { low: 5,  high: 12, labelKey: "estim_label_social" },
 };
 
 function EstimateurSidebar({ listing }) {
@@ -1212,7 +1214,8 @@ function EstimateurSidebar({ listing }) {
   const [result, setResult]   = useState(null);
 
   const estType   = ESTIM_TYPE_MAP[listing.type] || "contenu";
-  const { low, high, label } = ESTIM_MULTIPLES[estType];
+  const { low, high, labelKey } = ESTIM_MULTIPLES[estType];
+  const label = t(`listing_detail.${labelKey}`);
   const fmt = (n) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(n) + " €";
 
   const calculate = () => {
@@ -1232,18 +1235,18 @@ function EstimateurSidebar({ listing }) {
         </h3>
       </div>
       <p className="text-xs mb-4 pl-[23px]" style={{ color: CITADELLE_COLORS.textMuted }}>
-        Estimez sa valeur en quelques secondes — méthode SDE ({label}).
+        {t('listing_detail.estim_sub', { label })}
       </p>
 
       {/* Input bénéfice */}
       <div className="mb-3">
         <label className="block text-xs font-semibold mb-1" style={{ color: CITADELLE_COLORS.blue }}>
-          Bénéfice net mensuel (€)
+          {t('listing_detail.estim_profit_label')}
         </label>
         <input
           type="number" min="1" value={revenue}
           onChange={e => { setRevenue(e.target.value); setResult(null); }}
-          placeholder="Ex : 1 500"
+          placeholder={t('listing_detail.estim_ph')}
           className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
           style={{
             background: CITADELLE_COLORS.bg,
@@ -1258,15 +1261,15 @@ function EstimateurSidebar({ listing }) {
       {result ? (
         <div className="mb-3 p-3 rounded-xl text-center"
           style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.25)" }}>
-          <p className="text-xs mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Fourchette de valorisation</p>
+          <p className="text-xs mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.estim_range')}</p>
           <p className="text-lg font-black leading-tight" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
             {fmt(result.low)} — {fmt(result.high)}
           </p>
           <p className="text-xs mt-1.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Multiple SDE × {low} – × {high} (ancienneté 1–3 ans)
+            {t('listing_detail.estim_multiple', { low, high })}
           </p>
           <button onClick={() => setResult(null)} className="mt-2 text-xs underline" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Recalculer
+            {t('listing_detail.estim_recalc')}
           </button>
         </div>
       ) : (
@@ -1274,7 +1277,7 @@ function EstimateurSidebar({ listing }) {
           className="w-full py-2.5 rounded-xl text-sm font-semibold mb-3 transition-all hover:scale-[1.02]"
           style={{ background: CITADELLE_COLORS.blue, color: "white" }}
           data-testid="quick-estimator-btn">
-          Calculer
+          {t('listing_detail.estim_calc')}
         </button>
       )}
 
@@ -1283,7 +1286,7 @@ function EstimateurSidebar({ listing }) {
         className="block w-full py-2.5 rounded-xl text-xs font-semibold text-center transition-all hover:scale-[1.02]"
         style={{ background: "rgba(201,164,92,0.08)", border: `1px solid rgba(201,164,92,0.3)`, color: CITADELLE_COLORS.blue }}
         data-testid="quick-estimator-pro-link">
-        Estimation pro gratuite — 48h →
+        {t('listing_detail.estim_pro')}
       </Link>
     </div>
   );
@@ -1291,21 +1294,22 @@ function EstimateurSidebar({ listing }) {
 
 // ── Composant : annonce vendue (gagnant ou autres) ───────────────────────────
 function AnnonceSoldee({ listing, user }) {
+  const { t } = useTranslation();
   const isWinner = user && listing.auction_winner_transaction_id &&
     listing.auction_current_bidder_id === user.id;
 
   if (isWinner) {
     return (
       <div className="p-4 rounded-xl mt-2" style={{ background: "rgba(201,164,92,0.08)", border: "1px solid rgba(201,164,92,0.3)" }}>
-        <p className="text-sm font-bold mb-1" style={{ color: CITADELLE_COLORS.gold }}>Félicitations, vous avez remporté l'enchère !</p>
+        <p className="text-sm font-bold mb-1" style={{ color: CITADELLE_COLORS.gold }}>{t('listing_detail.sold_winner_title')}</p>
         <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-          Montant : {listing.auction_current_bid?.toLocaleString("fr-FR")} €
+          {t('listing_detail.sold_winner_amount')} {listing.auction_current_bid?.toLocaleString("fr-FR")} €
         </p>
         <Link to={`/citadelle/espace-membre/transactions/${listing.auction_winner_transaction_id}`}
           className="block w-full py-2.5 rounded-xl font-bold text-sm text-center transition-all hover:scale-[1.02]"
           style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
           data-testid="btn-winner-pay">
-          Procéder au paiement
+          {t('listing_detail.sold_winner_pay')}
         </Link>
       </div>
     );
@@ -1313,12 +1317,12 @@ function AnnonceSoldee({ listing, user }) {
 
   return (
     <div className="p-4 rounded-xl text-center" style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)" }}>
-      <p className="text-sm font-bold" style={{ color: "#DC2626" }}>Site vendu</p>
-      <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>Ce site a trouvé son acquéreur.</p>
+      <p className="text-sm font-bold" style={{ color: "#DC2626" }}>{t('listing_detail.sold_generic_title')}</p>
+      <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.sold_generic_desc')}</p>
       <Link to="/citadelle/annonces"
         className="inline-block mt-3 px-4 py-2 rounded-lg text-xs font-semibold transition-all hover:scale-105"
         style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-        Voir les autres annonces
+        {t('listing_detail.sold_see_others')}
       </Link>
     </div>
   );
