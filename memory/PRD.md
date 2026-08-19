@@ -7,7 +7,22 @@
 
 ---
 
-## ⭐ Session 19/08/2026 — Phase 5 i18n : Espace Membre ✅
+## ⭐ Session 19/08/2026 — Phase 6 : Suppression complète react-helmet-async ✅
+
+### Fichiers modifiés (4 fichiers)
+- `CitadelleCGU.js` — Helmet supprimé, `useEffect` + `document.title` ajouté, `CITADELLE_PUBLIC_URL` retiré des imports
+- `CitadelleChroniques.js` — Helmet supprimé, titre injecté dans le `useEffect` data existant (KISS)
+- `CitadelleEstimation.js` — Helmet supprimé (5 balises), `useEffect` ajouté
+- `SeoNoIndex.jsx` — Composant réécrit : `useEffect` crée/retire la `<meta name="robots">` dynamiquement avec cleanup propre
+
+### Résultat
+- ✅ **Zéro occurrence** de `react-helmet-async` dans `/pages/citadelle/` et `/components/citadelle/`
+- ✅ Plugin Babel visual-edits stabilisé — plus de crash Call Stack possible
+- Vérifié par screenshot : page Estimation rendue correctement
+
+---
+
+
 
 ### Fichiers modifiés (3 composants + 2 JSON)
 - `fr.json` + `en.json` : ajout section `member` (79 clés, parité parfaite FR/EN)

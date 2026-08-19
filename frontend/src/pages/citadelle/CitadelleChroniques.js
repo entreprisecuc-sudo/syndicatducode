@@ -6,7 +6,6 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { ScrollText, Calendar, ChevronRight, ShieldCheck, Clock } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
@@ -28,6 +27,7 @@ export default function CitadelleChroniques() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = "Les Chroniques de La Garde — Analyses d'experts | La Citadelle Numérique";
     (async () => {
       try {
         const [listRes, nextRes] = await Promise.all([
@@ -47,11 +47,6 @@ export default function CitadelleChroniques() {
 
   return (
     <CitadelleLayout>
-      <Helmet>
-        <title>Les Chroniques de La Garde — Analyses d'experts sur les actifs numériques | La Citadelle Numérique</title>
-        <meta name="description" content="La rubrique premium de La Garde : analyses d'experts, retours d'expérience et conseils sur l'achat, la vente et la transmission d'actifs numériques. Une nouvelle chronique chaque jeudi." />
-        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/chroniques" />
-      </Helmet>
 
       {/* ── Hero éditorial navy ─────────────────────────────────────────── */}
       <div style={{ background: CITADELLE_COLORS.night || "#0B1D36", position: "relative", overflow: "hidden" }} data-testid="chroniques-hero">

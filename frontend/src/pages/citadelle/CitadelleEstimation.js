@@ -16,7 +16,6 @@ import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { isPromoOn, promoDiscounted } from "@/utils/promo";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
-import { Helmet } from "react-helmet-async";
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -858,15 +857,12 @@ export default function CitadelleEstimation() {
   const [prefillType, setPrefillType] = useState(null);
   usePageSchemas();
 
+  useEffect(() => {
+    document.title = "Estimation gratuite de votre site web ou SaaS | La Citadelle Numérique";
+  }, []);
+
   return (
     <CitadelleLayout>
-      <Helmet>
-        <title>Estimation gratuite de votre site web ou SaaS | La Citadelle Numérique</title>
-        <meta name="description" content="Estimez gratuitement la valeur de votre site web, SaaS ou boutique e-commerce avec notre outil d'estimation avancé. Estimation Pro avec rapport personnalisé disponible." />
-        <meta property="og:title" content="Estimation gratuite — Valeur de votre actif numérique | La Citadelle Numérique" />
-        <meta property="og:description" content="Outil d'estimation gratuit pour sites web, SaaS, Amazon FBA, boutiques Shopify. Estimation Pro Expert disponible pour un rapport complet." />
-        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/estimation" />
-      </Helmet>
       {/* ── Hero ── */}
       <section className="relative overflow-hidden py-16 md:py-20"
         style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}
