@@ -1,0 +1,44 @@
+{
+  "summary": "Frontend-only i18n audit FR↔EN of La Citadelle Numérique on preview. Tested: language switcher (persistence + segmented FR|EN), homepage nav/footer, /citadelle/services, 4 legal pages (mentions-legales/cgu/cgv/confidentialite), Coming Soon EN modal on blog, member Profile (all 5 tabs including Stripe Connect + KYC banner), Transactions list and 7 transaction detail pages (all seeded statuses) + action modals (Withdraw offer, Open dispute, Cancel purchase). Overall EN coverage is very high — 0 raw i18n keys leaked anywhere, all legal Markdown bodies fully bilingual, profile 100% EN, modals 100% EN. Two French residuals remain inside the transaction chat area.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "CitadelleTransactionDetail — Conversation toolbar",
+        "issue": "The 'Report/Signaler' button label is hardcoded to French 'Signaler' and does not switch to English when i18n.language==='en'. In EN mode all other buttons around it (Withdraw my proposal, Cancel purchase, Open the dispute, Make a new proposal, Accept the counter-offer, Pay N €) are correctly translated.",
+        "selector": "[data-testid=\"report-conversation-btn\"]",
+        "priority": "MEDIUM"
+      },
+      {
+        "component": "CitadelleTransactionDetail — Chat system/automated messages",
+        "issue": "Automated system messages inside the conversation area remain in French when the UI is in EN. Examples observed on seeded transactions: 'Offre de 12,000 € envoyée par l'acheteur.', 'Contre-offre du vendeur : 13 000 €.', 'Contre-offre acceptée. Montant convenu : 13,000 €. En attente du paiement.', 'Offre acceptée par le vendeur. Montant convenu : 8 000 €. En attente du paiement.', 'Paiement de 8 000 € effectué. Fonds placés en séquestre. En attente de la transmission des accès par le vendeur.'. These look like server-generated status messages stored as literal French text in the chat/messages collection. They should be emitted as i18n keys + params (e.g. { code: 'offer_sent', amount, actor }) and rendered client-side via t(), otherwise EN readers see French for the entire timeline. Free-text user messages (e.g. 'Bonjour, je vous propose 5 500 € … Cordialement.') are legitimately user-typed and don't need translation.",
+        "selector": "conversation .message span (no data-testid)",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Localize the report/signaler button in the conversation toolbar (report-conversation-btn) via t('transaction.report_conversation') or common.report — currently hardcoded 'Signaler'.",
+    "Change automated transaction chat/system messages to structured i18n. Two approaches: (a) store a message code + params in the DB and translate at render-time via i18next; or (b) if messages are already stored in French, add a client-side mapping for known system message patterns to their EN counterparts. Impacted patterns include: 'Offre de {amount} envoyée par …', 'Contre-offre du vendeur : {amount}', 'Contre-offre acceptée. Montant convenu : …', 'Offre acceptée par le vendeur. Montant convenu : …', 'Paiement de {amount} effectué. Fonds placés en séquestre. …'.",
+    "No other blocking i18n issues found — safe to proceed with deployment once the two items above are addressed."
+  ],
+  "critical_code_review_comments": [
+    "i18n structure is solid: no raw i18n keys detected anywhere (searched profile.*, transaction.*, legalDocs.*, kyc.*, stripe.*, common.*, etc. on 12+ pages).",
+    "Language persistence works: after switching EN on homepage, navigation to Services and Legal pages retains EN correctly (i18next detector via localStorage key 'citadelle_lang').",
+    "Legal pages use ReactMarkdown+remark-gfm on legalDocs.<slug>.<lang> and the four Markdown bodies render fully in EN (H1s: 'Legal Notice', 'Terms of Use', 'Terms of Sale', 'Privacy Policy'); no 'available in French only' banner remains.",
+    "Profile tabs (Information, Bank details, Status, Payments, Password), KYC banner ('Incomplete profile for receiving payments…'), and Stripe Connect section ('Not connected', 'Connect my Stripe account', 'Stripe Terms of Service') all fully translated.",
+    "Transaction action modals (Withdraw my proposal, Open a dispute, Cancel purchase) are fully EN including titles, help text, textarea placeholders (e.g. 'E.g.: The seller did not transmit the access within the agreed timeframe…'), and CTA buttons.",
+    "Chat system messages are not i18n-aware — this is the only meaningful gap and it is architectural (persisted French strings). Recommend moving to code+params."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "~92% (2 residual FR issues, both in transaction chat area)"},
+  "test_credentials": "test.acheteur@citadelle.fr / DemoAcheteur2026! (has 5+ seeded transactions covering offer_sent, offer_countered, offer_accepted, payment_done, completed) — used for transaction modals coverage. marie.testui@citadelle-test.fr has 0 transactions but was used to confirm profile EN coverage.",
+  "seed_data_creation": "None — used existing seed from backend/scripts/seed_test_transactions.py.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "i18n EN coverage validated end-to-end. Remaining two issues are localized to /citadelle/espace-membre/transactions/<id> conversation area: (1) [data-testid=report-conversation-btn] label 'Signaler' hardcoded, (2) automated system chat messages persisted in French (see patterns in action_items). Everything else (homepage, nav, footer, services, 4 legal pages, profile 5 tabs + KYC + Stripe Connect, all transaction action modals) is fully translated with 0 raw keys leaking. Language switcher testids: lang-fr / lang-en / lang-switcher; persistence via localStorage 'citadelle_lang'.",
+  "rca of the issue": "For the 'Signaler' button: the chat/conversation subcomponent likely renders a static <button>Signaler</button> instead of {t('transaction.report_conversation')}. For the system chat messages: automated status transitions produce message rows with hardcoded French 'content' fields (e.g. `Offre de X € envoyée par l'acheteur.`). Since the client renders `message.content` verbatim, they never translate. Fix: emit a `type`/`code` + `params` and translate at render time, or add a normalization/regex-based translator in the chat renderer as a stopgap."
+}

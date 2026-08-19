@@ -139,3 +139,8 @@ Objectif : positionner La Citadelle comme source de référence lisible par les 
 - `frontend/src/pages/citadelle/member/CitadelleProfile.js`
 - `frontend/src/pages/citadelle/member/CitadelleTransactionDetail.js`
 - `frontend/src/pages/citadelle/CitadelleMentionsLegales.js`, `CitadelleCGU.js`, `CitadelleCGV.js`, `CitadelleConfidentialite.js`
+
+### Suite audit i18n (testing_agent iteration_32) — 2026-06
+- ✅ **Point 1 corrigé** : `ReportConversationButton.js` (bouton « Signaler » + modal de signalement) entièrement bilingue via nouvelle section i18n `report` (17 clés FR/EN, parité OK).
+- ⏸️ **Point 2 (décision utilisateur — Option C)** : les messages système du chat de transaction (générés en dur en français dans `backend/routes/citadelle/transactions.py`) restent en FRANÇAIS pour les lecteurs EN. Aucune modification backend effectuée. À traiter ultérieurement via code+params si besoin.
+- Résultat testing_agent : couverture EN ~92 % → profil, 4 pages juridiques, tous les modals/pop-ups, navigation = 100 % traduits, 0 clé i18n brute. Seul reliquat FR assumé : timeline système du chat (Option C).
