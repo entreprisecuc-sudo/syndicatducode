@@ -135,7 +135,15 @@ async def get_dispute_fee(payment_amount: float, role: str = "buyer") -> float:
 # require_citadelle_user / require_admin importés depuis routes/citadelle/dependencies (DRY)
 
 def system_message(content: str) -> dict:
-    """Crée un message système dans la conversation"""
+    """Crée un message système dans la conversation.
+
+    TODO i18n (dette technique — décision client Option C, 2026-06) :
+    le `content` est stocké en FRANÇAIS en dur. Les lecteurs en anglais voient
+    donc ces messages système en français. À traiter plus tard : émettre un
+    `code` + `params` (ex. {"code": "payment_done", "amount": 8000}) et laisser
+    le frontend traduire via i18next (t('transaction.sysmsg.<code>', params)),
+    en conservant `content` comme fallback. Voir CHANGELOG.md (audit iteration_32).
+    """
     return {
         "id": str(uuid.uuid4()),
         "sender_id": "system",
