@@ -39,21 +39,47 @@ const FlagEN = () => (
   </svg>
 );
 
-// ── Sélecteur de langue ───────────────────────────────────────────────────────
+// ── Sélecteur de langue (segmenté FR | EN) ─────────────────────────────────────
 const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
   const isEN = i18n.language === "en";
+
+  const segStyle = (active) => ({
+    background: active ? CITADELLE_COLORS.blue : "transparent",
+    color: active ? "#FFFFFF" : CITADELLE_COLORS.textMuted,
+    fontWeight: active ? 800 : 600,
+    boxShadow: active ? "0 1px 3px rgba(15,39,71,0.25)" : "none",
+  });
+
   return (
-    <button
-      onClick={() => i18n.changeLanguage(isEN ? "fr" : "en")}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-80"
-      style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
+    <div
+      className="inline-flex items-center gap-0.5 p-0.5 rounded-full"
+      style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}
       data-testid="lang-switcher"
-      aria-label={isEN ? "Passer en français" : "Switch to English"}
+      role="group"
+      aria-label="Language selector"
     >
-      {isEN ? <FlagFR /> : <FlagEN />}
-      {isEN ? "FR" : "EN"}
-    </button>
+      <button
+        onClick={() => i18n.changeLanguage("fr")}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-all"
+        style={segStyle(!isEN)}
+        data-testid="lang-fr"
+        aria-pressed={!isEN}
+        aria-label="Passer en français"
+      >
+        <FlagFR /> FR
+      </button>
+      <button
+        onClick={() => i18n.changeLanguage("en")}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-all"
+        style={segStyle(isEN)}
+        data-testid="lang-en"
+        aria-pressed={isEN}
+        aria-label="Switch to English"
+      >
+        <FlagEN /> EN
+      </button>
+    </div>
   );
 };
 
