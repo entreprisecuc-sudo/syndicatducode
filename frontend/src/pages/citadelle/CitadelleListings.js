@@ -12,8 +12,8 @@ import ListingsCarousel from "@/components/citadelle/ListingsCarousel";
 import DevisModal from "@/components/modals/DevisModal";
 import { useModal } from "@/context/ModalContext";
 import citadelleApi from "@/services/citadelleApi";
+import { useTranslation } from "react-i18next";
 import { CITADELLE_COLORS, CITADELLE_ALL_CATEGORIES } from "@/config/citadelleConstants";
-import { Helmet } from "react-helmet-async";
 
 const BUDGET_OPTIONS = [
   { value: "", label: "Tous budgets" },
@@ -33,6 +33,7 @@ const SORT_OPTIONS = [
 
 export default function CitadelleListings() {
   const { openModal } = useModal();
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [listings, setListings] = useState([]);
   const [total, setTotal] = useState(0);
@@ -48,6 +49,10 @@ export default function CitadelleListings() {
   useEffect(() => {
     fetchListings();
   }, [searchParams]);
+
+  useEffect(() => {
+    document.title = `${t('listings.page_title')} — La Citadelle Numérique`;
+  }, [t]);
 
   const fetchListings = async () => {
     setLoading(true);
@@ -84,21 +89,14 @@ export default function CitadelleListings() {
 
   return (
     <CitadelleLayout>
-      <Helmet>
-        <title>Annonces — Sites web, SaaS et actifs numériques | La Citadelle Numérique</title>
-        <meta name="description" content="Parcourez toutes les annonces de vente de sites web, SaaS, boutiques e-commerce et actifs numériques. Trouvez votre prochain actif digital sur La Citadelle Numérique." />
-        <meta property="og:title" content="Annonces d'actifs numériques | La Citadelle Numérique" />
-        <meta property="og:description" content="Sites web, SaaS, boutiques Shopify, Amazon FBA et plus encore. Achetez des actifs numériques rentables." />
-        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/annonces" />
-      </Helmet>
       {/* Header */}
       <div className="py-10 px-4 md:px-6" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
         <div className="max-w-7xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-black mb-2" style={{ fontFamily: "'Montserrat', sans-serif", color: "white" }}>
-            Toutes les annonces
+            {t('listings.page_title')}
           </h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
-            {total > 0 ? `${total} actif${total > 1 ? "s" : ""} numérique${total > 1 ? "s" : ""} disponible${total > 1 ? "s" : ""}` : "Soyez le premier à publier"}
+            {total > 0 ? t(total === 1 ? 'listings.subtitle_one' : 'listings.subtitle_other', { count: total }) : t('listings.subtitle_empty')}
           </p>
         </div>
       </div>
@@ -114,7 +112,7 @@ export default function CitadelleListings() {
               defaultValue={q}
               onKeyDown={e => { if (e.key === "Enter") updateFilter("q", e.target.value); }}
               onBlur={e => updateFilter("q", e.target.value)}
-              placeholder="Rechercher..."
+              placeholder={t('listings.search_placeholder')}
               className="bg-transparent outline-none text-sm w-full"
               style={{ color: CITADELLE_COLORS.blue }}
               data-testid="listings-search"
@@ -126,7 +124,7 @@ export default function CitadelleListings() {
             className="px-3 py-2 rounded-lg text-sm outline-none cursor-pointer"
             style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
             data-testid="listings-filter-type">
-            <option value="">Tous les types</option>
+            <option value="">{t('listings.all_types')}</option>
             {CITADELLE_ALL_CATEGORIES.map(c => <option key={c.slug} value={c.slug}>{c.label}</option>)}
           </select>
 
@@ -149,7 +147,7 @@ export default function CitadelleListings() {
           {(q || type || budget) && (
             <button onClick={() => setSearchParams({})} className="text-sm px-3 py-2 rounded-lg transition-all"
               style={{ color: CITADELLE_COLORS.gold, border: `1px solid ${CITADELLE_COLORS.gold}` }}>
-              Effacer
+              {t('listings.clear_filters')}
             </button>
           )}
         </div>
@@ -178,13 +176,13 @@ export default function CitadelleListings() {
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: CITADELLE_COLORS.gold }}>
-                Vendeurs
+                {t('listings.banner_label')}
               </p>
               <h2 className="text-lg md:text-xl font-black text-white leading-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                Votre actif numérique mérite la Citadelle
+                {t('listings.banner_title')}
               </h2>
               <p className="text-sm mt-1 hidden md:block" style={{ color: "rgba(255,255,255,0.5)" }}>
-                Publiez votre site, SaaS ou newsletter — La Garde vérifie et met en valeur votre annonce sous 24h.
+                {t('listings.banner_desc')}
               </p>
             </div>
           </div>
@@ -194,20 +192,20 @@ export default function CitadelleListings() {
             className="relative flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105 hover:brightness-110 whitespace-nowrap"
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
             data-testid="cta-vendre-annonce">
-            Publier mon annonce
+            {t('listings.banner_cta')}
             <ArrowRight size={15} />
           </Link>
         </div>
 
         {/* Carrousel « À la Une » — indépendant des filtres (sous le bandeau) */}
-        <ListingsCarousel variant="light" title="À la Une" limit={8} />
+        <ListingsCarousel variant="light" title={t('home.latest')} limit={8} />
 
         {/* ── Séparateur élégant entre « À la Une » et la grille ─────────── */}
         <div className="flex items-center gap-4 mt-16 mb-10" data-testid="listings-section-divider">
           <div className="flex items-center gap-3 flex-shrink-0">
             <span className="inline-block w-2.5 h-2.5 rotate-45 rounded-[2px]" style={{ background: CITADELLE_COLORS.gold }} />
             <h2 className="text-sm font-bold uppercase tracking-[0.2em]" style={{ color: CITADELLE_COLORS.blue }}>
-              Toutes les annonces
+              {t('listings.section_all')}
             </h2>
           </div>
           <div className="flex-1 h-px" style={{ background: `linear-gradient(to right, ${CITADELLE_COLORS.gold}, rgba(201,164,92,0))` }} />
@@ -229,13 +227,13 @@ export default function CitadelleListings() {
         ) : listings.length === 0 ? (
           <div className="py-24 text-center">
             <p className="text-5xl mb-4">🏰</p>
-            <h2 className="text-xl font-bold mb-2" style={{ color: CITADELLE_COLORS.blue }}>Aucune annonce pour le moment</h2>
+            <h2 className="text-xl font-bold mb-2" style={{ color: CITADELLE_COLORS.blue }}>{t('listings.empty_title')}</h2>
             <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-              {q || type || budget ? "Essayez d'élargir vos critères de recherche" : "Soyez le premier à publier un actif numérique"}
+              {q || type || budget ? t('listings.empty_filtered') : t('listings.empty_default')}
             </p>
             <Link to="/citadelle/inscription" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm"
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-              Publier une annonce
+              {t('listings.empty_cta')}
             </Link>
           </div>
         ) : (

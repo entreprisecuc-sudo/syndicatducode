@@ -14,7 +14,7 @@ import ServiceHeroBanner from "@/components/citadelle/ServiceHeroBanner";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { PriceDisplay, PromoBanner } from "@/utils/promo";
-import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
 
 // ── Icônes par type de service ─────────────────────────────────────────────────
 const TYPE_ICONS = { paid: Zap, free: Star, partner: Handshake, quote: Shield };
@@ -228,6 +228,11 @@ export default function CitadelleServices() {
   const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState(null);
   const [checkoutService, setCheckoutService] = useState(null);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('services.page_title')} — La Citadelle Numérique`;
+  }, [t]);
 
   useEffect(() => {
     citadelleApi
@@ -252,13 +257,6 @@ export default function CitadelleServices() {
 
   return (
     <CitadelleLayout>
-      <Helmet>
-        <title>Services — Estimation, Due Diligence, La Garde | La Citadelle Numérique</title>
-        <meta name="description" content="Services professionnels pour acheteurs et vendeurs d'actifs numériques : estimation gratuite, estimation pro, due diligence technique, mise en dépôt La Garde." />
-        <meta property="og:title" content="Services La Citadelle Numérique | Estimation & Accompagnement" />
-        <meta property="og:description" content="Estimation gratuite ou professionnelle, audit technique, accompagnement à la vente. Tous nos services pour sécuriser votre transaction." />
-        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/services" />
-      </Helmet>
       <PromoBanner promo={promo} />
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-12" data-testid="citadelle-services">
 
@@ -268,10 +266,10 @@ export default function CitadelleServices() {
             className="text-3xl md:text-4xl font-black"
             style={{ fontFamily: "'Montserrat', sans-serif", color: CITADELLE_COLORS.blue }}
           >
-            Nos services
+            {t('services.page_title')}
           </h1>
           <p className="text-sm mt-3 max-w-xl mx-auto" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Des services complémentaires pour sécuriser vos transactions et optimiser la valeur de vos actifs numériques.
+            {t('services.page_sub')}
           </p>
         </div>
 
@@ -346,7 +344,7 @@ export default function CitadelleServices() {
                       className="text-xl font-black"
                       style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
                     >
-                      Pour les vendeurs
+                      {t('services.for_sellers')}
                     </h2>
                   </div>
                   <p className="text-xs pl-12" style={{ color: CITADELLE_COLORS.textMuted }}>
@@ -380,7 +378,7 @@ export default function CitadelleServices() {
                     background: "white",
                   }}
                 >
-                  Pour les acheteurs
+                  {t('services.for_buyers')}
                 </div>
                 <div className="flex-1 h-px" style={{ background: CITADELLE_COLORS.border }} />
               </div>
@@ -407,7 +405,7 @@ export default function CitadelleServices() {
                       className="text-xl font-black"
                       style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}
                     >
-                      Pour les acheteurs
+                      {t('services.for_buyers')}
                     </h2>
                   </div>
                   <p className="text-xs pl-12" style={{ color: "rgba(255,255,255,0.45)" }}>

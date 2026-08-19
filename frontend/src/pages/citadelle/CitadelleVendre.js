@@ -6,7 +6,7 @@
  *            FAQ → CTA final
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Shield, TrendingUp, Users, HeartHandshake, ArrowRight,
@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
-import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
 
 // ── Données statiques ─────────────────────────────────────────────────────────
 
@@ -225,18 +225,16 @@ function FaqItem({ item, isOpen, onToggle }) {
 
 export default function CitadelleVendre() {
   const [openFaq, setOpenFaq] = useState(null);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = "Vendre | La Citadelle Numérique";
+  }, []);
 
   const toggleFaq = (index) => setOpenFaq(prev => prev === index ? null : index);
 
   return (
     <CitadelleLayout>
-      <Helmet>
-        <title>Vendre votre site web ou SaaS | La Citadelle Numérique</title>
-        <meta name="description" content="Vendez votre site web, SaaS, boutique e-commerce ou actif numérique en toute sécurité. Estimation gratuite, accompagnement expert, transaction sécurisée par La Garde." />
-        <meta property="og:title" content="Vendre sur La Citadelle Numérique | Actifs numériques" />
-        <meta property="og:description" content="Obtenez une estimation gratuite de votre actif numérique et vendez en toute sécurité. La marketplace française pour les cessions de sites web et SaaS." />
-        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/vendre" />
-      </Helmet>
 
       {/* ═══════════════════════════════════════════════════════════
           SECTION 1 — HERO
@@ -265,7 +263,7 @@ export default function CitadelleVendre() {
 
         <div className="relative max-w-7xl mx-auto px-4 md:px-8 py-20 w-full">
           <div className="max-w-3xl">
-            <SectionLabel><Shield size={13} /> Pour les vendeurs</SectionLabel>
+            <SectionLabel><Shield size={13} /> {t('vendre.hero_badge')}</SectionLabel>
 
             <h1
               className="font-bold leading-tight mb-6"
@@ -294,7 +292,7 @@ export default function CitadelleVendre() {
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                 data-testid="vendre-cta-publier"
               >
-                Publier mon annonce
+                {t('vendre.hero_cta_publish')}
                 <ArrowRight size={18} />
               </Link>
               <Link
@@ -303,7 +301,7 @@ export default function CitadelleVendre() {
                 style={{ background: "rgba(255,255,255,0.08)", color: "white", border: "1px solid rgba(255,255,255,0.2)" }}
                 data-testid="vendre-cta-services"
               >
-                Découvrir nos services
+                {t('vendre.hero_cta_estimate')}
                 <ChevronRight size={18} />
               </Link>
             </div>
@@ -387,9 +385,9 @@ export default function CitadelleVendre() {
         <div className="max-w-5xl mx-auto px-4 md:px-8">
           <div className="text-center mb-14">
             <SectionLabel><CheckCircle size={13} /> Processus</SectionLabel>
-            <SectionTitle light center>Comment ça fonctionne ?</SectionTitle>
+            <SectionTitle light center>{t('vendre.process_title')}</SectionTitle>
             <SectionSubtitle light center>
-              De la création de votre annonce jusqu'au transfert final, La Garde vous accompagne à chaque étape.
+              {t('vendre.process_sub')}
             </SectionSubtitle>
           </div>
 
@@ -739,7 +737,7 @@ export default function CitadelleVendre() {
       <section className="py-20" style={{ background: "white" }} data-testid="vendre-faq">
         <div className="max-w-3xl mx-auto px-4 md:px-8">
           <div className="text-center mb-14">
-            <SectionLabel>Questions fréquentes</SectionLabel>
+            <SectionLabel>{t('vendre.faq_title')}</SectionLabel>
             <SectionTitle center>Vous avez des questions ?</SectionTitle>
           </div>
 
@@ -793,7 +791,7 @@ export default function CitadelleVendre() {
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
             data-testid="vendre-cta-final-btn"
           >
-            Publier mon annonce
+            {t('vendre.hero_cta_publish')}
             <ArrowRight size={22} />
           </Link>
           <p className="mt-5 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>

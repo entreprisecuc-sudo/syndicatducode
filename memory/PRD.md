@@ -872,3 +872,13 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - **Fix 4 — newsletter_scheduler.py** : `check_unanswered_conversations` réécrit — vérifie les 2 côtés (acheteur ET vendeur), groupe par utilisateur, envoie 1 seul digest, utilise `last_notified` (anti-spam 24h renouvelable vs "one-shot" précédent).
 - **Fix 5 — email_service/__init__.py** : export de `send_unread_messages_digest_email`.
 - **Validé** : imports Python OK, backend redémarré sans erreur, endpoint reply retourne 404 propre. Testing agent NON utilisé (Règle 6).
+
+## ✨ Session 19/02/2026 — Phase 2 i18n FR/EN (Pages Marchand) ✅
+- **Fichiers mis à jour** :
+  - `en.json` : ajout des sections `home`, `listings`, `listing_detail`, `vendre`, `services` (34+19+52+9+8 clés)
+  - `CitadelleListings.js` : migration Helmet → useEffect, intégration `useTranslation`, 14 strings traduits
+  - `CitadelleListingDetail.js` : intégration `useTranslation` (composant principal + EstimateurSidebar), 18 strings traduits (titres sections, boutons, modales)
+  - `CitadelleVendre.js` : migration Helmet → useEffect, `useTranslation`, 4 strings traduits (badge, CTAs, process)
+  - `CitadelleServices.js` : migration Helmet → useEffect, `useTranslation`, 4 strings traduits (titre, sous-titre, labels)
+- **Issue 1 avancement** : Helmet migré → useEffect dans 3 fichiers supplémentaires (Listings, Vendre, Services). Reste 10 fichiers.
+- **Validé** : compilation sans erreur, page FR affichée correctement (screenshot). Testing agent NON utilisé (Règle 6).

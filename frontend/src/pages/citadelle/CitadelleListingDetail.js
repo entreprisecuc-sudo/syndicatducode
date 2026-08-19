@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, BarChart2,
   Calendar, ShieldCheck, Star, ArrowLeft, Eye, Share2, Lock, FileText, Download, Send, AlertCircle, Hammer, Clock, Zap, X, ZoomIn,
@@ -59,6 +60,7 @@ export default function CitadelleListingDetail() {
   const location = useLocation();
   const { isAuthenticated, user } = useCitadelleAuth();
   const { canTransact } = useCitadelleModeration();
+  const { t } = useTranslation();
   const [listing, setListing] = useState(null);
   const [siblings, setSiblings] = useState({ prev: null, next: null });
   const [loading, setLoading] = useState(true);
@@ -211,7 +213,7 @@ export default function CitadelleListingDetail() {
         <p className="text-5xl mb-4">🏰</p>
         <h1 className="text-xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>Annonce introuvable</h1>
         <Link to="/citadelle/annonces" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm" style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-          <ArrowLeft size={16} /> Retour aux annonces
+          <ArrowLeft size={16} /> {t('listing_detail.back')}
         </Link>
       </div>
     </CitadelleLayout>
@@ -240,7 +242,7 @@ export default function CitadelleListingDetail() {
             </Link>
             <Link to="/citadelle/annonces" className="px-5 py-2.5 rounded-xl text-sm font-medium"
               style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-              Retour aux annonces
+              {t('listing_detail.back')}
             </Link>
           </div>
         </div>
@@ -421,7 +423,7 @@ export default function CitadelleListingDetail() {
             {/* Documents joints */}
             {documents.length > 0 && (
               <div className="p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
-                <h2 className="font-bold mb-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Documents joints</h2>
+                <h2 className="font-bold mb-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>{t('listing_detail.section_docs')}</h2>
                 <div className="space-y-2">
                   {documents.map((doc, i) => (
                     <a key={i} href={getListingImageUrl(doc)} target="_blank" rel="noopener noreferrer"
@@ -446,24 +448,24 @@ export default function CitadelleListingDetail() {
             {(listing.monthly_revenue || listing.monthly_charges != null || listing.monthly_traffic) && (
               <div className="p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
                 <h2 className="font-bold mb-4 flex items-center gap-2" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                  <BarChart2 size={16} style={{ color: "#C9A45C" }} /> Chiffres financiers
+                  <BarChart2 size={16} style={{ color: "#C9A45C" }} /> {t('listing_detail.section_financials')}
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   {listing.monthly_revenue > 0 && (
                     <div className="p-3 rounded-xl" style={{ background: "rgba(15,39,71,0.04)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
-                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Revenus/mois</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.monthly_revenue')}</p>
                       <p className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{(listing.monthly_revenue).toLocaleString("fr-FR")} €</p>
                     </div>
                   )}
                   {listing.monthly_charges != null && (
                     <div className="p-3 rounded-xl" style={{ background: "rgba(15,39,71,0.04)", border: `1px solid ${CITADELLE_COLORS.border}` }}>
-                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Charges/mois</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.monthly_expenses')}</p>
                       <p className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{(listing.monthly_charges).toLocaleString("fr-FR")} €</p>
                     </div>
                   )}
                   {listing.monthly_revenue > 0 && listing.monthly_charges != null && (
                     <div className="p-3 rounded-xl" style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
-                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#16a34a" }}>Bénéfice net/mois</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#16a34a" }}>{t('listing_detail.monthly_profit')}</p>
                       <p className="font-bold" style={{ color: "#16a34a" }}>{(listing.monthly_revenue - listing.monthly_charges).toLocaleString("fr-FR")} €</p>
                     </div>
                   )}
@@ -495,7 +497,7 @@ export default function CitadelleListingDetail() {
             {(listing.traffic_sources || listing.main_keywords) && (
               <div className="p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
                 <h2 className="font-bold mb-4 flex items-center gap-2" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                  <TrendingUp size={16} style={{ color: "#C9A45C" }} /> Trafic &amp; référencement
+                  <TrendingUp size={16} style={{ color: "#C9A45C" }} /> {t('listing_detail.section_traffic')}
                 </h2>
                 <div className="space-y-3">
                   {listing.traffic_sources && (
@@ -518,7 +520,7 @@ export default function CitadelleListingDetail() {
             {(listing.technologies?.length > 0 || listing.region || listing.registered_clients != null || listing.niche) && (
               <div className="p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
                 <h2 className="font-bold mb-4 flex items-center gap-2" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                  <Globe size={16} style={{ color: "#C9A45C" }} /> Informations techniques
+                  <Globe size={16} style={{ color: "#C9A45C" }} /> {t('listing_detail.section_tech')}
                 </h2>
                 <div className="space-y-3">
                   {listing.niche && (
@@ -565,7 +567,7 @@ export default function CitadelleListingDetail() {
 
             {/* Description */}
             <div className="p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
-              <h2 className="font-bold mb-4" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>Description</h2>
+              <h2 className="font-bold mb-4" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>{t('listing_detail.section_desc')}</h2>
               <p className="text-sm leading-relaxed whitespace-pre-line break-words" style={{ color: CITADELLE_COLORS.textMuted, overflowWrap: "anywhere" }}>{listing.description}</p>
             </div>
 
@@ -573,7 +575,7 @@ export default function CitadelleListingDetail() {
             {(listing.ideal_buyer || listing.weekly_hours != null) && (
               <div className="p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
                 <h2 className="font-bold mb-4 flex items-center gap-2" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                  <UserCheck size={16} style={{ color: "#C9A45C" }} /> Détails de la cession
+                  <UserCheck size={16} style={{ color: "#C9A45C" }} /> {t('listing_detail.section_transfer')}
                 </h2>
                 <div className="space-y-3">
                   {listing.ideal_buyer && (
@@ -600,7 +602,7 @@ export default function CitadelleListingDetail() {
                   {listing.strengths && (
                     <div className="p-4 rounded-xl" style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.2)" }}>
                       <p className="text-xs font-bold uppercase tracking-wide mb-2 flex items-center gap-1" style={{ color: "#16a34a" }}>
-                        <CheckCircle size={12} /> Points forts
+                        <CheckCircle size={12} /> {t('listing_detail.section_strengths')}
                       </p>
                       <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: "#1a4731" }}>{listing.strengths}</p>
                     </div>
@@ -608,7 +610,7 @@ export default function CitadelleListingDetail() {
                   {listing.weaknesses && (
                     <div className="p-4 rounded-xl" style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)" }}>
                       <p className="text-xs font-bold uppercase tracking-wide mb-2 flex items-center gap-1" style={{ color: "#dc2626" }}>
-                        <AlertTriangle size={12} /> Points faibles
+                        <AlertTriangle size={12} /> {t('listing_detail.section_weaknesses')}
                       </p>
                       <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: "#7f1d1d" }}>{listing.weaknesses}</p>
                     </div>
@@ -821,7 +823,7 @@ export default function CitadelleListingDetail() {
                       {listing.price?.toLocaleString("fr-FR")} €
                     </span>
                   </div>
-                  {listing.price_negotiable && <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>Prix négociable</p>}
+                  {listing.price_negotiable && <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>{t('listing_detail.negotiable')}</p>}
 
                   <div className="space-y-3 mt-5">
                     {listing.status === "sold" ? (
@@ -832,13 +834,13 @@ export default function CitadelleListingDetail() {
                           className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02] mb-3"
                           style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                           data-testid="btn-make-offer">
-                          Faire une offre
+                          {t('listing_detail.btn_offer')}
                         </button>
                         <button onClick={() => setContactModal(true)}
                           className="w-full py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.02]"
                           style={{ border: `1px solid ${CITADELLE_COLORS.blue}`, color: CITADELLE_COLORS.blue }}
                           data-testid="btn-contact-seller">
-                          Contacter le vendeur
+                          {t('listing_detail.btn_contact')}
                         </button>
                       </>
                     ) : isAuthenticated && !canTransact && user?.id !== listing.seller_id ? (
@@ -851,7 +853,7 @@ export default function CitadelleListingDetail() {
                         className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02]"
                         style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                         data-testid="btn-auth-offre">
-                        Se connecter pour faire une offre
+                        {t('listing_detail.btn_login_offer')}
                       </button>
                     ) : null}
                   </div>
@@ -1000,7 +1002,7 @@ export default function CitadelleListingDetail() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)" }}>
           <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
             <h3 className="font-bold text-lg mb-1" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-              Faire une offre
+              {t('listing_detail.offer_modal_title')}
             </h3>
             <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
               Prix affiché : {listing.price?.toLocaleString("fr-FR")} €
@@ -1015,7 +1017,7 @@ export default function CitadelleListingDetail() {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: CITADELLE_COLORS.blue }}>Montant de votre offre (€)</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: CITADELLE_COLORS.blue }}>{t('listing_detail.offer_label')}</label>
                 <input type="number" value={offerAmount} onChange={e => setOfferAmount(e.target.value)}
                   placeholder={`${listing.price}`} min="1"
                   className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
@@ -1023,7 +1025,7 @@ export default function CitadelleListingDetail() {
                   data-testid="offer-amount" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: CITADELLE_COLORS.blue }}>Message au vendeur</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: CITADELLE_COLORS.blue }}>{t('listing_detail.offer_message')}</label>
                 <textarea value={offerMessage} onChange={e => setOfferMessage(e.target.value)} rows={4}
                   placeholder="Présentez-vous et expliquez votre intérêt pour cet actif..."
                   className="w-full px-4 py-2.5 rounded-xl text-sm outline-none resize-none"
@@ -1036,7 +1038,7 @@ export default function CitadelleListingDetail() {
               <button onClick={() => { setOfferModal(false); setOfferError(""); }}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium"
                 style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-                Annuler
+                {t('listing_detail.offer_cancel')}
               </button>
               <button onClick={async () => {
                 setOfferError("");
@@ -1072,7 +1074,7 @@ export default function CitadelleListingDetail() {
       {contactModal && (        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)" }}>
           <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "#F5F7FA", border: "1.5px solid #94A8BB" }}>
             <h3 className="font-bold text-lg mb-1" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-              Contacter le vendeur
+              {t('listing_detail.contact_title')}
             </h3>
             <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
               Posez vos questions avant de faire une offre.
@@ -1094,7 +1096,7 @@ export default function CitadelleListingDetail() {
               <button onClick={() => { setContactModal(false); setContactError(""); }}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium"
                 style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-                Annuler
+                {t('listing_detail.contact_cancel')}
               </button>
               <button onClick={async () => {
                 setContactError("");
@@ -1205,6 +1207,7 @@ const ESTIM_MULTIPLES = {
 };
 
 function EstimateurSidebar({ listing }) {
+  const { t } = useTranslation();
   const [revenue, setRevenue] = useState(listing.monthly_revenue > 0 ? String(listing.monthly_revenue) : "");
   const [result, setResult]   = useState(null);
 
@@ -1225,7 +1228,7 @@ function EstimateurSidebar({ listing }) {
       <div className="flex items-center gap-2 mb-1">
         <TrendingUp size={15} style={{ color: CITADELLE_COLORS.gold }} />
         <h3 className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-          Vous avez un actif similaire ?
+          {t('listing_detail.similar_asset')}
         </h3>
       </div>
       <p className="text-xs mb-4 pl-[23px]" style={{ color: CITADELLE_COLORS.textMuted }}>
