@@ -1,0 +1,28 @@
+{
+  "summary": "Frontend-only i18n verification of /citadelle/estimation for the new EN translations. Tested FR default, switch to EN via data-testid='lang-switcher', all key labels (hero, estimator, professional form, cards, multiples table, FAQ, CTA), estimator functionality in EN (calc + adjustment labels), 'Other asset types' panel, localStorage persistence ('citadelle_lang'), and toggle-back to FR. Result: translation is complete and correct — no French residue detected in EN mode.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "/citadelle/estimation", "issues": ["Multiple React hydration warnings caused by the visual-editor injected <span data-ve-dynamic=\"true\"> wrappers around <option>, <th>, <tr>, <td> and <tbody> nodes (SITE_TYPES / AGES array mappings). These are visual-editor tooling markers, not from i18n code, but they pollute the console with 'In HTML, <span> cannot be a child of <select>/<thead>/<tbody>' errors. Consider disabling ve-dynamic wrapping for table/select children or wrapping arrays with Fragment-only children."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "None blocking. Estimation page i18n is complete and correct in both FR and EN. Optional: address the pre-existing hydration warnings from the visual editor injection (not caused by this iteration)."
+  ],
+  "critical_code_review_comments": [
+    "estimation JSON keys are well-scoped under 'estimation.*'; helpers siteTypes(t)/ages(t)/extraTypes(t)/divOptions(t) and compute(t,...) correctly receive t and return translated labels — verified by finding 'Solid SEO 30–60%', 'Stable 0–5%/mo', '2 revenue sources' in EN after calculation.",
+    "Badge strings 'Free tool · Professional SDE method' / 'Outil gratuit · Méthode SDE professionnelle' render UPPERCASE via CSS text-transform (rendered as 'FREE TOOL · PROFESSIONAL SDE METHOD') — this is expected styling, not an i18n bug.",
+    "localStorage key 'citadelle_lang' correctly persists; page in EN survives full reload."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "100%"},
+  "test_credentials": "None required (public page).",
+  "seed_data_creation": "None.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Iteration 30 validated the FR/EN toggle on /citadelle/estimation only. All labels (hero, estimator with 5 params, pro form + Standard/Expert cards + Recommended badge, multiples table with age headers and site types, 5-question FAQ, final CTA) translate correctly. Estimator adjustments (compute()) also translate. No French residue in EN mode. Persistence via localStorage 'citadelle_lang' works. Only cosmetic note: visual-editor injections cause React hydration warnings on <select>/<table> — pre-existing, not related to i18n. Screenshots taken at .screenshots/est_fr.png and .screenshots/est_en.png.",
+  "rca of the issue": "N/A — no bugs found."
+}

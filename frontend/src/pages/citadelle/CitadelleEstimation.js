@@ -2,10 +2,12 @@
  * Page Estimateur Pro — La Citadelle Numérique
  * Outil avancé d'estimation + formulaire de demande d'estimation professionnelle
  * SEO/GEO/AEO : JSON-LD FAQPage + Service + microdata Schema.org
+ * i18n : FR / EN via react-i18next
  */
 
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   TrendingUp, ArrowRight, CheckCircle, ChevronDown, ChevronUp,
   BarChart2, Leaf, Layers, Send, Shield, Clock, Star, AlertCircle,
@@ -17,15 +19,16 @@ import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { isPromoOn, promoDiscounted } from "@/utils/promo";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 
-// ── Constantes ────────────────────────────────────────────────────────────────
+// ── Constantes (valeurs stables — labels traduits via i18n) ─────────────────────
 
-const SITE_TYPES = [
-  { value: "contenu",     label: "Site de contenu / Blog" },
-  { value: "ecommerce",   label: "E-commerce / Boutique" },
-  { value: "saas",        label: "SaaS / Application web" },
-  { value: "application", label: "Application mobile" },
-  { value: "social",      label: "Compte / Réseau social" },
+const SITE_TYPE_VALUES  = ["contenu", "ecommerce", "saas", "application", "social"];
+const EXTRA_TYPE_VALUES = [
+  "shopify_store", "amazon_fba", "newsletter", "youtube_channel", "instagram",
+  "tiktok", "linkedin_page", "discord_server", "forum", "blog",
+  "online_media", "ai_automation", "template_plugin", "database_api",
 ];
+const AGE_VALUES        = ["lt1", "1-3", "3-5", "5plus"];
+const DIV_OPTIONS       = [{ value: 1, badge: "-7%" }, { value: 2, badge: "+3%" }, { value: 3, badge: "+7%" }];
 
 // Nouveaux types — mappés vers les multiples existants pour le calcul
 const TYPE_MAPPING = {
@@ -36,30 +39,6 @@ const TYPE_MAPPING = {
   ai_automation: "saas", template_plugin: "saas", database_api: "saas",
 };
 
-const EXTRA_SITE_TYPES = [
-  { value: "shopify_store",   label: "Boutique Shopify" },
-  { value: "amazon_fba",      label: "Amazon FBA" },
-  { value: "newsletter",      label: "Newsletter" },
-  { value: "youtube_channel", label: "Chaîne YouTube" },
-  { value: "instagram",       label: "Compte Instagram" },
-  { value: "tiktok",          label: "Compte TikTok" },
-  { value: "linkedin_page",   label: "Page LinkedIn Entreprise" },
-  { value: "discord_server",  label: "Serveur Discord" },
-  { value: "forum",           label: "Forum" },
-  { value: "blog",            label: "Blog" },
-  { value: "online_media",    label: "Média en ligne" },
-  { value: "ai_automation",   label: "Agents IA / Automatisations" },
-  { value: "template_plugin", label: "Templates / Plugins" },
-  { value: "database_api",    label: "Bases de données / APIs" },
-];
-
-const AGES = [
-  { value: "lt1",   label: "< 1 an" },
-  { value: "1-3",   label: "1 — 3 ans" },
-  { value: "3-5",   label: "3 — 5 ans" },
-  { value: "5plus", label: "5 ans et +" },
-];
-
 const MULTIPLES = {
   saas:        { lt1: [10,15], "1-3": [14,20], "3-5": [18,26], "5plus": [22,30] },
   ecommerce:   { lt1: [8,12],  "1-3": [12,18], "3-5": [15,22], "5plus": [18,25] },
@@ -68,11 +47,11 @@ const MULTIPLES = {
   social:      { lt1: [4,7],   "1-3": [5,9],   "3-5": [7,12],  "5plus": [9,15]  },
 };
 
-const DIVERSIFICATION_OPTIONS = [
-  { value: 1, label: "1 source unique (AdSense, affiliation...)", badge: "-7%" },
-  { value: 2, label: "2 sources combinées", badge: "+3%" },
-  { value: 3, label: "3 sources ou plus", badge: "+7%" },
-];
+// Helpers labels traduits
+const siteTypes  = (t) => SITE_TYPE_VALUES.map(v => ({ value: v, label: t(`estimation.site_types.${v}`) }));
+const extraTypes = (t) => EXTRA_TYPE_VALUES.map(v => ({ value: v, label: t(`estimation.extra_types.${v}`) }));
+const ages       = (t) => AGE_VALUES.map(v => ({ value: v, label: t(`estimation.ages.${v}`) }));
+const divOptions = (t) => DIV_OPTIONS.map(o => ({ ...o, label: t(`estimation.div_options.${o.value}`) }));
 
 const formatEur = (n) =>
   new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
@@ -84,29 +63,29 @@ const pct = (mult) => {
 
 // ── Algorithme d'estimation ───────────────────────────────────────────────────
 
-function compute({ revenue, siteType, age, seoPercent, growthPercent, diversification }) {
+function compute(t, { revenue, siteType, age, seoPercent, growthPercent, diversification }) {
   const multKey = TYPE_MAPPING[siteType] || siteType;
   const [baseLow, baseHigh] = MULTIPLES[multKey][age];
 
   // Ajustement SEO
   let seoMult, seoLabel, seoColor;
-  if (seoPercent >= 60)      { seoMult = 1.07; seoLabel = `SEO dominant ≥ 60%`; seoColor = "#22c55e"; }
-  else if (seoPercent >= 30) { seoMult = 1.03; seoLabel = `SEO solide 30–60%`; seoColor = "#84cc16"; }
-  else if (seoPercent >= 20) { seoMult = 1.0;  seoLabel = `SEO modéré 20–30%`; seoColor = CITADELLE_COLORS.gold; }
-  else                       { seoMult = 0.93; seoLabel = `SEO faible < 20%`; seoColor = "#ef4444"; }
+  if (seoPercent >= 60)      { seoMult = 1.07; seoLabel = t("estimation.compute.seo_dominant"); seoColor = "#22c55e"; }
+  else if (seoPercent >= 30) { seoMult = 1.03; seoLabel = t("estimation.compute.seo_solid");    seoColor = "#84cc16"; }
+  else if (seoPercent >= 20) { seoMult = 1.0;  seoLabel = t("estimation.compute.seo_moderate"); seoColor = CITADELLE_COLORS.gold; }
+  else                       { seoMult = 0.93; seoLabel = t("estimation.compute.seo_weak");     seoColor = "#ef4444"; }
 
   // Ajustement croissance
   let growthMult, growthLabel, growthColor;
-  if (growthPercent > 10)      { growthMult = 1.10; growthLabel = `Forte croissance > 10%/mois`; growthColor = "#22c55e"; }
-  else if (growthPercent >= 5) { growthMult = 1.05; growthLabel = `Bonne croissance 5–10%/mois`; growthColor = "#84cc16"; }
-  else if (growthPercent >= 0) { growthMult = 1.0;  growthLabel = `Stable 0–5%/mois`; growthColor = CITADELLE_COLORS.gold; }
-  else                         { growthMult = 0.88; growthLabel = `Déclin < 0%/mois`; growthColor = "#ef4444"; }
+  if (growthPercent > 10)      { growthMult = 1.10; growthLabel = t("estimation.compute.growth_strong");  growthColor = "#22c55e"; }
+  else if (growthPercent >= 5) { growthMult = 1.05; growthLabel = t("estimation.compute.growth_good");    growthColor = "#84cc16"; }
+  else if (growthPercent >= 0) { growthMult = 1.0;  growthLabel = t("estimation.compute.growth_stable");  growthColor = CITADELLE_COLORS.gold; }
+  else                         { growthMult = 0.88; growthLabel = t("estimation.compute.growth_decline"); growthColor = "#ef4444"; }
 
   // Ajustement diversification
   let divMult, divLabel, divColor;
-  if (diversification >= 3)       { divMult = 1.07; divLabel = `3+ sources de revenus`; divColor = "#22c55e"; }
-  else if (diversification === 2) { divMult = 1.03; divLabel = `2 sources de revenus`; divColor = "#84cc16"; }
-  else                            { divMult = 0.93; divLabel = `1 seule source`; divColor = "#ef4444"; }
+  if (diversification >= 3)       { divMult = 1.07; divLabel = t("estimation.compute.div_3plus"); divColor = "#22c55e"; }
+  else if (diversification === 2) { divMult = 1.03; divLabel = t("estimation.compute.div_2");     divColor = "#84cc16"; }
+  else                            { divMult = 0.93; divLabel = t("estimation.compute.div_1");     divColor = "#ef4444"; }
 
   const baseLowPrice  = revenue * baseLow;
   const baseHighPrice = revenue * baseHigh;
@@ -125,50 +104,33 @@ function compute({ revenue, siteType, age, seoPercent, growthPercent, diversific
   };
 }
 
-// ── JSON-LD Schemas ───────────────────────────────────────────────────────────
+// ── JSON-LD Schemas (construits dynamiquement depuis les traductions) ──────────
 
-const PAGE_SCHEMAS = [
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: "Comment estimer la valeur de mon site internet en France ?",
-        acceptedAnswer: { "@type": "Answer", text: "La valeur d'un site internet en France se calcule avec la méthode du multiple SDE : Valeur = Bénéfice net mensuel × Multiple (8x à 30x). Ce multiple est ajusté selon le trafic SEO organique, le taux de croissance et la diversification des revenus. Notre outil gratuit intègre ces 5 paramètres pour une estimation précise." }
-      },
-      {
-        "@type": "Question",
-        name: "Combien coûte une estimation professionnelle de site internet ?",
-        acceptedAnswer: { "@type": "Answer", text: "La demande d'estimation professionnelle sur La Citadelle Numérique est gratuite. Notre équipe analyse votre dossier (revenus vérifiés, trafic réel, actifs inclus) et vous fournit un rapport de valorisation détaillé sous 48h ouvrées." }
-      },
-      {
-        "@type": "Question",
-        name: "Quel est le multiple utilisé pour valoriser un SaaS en France ?",
-        acceptedAnswer: { "@type": "Answer", text: "En France, un SaaS mature (3 à 5 ans) se valorise entre 18 et 26 fois son bénéfice net mensuel. Un SaaS avec une forte rétention et une croissance soutenue peut atteindre 22 à 30 fois le bénéfice mensuel." }
-      },
-      {
-        "@type": "Question",
-        name: "Pourquoi le trafic SEO améliore-t-il la valeur d'un site ?",
-        acceptedAnswer: { "@type": "Answer", text: "Un trafic SEO organique dominant (> 60%) signifie que les revenus ne dépendent pas de publicités payantes coûteuses. C'est un actif stable et défendable, qui réduit le risque pour l'acheteur et justifie une prime de valorisation de 7 à 15%." }
-      },
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    name: "Estimation professionnelle de business digital",
-    provider: { "@type": "Organization", name: "La Citadelle Numérique", url: "https://lacitadellenumerique.fr" },
-    description: "Service d'estimation gratuite de la valeur d'un site internet, SaaS ou e-commerce par des experts de la cession d'actifs numériques en France.",
-    areaServed: "France",
-    serviceType: "Valorisation de business digital",
-    offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: "Gratuit" }
-  }
-];
-
-function usePageSchemas() {
+function usePageSchemas(t, lang) {
   useEffect(() => {
-    const scripts = PAGE_SCHEMAS.map((schema, i) => {
+    const faq = t("estimation.faq", { returnObjects: true }) || [];
+    const schemas = [
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: (Array.isArray(faq) ? faq : []).map(item => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        name: t("estimation.schema_service_name"),
+        provider: { "@type": "Organization", name: "La Citadelle Numérique", url: "https://lacitadellenumerique.fr" },
+        description: t("estimation.schema_service_desc"),
+        areaServed: "France",
+        serviceType: "Valorisation de business digital",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: t("estimation.schema_service_offer") },
+      },
+    ];
+    const scripts = schemas.map((schema, i) => {
       const s = document.createElement("script");
       s.type = "application/ld+json";
       s.id = `estimation-schema-${i}`;
@@ -177,12 +139,19 @@ function usePageSchemas() {
       return s;
     });
     return () => scripts.forEach(s => s.remove());
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 }
 
 // ── Composant Estimateur ──────────────────────────────────────────────────────
 
 function AdvancedEstimator({ onResult, formRef }) {
+  const { t } = useTranslation();
+  const SITE_TYPES  = siteTypes(t);
+  const EXTRA_TYPES = extraTypes(t);
+  const AGES        = ages(t);
+  const DIVERSIFICATION_OPTIONS = divOptions(t);
+
   const [revenue, setRevenue]           = useState("");
   const [siteType, setSiteType]         = useState("contenu");
   const [age, setAge]                   = useState("1-3");
@@ -196,7 +165,7 @@ function AdvancedEstimator({ onResult, formRef }) {
     e.preventDefault();
     const rev = parseFloat(revenue);
     if (!rev || rev <= 0) return;
-    const res = compute({ revenue: rev, siteType, age, seoPercent, growthPercent, diversification });
+    const res = compute(t, { revenue: rev, siteType, age, seoPercent, growthPercent, diversification });
     setResult(res);
     onResult({ revenue: rev, siteType });
   };
@@ -226,10 +195,10 @@ function AdvancedEstimator({ onResult, formRef }) {
       {/* En-tête card */}
       <div className="px-7 py-5" style={{ background: CITADELLE_COLORS.blue, borderBottom: `2px solid ${CITADELLE_COLORS.gold}` }}>
         <h2 className="font-black text-lg" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>
-          Estimateur avancé
+          {t("estimation.estimator_title")}
         </h2>
         <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>
-          5 paramètres · Méthode SDE · Ajustements qualité
+          {t("estimation.estimator_subtitle")}
         </p>
       </div>
 
@@ -239,15 +208,15 @@ function AdvancedEstimator({ onResult, formRef }) {
           {/* 1. Bénéfice net */}
           <div>
             <label className="block text-sm font-bold mb-1" style={{ color: CITADELLE_COLORS.blue }}>
-              Bénéfice net mensuel moyen (€) *
+              {t("estimation.revenue_label")}
             </label>
             <p className="text-xs mb-2" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Revenus bruts moins toutes les charges d'exploitation
+              {t("estimation.revenue_help")}
             </p>
             <input
               type="number" min="1" value={revenue}
               onChange={e => setRevenue(e.target.value)}
-              placeholder="Ex : 2 000"
+              placeholder={t("estimation.revenue_ph")}
               required data-testid="adv-estimator-revenue"
               style={{ ...inputStyle, fontSize: 18, fontWeight: 700, border: `1px solid ${revenue ? CITADELLE_COLORS.gold : CITADELLE_COLORS.border}` }}
             />
@@ -256,20 +225,20 @@ function AdvancedEstimator({ onResult, formRef }) {
           {/* 2. Type de business */}
           <div>
             <label className="block text-sm font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>
-              Type de business
+              {t("estimation.type_label")}
             </label>
             <div className="grid grid-cols-1 gap-2">
-              {SITE_TYPES.map(t => (
-                <button key={t.value} type="button" onClick={() => { setSiteType(t.value); setShowExtraTypes(false); }}
-                  data-testid={`adv-type-${t.value}`}
+              {SITE_TYPES.map(t2 => (
+                <button key={t2.value} type="button" onClick={() => { setSiteType(t2.value); setShowExtraTypes(false); }}
+                  data-testid={`adv-type-${t2.value}`}
                   className="px-4 py-2.5 rounded-xl text-sm font-medium text-left transition-all"
                   style={{
-                    background: siteType === t.value ? `rgba(201,164,92,0.12)` : CITADELLE_COLORS.bg,
-                    border: `1px solid ${siteType === t.value ? CITADELLE_COLORS.gold : CITADELLE_COLORS.border}`,
-                    color: siteType === t.value ? CITADELLE_COLORS.blue : CITADELLE_COLORS.textMuted,
-                    fontWeight: siteType === t.value ? 700 : 500,
+                    background: siteType === t2.value ? `rgba(201,164,92,0.12)` : CITADELLE_COLORS.bg,
+                    border: `1px solid ${siteType === t2.value ? CITADELLE_COLORS.gold : CITADELLE_COLORS.border}`,
+                    color: siteType === t2.value ? CITADELLE_COLORS.blue : CITADELLE_COLORS.textMuted,
+                    fontWeight: siteType === t2.value ? 700 : 500,
                   }}>
-                  {t.label}
+                  {t2.label}
                 </button>
               ))}
 
@@ -277,14 +246,14 @@ function AdvancedEstimator({ onResult, formRef }) {
               <button type="button" onClick={() => setShowExtraTypes(v => !v)}
                 className="px-4 py-2.5 rounded-xl text-sm font-medium text-left transition-all"
                 style={{
-                  background: EXTRA_SITE_TYPES.some(t => t.value === siteType) ? `rgba(201,164,92,0.12)` : CITADELLE_COLORS.bg,
-                  border: `1px dashed ${EXTRA_SITE_TYPES.some(t => t.value === siteType) ? CITADELLE_COLORS.gold : CITADELLE_COLORS.border}`,
-                  color: EXTRA_SITE_TYPES.some(t => t.value === siteType) ? CITADELLE_COLORS.blue : CITADELLE_COLORS.textMuted,
-                  fontWeight: EXTRA_SITE_TYPES.some(t => t.value === siteType) ? 700 : 500,
+                  background: EXTRA_TYPES.some(x => x.value === siteType) ? `rgba(201,164,92,0.12)` : CITADELLE_COLORS.bg,
+                  border: `1px dashed ${EXTRA_TYPES.some(x => x.value === siteType) ? CITADELLE_COLORS.gold : CITADELLE_COLORS.border}`,
+                  color: EXTRA_TYPES.some(x => x.value === siteType) ? CITADELLE_COLORS.blue : CITADELLE_COLORS.textMuted,
+                  fontWeight: EXTRA_TYPES.some(x => x.value === siteType) ? 700 : 500,
                 }}>
-                {EXTRA_SITE_TYPES.some(t => t.value === siteType)
-                  ? `Autre : ${EXTRA_SITE_TYPES.find(t => t.value === siteType)?.label}`
-                  : `Autres types d'actifs ${showExtraTypes ? "▲" : "▼"}`}
+                {EXTRA_TYPES.some(x => x.value === siteType)
+                  ? `${t("estimation.other_prefix")}${EXTRA_TYPES.find(x => x.value === siteType)?.label}`
+                  : `${t("estimation.other_toggle")} ${showExtraTypes ? "▲" : "▼"}`}
               </button>
             </div>
 
@@ -297,11 +266,11 @@ function AdvancedEstimator({ onResult, formRef }) {
             }}>
               <div className="pt-3">
                 <div className="flex flex-wrap gap-1.5">
-                  {EXTRA_SITE_TYPES.map(t => {
-                    const active = siteType === t.value;
+                  {EXTRA_TYPES.map(x => {
+                    const active = siteType === x.value;
                     return (
-                      <button key={t.value} type="button"
-                        onClick={() => setSiteType(t.value)}
+                      <button key={x.value} type="button"
+                        onClick={() => setSiteType(x.value)}
                         className="px-3 py-1.5 rounded-full text-xs transition-all"
                         style={{
                           border: active ? `1.5px solid ${CITADELLE_COLORS.gold}` : `1px solid ${CITADELLE_COLORS.border}`,
@@ -309,7 +278,7 @@ function AdvancedEstimator({ onResult, formRef }) {
                           color: active ? CITADELLE_COLORS.blue : CITADELLE_COLORS.textMuted,
                           fontWeight: active ? 700 : 500,
                         }}>
-                        {t.label}
+                        {x.label}
                       </button>
                     );
                   })}
@@ -321,7 +290,7 @@ function AdvancedEstimator({ onResult, formRef }) {
           {/* 3. Ancienneté */}
           <div>
             <label className="block text-sm font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>
-              Ancienneté du site
+              {t("estimation.age_label")}
             </label>
             <div className="grid grid-cols-2 gap-2">
               {AGES.map(a => (
@@ -343,43 +312,43 @@ function AdvancedEstimator({ onResult, formRef }) {
           {/* 4. Trafic SEO organique */}
           <div>
             <label className="block text-sm font-bold mb-1" style={{ color: CITADELLE_COLORS.blue }}>
-              Trafic organique SEO
+              {t("estimation.seo_label")}
               <span className="ml-2 font-black" style={{ color: CITADELLE_COLORS.gold }}>{seoPercent}%</span>
             </label>
             <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Part des visites venant du référencement naturel (Google, Bing...)
+              {t("estimation.seo_help")}
             </p>
             <input type="range" min="0" max="100" value={seoPercent}
               onChange={e => setSeoPercent(Number(e.target.value))}
               data-testid="adv-seo-range" style={sliderStyle} />
             <div className="flex justify-between text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-              <span>0% — Trafic payant</span><span>100% — SEO pur</span>
+              <span>{t("estimation.seo_min")}</span><span>{t("estimation.seo_max")}</span>
             </div>
           </div>
 
           {/* 5. Taux de croissance */}
           <div>
             <label className="block text-sm font-bold mb-1" style={{ color: CITADELLE_COLORS.blue }}>
-              Taux de croissance mensuel
+              {t("estimation.growth_label")}
               <span className="ml-2 font-black" style={{ color: growthPercent < 0 ? "#ef4444" : CITADELLE_COLORS.gold }}>
                 {growthPercent > 0 ? "+" : ""}{growthPercent}%
               </span>
             </label>
             <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Croissance moyenne des revenus sur les 6 derniers mois
+              {t("estimation.growth_help")}
             </p>
             <input type="range" min="-20" max="30" value={growthPercent}
               onChange={e => setGrowthPercent(Number(e.target.value))}
               data-testid="adv-growth-range" style={sliderStyle} />
             <div className="flex justify-between text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-              <span>-20% Déclin</span><span>+30% Forte croissance</span>
+              <span>{t("estimation.growth_min")}</span><span>{t("estimation.growth_max")}</span>
             </div>
           </div>
 
           {/* 6. Diversification revenus */}
           <div>
             <label className="block text-sm font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>
-              Sources de revenus
+              {t("estimation.div_label")}
             </label>
             <div className="space-y-2">
               {DIVERSIFICATION_OPTIONS.map(o => (
@@ -408,10 +377,10 @@ function AdvancedEstimator({ onResult, formRef }) {
             data-testid="adv-calculate-btn"
             className="w-full py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-            Estimer gratuitement — résultat instantané
+            {t("estimation.calculate_btn")}
           </button>
           <p className="text-center text-xs mt-2" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Sans inscription · Sans engagement · 100% gratuit
+            {t("estimation.calculate_note")}
           </p>
         </form>
 
@@ -424,7 +393,7 @@ function AdvancedEstimator({ onResult, formRef }) {
             style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.blue} 0%, #1a3a6b 100%)` }}>
             <p className="text-xs font-semibold uppercase tracking-widest mb-3"
               style={{ color: "rgba(255,255,255,0.5)" }}>
-              Valeur estimée de votre site
+              {t("estimation.result_label")}
             </p>
             <div className="flex items-baseline justify-center gap-2 flex-wrap">
               <span className="font-black" style={{
@@ -445,7 +414,7 @@ function AdvancedEstimator({ onResult, formRef }) {
             <div className="flex items-center justify-between p-3 rounded-xl"
               style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
               <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>
-                Base (×{result.baseLow} – ×{result.baseHigh})
+                {t("estimation.base", { low: result.baseLow, high: result.baseHigh })}
               </span>
               <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.textMuted }}>
                 {formatEur(result.baseLowPrice)} – {formatEur(result.baseHighPrice)}
@@ -471,7 +440,7 @@ function AdvancedEstimator({ onResult, formRef }) {
           <div className="rounded-2xl p-4 mb-5"
             style={{ background: "rgba(201,164,92,0.08)", border: "1px solid rgba(201,164,92,0.25)" }}>
             <p className="text-sm leading-relaxed" style={{ color: CITADELLE_COLORS.blue }}>
-              <strong>Cette estimation est indicative.</strong> Une analyse professionnelle de vos données réelles (Analytics, revenus Stripe, trafic GSC) peut affiner ce résultat de ±30%.
+              <strong>{t("estimation.indicative_strong")}</strong>{t("estimation.indicative_rest")}
             </p>
           </div>
 
@@ -481,14 +450,14 @@ function AdvancedEstimator({ onResult, formRef }) {
               className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.02]"
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
               data-testid="adv-cta-form">
-              Demander une estimation professionnelle
+              {t("estimation.cta_pro")}
               <ArrowRight size={17} />
             </button>
             <button onClick={reset}
               className="w-full py-3 rounded-2xl text-sm font-medium transition-all"
               style={{ background: CITADELLE_COLORS.bg, color: CITADELLE_COLORS.textMuted, border: `1px solid ${CITADELLE_COLORS.border}` }}
               data-testid="adv-reset-btn">
-              Recommencer
+              {t("estimation.reset")}
             </button>
           </div>
         </div>
@@ -498,6 +467,7 @@ function AdvancedEstimator({ onResult, formRef }) {
 }
 
 // ── Sélecteur de service + formulaire → Stripe Checkout ──────────────────────
+// Les titres restent en français pour la correspondance API (matching par titre).
 
 const ESTIMATION_SERVICES = [
   {
@@ -506,14 +476,7 @@ const ESTIMATION_SERVICES = [
     title: "Estimation Standard",
     price: 49,
     icon: Zap,
-    delay: "Sous 48h",
     badge: null,
-    features: [
-      "Estimation complète de la valeur",
-      "Analyse des revenus mensuels",
-      "Fourchette de prix conseillée",
-      "Rapport synthétique PDF",
-    ],
   },
   {
     id: "72b653c4-6def-4053-bfb1-7441c03c0bcf",
@@ -521,21 +484,14 @@ const ESTIMATION_SERVICES = [
     title: "Estimation Expert",
     price: 149,
     icon: Crown,
-    delay: "Sous 72h",
     badge: "Recommandé",
-    features: [
-      "Tout le Standard, plus :",
-      "Audit trafic & SEO approfondi",
-      "Analyse concurrence & marché",
-      "Conseils pré-vente personnalisés",
-      "Rapport PDF complet (15 pages)",
-      "Appel 30 min avec un expert",
-    ],
   },
 ];
 
 function ContactForm({ prefillType }) {
+  const { t } = useTranslation();
   const { user } = useCitadelleAuth();
+  const SITE_TYPES = siteTypes(t);
 
   // Prices loaded dynamically from API — ESTIMATION_SERVICES as fallback
   const [liveServices, setLiveServices] = useState(ESTIMATION_SERVICES);
@@ -583,16 +539,15 @@ function ContactForm({ prefillType }) {
     e.preventDefault();
     setStatus("loading"); setErreur("");
 
-    const svc = liveServices.find(s => s.id === selectedService);
-    const typeSiteLabel = SITE_TYPES.find(t => t.value === form.type_site)?.label || form.type_site;
+    const typeSiteLabel = SITE_TYPES.find(x => x.value === form.type_site)?.label || form.type_site;
 
     // Résumé du dossier transmis dans le message (stocké en DB + email)
     const clientMessage = [
-      form.url_site   ? `URL : ${form.url_site}` : null,
-      `Type d'actif : ${typeSiteLabel}`,
-      form.ca_mensuel        ? `CA mensuel : ${form.ca_mensuel} €` : null,
-      form.benefice_mensuel  ? `Bénéfice net mensuel : ${form.benefice_mensuel} €` : null,
-      form.message           ? `Notes : ${form.message}` : null,
+      form.url_site   ? `${t("estimation.msg_url")} : ${form.url_site}` : null,
+      `${t("estimation.msg_type")} : ${typeSiteLabel}`,
+      form.ca_mensuel        ? `${t("estimation.msg_ca")} : ${form.ca_mensuel} €` : null,
+      form.benefice_mensuel  ? `${t("estimation.msg_benefice")} : ${form.benefice_mensuel} €` : null,
+      form.message           ? `${t("estimation.msg_notes")} : ${form.message}` : null,
     ].filter(Boolean).join("\n");
 
     try {
@@ -607,7 +562,7 @@ function ContactForm({ prefillType }) {
       // Redirection vers Stripe Checkout
       window.location.href = res.data.checkout_url;
     } catch (err) {
-      setErreur(err?.response?.data?.detail || "Une erreur est survenue. Veuillez réessayer.");
+      setErreur(err?.response?.data?.detail || t("estimation.error_generic"));
       setStatus("error");
     }
   };
@@ -633,10 +588,10 @@ function ContactForm({ prefillType }) {
       {/* En-tête */}
       <div className="px-7 py-5" style={{ background: CITADELLE_COLORS.night, borderBottom: `2px solid ${CITADELLE_COLORS.gold}` }}>
         <h2 className="font-black text-lg" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>
-          Estimation professionnelle
+          {t("estimation.form_title")}
         </h2>
         <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>
-          Rapport personnalisé · Valorisation précise · Expertise La Garde
+          {t("estimation.form_subtitle")}
         </p>
       </div>
 
@@ -644,9 +599,9 @@ function ContactForm({ prefillType }) {
       <div className="grid grid-cols-3 gap-0"
         style={{ borderBottom: `1px solid ${CITADELLE_COLORS.border}` }}>
         {[
-          { icon: Shield,   text: "Données confidentielles" },
-          { icon: Clock,    text: "Réponse sous 48h" },
-          { icon: Star,     text: "Experts certifiés" },
+          { icon: Shield,   text: t("estimation.promise_confidential") },
+          { icon: Clock,    text: t("estimation.promise_response") },
+          { icon: Star,     text: t("estimation.promise_experts") },
         ].map(({ icon: Icon, text }) => (
           <div key={text} className="flex flex-col items-center gap-1.5 py-4 px-2 text-center">
             <Icon size={16} style={{ color: CITADELLE_COLORS.gold }} />
@@ -660,12 +615,16 @@ function ContactForm({ prefillType }) {
         {/* ── Sélecteur de service ── */}
         <div>
           <p className="text-sm font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>
-            Choisissez votre formule
+            {t("estimation.choose_plan")}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {liveServices.map(svc => {
               const active = selectedService === svc.id;
               const Icon   = svc.icon;
+              const svcTitle    = t(`estimation.services.${svc.slug}.title`);
+              const svcDelay    = t(`estimation.services.${svc.slug}.delay`);
+              const svcFeatures = t(`estimation.services.${svc.slug}.features`, { returnObjects: true });
+              const svcBadge    = svc.badge ? t(`estimation.services.${svc.slug}.badge`) : null;
               return (
                 <button key={svc.id} type="button" onClick={() => setSelectedService(svc.id)}
                   data-testid={`service-selector-${svc.slug}`}
@@ -677,10 +636,10 @@ function ContactForm({ prefillType }) {
                     outline: active ? `2px solid ${CITADELLE_COLORS.gold}` : "none",
                     outlineOffset: 2,
                   }}>
-                  {svc.badge && (
+                  {svcBadge && (
                     <span className="absolute -top-2.5 right-3 px-2.5 py-0.5 rounded-full text-xs font-black"
                       style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-                      {svc.badge}
+                      {svcBadge}
                     </span>
                   )}
                   {isPromoOn(promo, svc.price) && (
@@ -692,7 +651,7 @@ function ContactForm({ prefillType }) {
                   )}
                   <div className="flex items-center gap-2 mb-2">
                     <Icon size={16} style={{ color: active ? CITADELLE_COLORS.gold : CITADELLE_COLORS.textMuted }} />
-                    <span className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue }}>{svc.title}</span>
+                    <span className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue }}>{svcTitle}</span>
                   </div>
                   <div className="text-xl font-black mb-1" style={{ color: active ? CITADELLE_COLORS.gold : CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
                     {isPromoOn(promo, svc.price) ? (
@@ -704,9 +663,9 @@ function ContactForm({ prefillType }) {
                       <>{svc.price} €</>
                     )}
                   </div>
-                  <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>{svc.delay}</p>
+                  <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>{svcDelay}</p>
                   <ul className="space-y-1">
-                    {svc.features.map(f => (
+                    {(Array.isArray(svcFeatures) ? svcFeatures : []).map(f => (
                       <li key={f} className="flex items-start gap-1.5 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
                         <CheckCircle size={11} className="mt-0.5 shrink-0" style={{ color: CITADELLE_COLORS.gold }} />
                         {f}
@@ -725,34 +684,34 @@ function ContactForm({ prefillType }) {
           {/* Nom + Email */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label style={labelStyle}>Prénom &amp; Nom *</label>
+              <label style={labelStyle}>{t("estimation.form_nom_label")}</label>
               <input type="text" required value={form.nom} onChange={set("nom")}
-                placeholder="Jean Dupont" style={fieldStyle}
+                placeholder={t("estimation.form_nom_ph")} style={fieldStyle}
                 data-testid="form-nom" />
             </div>
             <div>
-              <label style={labelStyle}>Email *</label>
+              <label style={labelStyle}>{t("estimation.form_email_label")}</label>
               <input type="email" required value={form.email} onChange={set("email")}
-                placeholder="jean@exemple.fr" style={fieldStyle}
+                placeholder={t("estimation.form_email_ph")} style={fieldStyle}
                 data-testid="form-email" />
             </div>
           </div>
 
           {/* URL du site */}
           <div>
-            <label style={labelStyle}>URL du site à estimer</label>
+            <label style={labelStyle}>{t("estimation.form_url_label")}</label>
             <input type="url" value={form.url_site} onChange={set("url_site")}
-              placeholder="https://monsite.fr" style={fieldStyle}
+              placeholder={t("estimation.form_url_ph")} style={fieldStyle}
               data-testid="form-url" />
           </div>
 
           {/* Type de site */}
           <div>
-            <label style={labelStyle}>Type de business *</label>
+            <label style={labelStyle}>{t("estimation.form_type_label")}</label>
             <select required value={form.type_site} onChange={set("type_site")}
               style={fieldStyle} data-testid="form-type">
-              {SITE_TYPES.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+              {SITE_TYPES.map(x => (
+                <option key={x.value} value={x.value}>{x.label}</option>
               ))}
             </select>
           </div>
@@ -760,24 +719,24 @@ function ContactForm({ prefillType }) {
           {/* CA + Bénéfice */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label style={labelStyle}>CA mensuel moyen (€)</label>
+              <label style={labelStyle}>{t("estimation.form_ca_label")}</label>
               <input type="number" min="0" value={form.ca_mensuel} onChange={set("ca_mensuel")}
-                placeholder="Ex : 8 000" style={fieldStyle}
+                placeholder={t("estimation.form_ca_ph")} style={fieldStyle}
                 data-testid="form-ca" />
             </div>
             <div>
-              <label style={labelStyle}>Bénéfice net mensuel (€)</label>
+              <label style={labelStyle}>{t("estimation.form_benefice_label")}</label>
               <input type="number" min="0" value={form.benefice_mensuel} onChange={set("benefice_mensuel")}
-                placeholder="Ex : 2 000" style={fieldStyle}
+                placeholder={t("estimation.form_benefice_ph")} style={fieldStyle}
                 data-testid="form-benefice" />
             </div>
           </div>
 
           {/* Message */}
           <div>
-            <label style={labelStyle}>Informations complémentaires</label>
+            <label style={labelStyle}>{t("estimation.form_message_label")}</label>
             <textarea value={form.message} onChange={set("message")} rows={4}
-              placeholder="Ancienneté, trafic mensuel, outils utilisés, motivations de vente..."
+              placeholder={t("estimation.form_message_ph")}
               style={{ ...fieldStyle, resize: "vertical" }}
               data-testid="form-message" />
           </div>
@@ -796,9 +755,9 @@ function ContactForm({ prefillType }) {
             className="w-full py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-60"
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
             {status === "loading" ? (
-              <><div className="w-4 h-4 border-2 border-night/30 border-t-night rounded-full animate-spin" /> Redirection vers le paiement…</>
+              <><div className="w-4 h-4 border-2 border-night/30 border-t-night rounded-full animate-spin" /> {t("estimation.submit_loading")}</>
             ) : (
-              <><CreditCard size={16} /> Procéder au paiement — {(() => {
+              <><CreditCard size={16} /> {t("estimation.submit_pay")} {(() => {
                 const sel = liveServices.find(s => s.id === selectedService);
                 const p = sel?.price;
                 return isPromoOn(promo, p) ? promoDiscounted(p, promo) : p;
@@ -807,11 +766,11 @@ function ContactForm({ prefillType }) {
           </button>
 
           <p className="text-xs text-center" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Paiement sécurisé par{" "}
+            {t("estimation.secure_a")}
             <span className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>Stripe</span>
-            {" "}· Vos données sont protégées ·{" "}
+            {t("estimation.secure_b")}
             <Link to="/citadelle/confidentialite" className="underline" style={{ color: CITADELLE_COLORS.gold }}>
-              Politique de confidentialité
+              {t("estimation.secure_privacy")}
             </Link>
           </p>
         </form>
@@ -853,13 +812,18 @@ function FaqItem({ question, answer }) {
 // ── Page principale ───────────────────────────────────────────────────────────
 
 export default function CitadelleEstimation() {
+  const { t, i18n } = useTranslation();
   const formRef = useRef(null);
   const [prefillType, setPrefillType] = useState(null);
-  usePageSchemas();
+  usePageSchemas(t, i18n.language);
+
+  const SITE_TYPES = siteTypes(t);
+  const AGES       = ages(t);
+  const faqItems   = t("estimation.faq", { returnObjects: true });
 
   useEffect(() => {
-    document.title = "Estimation gratuite de votre site web ou SaaS | La Citadelle Numérique";
-  }, []);
+    document.title = t("estimation.page_title");
+  }, [t, i18n.language]);
 
   return (
     <CitadelleLayout>
@@ -878,27 +842,27 @@ export default function CitadelleEstimation() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-5 text-xs font-semibold tracking-wider uppercase"
             style={{ background: "rgba(201,164,92,0.15)", border: "1px solid rgba(201,164,92,0.3)", color: CITADELLE_COLORS.gold }}>
             <TrendingUp size={13} />
-            Outil gratuit · Méthode SDE professionnelle
+            {t("estimation.hero_badge")}
           </div>
 
           {/* H1 optimisé SEO/GEO */}
           <h1 className="font-black mb-4 leading-tight"
             style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(2rem, 6vw, 3.2rem)", color: "white" }}>
-            Estimation de la valeur de<br />
-            <span style={{ color: CITADELLE_COLORS.gold }}>votre site internet</span>
+            {t("estimation.hero_h1_1")}<br />
+            <span style={{ color: CITADELLE_COLORS.gold }}>{t("estimation.hero_h1_accent")}</span>
           </h1>
           <p className="mb-8 leading-relaxed" style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.7)", maxWidth: 580, margin: "0 auto 2rem" }}>
-            Utilisez notre outil avancé à 5 paramètres (bénéfice net, type, ancienneté, SEO, croissance)
-            pour obtenir une fourchette de valorisation précise — ou demandez une analyse professionnelle complète.
-            Méthode utilisée par les experts en cession de business digital en <strong style={{ color: "rgba(255,255,255,0.9)" }}>France</strong>.
+            {t("estimation.hero_sub_a")}
+            <strong style={{ color: "rgba(255,255,255,0.9)" }}>{t("estimation.hero_sub_france")}</strong>
+            {t("estimation.hero_sub_b")}
           </p>
 
           {/* Pills stats */}
           <div className="flex flex-wrap justify-center gap-3">
             {[
-              { icon: BarChart2, text: "Méthode SDE standard" },
-              { icon: Leaf,      text: "5 paramètres d'ajustement" },
-              { icon: Shield,    text: "Estimation gratuite sous 48h" },
+              { icon: BarChart2, text: t("estimation.hero_pills.0") },
+              { icon: Leaf,      text: t("estimation.hero_pills.1") },
+              { icon: Shield,    text: t("estimation.hero_pills.2") },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
                 style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.8)" }}>
@@ -936,28 +900,28 @@ export default function CitadelleEstimation() {
         <div className="max-w-4xl mx-auto px-4 md:px-6">
           <h2 className="font-black text-center mb-3"
             style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(1.4rem, 3vw, 1.9rem)", color: CITADELLE_COLORS.blue }}>
-            Multiples de valorisation par type de site
+            {t("estimation.table_title")}
           </h2>
           <p className="text-center mb-8 text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Fourchettes appliquées avant ajustements SEO, croissance et diversification
+            {t("estimation.table_sub")}
           </p>
 
           <div className="overflow-x-auto rounded-2xl" style={{ border: `1px solid ${CITADELLE_COLORS.border}` }}>
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: CITADELLE_COLORS.blue }}>
-                  <th className="text-left p-4 font-bold text-white">Type de business</th>
+                  <th className="text-left p-4 font-bold text-white">{t("estimation.table_col_type")}</th>
                   {AGES.map(a => (
                     <th key={a.value} className="p-4 font-bold text-white text-center">{a.label}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {SITE_TYPES.map((t, i) => (
-                  <tr key={t.value} style={{ background: i % 2 === 0 ? "white" : CITADELLE_COLORS.bg }}>
-                    <td className="p-4 font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{t.label}</td>
+                {SITE_TYPES.map((x, i) => (
+                  <tr key={x.value} style={{ background: i % 2 === 0 ? "white" : CITADELLE_COLORS.bg }}>
+                    <td className="p-4 font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{x.label}</td>
                     {AGES.map(a => {
-                      const [lo, hi] = MULTIPLES[t.value][a.value];
+                      const [lo, hi] = MULTIPLES[x.value][a.value];
                       return (
                         <td key={a.value} className="p-4 text-center font-bold"
                           style={{ color: CITADELLE_COLORS.gold }}>
@@ -971,7 +935,7 @@ export default function CitadelleEstimation() {
             </table>
           </div>
           <p className="text-xs text-center mt-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Multiple × bénéfice net mensuel moyen. Méthode SDE — marché français 2026.
+            {t("estimation.table_footnote")}
           </p>
         </div>
       </section>
@@ -982,35 +946,14 @@ export default function CitadelleEstimation() {
         <div className="max-w-3xl mx-auto px-4 md:px-6">
           <h2 className="font-black text-center mb-2"
             style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(1.4rem, 3vw, 1.9rem)", color: CITADELLE_COLORS.blue }}>
-            Questions fréquentes
+            {t("estimation.faq_title")}
           </h2>
           <p className="text-center mb-8 text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Valorisation · Méthodes · Estimation professionnelle en France
+            {t("estimation.faq_sub")}
           </p>
           <div className="space-y-3">
-            {[
-              {
-                question: "Comment estimer la valeur de mon site internet en France ?",
-                answer: "La valeur d'un site internet en France se calcule avec la méthode du multiple SDE : Valeur = Bénéfice net mensuel × Multiple. Ce multiple ( 8x à 30x) est ajusté selon la qualité du trafic SEO organique, le taux de croissance mensuel et la diversification des revenus. Notre outil intègre ces 5 paramètres pour une fourchette réaliste."
-              },
-              {
-                question: "Combien coûte une estimation professionnelle de site internet ?",
-                answer: "La demande d'estimation professionnelle sur La Citadelle Numérique est entièrement gratuite et sans engagement. Notre équipe analyse vos données réelles (Analytics, Stripe, GSC) et vous remet un rapport de valorisation sous 48h ouvrées."
-              },
-              {
-                question: "Quel est le multiple pour valoriser un SaaS en France ?",
-                answer: "Un SaaS français mature (3 à 5 ans) se valorise entre 18x et 26x son bénéfice net mensuel. Avec une forte croissance et un faible churn, le multiple peut atteindre 22x à 30x. Un SaaS en démarrage (< 1 an) se valorisera plutôt 10x–15x."
-              },
-              {
-                question: "Pourquoi le trafic SEO influence-t-il la valeur de mon site ?",
-                answer: "Un trafic organique dominant (> 60%) signifie que les revenus ne dépendent pas de publicités payantes. C'est un actif stable et prévisible qui réduit le risque pour l'acheteur et justifie une prime de valorisation de 7 à 15% par rapport à un site 100% dépendant des ads."
-              },
-              {
-                question: "Quelle différence entre l'estimateur gratuit et l'estimation professionnelle ?",
-                answer: "L'estimateur gratuit donne une fourchette basée sur des paramètres déclaratifs. L'estimation professionnelle inclut la vérification des revenus réels (captures Stripe/PayPal), l'analyse du trafic Google Analytics et Search Console, la comparaison avec des transactions récentes similaires, et un rapport écrit défendable face à un acheteur."
-              },
-            ].map(item => (
-              <FaqItem key={item.question} {...item} />
+            {(Array.isArray(faqItems) ? faqItems : []).map(item => (
+              <FaqItem key={item.q} question={item.q} answer={item.a} />
             ))}
           </div>
         </div>
@@ -1025,21 +968,21 @@ export default function CitadelleEstimation() {
         <div className="relative max-w-2xl mx-auto px-4 text-center">
           <h2 className="font-black mb-4"
             style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "clamp(1.5rem, 4vw, 2rem)", color: "white" }}>
-            Prêt à vendre votre actif numérique ?
+            {t("estimation.cta_title")}
           </h2>
           <p className="mb-6 text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
-            Publiez votre annonce gratuitement après avoir obtenu votre estimation.
+            {t("estimation.cta_sub")}
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link to="/citadelle/inscription"
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm transition-all hover:scale-105"
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-              Créer mon compte gratuit <ArrowRight size={15} />
+              {t("estimation.cta_create")} <ArrowRight size={15} />
             </Link>
             <Link to="/citadelle/annonces"
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-medium text-sm"
               style={{ border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.75)" }}>
-              Voir les annonces
+              {t("estimation.cta_listings")}
             </Link>
           </div>
         </div>

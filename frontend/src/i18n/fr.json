@@ -1022,5 +1022,182 @@
     "success_default": "Inscription réussie !",
     "error_generic": "Une erreur est survenue.",
     "error_network": "Impossible de contacter le serveur. Veuillez réessayer."
+  },
+  "estimation": {
+    "page_title": "Estimation gratuite de votre site web ou SaaS | La Citadelle Numérique",
+    "hero_badge": "Outil gratuit · Méthode SDE professionnelle",
+    "hero_h1_1": "Estimation de la valeur de",
+    "hero_h1_accent": "votre site internet",
+    "hero_sub_a": "Utilisez notre outil avancé à 5 paramètres (bénéfice net, type, ancienneté, SEO, croissance) pour obtenir une fourchette de valorisation précise — ou demandez une analyse professionnelle complète. Méthode utilisée par les experts en cession de business digital en ",
+    "hero_sub_france": "France",
+    "hero_sub_b": ".",
+    "hero_pills": [
+      "Méthode SDE standard",
+      "5 paramètres d'ajustement",
+      "Estimation gratuite sous 48h"
+    ],
+    "estimator_title": "Estimateur avancé",
+    "estimator_subtitle": "5 paramètres · Méthode SDE · Ajustements qualité",
+    "revenue_label": "Bénéfice net mensuel moyen (€) *",
+    "revenue_help": "Revenus bruts moins toutes les charges d'exploitation",
+    "revenue_ph": "Ex : 2 000",
+    "type_label": "Type de business",
+    "other_prefix": "Autre : ",
+    "other_toggle": "Autres types d'actifs",
+    "age_label": "Ancienneté du site",
+    "seo_label": "Trafic organique SEO",
+    "seo_help": "Part des visites venant du référencement naturel (Google, Bing...)",
+    "seo_min": "0% — Trafic payant",
+    "seo_max": "100% — SEO pur",
+    "growth_label": "Taux de croissance mensuel",
+    "growth_help": "Croissance moyenne des revenus sur les 6 derniers mois",
+    "growth_min": "-20% Déclin",
+    "growth_max": "+30% Forte croissance",
+    "div_label": "Sources de revenus",
+    "calculate_btn": "Estimer gratuitement — résultat instantané",
+    "calculate_note": "Sans inscription · Sans engagement · 100% gratuit",
+    "result_label": "Valeur estimée de votre site",
+    "base": "Base (×{{low}} – ×{{high}})",
+    "indicative_strong": "Cette estimation est indicative.",
+    "indicative_rest": " Une analyse professionnelle de vos données réelles (Analytics, revenus Stripe, trafic GSC) peut affiner ce résultat de ±30%.",
+    "cta_pro": "Demander une estimation professionnelle",
+    "reset": "Recommencer",
+    "site_types": {
+      "contenu": "Site de contenu / Blog",
+      "ecommerce": "E-commerce / Boutique",
+      "saas": "SaaS / Application web",
+      "application": "Application mobile",
+      "social": "Compte / Réseau social"
+    },
+    "extra_types": {
+      "shopify_store": "Boutique Shopify",
+      "amazon_fba": "Amazon FBA",
+      "newsletter": "Newsletter",
+      "youtube_channel": "Chaîne YouTube",
+      "instagram": "Compte Instagram",
+      "tiktok": "Compte TikTok",
+      "linkedin_page": "Page LinkedIn Entreprise",
+      "discord_server": "Serveur Discord",
+      "forum": "Forum",
+      "blog": "Blog",
+      "online_media": "Média en ligne",
+      "ai_automation": "Agents IA / Automatisations",
+      "template_plugin": "Templates / Plugins",
+      "database_api": "Bases de données / APIs"
+    },
+    "ages": {
+      "lt1": "< 1 an",
+      "1-3": "1 — 3 ans",
+      "3-5": "3 — 5 ans",
+      "5plus": "5 ans et +"
+    },
+    "div_options": {
+      "1": "1 source unique (AdSense, affiliation...)",
+      "2": "2 sources combinées",
+      "3": "3 sources ou plus"
+    },
+    "compute": {
+      "seo_dominant": "SEO dominant ≥ 60%",
+      "seo_solid": "SEO solide 30–60%",
+      "seo_moderate": "SEO modéré 20–30%",
+      "seo_weak": "SEO faible < 20%",
+      "growth_strong": "Forte croissance > 10%/mois",
+      "growth_good": "Bonne croissance 5–10%/mois",
+      "growth_stable": "Stable 0–5%/mois",
+      "growth_decline": "Déclin < 0%/mois",
+      "div_3plus": "3+ sources de revenus",
+      "div_2": "2 sources de revenus",
+      "div_1": "1 seule source"
+    },
+    "form_title": "Estimation professionnelle",
+    "form_subtitle": "Rapport personnalisé · Valorisation précise · Expertise La Garde",
+    "promise_confidential": "Données confidentielles",
+    "promise_response": "Réponse sous 48h",
+    "promise_experts": "Experts certifiés",
+    "choose_plan": "Choisissez votre formule",
+    "services": {
+      "standard": {
+        "title": "Estimation Standard",
+        "delay": "Sous 48h",
+        "features": [
+          "Estimation complète de la valeur",
+          "Analyse des revenus mensuels",
+          "Fourchette de prix conseillée",
+          "Rapport synthétique PDF"
+        ]
+      },
+      "expert": {
+        "title": "Estimation Expert",
+        "delay": "Sous 72h",
+        "badge": "Recommandé",
+        "features": [
+          "Tout le Standard, plus :",
+          "Audit trafic & SEO approfondi",
+          "Analyse concurrence & marché",
+          "Conseils pré-vente personnalisés",
+          "Rapport PDF complet (15 pages)",
+          "Appel 30 min avec un expert"
+        ]
+      }
+    },
+    "form_nom_label": "Prénom & Nom *",
+    "form_nom_ph": "Jean Dupont",
+    "form_email_label": "Email *",
+    "form_email_ph": "jean@exemple.fr",
+    "form_url_label": "URL du site à estimer",
+    "form_url_ph": "https://monsite.fr",
+    "form_type_label": "Type de business *",
+    "form_ca_label": "CA mensuel moyen (€)",
+    "form_ca_ph": "Ex : 8 000",
+    "form_benefice_label": "Bénéfice net mensuel (€)",
+    "form_benefice_ph": "Ex : 2 000",
+    "form_message_label": "Informations complémentaires",
+    "form_message_ph": "Ancienneté, trafic mensuel, outils utilisés, motivations de vente...",
+    "error_generic": "Une erreur est survenue. Veuillez réessayer.",
+    "submit_loading": "Redirection vers le paiement…",
+    "submit_pay": "Procéder au paiement —",
+    "secure_a": "Paiement sécurisé par ",
+    "secure_b": " · Vos données sont protégées · ",
+    "secure_privacy": "Politique de confidentialité",
+    "msg_url": "URL",
+    "msg_type": "Type d'actif",
+    "msg_ca": "CA mensuel",
+    "msg_benefice": "Bénéfice net mensuel",
+    "msg_notes": "Notes",
+    "table_title": "Multiples de valorisation par type de site",
+    "table_sub": "Fourchettes appliquées avant ajustements SEO, croissance et diversification",
+    "table_col_type": "Type de business",
+    "table_footnote": "Multiple × bénéfice net mensuel moyen. Méthode SDE — marché français 2026.",
+    "faq_title": "Questions fréquentes",
+    "faq_sub": "Valorisation · Méthodes · Estimation professionnelle en France",
+    "faq": [
+      {
+        "q": "Comment estimer la valeur de mon site internet en France ?",
+        "a": "La valeur d'un site internet en France se calcule avec la méthode du multiple SDE : Valeur = Bénéfice net mensuel × Multiple. Ce multiple ( 8x à 30x) est ajusté selon la qualité du trafic SEO organique, le taux de croissance mensuel et la diversification des revenus. Notre outil intègre ces 5 paramètres pour une fourchette réaliste."
+      },
+      {
+        "q": "Combien coûte une estimation professionnelle de site internet ?",
+        "a": "La demande d'estimation professionnelle sur La Citadelle Numérique est entièrement gratuite et sans engagement. Notre équipe analyse vos données réelles (Analytics, Stripe, GSC) et vous remet un rapport de valorisation sous 48h ouvrées."
+      },
+      {
+        "q": "Quel est le multiple pour valoriser un SaaS en France ?",
+        "a": "Un SaaS français mature (3 à 5 ans) se valorise entre 18x et 26x son bénéfice net mensuel. Avec une forte croissance et un faible churn, le multiple peut atteindre 22x à 30x. Un SaaS en démarrage (< 1 an) se valorisera plutôt 10x–15x."
+      },
+      {
+        "q": "Pourquoi le trafic SEO influence-t-il la valeur de mon site ?",
+        "a": "Un trafic organique dominant (> 60%) signifie que les revenus ne dépendent pas de publicités payantes. C'est un actif stable et prévisible qui réduit le risque pour l'acheteur et justifie une prime de valorisation de 7 à 15% par rapport à un site 100% dépendant des ads."
+      },
+      {
+        "q": "Quelle différence entre l'estimateur gratuit et l'estimation professionnelle ?",
+        "a": "L'estimateur gratuit donne une fourchette basée sur des paramètres déclaratifs. L'estimation professionnelle inclut la vérification des revenus réels (captures Stripe/PayPal), l'analyse du trafic Google Analytics et Search Console, la comparaison avec des transactions récentes similaires, et un rapport écrit défendable face à un acheteur."
+      }
+    ],
+    "schema_service_name": "Estimation professionnelle de business digital",
+    "schema_service_desc": "Service d'estimation gratuite de la valeur d'un site internet, SaaS ou e-commerce par des experts de la cession d'actifs numériques en France.",
+    "schema_service_offer": "Gratuit",
+    "cta_title": "Prêt à vendre votre actif numérique ?",
+    "cta_sub": "Publiez votre annonce gratuitement après avoir obtenu votre estimation.",
+    "cta_create": "Créer mon compte gratuit",
+    "cta_listings": "Voir les annonces"
   }
 }

@@ -1022,5 +1022,182 @@
     "success_default": "Subscription successful!",
     "error_generic": "An error occurred.",
     "error_network": "Unable to reach the server. Please try again."
+  },
+  "estimation": {
+    "page_title": "Free estimate of your website or SaaS | La Citadelle Numérique",
+    "hero_badge": "Free tool · Professional SDE method",
+    "hero_h1_1": "Estimate the value of",
+    "hero_h1_accent": "your website",
+    "hero_sub_a": "Use our advanced 5-parameter tool (net profit, type, age, SEO, growth) to get a precise valuation range — or request a full professional analysis. The method used by digital business M&A experts in ",
+    "hero_sub_france": "France",
+    "hero_sub_b": ".",
+    "hero_pills": [
+      "Standard SDE method",
+      "5 adjustment parameters",
+      "Free estimate within 48h"
+    ],
+    "estimator_title": "Advanced estimator",
+    "estimator_subtitle": "5 parameters · SDE method · Quality adjustments",
+    "revenue_label": "Average monthly net profit (€) *",
+    "revenue_help": "Gross revenue minus all operating expenses",
+    "revenue_ph": "e.g. 2,000",
+    "type_label": "Business type",
+    "other_prefix": "Other: ",
+    "other_toggle": "Other asset types",
+    "age_label": "Site age",
+    "seo_label": "Organic SEO traffic",
+    "seo_help": "Share of visits coming from organic search (Google, Bing...)",
+    "seo_min": "0% — Paid traffic",
+    "seo_max": "100% — Pure SEO",
+    "growth_label": "Monthly growth rate",
+    "growth_help": "Average revenue growth over the last 6 months",
+    "growth_min": "-20% Decline",
+    "growth_max": "+30% Strong growth",
+    "div_label": "Revenue sources",
+    "calculate_btn": "Estimate for free — instant result",
+    "calculate_note": "No sign-up · No commitment · 100% free",
+    "result_label": "Estimated value of your site",
+    "base": "Base (×{{low}} – ×{{high}})",
+    "indicative_strong": "This estimate is indicative.",
+    "indicative_rest": " A professional analysis of your real data (Analytics, Stripe revenue, GSC traffic) can refine this result by ±30%.",
+    "cta_pro": "Request a professional estimate",
+    "reset": "Start over",
+    "site_types": {
+      "contenu": "Content site / Blog",
+      "ecommerce": "E-commerce / Store",
+      "saas": "SaaS / Web app",
+      "application": "Mobile app",
+      "social": "Account / Social network"
+    },
+    "extra_types": {
+      "shopify_store": "Shopify store",
+      "amazon_fba": "Amazon FBA",
+      "newsletter": "Newsletter",
+      "youtube_channel": "YouTube channel",
+      "instagram": "Instagram account",
+      "tiktok": "TikTok account",
+      "linkedin_page": "LinkedIn Company Page",
+      "discord_server": "Discord server",
+      "forum": "Forum",
+      "blog": "Blog",
+      "online_media": "Online media",
+      "ai_automation": "AI agents / Automations",
+      "template_plugin": "Templates / Plugins",
+      "database_api": "Databases / APIs"
+    },
+    "ages": {
+      "lt1": "< 1 year",
+      "1-3": "1 — 3 years",
+      "3-5": "3 — 5 years",
+      "5plus": "5 years and +"
+    },
+    "div_options": {
+      "1": "Single source (AdSense, affiliate...)",
+      "2": "2 combined sources",
+      "3": "3 sources or more"
+    },
+    "compute": {
+      "seo_dominant": "Dominant SEO ≥ 60%",
+      "seo_solid": "Solid SEO 30–60%",
+      "seo_moderate": "Moderate SEO 20–30%",
+      "seo_weak": "Weak SEO < 20%",
+      "growth_strong": "Strong growth > 10%/mo",
+      "growth_good": "Good growth 5–10%/mo",
+      "growth_stable": "Stable 0–5%/mo",
+      "growth_decline": "Decline < 0%/mo",
+      "div_3plus": "3+ revenue sources",
+      "div_2": "2 revenue sources",
+      "div_1": "Single source"
+    },
+    "form_title": "Professional estimate",
+    "form_subtitle": "Personalized report · Precise valuation · La Garde expertise",
+    "promise_confidential": "Confidential data",
+    "promise_response": "Response within 48h",
+    "promise_experts": "Certified experts",
+    "choose_plan": "Choose your plan",
+    "services": {
+      "standard": {
+        "title": "Standard Estimate",
+        "delay": "Within 48h",
+        "features": [
+          "Full value estimate",
+          "Monthly revenue analysis",
+          "Recommended price range",
+          "Summary PDF report"
+        ]
+      },
+      "expert": {
+        "title": "Expert Estimate",
+        "delay": "Within 72h",
+        "badge": "Recommended",
+        "features": [
+          "Everything in Standard, plus:",
+          "In-depth traffic & SEO audit",
+          "Competition & market analysis",
+          "Personalized pre-sale advice",
+          "Full PDF report (15 pages)",
+          "30-min call with an expert"
+        ]
+      }
+    },
+    "form_nom_label": "First & Last name *",
+    "form_nom_ph": "John Doe",
+    "form_email_label": "Email *",
+    "form_email_ph": "john@example.com",
+    "form_url_label": "URL of the site to estimate",
+    "form_url_ph": "https://mysite.com",
+    "form_type_label": "Business type *",
+    "form_ca_label": "Average monthly revenue (€)",
+    "form_ca_ph": "e.g. 8,000",
+    "form_benefice_label": "Monthly net profit (€)",
+    "form_benefice_ph": "e.g. 2,000",
+    "form_message_label": "Additional information",
+    "form_message_ph": "Age, monthly traffic, tools used, reasons for selling...",
+    "error_generic": "An error occurred. Please try again.",
+    "submit_loading": "Redirecting to payment…",
+    "submit_pay": "Proceed to payment —",
+    "secure_a": "Secure payment by ",
+    "secure_b": " · Your data is protected · ",
+    "secure_privacy": "Privacy Policy",
+    "msg_url": "URL",
+    "msg_type": "Asset type",
+    "msg_ca": "Monthly revenue",
+    "msg_benefice": "Monthly net profit",
+    "msg_notes": "Notes",
+    "table_title": "Valuation multiples by site type",
+    "table_sub": "Ranges applied before SEO, growth and diversification adjustments",
+    "table_col_type": "Business type",
+    "table_footnote": "Multiple × average monthly net profit. SDE method — French market 2026.",
+    "faq_title": "Frequently asked questions",
+    "faq_sub": "Valuation · Methods · Professional estimate in France",
+    "faq": [
+      {
+        "q": "How do I estimate the value of my website in France?",
+        "a": "The value of a website in France is calculated using the SDE multiple method: Value = Monthly net profit × Multiple. This multiple (8x to 30x) is adjusted based on the quality of organic SEO traffic, monthly growth rate and revenue diversification. Our tool factors in these 5 parameters for a realistic range."
+      },
+      {
+        "q": "How much does a professional website estimate cost?",
+        "a": "Requesting a professional estimate on La Citadelle Numérique is entirely free and with no commitment. Our team analyzes your real data (Analytics, Stripe, GSC) and delivers a valuation report within 48 business hours."
+      },
+      {
+        "q": "What multiple is used to value a SaaS in France?",
+        "a": "A mature French SaaS (3 to 5 years) is valued between 18x and 26x its monthly net profit. With strong growth and low churn, the multiple can reach 22x to 30x. An early-stage SaaS (< 1 year) will be valued around 10x–15x."
+      },
+      {
+        "q": "Why does SEO traffic affect the value of my site?",
+        "a": "Dominant organic traffic (> 60%) means revenue does not depend on paid advertising. It is a stable, predictable asset that reduces risk for the buyer and justifies a valuation premium of 7 to 15% compared to a site fully dependent on ads."
+      },
+      {
+        "q": "What is the difference between the free estimator and the professional estimate?",
+        "a": "The free estimator gives a range based on declared parameters. The professional estimate includes verification of real revenue (Stripe/PayPal screenshots), analysis of Google Analytics and Search Console traffic, comparison with similar recent transactions, and a written report that holds up to a buyer's scrutiny."
+      }
+    ],
+    "schema_service_name": "Professional digital business valuation",
+    "schema_service_desc": "Free valuation service for the value of a website, SaaS or e-commerce by digital asset M&A experts in France.",
+    "schema_service_offer": "Free",
+    "cta_title": "Ready to sell your digital asset?",
+    "cta_sub": "Publish your listing for free once you get your estimate.",
+    "cta_create": "Create my free account",
+    "cta_listings": "View listings"
   }
 }

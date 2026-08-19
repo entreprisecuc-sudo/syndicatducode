@@ -995,3 +995,16 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - Résidu MEDIUM = descriptions annonces SEED en base (contenu BDD de test, pas i18n) -> non bloquant.
 #### RESTE (site full english)
 - CitadelleEstimation.js (P0), espace membre (CreateListing/TransactionDetail/Profile/EditListing/MyTransactions/MyInvoices/MyTransmissions/panels/report buttons), pages JURIDIQUES (CGU/CGV/Confidentialite/MentionsLegales, ~236 lignes), + petits (Parutions aria, Register, ResetPassword, AuthModal, CGUAcceptanceModal, ImageUpload).
+
+
+### MAJ Session 19/08 (suite 4) — Page Estimation i18n TERMINÉE ✅ (P0 public COMPLET)
+- `CitadelleEstimation.js` (1049 l.) entièrement internationalisé : hero (SEO `<strong>France</strong>` préservé), estimateur avancé (5 params), formulaire pro, cartes Standard/Expert (badge « Recommandé »/« Recommended »), tableau des multiples, FAQ (5), CTA final, JSON-LD (FAQPage + Service) construits dynamiquement depuis les traductions.
+- Constantes converties en helpers `siteTypes(t)/extraTypes(t)/ages(t)/divOptions(t)` + `compute(t,...)` pour labels d'ajustement traduits. Titres services gardés en FR pour le matching API (`s.title`), affichage via clés `estimation.services.{slug}`.
+- Clés ajoutées sous `estimation.*` dans `fr.json` & `en.json`.
+- testing_agent iteration_30 : Frontend 100%, FR/EN complet, AUCUN résidu français en EN, persistance localStorage OK. Seule note = warnings d'hydratation pré-existants (éditeur visuel, non liés à l'i18n).
+- **=> Tout le parcours PUBLIC est désormais traduisible FR/EN.**
+#### RESTE (site full english)
+- P1 Espace membre : Profile, CreateListing, EditListing, MyMessages, MyTransactions, TransactionDetail, MyInvoices, Notifications, MemberEarnings, MemberActivity, panels, report buttons.
+- P2 Pages JURIDIQUES : CGU(86), CGV(69), Confidentialite(68), MentionsLegales(13) — ~236 lignes.
+- Secondaire : Parutions (aria), Register, ResetPassword, AuthModal, CGUAcceptanceModal, ImageUpload.
+- Interdit : sections `admin` et `syndicat du code` (à ne pas toucher).
