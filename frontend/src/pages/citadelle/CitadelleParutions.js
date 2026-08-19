@@ -11,6 +11,7 @@ import {
   BookOpen, Compass, Shield, ArrowRight, Calendar, Sparkles, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
+import ComingSoonEnModal from "@/components/citadelle/ComingSoonEnModal";
 import NewsletterSection from "@/components/citadelle/NewsletterSection";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, getListingImageUrl } from "@/config/citadelleConstants";
@@ -219,6 +220,7 @@ export default function CitadelleParutions() {
 
   return (
     <CitadelleLayout>
+      <ComingSoonEnModal />
 
       <div style={{ background: CITADELLE_COLORS.bg }}>
         <div className="max-w-6xl mx-auto px-4 md:px-8 pt-10 md:pt-14 pb-16 md:pb-24">

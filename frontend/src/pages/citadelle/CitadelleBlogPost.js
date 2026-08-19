@@ -10,6 +10,7 @@ import remarkGfm from "remark-gfm";
 import { ArrowLeft, ArrowRight, Calendar, User, ExternalLink, BookOpen, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
+import ComingSoonEnModal from "@/components/citadelle/ComingSoonEnModal";
 import ShareBar from "@/components/citadelle/ShareBar";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, BLOG_CATEGORIES, getListingImageUrl } from "@/config/citadelleConstants";
@@ -227,6 +228,7 @@ export default function CitadelleBlogPost() {
 
   return (
     <CitadelleLayout pageTitle={post.title}>
+      <ComingSoonEnModal />
       <article className="max-w-3xl mx-auto px-4 md:px-6 py-12" data-testid="blog-post-article">
 
         {/* Retour */}

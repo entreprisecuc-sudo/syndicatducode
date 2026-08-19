@@ -1199,5 +1199,10 @@
     "cta_sub": "Publiez votre annonce gratuitement après avoir obtenu votre estimation.",
     "cta_create": "Créer mon compte gratuit",
     "cta_listings": "Voir les annonces"
+  },
+  "coming_soon_en": {
+    "title": "English articles coming soon",
+    "body": "Our articles are currently being translated. The English version will be available very soon. In the meantime, you can browse them in French.",
+    "cta": "Got it"
   }
 }

@@ -1,0 +1,34 @@
+{
+  "summary": "Frontend-only testing of the provisional 'Coming Soon EN' pop-up on 5 Citadelle content pages (blog, blog post, chroniques, guides, parutions). All requested scenarios pass: absent in FR, present in EN with correct title/body/CTA, closes via CTA/X/overlay, re-appears on every navigation without localStorage memoization, and regression back to FR removes it.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ComingSoonEnModal.jsx: the close 'X' button uses position:relative + float:right which is a fragile pattern; it works but should ideally be position:absolute inside a positioned container. Minor cosmetic concern only.",
+    "Modal re-shows on every mount because state is initialized from i18n.language on each page mount — intended per requirement, but note this means it re-appears also on client-side route transitions where the layout unmounts. Confirmed working as desired."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "100%"},
+  "test_credentials": "none — public pages",
+  "seed_data_creation": "none",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Feature 'coming-soon-en' pop-up validated end-to-end. data-testids: coming-soon-en-modal / -overlay / -close / -cta. lang-switcher toggles i18n + localStorage 'citadelle_lang'. Modal is intentionally NOT memoized (no dismiss key stored). Tested via https://code-syndicate-2.preview.emergentagent.com on /citadelle/blog, /citadelle/blog/comment-vendre-une-boutique-prestashop, /citadelle/chroniques, /citadelle/guides, /citadelle/parutions.",
+  "test_results_detail": {
+    "FR_all_pages_modal_absent": true,
+    "EN_all_pages_modal_present": true,
+    "EN_title": "English articles coming soon",
+    "EN_cta_text": "Got it",
+    "close_via_cta": true,
+    "close_via_x": true,
+    "close_via_overlay": true,
+    "reappear_on_navigation": true,
+    "no_dismiss_key_in_localStorage": true,
+    "FR_regression_after_toggle_back": true
+  }
+}

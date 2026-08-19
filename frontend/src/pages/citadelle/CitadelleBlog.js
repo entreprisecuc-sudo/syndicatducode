@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BookOpen, ChevronRight, Calendar, User, Search, X } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
+import ComingSoonEnModal from "@/components/citadelle/ComingSoonEnModal";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, BLOG_CATEGORIES, getListingImageUrl } from "@/config/citadelleConstants";
 
@@ -77,6 +78,7 @@ export default function CitadelleBlog() {
 
   return (
     <CitadelleLayout>
+      <ComingSoonEnModal />
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-12" data-testid="citadelle-blog">
 
         {/* Header */}

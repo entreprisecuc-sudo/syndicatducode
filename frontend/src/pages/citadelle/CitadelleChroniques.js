@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ScrollText, Calendar, ChevronRight, ShieldCheck, Clock } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
+import ComingSoonEnModal from "@/components/citadelle/ComingSoonEnModal";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, getListingImageUrl } from "@/config/citadelleConstants";
 
@@ -47,6 +48,7 @@ export default function CitadelleChroniques() {
 
   return (
     <CitadelleLayout>
+      <ComingSoonEnModal />
 
       {/* ── Hero éditorial navy ─────────────────────────────────────────── */}
       <div style={{ background: CITADELLE_COLORS.night || "#0B1D36", position: "relative", overflow: "hidden" }} data-testid="chroniques-hero">

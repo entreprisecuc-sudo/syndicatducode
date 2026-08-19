@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BookOpen, Calendar, ChevronRight, GraduationCap, Clock } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
+import ComingSoonEnModal from "@/components/citadelle/ComingSoonEnModal";
 import citadelleApi from "@/services/citadelleApi";
 import { getListingImageUrl } from "@/config/citadelleConstants";
 
@@ -63,6 +64,7 @@ export default function CitadelleGuides() {
 
   return (
     <CitadelleLayout>
+      <ComingSoonEnModal />
 
       {/* ── Hero éditorial émeraude ─────────────────────────────────────── */}
       <div style={{ background: GUIDE_COLORS.night, position: "relative", overflow: "hidden" }} data-testid="guides-hero">
