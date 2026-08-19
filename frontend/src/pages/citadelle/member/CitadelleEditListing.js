@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Globe, ShoppingCart, Cloud, Monitor, Users,
   ChevronLeft, CheckCircle, AlertCircle, ArrowLeft
@@ -28,6 +29,7 @@ const TYPE_OPTIONS = [
 ];
 
 export default function CitadelleEditListing() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useCitadelleAuth();
@@ -108,11 +110,11 @@ export default function CitadelleEditListing() {
   const minPrice = (commission.minimum_eur || 0) + 1;
 
   const validate = () => {
-    if (form.title.trim().length < 5) return "Le titre doit contenir au moins 5 caractères";
-    if (form.short_description.trim().length < 20) return "L'accroche doit contenir au moins 20 caractères";
-    if (!form.price || parseFloat(form.price) <= 0) return "Prix invalide (doit être > 0)";
-    if (parseFloat(form.price) < minPrice) return `Le prix de vente minimum est de ${minPrice} € (frais de traitement minimum de ${commission.minimum_eur} €).`;
-    if (form.description.trim().length < 50) return "La description doit contenir au moins 50 caractères";
+    if (form.title.trim().length < 5) return t("listing_form.err_title_min");
+    if (form.short_description.trim().length < 20) return t("listing_form.err_shortdesc_min_edit");
+    if (!form.price || parseFloat(form.price) <= 0) return t("listing_form.err_price_valid_edit");
+    if (parseFloat(form.price) < minPrice) return t("listing_form.err_price_min_sale", { min: minPrice, fees: commission.minimum_eur });
+    if (form.description.trim().length < 50) return t("listing_form.err_desc_min_edit");
     return null;
   };
 
@@ -144,7 +146,7 @@ export default function CitadelleEditListing() {
       navigate("/citadelle/espace-membre/mes-annonces");
     } catch (err) {
       const detail = err.response?.data?.detail;
-      setError(Array.isArray(detail) ? detail.map(e => e.msg || JSON.stringify(e)).join(" — ") : detail || "Une erreur est survenue lors de la sauvegarde");
+      setError(Array.isArray(detail) ? detail.map(e => e.msg || JSON.stringify(e)).join(" — ") : detail || t("listing_form.err_generic_save"));
     } finally {
       setSaving(false);
     }
@@ -165,14 +167,14 @@ export default function CitadelleEditListing() {
     <CitadelleLayout>
       <div className="max-w-xl mx-auto px-4 py-24 text-center">
         <p className="text-5xl mb-4">🏰</p>
-        <h1 className="text-xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>Annonce introuvable</h1>
+        <h1 className="text-xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>{t("listing_form.not_found")}</h1>
         <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-          Cette annonce n'existe pas ou vous n'êtes pas autorisé à la modifier.
+          {t("listing_form.not_found_sub")}
         </p>
         <Link to="/citadelle/espace-membre/mes-annonces"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm"
           style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-          <ArrowLeft size={16} /> Mes annonces
+          <ArrowLeft size={16} /> {t("listing_form.my_listings")}
         </Link>
       </div>
     </CitadelleLayout>
@@ -199,10 +201,10 @@ export default function CitadelleEditListing() {
           </Link>
           <div>
             <h1 className="text-2xl font-black" style={{ fontFamily: "'Montserrat', sans-serif", color: CITADELLE_COLORS.blue }}>
-              Modifier l'annonce
+              {t("listing_form.edit_title")}
             </h1>
             <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Après modification, l'annonce repassera en validation (sous 24h)
+              {t("listing_form.edit_sub")}
             </p>
           </div>
         </div>
@@ -221,18 +223,18 @@ export default function CitadelleEditListing() {
         <div className="space-y-6">
           {/* Type d'actif (lecture seule — non modifiable après création) */}
           <div className="p-4 rounded-xl text-sm" style={{ background: "rgba(201,164,92,0.07)", border: `1px solid rgba(201,164,92,0.2)`, color: CITADELLE_COLORS.textMuted }}>
-            Le type d'actif ne peut pas être modifié après la création de l'annonce.
+            {t("listing_form.type_locked")}
           </div>
 
           {/* Titre */}
           <div>
             <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-              Titre de l'annonce *
+              {t("listing_form.title_label")}
             </label>
             <input
               value={form.title}
               onChange={e => set("title", e.target.value)}
-              placeholder="Ex: Blog culinaire 2 500€/mois — 45k visiteurs"
+              placeholder={t("listing_form.title_ph")}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
               style={inputStyle}
               data-testid="edit-listing-title"
@@ -242,13 +244,13 @@ export default function CitadelleEditListing() {
           {/* Accroche courte */}
           <div>
             <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-              Accroche courte * <span className="font-normal text-xs">(20-300 caractères)</span>
+              {t("listing_form.shortdesc_label")} <span className="font-normal text-xs">{t("listing_form.shortdesc_hint")}</span>
             </label>
             <textarea
               value={form.short_description}
               onChange={e => set("short_description", e.target.value)}
               rows={3}
-              placeholder="Résumé percutant visible dans les résultats de recherche..."
+              placeholder={t("listing_form.shortdesc_ph")}
               maxLength={300}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
               style={inputStyle}
@@ -263,7 +265,7 @@ export default function CitadelleEditListing() {
           {/* Prix */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold mb-2" style={labelStyle}>Prix de vente (€) *</label>
+              <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.price_label_sale")}</label>
               <input
                 type="number"
                 value={form.price}
@@ -275,7 +277,7 @@ export default function CitadelleEditListing() {
                 data-testid="edit-listing-price"
               />
               <p className="text-xs mt-1.5 px-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Minimum&nbsp;: <strong style={{ color: CITADELLE_COLORS.blue }}>{minPrice} €</strong> (frais de traitement min. {commission.minimum_eur} €)
+                {t("listing_form.price_min_note")}<strong style={{ color: CITADELLE_COLORS.blue }}>{minPrice} €</strong> {t("listing_form.price_fees_note", { fees: commission.minimum_eur })}
               </p>
               {(() => {
                 const p = parseFloat(form.price);
@@ -283,8 +285,8 @@ export default function CitadelleEditListing() {
                 const com = Math.max(p * commission.rate, commission.minimum_eur);
                 return (
                   <p className="text-xs mt-1.5 px-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    Commission&nbsp;: <strong>{com.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
-                    &nbsp;·&nbsp;Vous recevrez&nbsp;: <strong style={{ color: CITADELLE_COLORS.blue }}>{(p - com).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
+                    {t("listing_form.commission_word")}<strong>{com.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
+                    &nbsp;·&nbsp;{t("listing_form.you_receive")}<strong style={{ color: CITADELLE_COLORS.blue }}>{(p - com).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
                   </p>
                 );
               })()}
@@ -297,7 +299,7 @@ export default function CitadelleEditListing() {
                   onChange={e => set("price_negotiable", e.target.checked)}
                   className="w-4 h-4 rounded"
                 />
-                Prix négociable
+                {t("listing_form.price_negotiable")}
               </label>
             </div>
           </div>
@@ -305,12 +307,12 @@ export default function CitadelleEditListing() {
           {/* Métriques */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold mb-2" style={labelStyle}>Revenus mensuels (€)</label>
+              <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.revenue_label")}</label>
               <input type="number" value={form.monthly_revenue} onChange={e => set("monthly_revenue", e.target.value)}
                 placeholder="1200" min="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2" style={labelStyle}>Trafic mensuel (visiteurs)</label>
+              <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.traffic_label")}</label>
               <input type="number" value={form.monthly_traffic} onChange={e => set("monthly_traffic", e.target.value)}
                 placeholder="15000" min="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
             </div>
@@ -318,27 +320,27 @@ export default function CitadelleEditListing() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold mb-2" style={labelStyle}>Ancienneté (mois)</label>
+              <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.age_label")}</label>
               <input type="number" value={form.age_months} onChange={e => set("age_months", e.target.value)}
                 placeholder="24" min="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2" style={labelStyle}>Niche / Secteur</label>
+              <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.niche_label")}</label>
               <input value={form.niche} onChange={e => set("niche", e.target.value)}
-                placeholder="Cuisine, Finance, Sport..." className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+                placeholder={t("listing_form.niche_ph")} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
             </div>
           </div>
 
           {/* Description détaillée */}
           <div>
             <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-              Description détaillée * <span className="font-normal text-xs">(minimum 50 caractères)</span>
+              {t("listing_form.desc_label")} <span className="font-normal text-xs">{t("listing_form.desc_hint")}</span>
             </label>
             <textarea
               value={form.description}
               onChange={e => set("description", e.target.value)}
               rows={8}
-              placeholder="Décrivez votre actif en détail..."
+              placeholder={t("listing_form.desc_ph_edit")}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
               style={inputStyle}
               data-testid="edit-listing-desc"
@@ -348,10 +350,10 @@ export default function CitadelleEditListing() {
           {/* Technologies */}
           <div>
             <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-              Technologies <span className="font-normal text-xs">(séparées par des virgules)</span>
+              {t("listing_form.tech_label")} <span className="font-normal text-xs">{t("listing_form.tech_hint")}</span>
             </label>
             <input value={form.technologies} onChange={e => set("technologies", e.target.value)}
-              placeholder="WordPress, WooCommerce, Stripe..."
+              placeholder={t("listing_form.tech_ph")}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
           </div>
 
@@ -361,9 +363,9 @@ export default function CitadelleEditListing() {
               <input type="checkbox" checked={form.is_adult} onChange={e => set("is_adult", e.target.checked)}
                 className="w-4 h-4 rounded mt-0.5" data-testid="edit-listing-adult" />
               <span>
-                <span className="block text-sm font-semibold" style={{ color: "#DC2626" }}>Contenu adulte (18+)</span>
+                <span className="block text-sm font-semibold" style={{ color: "#DC2626" }}>{t("listing_form.adult_label")}</span>
                 <span className="block text-xs mt-1" style={labelStyle}>
-                  Si coché : aucune image ni lien du site ne seront affichés. Un bandeau « Contenu adulte » sera présenté et la consultation du détail sera réservée aux comptes vérifiés.
+                  {t("listing_form.adult_desc_edit")}
                 </span>
               </span>
             </label>
@@ -374,18 +376,18 @@ export default function CitadelleEditListing() {
               {/* URL du site */}
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-                  URL du site <span className="font-normal text-xs">(optionnel)</span>
+                  {t("listing_form.url_label")} <span className="font-normal text-xs">{t("listing_form.optional")}</span>
                 </label>
                 <input value={form.url_preview} onChange={e => set("url_preview", e.target.value)}
-                  placeholder="https://monsite.fr"
+                  placeholder={t("listing_form.url_ph")}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
                 <label className="flex items-start gap-3 cursor-pointer mt-3 p-3 rounded-xl" style={{ background: "rgba(201,164,92,0.06)", border: "1px solid rgba(201,164,92,0.2)" }}>
                   <input type="checkbox" checked={form.url_public} onChange={e => set("url_public", e.target.checked)}
                     className="w-4 h-4 rounded mt-0.5" data-testid="edit-listing-url-public" />
                   <span>
-                    <span className="block text-sm font-semibold" style={labelStyle}>Rendre l'URL visible publiquement sur l'annonce</span>
+                    <span className="block text-sm font-semibold" style={labelStyle}>{t("listing_form.url_public_label")}</span>
                     <span className="block text-xs mt-1" style={labelStyle}>
-                      Si décoché, l'adresse reste confidentielle : elle ne sera communiquée à l'acheteur qu'à la manifestation d'un intérêt sérieux ou à l'entame du processus de vente sécurisé.
+                      {t("listing_form.url_public_desc")}
                     </span>
                   </span>
                 </label>
@@ -404,13 +406,13 @@ export default function CitadelleEditListing() {
           {/* Consentement partage réseaux sociaux */}
           <div className="p-4 rounded-xl" style={{ background: "rgba(201,164,92,0.06)", border: `1px solid rgba(201,164,92,0.2)` }} data-testid="edit-social-share">
             <p className="text-sm font-semibold mb-1" style={{ color: CITADELLE_COLORS.blue }}>
-              Partage sur nos réseaux sociaux
+              {t("listing_form.social_share_title")}
             </p>
             <p className="text-xs mb-3" style={labelStyle}>
-              Autorisez-vous La Citadelle Numérique à mettre en avant votre annonce sur ses réseaux (LinkedIn, Facebook, X…) ?
+              {t("listing_form.social_share_q")}
             </p>
             <div className="flex gap-3">
-              {[{ v: true, label: "Oui, partagez-la" }, { v: false, label: "Non merci" }].map(opt => {
+              {[{ v: true, label: t("listing_form.social_yes") }, { v: false, label: t("listing_form.social_no") }].map(opt => {
                 const active = !!form.allow_social_share === opt.v;
                 return (
                   <button key={String(opt.v)} type="button" onClick={() => set("allow_social_share", opt.v)}
@@ -435,7 +437,7 @@ export default function CitadelleEditListing() {
           <Link to="/citadelle/espace-membre/mes-annonces"
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all"
             style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-            <ChevronLeft size={16} /> Annuler
+            <ChevronLeft size={16} /> {t("listing_form.cancel")}
           </Link>
           <button
             onClick={handleSave}
@@ -446,7 +448,7 @@ export default function CitadelleEditListing() {
           >
             {saving
               ? <div className="w-5 h-5 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
-              : <><CheckCircle size={16} /> Enregistrer les modifications</>
+              : <><CheckCircle size={16} /> {t("listing_form.save")}</>
             }
           </button>
         </div>

@@ -107,3 +107,35 @@ Objectif : positionner La Citadelle comme source de référence lisible par les 
 
 ### Déploiement encore en attente (session précédente)
 - `CitadelleCreateListing.js` : badge "Recommandé" sur l'Estimation Expert + suppression de la case "Afficher le prix de réserve". En attente de `git pull` + `yarn build` sur le VPS.
+
+---
+
+## 2026-06 — Traduction EN de l'Espace Membre (P1) & Pages Juridiques (P2) — 100 % bilingue
+
+### Étape 1 — `CitadelleProfile.js` (P1) ✅
+- Ajout de la section `profile` (113 clés) dans **`en.json`** (parité 113/113 avec `fr.json`).
+- Branchement de `useTranslation()` + remplacement de TOUT le texte en dur par des hooks `t('profile...')` (onglets Informations, Coordonnées bancaires, Statut pro, Paiements/Stripe Connect, Mot de passe, bannières KYC, upload documents).
+- Dates localisées via `i18n.language` (fr-FR / en-GB).
+- Validé par screenshot : page profil intégralement en anglais (onglets Information + Payments/Stripe).
+
+### Étape 2 — `CitadelleTransactionDetail.js` (P1) ✅
+- Ajout de la section `transaction` (117 clés) dans `fr.json` + `en.json` (parité 117/117).
+- Branchement `useTranslation()` : STATUS_CONFIG (labelKey), tous les modals (litige, annulation acheteur/vendeur, retrait, contre-offre, transmission d'accès), chat conversation + chat litige, bannière KYC vendeur, séquestre, seconde chance, finalisation vente.
+- Dernier fichier de l'Espace Membre → **Espace Membre 100 % localisé**.
+
+### Étape 3 — Pages Juridiques (P2) — Traduction COMPLÈTE (option A) ✅
+- Approche **KISS/DRY** : contenu juridique bilingue stocké en Markdown dans `legalDocs.*` (fr.json/en.json) et rendu via `ReactMarkdown` + `remark-gfm` (déjà présents), stylé par la classe `.blog-content` existante.
+- 4 pages réécrites (header i18n + rendu Markdown) : `CitadelleMentionsLegales.js`, `CitadelleCGU.js`, `CitadelleCGV.js`, `CitadelleConfidentialite.js`.
+- Ajout des clés d'en-tête `legal.cgu_title/badge/updated` (les autres existaient).
+- Suppression du bloc `fr_only_notice` (contenu désormais entièrement bilingue).
+- ⚠️ Textes juridiques traduits par l'agent — **relecture juridique recommandée** côté client (valeur légale).
+- Validé par screenshots : CGV (FR+EN), Confidentialité (EN, tableaux RGPD rendus correctement).
+
+### Règle 6
+- Aucun `testing_agent` lancé sans accord. Vérification par screenshots uniquement. `CitadelleTransactionDetail.js` non vérifié visuellement en live (nécessite une transaction active) — mécanisme i18n identique aux autres fichiers validés, compilation OK.
+
+### Fichiers modifiés
+- `frontend/src/i18n/fr.json`, `frontend/src/i18n/en.json` (sections `profile`, `transaction`, `legalDocs`, clés `legal.cgu_*`)
+- `frontend/src/pages/citadelle/member/CitadelleProfile.js`
+- `frontend/src/pages/citadelle/member/CitadelleTransactionDetail.js`
+- `frontend/src/pages/citadelle/CitadelleMentionsLegales.js`, `CitadelleCGU.js`, `CitadelleCGV.js`, `CitadelleConfidentialite.js`

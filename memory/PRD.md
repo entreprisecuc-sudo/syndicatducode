@@ -7,6 +7,13 @@
 
 ---
 
+## ⭐ Session 19/08/2026 (suite) — i18n EN : Espace Membre (P1) + Pages Juridiques (P2) ✅
+- **Espace Membre 100 % localisé** : `CitadelleProfile.js` (clés `profile`, 113) + `CitadelleTransactionDetail.js` (clés `transaction`, 117) traduits FR/EN.
+- **Pages Juridiques 100 % bilingues** (option A, traduction complète) : Mentions Légales, CGU, CGV, Confidentialité — contenu Markdown bilingue dans `legalDocs.*`, rendu via ReactMarkdown/`.blog-content`. ⚠️ Relecture juridique client recommandée.
+- Détails complets dans `CHANGELOG.md`. Règle 6 respectée (validation screenshots, pas de testing_agent).
+- Prochaine étape backlog : refactoring des fichiers >700 lignes (Règle 17) désormais que la traduction est finie.
+
+
 ## ⭐ Session 19/08/2026 — Phase 6 : Suppression complète react-helmet-async ✅
 
 ### Fichiers modifiés (4 fichiers)

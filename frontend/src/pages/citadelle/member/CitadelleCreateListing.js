@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Globe, ShoppingCart, Cloud, Monitor, Users, ChevronRight, ChevronLeft, CheckCircle, AlertCircle, MoreHorizontal, Store, Package, Mail, Youtube, Camera, Smartphone, Linkedin, MessageSquare, MessagesSquare, FileText, Newspaper, Bot, LayoutTemplate, Database, Star } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CitadelleImageUpload } from "@/components/citadelle/CitadelleImageUpload";
@@ -17,33 +18,10 @@ import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 
-const TYPE_OPTIONS = [
-  { value: "website",        label: "Site internet",   icon: Globe,         desc: "Site vitrine, blog, portfolio" },
-  { value: "ecommerce",      label: "E-commerce",      icon: ShoppingCart,  desc: "Boutique en ligne" },
-  { value: "saas",           label: "SaaS",            icon: Cloud,         desc: "Logiciel en tant que service" },
-  { value: "webapp",         label: "Application web", icon: Monitor,       desc: "Outil ou app en ligne" },
-  { value: "social_account", label: "Réseau social",   icon: Users,         desc: "Compte ou page" },
-  { value: "domain",         label: "Nom de domaine",  icon: Globe,         desc: "Domaine, extension premium" },
-];
-
-const EXTRA_TYPE_OPTIONS = [
-  { value: "shopify_store",   label: "Boutique Shopify",              icon: Store,          desc: "Shopify, dropshipping" },
-  { value: "amazon_fba",      label: "Amazon FBA",                    icon: Package,        desc: "Business Amazon FBA / Merch" },
-  { value: "newsletter",      label: "Newsletter",                    icon: Mail,           desc: "Newsletter payante ou sponsorisée" },
-  { value: "youtube_channel", label: "Chaîne YouTube",                icon: Youtube,        desc: "Chaîne monétisée" },
-  { value: "instagram",       label: "Compte Instagram",              icon: Camera,         desc: "Compte ou page Instagram" },
-  { value: "tiktok",          label: "Compte TikTok",                 icon: Smartphone,     desc: "Compte TikTok monétisé" },
-  { value: "linkedin_page",   label: "Page LinkedIn Entreprise",      icon: Linkedin,       desc: "Page entreprise LinkedIn" },
-  { value: "discord_server",  label: "Serveur Discord",               icon: MessageSquare,  desc: "Communauté Discord" },
-  { value: "forum",           label: "Forum",                         icon: MessagesSquare, desc: "Forum ou communauté en ligne" },
-  { value: "blog",            label: "Blog",                          icon: FileText,       desc: "Blog monétisé" },
-  { value: "online_media",    label: "Média en ligne",                icon: Newspaper,      desc: "Magazine, journal, media digital" },
-  { value: "ai_automation",   label: "Agents IA / Automatisations",   icon: Bot,            desc: "Outils IA, scripts, workflows" },
-  { value: "template_plugin", label: "Templates / Thèmes / Plugins",  icon: LayoutTemplate, desc: "Assets numériques revendables" },
-  { value: "database_api",    label: "Bases de données / APIs",       icon: Database,       desc: "APIs, datasets, bases de données" },
-];
-
-const STEPS = ["Type & Titre", "Données clés", "Détails", "Récapitulatif"];
+const TYPE_VALUES = ["website", "ecommerce", "saas", "webapp", "social_account", "domain"];
+const TYPE_ICONS = { website: Globe, ecommerce: ShoppingCart, saas: Cloud, webapp: Monitor, social_account: Users, domain: Globe };
+const EXTRA_VALUES = ["shopify_store", "amazon_fba", "newsletter", "youtube_channel", "instagram", "tiktok", "linkedin_page", "discord_server", "forum", "blog", "online_media", "ai_automation", "template_plugin", "database_api"];
+const EXTRA_ICONS = { shopify_store: Store, amazon_fba: Package, newsletter: Mail, youtube_channel: Youtube, instagram: Camera, tiktok: Smartphone, linkedin_page: Linkedin, discord_server: MessageSquare, forum: MessagesSquare, blog: FileText, online_media: Newspaper, ai_automation: Bot, template_plugin: LayoutTemplate, database_api: Database };
 
 const initialForm = {
   type: "", title: "", short_description: "",
@@ -66,6 +44,7 @@ const initialForm = {
 };
 
 export default function CitadelleCreateListing() {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
@@ -80,6 +59,10 @@ export default function CitadelleCreateListing() {
   const [showOtherPanel, setShowOtherPanel] = useState(false);
   const { isAuthenticated, user } = useCitadelleAuth();
   const navigate = useNavigate();
+
+  const TYPE_OPTIONS = TYPE_VALUES.map(v => ({ value: v, icon: TYPE_ICONS[v], label: t(`listing_form.types.${v}.label`), desc: t(`listing_form.types.${v}.desc`) }));
+  const EXTRA_TYPE_OPTIONS = EXTRA_VALUES.map(v => ({ value: v, icon: EXTRA_ICONS[v], label: t(`listing_form.extra_types.${v}.label`), desc: t(`listing_form.extra_types.${v}.desc`) }));
+  const STEPS = t("listing_form.steps", { returnObjects: true });
 
   // "Autre" est actif si le type sélectionné appartient aux catégories supplémentaires
   const isOtherSelected = EXTRA_TYPE_OPTIONS.some(o => o.value === form.type);
@@ -118,11 +101,11 @@ export default function CitadelleCreateListing() {
         <div className="min-h-[60vh] flex items-center justify-center px-4">
           <div className="text-center max-w-md">
             <p className="text-4xl mb-4">🔒</p>
-            <h2 className="text-xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>Connexion requise</h2>
-            <p className="text-sm mb-5" style={{ color: CITADELLE_COLORS.textMuted }}>Vous devez être connecté pour publier une annonce.</p>
+            <h2 className="text-xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>{t("listing_form.auth_required")}</h2>
+            <p className="text-sm mb-5" style={{ color: CITADELLE_COLORS.textMuted }}>{t("listing_form.auth_required_sub")}</p>
             <Link to="/citadelle/connexion" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm"
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-              Se connecter
+              {t("listing_form.login")}
             </Link>
           </div>
         </div>
@@ -137,17 +120,17 @@ export default function CitadelleCreateListing() {
 
   const validateStep = () => {
     if (step === 0) {
-      if (!form.type) return "Sélectionnez un type d'actif";
-      if (form.title.trim().length < 5) return "Le titre doit contenir au moins 5 caractères";
-      if (form.short_description.trim().length < 20) return "La description courte doit contenir au moins 20 caractères";
+      if (!form.type) return t("listing_form.err_select_type");
+      if (form.title.trim().length < 5) return t("listing_form.err_title_min");
+      if (form.short_description.trim().length < 20) return t("listing_form.err_shortdesc_min");
     }
     if (step === 1) {
-      if (!form.price || parseFloat(form.price) <= 0) return "Saisissez un prix valide (> 0)";
-      if (parseFloat(form.price) < minPrice) return `Le prix ${form.is_auction ? "de départ / réserve" : "de vente"} minimum est de ${minPrice} € (frais de traitement minimum de ${commission.minimum_eur} €).`;
-      if (form.is_auction && form.auction_buy_now_price && parseFloat(form.auction_buy_now_price) < minPrice) return `Le prix d'achat immédiat minimum est de ${minPrice} € (frais de traitement minimum de ${commission.minimum_eur} €).`;
+      if (!form.price || parseFloat(form.price) <= 0) return t("listing_form.err_price_valid");
+      if (parseFloat(form.price) < minPrice) return form.is_auction ? t("listing_form.err_price_min_auction", { min: minPrice, fees: commission.minimum_eur }) : t("listing_form.err_price_min_sale", { min: minPrice, fees: commission.minimum_eur });
+      if (form.is_auction && form.auction_buy_now_price && parseFloat(form.auction_buy_now_price) < minPrice) return t("listing_form.err_buynow_min", { min: minPrice, fees: commission.minimum_eur });
     }
     if (step === 2) {
-      if (form.description.trim().length < 50) return "La description détaillée doit contenir au moins 50 caractères";
+      if (form.description.trim().length < 50) return t("listing_form.err_desc_min");
     }
     return null;
   };
@@ -163,7 +146,7 @@ export default function CitadelleCreateListing() {
 
   const handleSubmit = async () => {
     if (form.allow_social_share === null) {
-      setError("Merci d'indiquer si nous pouvons partager votre annonce sur nos réseaux sociaux.");
+      setError(t("listing_form.err_social_required"));
       return;
     }
     setLoading(true);
@@ -212,7 +195,7 @@ export default function CitadelleCreateListing() {
         // Erreur de validation Pydantic → tableau d'objets
         setError(detail.map(e => e.msg || JSON.stringify(e)).join(" — "));
       } else {
-        setError(detail || "Une erreur est survenue");
+        setError(detail || t("listing_form.err_generic"));
       }
     } finally {
       setLoading(false);
@@ -225,10 +208,10 @@ export default function CitadelleCreateListing() {
         <div className="text-center max-w-md">
           <CheckCircle size={64} style={{ color: CITADELLE_COLORS.gold }} className="mx-auto mb-4" />
           <h2 className="text-2xl font-black mb-3" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-            Annonce soumise !
+            {t("listing_form.submitted_title")}
           </h2>
           <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Votre annonce est en attente de validation par notre équipe. Vous recevrez une notification dès sa publication (sous 24h).
+            {t("listing_form.submitted_sub")}
           </p>
 
           <SecurityContactNotice className="mb-6 text-left" />
@@ -240,11 +223,11 @@ export default function CitadelleCreateListing() {
               <div className="flex items-center gap-2 mb-1">
                 <Star size={16} style={{ color: CITADELLE_COLORS.gold }} />
                 <p className="text-sm font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                  Donnez un coup de projecteur à votre annonce
+                  {t("listing_form.boost_title")}
                 </p>
               </div>
               <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Passez votre annonce « à la Une » pour apparaître dans le carrousel mis en avant sur l'accueil et la liste des annonces. Dès 19 €.
+                {t("listing_form.boost_sub")}
               </p>
               <button
                 type="button"
@@ -252,7 +235,7 @@ export default function CitadelleCreateListing() {
                 className="w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                 data-testid="post-submit-boost-btn">
-                <Star size={14} /> Mettre à la Une
+                <Star size={14} /> {t("listing_form.boost_cta")}
               </button>
               <button
                 type="button"
@@ -260,7 +243,7 @@ export default function CitadelleCreateListing() {
                 className="w-full mt-2 py-2 text-xs font-semibold"
                 style={{ color: CITADELLE_COLORS.textMuted }}
                 data-testid="post-submit-boost-decline">
-                Non merci
+                {t("listing_form.boost_decline")}
               </button>
             </div>
           )}
@@ -272,11 +255,11 @@ export default function CitadelleCreateListing() {
           <div className="flex gap-3 justify-center">
             <Link to="/citadelle/espace-membre/mes-annonces" className="px-5 py-2.5 rounded-xl font-semibold text-sm"
               style={{ border: `1px solid ${CITADELLE_COLORS.blue}`, color: CITADELLE_COLORS.blue }}>
-              Mes annonces
+              {t("listing_form.my_listings")}
             </Link>
             <Link to="/citadelle/annonces" className="px-5 py-2.5 rounded-xl font-semibold text-sm"
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-              Voir les annonces
+              {t("listing_form.view_listings")}
             </Link>
           </div>
         </div>
@@ -300,9 +283,9 @@ export default function CitadelleCreateListing() {
         {/* En-tête */}
         <div className="mb-8">
           <h1 className="text-2xl font-black mb-1" style={{ fontFamily: "'Montserrat', sans-serif", color: CITADELLE_COLORS.blue }}>
-            Publier une annonce
+            {t("listing_form.create_title")}
           </h1>
-          <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>Gratuit · Validé sous 24h · Commission 5% à la vente uniquement</p>
+          <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>{t("listing_form.create_sub")}</p>
         </div>
 
         {/* Indicateur d'étapes */}
@@ -339,7 +322,7 @@ export default function CitadelleCreateListing() {
         {step === 0 && (
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold mb-3" style={labelStyle}>Type d'actif *</label>
+              <label className="block text-sm font-semibold mb-3" style={labelStyle}>{t("listing_form.type_label")}</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {TYPE_OPTIONS.map(({ value, label, icon: Icon, desc }) => (
                   <button key={value} type="button" onClick={() => { set("type", value); setShowOtherPanel(false); }}
@@ -367,10 +350,10 @@ export default function CitadelleCreateListing() {
                     <p className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>
                       {isOtherSelected
                         ? EXTRA_TYPE_OPTIONS.find(o => o.value === form.type)?.label
-                        : "Autre type d'actif"}
+                        : t("listing_form.other_selected_fallback")}
                     </p>
                     <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      Newsletter, YouTube, FBA, IA, Templates...
+                      {t("listing_form.other_desc")}
                     </p>
                   </div>
                   <ChevronRight size={16} className="transition-transform" style={{
@@ -389,7 +372,7 @@ export default function CitadelleCreateListing() {
               }}>
                 <div className="pt-4 pb-1 px-1">
                   <p className="text-xs font-semibold mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    Sélectionnez la catégorie exacte :
+                    {t("listing_form.other_select_prompt")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {EXTRA_TYPE_OPTIONS.map(({ value, label, icon: Icon }) => {
@@ -415,16 +398,16 @@ export default function CitadelleCreateListing() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2" style={labelStyle}>Titre de l'annonce *</label>
+              <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.title_label")}</label>
               <input value={form.title} onChange={e => set("title", e.target.value)}
-                placeholder="Ex: Blog culinaire 2 500€/mois — 45k visiteurs"
+                placeholder={t("listing_form.title_ph")}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle}
                 data-testid="create-listing-title" />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2" style={labelStyle}>Accroche courte * <span className="font-normal text-xs">(20-300 caractères)</span></label>
+              <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.shortdesc_label")} <span className="font-normal text-xs">{t("listing_form.shortdesc_hint")}</span></label>
               <textarea value={form.short_description} onChange={e => set("short_description", e.target.value)}
-                rows={3} placeholder="Résumé percutant visible dans les résultats de recherche..."
+                rows={3} placeholder={t("listing_form.shortdesc_ph")}
                 maxLength={300}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={inputStyle}
                 data-testid="create-listing-short-desc" />
@@ -440,19 +423,19 @@ export default function CitadelleCreateListing() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-                  {form.is_auction ? "Prix de départ / réserve (€) *" : "Prix de vente (€) *"}
+                  {form.is_auction ? t("listing_form.price_label_auction") : t("listing_form.price_label_sale")}
                 </label>
                 <input type="number" value={form.price} onChange={e => set("price", e.target.value)}
                   onFocus={handlePriceFocus}
                   placeholder="5000" min={minPrice} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle}
                   data-testid="create-listing-price" />
                 <p className="text-xs mt-1.5 px-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  Minimum&nbsp;: <strong style={{ color: CITADELLE_COLORS.blue }}>{minPrice} €</strong> (frais de traitement min. {commission.minimum_eur} €)
+                  {t("listing_form.price_min_note")}<strong style={{ color: CITADELLE_COLORS.blue }}>{minPrice} €</strong> {t("listing_form.price_fees_note", { fees: commission.minimum_eur })}
                 </p>
                 {commissionEst !== null && (
                   <p className="text-xs mt-1.5 px-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    Commission estimée&nbsp;: <strong>{commissionEst.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
-                    &nbsp;·&nbsp;Vous recevrez&nbsp;: <strong style={{ color: CITADELLE_COLORS.blue }}>{(priceNum - commissionEst).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
+                    {t("listing_form.commission_est")}<strong>{commissionEst.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
+                    &nbsp;·&nbsp;{t("listing_form.you_receive")}<strong style={{ color: CITADELLE_COLORS.blue }}>{(priceNum - commissionEst).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>
                   </p>
                 )}
               </div>
@@ -460,7 +443,7 @@ export default function CitadelleCreateListing() {
                 {!form.is_auction && (
                   <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: CITADELLE_COLORS.blue }}>
                     <input type="checkbox" checked={form.price_negotiable} onChange={e => set("price_negotiable", e.target.checked)} className="w-4 h-4 rounded" />
-                    Prix négociable
+                    {t("listing_form.price_negotiable")}
                   </label>
                 )}
               </div>
@@ -470,28 +453,28 @@ export default function CitadelleCreateListing() {
             <div className="p-4 rounded-2xl" style={{ background: "rgba(201,164,92,0.05)", border: `1px solid rgba(201,164,92,0.2)` }}>
               <label className="flex items-center gap-3 cursor-pointer mb-1">
                 <input type="checkbox" checked={form.is_auction} onChange={e => set("is_auction", e.target.checked)} className="w-4 h-4 rounded" />
-                <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.blue }}>Mettre en enchère</span>
+                <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.blue }}>{t("listing_form.auction_enable")}</span>
               </label>
               <p className="text-xs ml-7 mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Les acheteurs enchérissent sur votre annonce. Le prix de départ est le prix saisi ci-dessus.
+                {t("listing_form.auction_desc")}
               </p>
 
               {form.is_auction && (
                 <div className="space-y-4 mt-3">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold mb-2" style={labelStyle}>Durée de l'enchère (jours)</label>
+                      <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.auction_duration")}</label>
                       <input type="number" value={form.auction_duration_days}
                         onChange={e => set("auction_duration_days", Math.min(31, Math.max(3, parseInt(e.target.value) || 7)))}
                         min="3" max="31" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
-                      <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>Entre 3 et 31 jours</p>
+                      <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t("listing_form.auction_duration_hint")}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold mb-2" style={labelStyle}>Prix d'achat immédiat (€) <span className="font-normal">(optionnel)</span></label>
+                      <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.auction_buynow")} <span className="font-normal">{t("listing_form.optional")}</span></label>
                       <input type="number" value={form.auction_buy_now_price}
                         onChange={e => set("auction_buy_now_price", e.target.value)}
                         placeholder="Ex: 12000" min={minPrice} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
-                      <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>Permet un achat direct sans enchère (min. {minPrice} €)</p>
+                      <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t("listing_form.auction_buynow_hint", { min: minPrice })}</p>
                     </div>
                   </div>
                 </div>
@@ -501,7 +484,7 @@ export default function CitadelleCreateListing() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-                  Revenus mensuels (€)
+                  {t("listing_form.revenue_label")}
                   <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+12 pts</span>
                 </label>
                 <input type="number" value={form.monthly_revenue} onChange={e => set("monthly_revenue", e.target.value)}
@@ -509,7 +492,7 @@ export default function CitadelleCreateListing() {
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-                  Charges mensuelles (€) <span className="font-normal text-xs">(optionnel)</span>
+                  {t("listing_form.charges_label")} <span className="font-normal text-xs">{t("listing_form.optional")}</span>
                   <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+5 pts</span>
                 </label>
                 <input type="number" value={form.monthly_charges} onChange={e => set("monthly_charges", e.target.value)}
@@ -519,7 +502,7 @@ export default function CitadelleCreateListing() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-                  Trafic mensuel (visiteurs)
+                  {t("listing_form.traffic_label")}
                   <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+8 pts</span>
                 </label>
                 <input type="number" value={form.monthly_traffic} onChange={e => set("monthly_traffic", e.target.value)}
@@ -527,33 +510,33 @@ export default function CitadelleCreateListing() {
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-                  Sources de trafic <span className="font-normal text-xs">(optionnel)</span>
+                  {t("listing_form.traffic_sources_label")} <span className="font-normal text-xs">{t("listing_form.optional")}</span>
                   <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+4 pts</span>
                 </label>
                 <input value={form.traffic_sources} onChange={e => set("traffic_sources", e.target.value)}
-                  placeholder="SEO, réseaux sociaux, email…" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+                  placeholder={t("listing_form.traffic_sources_ph")} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold mb-2" style={labelStyle}>Ancienneté (mois)</label>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.age_label")}</label>
                 <input type="number" value={form.age_months} onChange={e => set("age_months", e.target.value)}
                   placeholder="24" min="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2" style={labelStyle}>Niche / Secteur</label>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.niche_label")}</label>
                 <input value={form.niche} onChange={e => set("niche", e.target.value)}
-                  placeholder="Cuisine, Finance, Sport..." className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+                  placeholder={t("listing_form.niche_ph")} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold mb-2" style={labelStyle}>Région <span className="font-normal text-xs">(optionnel)</span></label>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.region_label")} <span className="font-normal text-xs">{t("listing_form.optional")}</span></label>
                 <input value={form.region} onChange={e => set("region", e.target.value)}
-                  placeholder="France, Paris, Europe…" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+                  placeholder={t("listing_form.region_ph")} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2" style={labelStyle}>Clients enregistrés <span className="font-normal text-xs">(optionnel)</span></label>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.clients_label")} <span className="font-normal text-xs">{t("listing_form.optional")}</span></label>
                 <input type="number" value={form.registered_clients} onChange={e => set("registered_clients", e.target.value)}
                   placeholder="250" min="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
               </div>
@@ -568,62 +551,62 @@ export default function CitadelleCreateListing() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-                  Repreneur idéal <span className="font-normal text-xs">(optionnel)</span>
+                  {t("listing_form.ideal_buyer_label")} <span className="font-normal text-xs">{t("listing_form.optional")}</span>
                   <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+5 pts</span>
                 </label>
                 <textarea value={form.ideal_buyer} onChange={e => set("ideal_buyer", e.target.value)}
-                  rows={3} placeholder="Entrepreneur avec une expérience en SEO, ou agence digitale cherchant à acquérir du trafic qualifié…"
+                  rows={3} placeholder={t("listing_form.ideal_buyer_ph")}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-                  Temps consacré / semaine <span className="font-normal text-xs">(optionnel)</span>
+                  {t("listing_form.weekly_hours_label")} <span className="font-normal text-xs">{t("listing_form.optional")}</span>
                 </label>
                 <input type="number" value={form.weekly_hours} onChange={e => set("weekly_hours", e.target.value)}
                   placeholder="5" min="0" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
-                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>En heures par semaine</p>
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>{t("listing_form.weekly_hours_hint")}</p>
               </div>
             </div>
             {/* Points forts / Points faibles */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold mb-2" style={labelStyle}>Points forts <span className="font-normal text-xs">(optionnel)</span></label>
+                <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.strengths_label")} <span className="font-normal text-xs">{t("listing_form.optional")}</span></label>
                 <textarea value={form.strengths} onChange={e => set("strengths", e.target.value)}
-                  rows={4} placeholder="Trafic SEO stable depuis 3 ans, communauté email engagée de 8 000 abonnés…"
+                  rows={4} placeholder={t("listing_form.strengths_ph")}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={{ ...inputStyle, borderColor: "rgba(34,197,94,0.3)" }} />
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-2" style={labelStyle}>
-                  Points faibles <span className="font-normal text-xs">(optionnel)</span>
+                  {t("listing_form.weaknesses_label")} <span className="font-normal text-xs">{t("listing_form.optional")}</span>
                   <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(34,197,94,0.1)", color: "#16A34A" }}>+4 pts</span>
                 </label>
                 <textarea value={form.weaknesses} onChange={e => set("weaknesses", e.target.value)}
-                  rows={4} placeholder="Forte dépendance à Google Ads, site vieillissant à moderniser…"
+                  rows={4} placeholder={t("listing_form.weaknesses_ph")}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={{ ...inputStyle, borderColor: "rgba(239,68,68,0.3)" }} />
-                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>L'honnêteté renforce la confiance des acheteurs</p>
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>{t("listing_form.weaknesses_hint")}</p>
               </div>
             </div>
             {/* Description + Techno */}
             <div>
-              <label className="block text-sm font-semibold mb-2" style={labelStyle}>Description détaillée * <span className="font-normal text-xs">(minimum 50 caractères)</span></label>
+              <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.desc_label")} <span className="font-normal text-xs">{t("listing_form.desc_hint")}</span></label>
               <textarea value={form.description} onChange={e => set("description", e.target.value)}
-                rows={8} placeholder="Décrivez votre actif en détail : histoire, raison de la vente, points forts, potentiel de croissance..."
+                rows={8} placeholder={t("listing_form.desc_ph")}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={inputStyle}
                 data-testid="create-listing-desc" />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2" style={labelStyle}>Technologies <span className="font-normal text-xs">(séparées par des virgules)</span></label>
+              <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.tech_label")} <span className="font-normal text-xs">{t("listing_form.tech_hint")}</span></label>
               <input value={form.technologies} onChange={e => set("technologies", e.target.value)}
-                placeholder="WordPress, WooCommerce, Stripe..." className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
+                placeholder={t("listing_form.tech_ph")} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
             </div>
             <div className="p-4 rounded-xl" style={{ background: "rgba(220,38,38,0.05)", border: "1px solid rgba(220,38,38,0.2)" }}>
               <label className="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" checked={form.is_adult} onChange={e => set("is_adult", e.target.checked)}
                   className="w-4 h-4 rounded mt-0.5" data-testid="create-listing-adult" />
                 <span>
-                  <span className="block text-sm font-semibold" style={{ color: "#DC2626" }}>Contenu adulte (18+)</span>
+                  <span className="block text-sm font-semibold" style={{ color: "#DC2626" }}>{t("listing_form.adult_label")}</span>
                   <span className="block text-xs mt-1" style={labelStyle}>
-                    Si coché : aucune image ni lien du site ne seront affichés sur l'annonce. Un bandeau « Contenu adulte » sera présenté et la consultation du détail sera réservée aux comptes vérifiés.
+                    {t("listing_form.adult_desc")}
                   </span>
                 </span>
               </label>
@@ -631,17 +614,17 @@ export default function CitadelleCreateListing() {
             {!form.is_adult && (
               <>
                 <div>
-                  <label className="block text-sm font-semibold mb-2" style={labelStyle}>URL du site <span className="font-normal text-xs">(optionnel)</span></label>
+                  <label className="block text-sm font-semibold mb-2" style={labelStyle}>{t("listing_form.url_label")} <span className="font-normal text-xs">{t("listing_form.optional")}</span></label>
                   <input value={form.url_preview} onChange={e => set("url_preview", e.target.value)}
-                    placeholder="https://monsite.fr" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle}
+                    placeholder={t("listing_form.url_ph")} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle}
                     data-testid="create-listing-url" />
                   <label className="flex items-start gap-3 cursor-pointer mt-3 p-3 rounded-xl" style={{ background: "rgba(201,164,92,0.06)", border: "1px solid rgba(201,164,92,0.2)" }}>
                     <input type="checkbox" checked={form.url_public} onChange={e => set("url_public", e.target.checked)}
                       className="w-4 h-4 rounded mt-0.5" data-testid="create-listing-url-public" />
                     <span>
-                      <span className="block text-sm font-semibold" style={labelStyle}>Rendre l'URL visible publiquement sur l'annonce</span>
+                      <span className="block text-sm font-semibold" style={labelStyle}>{t("listing_form.url_public_label")}</span>
                       <span className="block text-xs mt-1" style={labelStyle}>
-                        Si décoché, l'adresse reste confidentielle : elle ne sera communiquée à l'acheteur qu'à la manifestation d'un intérêt sérieux ou à l'entame du processus de vente sécurisé.
+                        {t("listing_form.url_public_desc")}
                       </span>
                     </span>
                   </label>
@@ -662,12 +645,12 @@ export default function CitadelleCreateListing() {
           <div className="space-y-4">
             <div className="p-5 rounded-2xl space-y-3" style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
               {[
-                { label: "Type", value: [...TYPE_OPTIONS, ...EXTRA_TYPE_OPTIONS].find(t => t.value === form.type)?.label },
-                { label: "Titre", value: form.title },
-                { label: "Prix", value: `${parseFloat(form.price).toLocaleString("fr-FR")} €${form.price_negotiable ? " (négociable)" : ""}` },
-                { label: "Revenus/mois", value: form.monthly_revenue ? `${parseFloat(form.monthly_revenue).toLocaleString("fr-FR")} €` : "Non renseigné" },
-                { label: "Trafic/mois", value: form.monthly_traffic ? `${parseInt(form.monthly_traffic).toLocaleString("fr-FR")} visiteurs` : "Non renseigné" },
-                { label: "Ancienneté", value: form.age_months ? `${form.age_months} mois` : "Non renseignée" },
+                { label: t("listing_form.recap_type"), value: [...TYPE_OPTIONS, ...EXTRA_TYPE_OPTIONS].find(o => o.value === form.type)?.label },
+                { label: t("listing_form.recap_title"), value: form.title },
+                { label: t("listing_form.recap_price"), value: `${parseFloat(form.price).toLocaleString("fr-FR")} €${form.price_negotiable ? t("listing_form.recap_negotiable") : ""}` },
+                { label: t("listing_form.recap_revenue"), value: form.monthly_revenue ? `${parseFloat(form.monthly_revenue).toLocaleString("fr-FR")} €` : t("listing_form.not_provided") },
+                { label: t("listing_form.recap_traffic"), value: form.monthly_traffic ? `${parseInt(form.monthly_traffic).toLocaleString("fr-FR")}${t("listing_form.recap_traffic_unit")}` : t("listing_form.not_provided") },
+                { label: t("listing_form.recap_age"), value: form.age_months ? `${form.age_months}${t("listing_form.recap_age_unit")}` : t("listing_form.not_provided_f") },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between text-sm">
                   <span style={{ color: CITADELLE_COLORS.textMuted }}>{label}</span>
@@ -676,19 +659,19 @@ export default function CitadelleCreateListing() {
               ))}
             </div>
             <div className="p-4 rounded-xl text-sm" style={{ background: "rgba(201,164,92,0.07)", border: `1px solid rgba(201,164,92,0.2)`, color: CITADELLE_COLORS.textMuted }}>
-              Votre annonce sera soumise à validation (sous 24h) avant publication. Commission de 5% uniquement si la vente aboutit.
+              {t("listing_form.recap_note")}
             </div>
 
             {/* Consentement partage réseaux sociaux — choix obligatoire */}
             <div className="p-4 rounded-2xl" style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }} data-testid="social-share-consent">
               <p className="text-sm font-semibold mb-1" style={{ color: CITADELLE_COLORS.blue }}>
-                Souhaitez-vous que nous partagions votre annonce sur nos réseaux sociaux ? <span style={{ color: "#DC2626" }}>*</span>
+                {t("listing_form.social_q")} <span style={{ color: "#DC2626" }}>*</span>
               </p>
               <p className="text-xs mb-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-                La Citadelle Numérique pourra mettre en avant votre annonce sur ses comptes (LinkedIn, Facebook, X…) pour maximiser sa visibilité. Choix obligatoire.
+                {t("listing_form.social_desc")}
               </p>
               <div className="flex gap-3">
-                {[{ v: true, label: "Oui, partagez-la" }, { v: false, label: "Non merci" }].map(opt => {
+                {[{ v: true, label: t("listing_form.social_yes") }, { v: false, label: t("listing_form.social_no") }].map(opt => {
                   const active = form.allow_social_share === opt.v;
                   return (
                     <button
@@ -717,12 +700,12 @@ export default function CitadelleCreateListing() {
           <button onClick={prev} disabled={step === 0}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40 transition-all"
             style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-            <ChevronLeft size={16} /> Précédent
+            <ChevronLeft size={16} /> {t("listing_form.prev")}
           </button>
           {step < STEPS.length - 1 ? (
             <button onClick={next} className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105"
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-              Suivant <ChevronRight size={16} />
+              {t("listing_form.next")} <ChevronRight size={16} />
             </button>
           ) : (
             <button onClick={handleSubmit} disabled={loading}
@@ -730,7 +713,7 @@ export default function CitadelleCreateListing() {
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
               data-testid="create-listing-submit">
               {loading ? <div className="w-5 h-5 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
-                       : <><CheckCircle size={16} /> Soumettre l'annonce</>}
+                       : <><CheckCircle size={16} /> {t("listing_form.submit")}</>}
             </button>
           )}
         </div>

@@ -3,6 +3,7 @@
  * Affiche les factures liées aux achats de services
  */
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { FileText, Download, Search, Receipt, AlertCircle } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
@@ -11,23 +12,25 @@ import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-const STATUS_LABELS = {
-  not_required: { label: "Standard",   color: "#6B7280", bg: "rgba(107,114,128,0.08)" },
-  pending:      { label: "PDP — En cours", color: "#F59E0B", bg: "rgba(245,158,11,0.08)" },
-  submitted:    { label: "PDP — Envoyée",  color: "#22C55E", bg: "rgba(34,197,94,0.08)" },
+const STATUS_STYLES = {
+  not_required: { color: "#6B7280", bg: "rgba(107,114,128,0.08)" },
+  pending:      { color: "#F59E0B", bg: "rgba(245,158,11,0.08)" },
+  submitted:    { color: "#22C55E", bg: "rgba(34,197,94,0.08)" },
 };
 
-function statusBadge(status) {
-  const { label, color, bg } = STATUS_LABELS[status] || STATUS_LABELS.not_required;
+function statusBadge(status, t) {
+  const key = STATUS_STYLES[status] ? status : "not_required";
+  const { color, bg } = STATUS_STYLES[key];
   return (
     <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
       style={{ background: bg, color }}>
-      {label}
+      {t(`member.inv_status_${key}`)}
     </span>
   );
 }
 
 export default function CitadelleMyInvoices() {
+  const { t, i18n } = useTranslation();
   const { token } = useCitadelleAuth();
   const [invoices, setInvoices] = useState([]);
   const [loading,  setLoading]  = useState(true);
@@ -37,7 +40,7 @@ export default function CitadelleMyInvoices() {
   useEffect(() => {
     citadelleApi.get("/invoices/my")
       .then(r => setInvoices(r.data.invoices || []))
-      .catch(() => setError("Impossible de charger vos factures."))
+      .catch(() => setError(t("member.inv_load_error")))
       .finally(() => setLoading(false));
   }, []);
 
@@ -63,11 +66,11 @@ export default function CitadelleMyInvoices() {
         document.body.removeChild(link);
         URL.revokeObjectURL(blobUrl);
       })
-      .catch(() => alert("Erreur lors du téléchargement."));
+      .catch(() => alert(t("member.inv_download_error")));
   };
 
-  const fmt = (n) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
-  const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString("fr-FR") : "—";
+  const fmt = (n) => new Intl.NumberFormat(i18n.language === "en" ? "en-GB" : "fr-FR", { style: "currency", currency: "EUR" }).format(n);
+  const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString(i18n.language === "en" ? "en-GB" : "fr-FR") : "—";
 
   if (loading) return (
     <CitadelleLayout>
@@ -91,10 +94,10 @@ export default function CitadelleMyInvoices() {
           </div>
           <div>
             <h2 className="font-black text-base" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-              Mes Factures
+              {t("member.inv_title")}
             </h2>
             <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-              {invoices.length} facture{invoices.length !== 1 ? "s" : ""}
+              {t("member.inv_count", { count: invoices.length })}
             </p>
           </div>
         </div>
@@ -105,7 +108,7 @@ export default function CitadelleMyInvoices() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2"
               style={{ color: CITADELLE_COLORS.textMuted }} />
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Rechercher..." data-testid="invoice-search"
+              placeholder={t("member.inv_search_ph")} data-testid="invoice-search"
               className="pl-8 pr-4 py-2 rounded-xl text-sm outline-none"
               style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`,
                        color: CITADELLE_COLORS.blue, width: 220 }} />
@@ -126,10 +129,10 @@ export default function CitadelleMyInvoices() {
           style={{ background: CITADELLE_COLORS.bg, border: `1px dashed ${CITADELLE_COLORS.border}` }}>
           <FileText size={32} className="mx-auto mb-3" style={{ color: CITADELLE_COLORS.textMuted }} />
           <p className="font-semibold" style={{ color: CITADELLE_COLORS.blue }}>
-            {search ? "Aucune facture correspondante" : "Aucune facture pour l'instant"}
+            {search ? t("member.inv_empty_search") : t("member.inv_empty")}
           </p>
           <p className="text-sm mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Vos factures apparaîtront ici après chaque achat de service.
+            {t("member.inv_empty_sub")}
           </p>
         </div>
       ) : (
@@ -137,11 +140,11 @@ export default function CitadelleMyInvoices() {
           {/* En-tête tableau */}
           <div className="hidden sm:grid grid-cols-12 px-5 py-3 text-xs font-bold uppercase tracking-wide"
             style={{ background: CITADELLE_COLORS.night, color: "rgba(255,255,255,0.6)" }}>
-            <span className="col-span-3">Facture</span>
-            <span className="col-span-3">Date</span>
-            <span className="col-span-3">Service</span>
-            <span className="col-span-1 text-right">Montant</span>
-            <span className="col-span-1 text-center">Statut</span>
+            <span className="col-span-3">{t("member.inv_col_invoice")}</span>
+            <span className="col-span-3">{t("member.inv_col_date")}</span>
+            <span className="col-span-3">{t("member.inv_col_service")}</span>
+            <span className="col-span-1 text-right">{t("member.inv_col_amount")}</span>
+            <span className="col-span-1 text-center">{t("member.inv_col_status")}</span>
             <span className="col-span-1"></span>
           </div>
 
@@ -182,14 +185,14 @@ export default function CitadelleMyInvoices() {
 
               {/* Statut PDP */}
               <div className="hidden sm:flex col-span-1 justify-center">
-                {statusBadge(inv.pdp_status)}
+                {statusBadge(inv.pdp_status, t)}
               </div>
 
               {/* Télécharger */}
               <div className="col-span-2 sm:col-span-1 flex justify-end">
                 <button onClick={() => handleDownload(inv.id, inv.invoice_number)}
                   data-testid={`download-invoice-${inv.id}`}
-                  title="Télécharger le PDF"
+                  title={t("member.inv_download_title")}
                   className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
                   style={{ background: "rgba(201,164,92,0.1)", color: CITADELLE_COLORS.gold }}>
                   <Download size={15} />
@@ -202,7 +205,7 @@ export default function CitadelleMyInvoices() {
 
       {/* Note PDP */}
       <p className="text-xs mt-4 text-center" style={{ color: CITADELLE_COLORS.textMuted }}>
-        Conformité PDP (décret n°2022-1299) — intégration en cours de déploiement.
+        {t("member.inv_pdp_note")}
       </p>
         </div>
       </div>

@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ShoppingCart, Store, Clock, CheckCircle, XCircle, AlertTriangle, CreditCard, Shield, ArrowRight } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
@@ -12,19 +13,20 @@ import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 
 const STATUS_CONFIG = {
-  offer_sent:            { label: "Offre envoyée",     color: "#F59E0B", icon: Clock },
-  offer_accepted:        { label: "Offre acceptée",    color: "#22C55E", icon: CheckCircle },
-  offer_refused:         { label: "Offre refusée",     color: "#DC2626", icon: XCircle },
-  offer_countered:       { label: "Contre-offre",      color: "#3B82F6", icon: ArrowRight },
-  payment_done:          { label: "Paiement effectué", color: "#8B5CF6", icon: CreditCard },
-  credentials_submitted: { label: "Accès transmis",    color: "#F59E0B", icon: Shield },
-  admin_verified:        { label: "Accès vérifiés",    color: "#22C55E", icon: Shield },
-  completed:             { label: "Finalisée",         color: "#22C55E", icon: CheckCircle },
-  disputed:              { label: "Litige",            color: "#DC2626", icon: AlertTriangle },
-  cancelled:             { label: "Annulée",           color: "#6B7280", icon: XCircle },
+  offer_sent:            { color: "#F59E0B", icon: Clock },
+  offer_accepted:        { color: "#22C55E", icon: CheckCircle },
+  offer_refused:         { color: "#DC2626", icon: XCircle },
+  offer_countered:       { color: "#3B82F6", icon: ArrowRight },
+  payment_done:          { color: "#8B5CF6", icon: CreditCard },
+  credentials_submitted: { color: "#F59E0B", icon: Shield },
+  admin_verified:        { color: "#22C55E", icon: Shield },
+  completed:             { color: "#22C55E", icon: CheckCircle },
+  disputed:              { color: "#DC2626", icon: AlertTriangle },
+  cancelled:             { color: "#6B7280", icon: XCircle },
 };
 
 export default function CitadelleMyTransactions() {
+  const { t, i18n } = useTranslation();
   const { user } = useCitadelleAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,10 +57,10 @@ export default function CitadelleMyTransactions() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-black" style={{ fontFamily: "'Montserrat', sans-serif", color: CITADELLE_COLORS.blue }}>
-              Mes transactions
+              {t("member.tx_title")}
             </h1>
             <p className="text-sm mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-              {buying.length} achat{buying.length > 1 ? "s" : ""} · {selling.length} vente{selling.length > 1 ? "s" : ""}
+              {t("member.tx_buy_count", { count: buying.length })} · {t("member.tx_sell_count", { count: selling.length })}
             </p>
           </div>
         </div>
@@ -66,8 +68,8 @@ export default function CitadelleMyTransactions() {
         {/* Onglets */}
         <div className="flex gap-2 mb-6">
           {[
-            { key: "buying", label: "Mes achats", icon: ShoppingCart, count: buying.length },
-            { key: "selling", label: "Mes ventes", icon: Store, count: selling.length },
+            { key: "buying", label: t("member.tab_buying"), icon: ShoppingCart, count: buying.length },
+            { key: "selling", label: t("member.tab_selling"), icon: Store, count: selling.length },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
@@ -97,12 +99,12 @@ export default function CitadelleMyTransactions() {
           <div className="py-16 text-center rounded-2xl" style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
             <p className="text-4xl mb-3">{tab === "buying" ? "🛒" : "🏪"}</p>
             <p className="text-sm font-medium" style={{ color: CITADELLE_COLORS.textMuted }}>
-              {tab === "buying" ? "Aucun achat en cours" : "Aucune vente en cours"}
+              {tab === "buying" ? t("member.tx_empty_buying") : t("member.tx_empty_selling")}
             </p>
             {tab === "buying" && (
               <Link to="/citadelle/annonces" className="inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-xl text-sm font-semibold"
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-                Parcourir les annonces
+                {t("member.msgs_browse")}
               </Link>
             )}
           </div>
@@ -110,6 +112,7 @@ export default function CitadelleMyTransactions() {
           <div className="space-y-3">
             {list.map(tx => {
               const cfg = STATUS_CONFIG[tx.status] || STATUS_CONFIG.cancelled;
+              const statusKey = STATUS_CONFIG[tx.status] ? tx.status : "cancelled";
               const StatusIcon = cfg.icon;
               const amount = tx.payment_amount || tx.counter_amount || tx.offer_amount;
               return (
@@ -122,17 +125,17 @@ export default function CitadelleMyTransactions() {
                       {tx.listing_title}
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      {tab === "buying" ? `Vendeur : ${tx.seller_email}` : `Acheteur : ${tx.buyer_email}`}
+                      {tab === "buying" ? `${t("member.role_seller")} : ${tx.seller_email}` : `${t("member.role_buyer")} : ${tx.buyer_email}`}
                       {" · "}
-                      {new Date(tx.updated_at).toLocaleDateString("fr-FR")}
+                      {new Date(tx.updated_at).toLocaleDateString(i18n.language === "en" ? "en-GB" : "fr-FR")}
                     </p>
                   </div>
                   <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.blue }}>
-                    {amount?.toLocaleString("fr-FR")} €
+                    {amount?.toLocaleString(i18n.language === "en" ? "en-GB" : "fr-FR")} €
                   </span>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0"
                     style={{ background: `${cfg.color}15`, color: cfg.color }}>
-                    <StatusIcon size={12} /> {cfg.label}
+                    <StatusIcon size={12} /> {t(`member.tx_status.${statusKey}`)}
                   </span>
                 </Link>
               );

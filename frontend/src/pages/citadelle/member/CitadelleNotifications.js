@@ -4,6 +4,7 @@
  */
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
@@ -13,6 +14,7 @@ import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 const C = CITADELLE_COLORS;
 
 export default function CitadelleNotifications() {
+  const { t } = useTranslation();
   const { isAuthenticated, loading: authLoading } = useCitadelleAuth();
   const navigate = useNavigate();
 
@@ -34,11 +36,11 @@ export default function CitadelleNotifications() {
             style={{ color: C.textMuted }}
           >
             <ArrowLeft size={16} />
-            Retour au tableau de bord
+            {t("member.notif_back")}
           </Link>
 
           <h1 className="text-2xl font-bold mb-6" style={{ fontFamily: "'Montserrat', sans-serif", color: C.blue }}>
-            À traiter
+            {t("member.notif_title")}
           </h1>
 
           <MemberActivityPanel hideTitle />

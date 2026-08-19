@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, Send, CheckCircle, XCircle, CreditCard, Shield, Lock,
@@ -17,19 +18,20 @@ import { AttachmentButton, AttachmentPreview, MessageAttachments } from "@/compo
 import { ReportConversationButton } from "@/components/citadelle/ReportConversationButton";
 
 const STATUS_CONFIG = {
-  offer_sent:            { label: "Offre envoyée",     color: "#F59E0B" },
-  offer_accepted:        { label: "Offre acceptée",    color: "#22C55E" },
-  offer_refused:         { label: "Offre refusée",     color: "#DC2626" },
-  offer_countered:       { label: "Contre-offre",      color: "#3B82F6" },
-  payment_done:          { label: "Paiement effectué", color: "#8B5CF6" },
-  credentials_submitted: { label: "Accès transmis",    color: "#F59E0B" },
-  admin_verified:        { label: "Accès vérifiés",    color: "#22C55E" },
-  completed:             { label: "Vente finalisée",   color: "#22C55E" },
-  disputed:              { label: "Litige en cours",   color: "#DC2626" },
-  cancelled:             { label: "Annulée",           color: "#6B7280" },
+  offer_sent:            { labelKey: "transaction.status_offer_sent",            color: "#F59E0B" },
+  offer_accepted:        { labelKey: "transaction.status_offer_accepted",        color: "#22C55E" },
+  offer_refused:         { labelKey: "transaction.status_offer_refused",         color: "#DC2626" },
+  offer_countered:       { labelKey: "transaction.status_offer_countered",       color: "#3B82F6" },
+  payment_done:          { labelKey: "transaction.status_payment_done",          color: "#8B5CF6" },
+  credentials_submitted: { labelKey: "transaction.status_credentials_submitted", color: "#F59E0B" },
+  admin_verified:        { labelKey: "transaction.status_admin_verified",        color: "#22C55E" },
+  completed:             { labelKey: "transaction.status_completed",             color: "#22C55E" },
+  disputed:              { labelKey: "transaction.status_disputed",              color: "#DC2626" },
+  cancelled:             { labelKey: "transaction.status_cancelled",             color: "#6B7280" },
 };
 
 export default function CitadelleTransactionDetail() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const { user } = useCitadelleAuth();
@@ -202,7 +204,7 @@ export default function CitadelleTransactionDetail() {
       }
       await fetchTransaction();
     } catch (err) {
-      alert(err.response?.data?.detail || "Erreur");
+      alert(err.response?.data?.detail || t("transaction.err_generic"));
     } finally { setActionLoading(false); }
   };
 
@@ -218,10 +220,10 @@ export default function CitadelleTransactionDetail() {
     <CitadelleLayout>
       <div className="max-w-xl mx-auto px-4 py-24 text-center">
         <p className="text-5xl mb-4">🏰</p>
-        <h1 className="text-xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>Transaction introuvable</h1>
+        <h1 className="text-xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>{t("transaction.not_found")}</h1>
         <Link to="/citadelle/espace-membre/transactions" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm"
           style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-          <ArrowLeft size={16} /> Retour
+          <ArrowLeft size={16} /> {t("transaction.back")}
         </Link>
       </div>
     </CitadelleLayout>
@@ -252,17 +254,17 @@ export default function CitadelleTransactionDetail() {
               {tx.listing_title}
             </h1>
             <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-              {isBuyer ? `Vendeur : ${tx.seller_email}` : `Acheteur : ${tx.buyer_email}`}
+              {isBuyer ? `${t("transaction.seller_label")} : ${tx.seller_email}` : `${t("transaction.buyer_label")} : ${tx.buyer_email}`}
             </p>
           </div>
           <span className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: `${statusCfg.color}15`, color: statusCfg.color }}>
-            {statusCfg.label}
+            {t(statusCfg.labelKey)}
           </span>
         </div>
 
         {/* Résumé montant */}
         <div className="p-4 rounded-xl mb-6 flex items-center justify-between" style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
-          <span className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>Montant convenu</span>
+          <span className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>{t("transaction.agreed_amount")}</span>
           <span className="text-xl font-black" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
             {finalAmount?.toLocaleString("fr-FR")} €
           </span>
@@ -276,10 +278,9 @@ export default function CitadelleTransactionDetail() {
             <div className="p-4 rounded-xl flex items-start gap-3" style={{ background: "rgba(15,39,71,0.06)", border: `1px solid ${CITADELLE_COLORS.blue}30` }}>
               <Shield size={16} style={{ color: CITADELLE_COLORS.blue, flexShrink: 0, marginTop: 2 }} />
               <div>
-                <p className="text-sm font-bold" style={{ color: CITADELLE_COLORS.blue }}>Fonds bloqués — La Garde veille</p>
+                <p className="text-sm font-bold" style={{ color: CITADELLE_COLORS.blue }}>{t("transaction.escrow_title")}</p>
                 <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  Vos fonds ({finalAmount?.toLocaleString("fr-FR")} €) sont sécurisés en séquestre.
-                  Ils seront libérés uniquement après validation des accès par l'administrateur.
+                  {t("transaction.escrow_desc", { amount: finalAmount?.toLocaleString("fr-FR") })}
                 </p>
               </div>
             </div>
@@ -290,10 +291,10 @@ export default function CitadelleTransactionDetail() {
             <div className="p-4 rounded-xl flex items-start gap-3" style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)" }}>
               <Scale size={16} style={{ color: "#DC2626", flexShrink: 0, marginTop: 2 }} />
               <div>
-                <p className="text-sm font-bold" style={{ color: "#DC2626" }}>Litige en cours — La Garde examine votre dossier</p>
+                <p className="text-sm font-bold" style={{ color: "#DC2626" }}>{t("transaction.dispute_banner_title")}</p>
                 <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  {tx.dispute_reason && <>Motif : {tx.dispute_reason}<br /></>}
-                  L'administrateur et le vendeur examinent votre demande. Vous serez notifié de l'issue.
+                  {tx.dispute_reason && <>{t("transaction.dispute_reason_label")} : {tx.dispute_reason}<br /></>}
+                  {t("transaction.dispute_banner_desc")}
                 </p>
               </div>
             </div>
@@ -306,7 +307,7 @@ export default function CitadelleTransactionDetail() {
               className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
               style={{ color: "#DC2626", border: "1px solid rgba(220,38,38,0.2)", background: "rgba(220,38,38,0.03)" }}
               data-testid="btn-open-dispute">
-              <AlertTriangle size={13} /> Signaler un problème / Ouvrir un litige
+              <AlertTriangle size={13} /> {t("transaction.open_dispute_btn")}
             </button>
           )}
 
@@ -317,30 +318,30 @@ export default function CitadelleTransactionDetail() {
               className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
               style={{ color: CITADELLE_COLORS.textMuted, border: `1px solid ${CITADELLE_COLORS.border}`, background: CITADELLE_COLORS.bg }}
               data-testid="btn-cancel-purchase">
-              <Ban size={13} /> Annuler l'achat
+              <Ban size={13} /> {t("transaction.cancel_purchase_btn")}
             </button>
           )}
           {/* Vendeur : accepter/refuser/contre-offre */}
           {isSeller && tx.status === "offer_sent" && (
             <div className="p-4 rounded-xl space-y-3" style={{ background: "rgba(201,164,92,0.06)", border: `1px solid rgba(201,164,92,0.2)` }}>
               <p className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>
-                Offre reçue : {tx.offer_amount?.toLocaleString("fr-FR")} €
+                {t("transaction.offer_received", { amount: tx.offer_amount?.toLocaleString("fr-FR") })}
               </p>
               <div className="flex gap-2 flex-wrap">
                 <button onClick={() => doAction("accept")} disabled={actionLoading}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-60"
                   style={{ background: "#22C55E", color: "white" }} data-testid="btn-accept">
-                  <CheckCircle size={14} /> Accepter
+                  <CheckCircle size={14} /> {t("transaction.accept")}
                 </button>
                 <button onClick={() => setCounterModal(true)} disabled={actionLoading}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-60"
                   style={{ background: CITADELLE_COLORS.blue, color: "white" }} data-testid="btn-counter">
-                  <ArrowRight size={14} /> Contre-offre
+                  <ArrowRight size={14} /> {t("transaction.counter")}
                 </button>
                 <button onClick={() => doAction("refuse")} disabled={actionLoading}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-60"
                   style={{ background: "#DC2626", color: "white" }} data-testid="btn-refuse">
-                  <XCircle size={14} /> Refuser
+                  <XCircle size={14} /> {t("transaction.refuse")}
                 </button>
               </div>
             </div>
@@ -350,19 +351,19 @@ export default function CitadelleTransactionDetail() {
           {isBuyer && tx.status === "offer_countered" && (
             <div className="p-4 rounded-xl space-y-3" style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.2)" }}>
               <p className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>
-                Contre-offre du vendeur : {tx.counter_amount?.toLocaleString("fr-FR")} €
+                {t("transaction.counter_from_seller", { amount: tx.counter_amount?.toLocaleString("fr-FR") })}
               </p>
               <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>{tx.counter_message}</p>
               <div className="flex gap-2 flex-wrap">
                 <button onClick={() => doAction("accept-counter")} disabled={actionLoading}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-60"
                   style={{ background: "#22C55E", color: "white" }} data-testid="btn-accept-counter">
-                  <CheckCircle size={14} /> Accepter la contre-offre
+                  <CheckCircle size={14} /> {t("transaction.accept_counter")}
                 </button>
                 <button onClick={() => setCounterModal(true)} disabled={actionLoading}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-60"
                   style={{ background: CITADELLE_COLORS.blue, color: "white" }} data-testid="btn-buyer-counter">
-                  <ArrowRight size={14} /> Faire une nouvelle proposition
+                  <ArrowRight size={14} /> {t("transaction.new_proposal")}
                 </button>
               </div>
             </div>
@@ -372,15 +373,15 @@ export default function CitadelleTransactionDetail() {
           {isBuyer && tx.status === "offer_accepted" && (
             <div className="p-4 rounded-xl space-y-3" style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}>
               <p className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>
-                Offre acceptée — Procédez au paiement
+                {t("transaction.offer_accepted_pay_title")}
               </p>
               <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Les fonds seront placés en séquestre jusqu'à la finalisation de la vente.
+                {t("transaction.escrow_until_final")}
               </p>
               <button onClick={() => doAction("pay")} disabled={actionLoading}
                 className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }} data-testid="btn-pay">
-                <CreditCard size={15} /> Payer {finalAmount?.toLocaleString("fr-FR")} €
+                <CreditCard size={15} /> {t("transaction.pay_amount", { amount: finalAmount?.toLocaleString("fr-FR") })}
               </button>
             </div>
           )}
@@ -392,7 +393,7 @@ export default function CitadelleTransactionDetail() {
               className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
               style={{ color: CITADELLE_COLORS.textMuted, border: `1px solid ${CITADELLE_COLORS.border}`, background: CITADELLE_COLORS.bg }}
               data-testid="btn-withdraw-offer">
-              <Ban size={13} /> Abandonner ma proposition
+              <Ban size={13} /> {t("transaction.withdraw_offer_btn")}
             </button>
           )}
 
@@ -400,32 +401,30 @@ export default function CitadelleTransactionDetail() {
           {isSeller && tx.second_chance_requested && !tx.second_chance_done && (
             <div className="p-4 rounded-xl space-y-3" style={{ background: "rgba(201,164,92,0.08)", border: `1px solid ${CITADELLE_COLORS.gold}` }} data-testid="seller-second-chance-banner">
               <p className="text-sm font-bold flex items-center gap-2" style={{ color: CITADELLE_COLORS.blue }}>
-                <ArrowRight size={16} style={{ color: CITADELLE_COLORS.gold }} /> Proposer une dernière chance
+                <ArrowRight size={16} style={{ color: CITADELLE_COLORS.gold }} /> {t("transaction.second_chance_title")}
               </p>
               <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                L'enchère gagnante n'a pas abouti. La Garde vous propose d'offrir l'actif à l'enchérisseur suivant
-                {tx.second_chance_next_bidder?.amount ? ` (${tx.second_chance_next_bidder.amount.toLocaleString("fr-FR")} €)` : ""}.
-                Rien n'est envoyé tant que vous n'avez pas confirmé.
+                {t("transaction.second_chance_desc", { amount: tx.second_chance_next_bidder?.amount ? ` (${tx.second_chance_next_bidder.amount.toLocaleString("fr-FR")} €)` : "" })}
               </p>
               <div className="flex gap-2">
                 <button onClick={() => doAction("confirm-second-chance")} disabled={actionLoading}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
                   style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                   data-testid="btn-confirm-second-chance">
-                  <CheckCircle size={14} /> Confirmer
+                  <CheckCircle size={14} /> {t("transaction.confirm")}
                 </button>
                 <button onClick={() => doAction("decline-second-chance")} disabled={actionLoading}
                   className="px-4 py-2.5 rounded-xl text-sm font-medium disabled:opacity-60"
                   style={{ color: CITADELLE_COLORS.textMuted, border: `1px solid ${CITADELLE_COLORS.border}` }}
                   data-testid="btn-decline-second-chance">
-                  Refuser
+                  {t("transaction.refuse")}
                 </button>
               </div>
             </div>
           )}
           {isSeller && tx.second_chance_done && (
             <div className="p-3 rounded-xl text-xs" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", color: "#16A34A" }} data-testid="seller-second-chance-done">
-              Seconde chance proposée à l'enchérisseur suivant. Une nouvelle transaction a été créée.
+              {t("transaction.second_chance_done")}
             </div>
           )}
 
@@ -441,15 +440,15 @@ export default function CitadelleTransactionDetail() {
           {isSeller && tx.status === "payment_done" && (
             <div className="p-4 rounded-xl space-y-3" style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)" }}>
               <p className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>
-                Paiement reçu — Transmettez les accès
+                {t("transaction.payment_received_title")}
               </p>
               <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Les accès seront envoyés à l'administrateur pour vérification. Ils ne seront transmis à l'acheteur qu'après validation.
+                {t("transaction.credentials_submit_desc")}
               </p>
               <button onClick={() => setCredentialsModal(true)} disabled={actionLoading}
                 className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }} data-testid="btn-credentials">
-                <Shield size={15} /> Transmettre les accès
+                <Shield size={15} /> {t("transaction.transmit_access")}
               </button>
             </div>
           )}
@@ -459,7 +458,7 @@ export default function CitadelleTransactionDetail() {
             <div className="p-4 rounded-xl flex items-start gap-3" style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)" }}>
               <Clock size={16} style={{ color: "#F59E0B", flexShrink: 0, marginTop: 2 }} />
               <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Les accès ont été transmis. L'administrateur est en cours de vérification.
+                {t("transaction.credentials_submitted_wait")}
               </p>
             </div>
           )}
@@ -468,19 +467,19 @@ export default function CitadelleTransactionDetail() {
             <div className="p-4 rounded-xl flex items-start gap-3" style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
               <CheckCircle size={16} style={{ color: "#22C55E", flexShrink: 0, marginTop: 2 }} />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold" style={{ color: "#22C55E" }}>Vente finalisée</p>
+                <p className="text-sm font-semibold" style={{ color: "#22C55E" }}>{t("transaction.sale_completed")}</p>
                 {isBuyer && (
                   <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
                     {tx.credentials_transmitted
-                      ? "Les accès vous ont été transmis de manière sécurisée."
-                      : "Les fonds sont en séquestre. L'administrateur va vous transmettre les accès sous peu."}
+                      ? t("transaction.access_transmitted_secure")
+                      : t("transaction.funds_escrow_soon")}
                   </p>
                 )}
                 {isSeller && (
                   <div className="mt-2 space-y-1.5">
                     {tx.net_seller_amount != null && (
                       <div className="flex items-center justify-between text-xs">
-                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Montant net reçu</span>
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>{t("transaction.net_received")}</span>
                         <span className="font-bold text-sm" style={{ color: "#22C55E" }}>
                           {tx.net_seller_amount?.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
                         </span>
@@ -488,20 +487,20 @@ export default function CitadelleTransactionDetail() {
                     )}
                     {tx.commission_amount != null && (
                       <div className="flex items-center justify-between text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                        <span>Commission plateforme</span>
+                        <span>{t("transaction.platform_commission")}</span>
                         <span>{tx.commission_amount?.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €</span>
                       </div>
                     )}
                     {tx.stripe_transfer_id ? (
                       <div className="flex items-center gap-1.5 text-xs" style={{ color: "#22C55E" }}>
                         <CheckCircle size={11} />
-                        <span>Virement Stripe automatique effectué</span>
+                        <span>{t("transaction.stripe_transfer_done")}</span>
                         <span className="font-mono opacity-50 text-xs">{tx.stripe_transfer_id}</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 text-xs" style={{ color: "#d97706" }}>
                         <AlertTriangle size={11} />
-                        <span>Virement manuel en cours de traitement par l'équipe</span>
+                        <span>{t("transaction.manual_transfer_processing")}</span>
                       </div>
                     )}
                   </div>
@@ -515,13 +514,13 @@ export default function CitadelleTransactionDetail() {
             <div className="p-4 rounded-xl" style={{ background: CITADELLE_COLORS.night, border: "1px solid rgba(201,164,92,0.3)" }}>
               <div className="flex items-center gap-2 mb-3">
                 <Lock size={15} style={{ color: CITADELLE_COLORS.gold }} />
-                <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.gold }}>Accès sécurisés de votre actif numérique</span>
+                <span className="text-sm font-bold" style={{ color: CITADELLE_COLORS.gold }}>{t("transaction.secure_access_title")}</span>
               </div>
               <pre className="text-sm whitespace-pre-wrap p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", color: CITADELLE_COLORS.white }}>
                 {tx.credentials.data}
               </pre>
               <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.4)" }}>
-                Transmis par l'administrateur — Conservez ces informations en lieu sûr.
+                {t("transaction.transmitted_by_admin")}
               </p>
             </div>
           )}
@@ -531,7 +530,7 @@ export default function CitadelleTransactionDetail() {
             <div className="p-4 rounded-xl flex items-start gap-3" style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)" }}>
               <Clock size={16} style={{ color: "#F59E0B", flexShrink: 0, marginTop: 2 }} />
               <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
-                L'administrateur prépare la transmission sécurisée de vos accès.
+                {t("transaction.admin_preparing_transmission")}
               </p>
             </div>
           )}
@@ -541,8 +540,8 @@ export default function CitadelleTransactionDetail() {
         <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${CITADELLE_COLORS.border}` }}>
           <div className="px-4 py-3 flex items-center gap-2" style={{ background: CITADELLE_COLORS.bg, borderBottom: `1px solid ${CITADELLE_COLORS.border}` }}>
             <MessageSquare size={15} style={{ color: CITADELLE_COLORS.gold }} />
-            <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>Conversation</span>
-            <span className="text-xs ml-auto" style={{ color: CITADELLE_COLORS.textMuted }}>{tx.messages?.length || 0} messages</span>
+            <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{t("transaction.conversation")}</span>
+            <span className="text-xs ml-auto" style={{ color: CITADELLE_COLORS.textMuted }}>{tx.messages?.length || 0} {t("transaction.messages_suffix")}</span>
             <ReportConversationButton conversationType="transaction" conversationId={tx.id} compact />
           </div>
           <div className="p-4 space-y-3 max-h-96 overflow-y-auto" style={{ background: "white" }}>
@@ -555,7 +554,7 @@ export default function CitadelleTransactionDetail() {
                 ) : (
                   <div className="max-w-xs">
                     <p className="text-xs mb-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      {msg.sender_email === user?.email ? "Vous" : msg.sender_email}
+                      {msg.sender_email === user?.email ? t("transaction.you") : msg.sender_email}
                     </p>
                     <div className="px-3 py-2 rounded-xl text-sm" style={{
                       background: msg.sender_id === user?.id ? CITADELLE_COLORS.blue : CITADELLE_COLORS.bg,
@@ -565,7 +564,7 @@ export default function CitadelleTransactionDetail() {
                       <MessageAttachments attachments={msg.attachments} mine={msg.sender_id === user?.id} />
                     </div>
                     <p className="text-xs mt-0.5 text-right" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      {new Date(msg.sent_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(msg.sent_at).toLocaleTimeString(i18n.language === "en" ? "en-GB" : "fr-FR", { hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
                 )}
@@ -584,7 +583,7 @@ export default function CitadelleTransactionDetail() {
                     style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#92400E" }}
                     data-testid="sanitized-warning-tx"
                   >
-                    Certaines informations de contact ont été masquées afin de maintenir les échanges sur La Citadelle.
+                    {t("transaction.sanitized_warning")}
                   </div>
                 </div>
               )}
@@ -595,7 +594,7 @@ export default function CitadelleTransactionDetail() {
                   value={message}
                   onChange={e => setMessage(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && sendMessage()}
-                  placeholder="Votre message..."
+                  placeholder={t("transaction.message_placeholder")}
                   className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
                   style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
                   data-testid="message-input"
@@ -616,15 +615,15 @@ export default function CitadelleTransactionDetail() {
           <div className="rounded-2xl overflow-hidden mt-4" style={{ border: "1px solid rgba(220,38,38,0.3)" }}>
             <div className="px-4 py-3 flex items-center gap-2" style={{ background: "rgba(220,38,38,0.05)", borderBottom: "1px solid rgba(220,38,38,0.2)" }}>
               <Scale size={15} style={{ color: "#DC2626" }} />
-              <span className="text-sm font-bold" style={{ color: "#DC2626" }}>Chat Litige — Confidentiel</span>
+              <span className="text-sm font-bold" style={{ color: "#DC2626" }}>{t("transaction.dispute_chat_title")}</span>
               <span className="text-xs ml-auto px-2 py-0.5 rounded-full font-medium" style={{ background: "rgba(220,38,38,0.1)", color: "#DC2626" }}>
-                Vendeur · La Garde
+                {t("transaction.dispute_chat_badge")}
               </span>
             </div>
             <div className="p-4 space-y-3 max-h-80 overflow-y-auto" style={{ background: "white" }}>
               {disputeMessages.length === 0 ? (
                 <p className="text-xs text-center py-4" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  Aucun message pour l'instant. Exposez votre situation à l'administrateur.
+                  {t("transaction.dispute_no_messages")}
                 </p>
               ) : disputeMessages.map(msg => (
                 <div key={msg.id} className={`flex ${msg.sender_id === (isAdmin ? "admin" : user?.id) ? "justify-end" : "justify-start"}`}>
@@ -636,7 +635,7 @@ export default function CitadelleTransactionDetail() {
                         </span>
                       )}
                       <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                        {msg.sender_role === "admin" ? "La Garde" : "Vous"}
+                        {msg.sender_role === "admin" ? "La Garde" : t("transaction.you")}
                       </p>
                     </div>
                     <div className="px-3 py-2 rounded-xl text-sm" style={{
@@ -647,7 +646,7 @@ export default function CitadelleTransactionDetail() {
                       <MessageAttachments attachments={msg.attachments} mine={msg.sender_role !== "admin" && msg.sender_id === user?.id} />
                     </div>
                     <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      {new Date(msg.sent_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(msg.sent_at).toLocaleTimeString(i18n.language === "en" ? "en-GB" : "fr-FR", { hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
                 </div>
@@ -662,7 +661,7 @@ export default function CitadelleTransactionDetail() {
                     style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#92400E" }}
                     data-testid="sanitized-warning-dispute"
                   >
-                    Certaines informations de contact ont été masquées afin de maintenir les échanges sur La Citadelle.
+                    {t("transaction.sanitized_warning")}
                   </div>
                 </div>
               )}
@@ -673,7 +672,7 @@ export default function CitadelleTransactionDetail() {
                   value={disputeMessage}
                   onChange={e => setDisputeMessage(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && sendDisputeMessage()}
-                  placeholder="Votre message au vendeur / à La Garde..."
+                  placeholder={t("transaction.dispute_message_placeholder")}
                   className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
                   style={{ background: "white", border: "1px solid rgba(220,38,38,0.2)", color: CITADELLE_COLORS.blue }}
                   data-testid="dispute-message-input"
@@ -695,7 +694,7 @@ export default function CitadelleTransactionDetail() {
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-80"
                   style={{ background: "rgba(220,38,38,0.08)", color: "#DC2626", border: "1px solid rgba(220,38,38,0.2)" }}
                   data-testid="btn-seller-cancel">
-                  <Ban size={14} /> Annuler la vente
+                  <Ban size={14} /> {t("transaction.cancel_sale_btn")}
                 </button>
               </div>
             )}
@@ -713,8 +712,8 @@ export default function CitadelleTransactionDetail() {
                   <Scale size={18} style={{ color: "#DC2626" }} />
                 </div>
                 <div>
-                  <p className="font-bold text-sm" style={{ color: "white" }}>Panneau de facturation</p>
-                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Annulation vendeur — Litige en cours</p>
+                  <p className="font-bold text-sm" style={{ color: "white" }}>{t("transaction.billing_panel")}</p>
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{t("transaction.seller_cancel_subtitle")}</p>
                 </div>
               </div>
 
@@ -722,24 +721,24 @@ export default function CitadelleTransactionDetail() {
               {sellerCancelInfoLoading ? (
                 <div className="px-6 py-10 flex flex-col items-center gap-3">
                   <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: CITADELLE_COLORS.border, borderTopColor: CITADELLE_COLORS.gold }} />
-                  <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>Calcul des frais en cours...</p>
+                  <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>{t("transaction.calculating_fees")}</p>
                 </div>
               ) : (
                 <div className="px-6 py-5 space-y-4">
                   {/* Récapitulatif transaction */}
                   <div className="p-4 rounded-xl" style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
-                    <p className="text-xs font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>Récapitulatif de la transaction</p>
+                    <p className="text-xs font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>{t("transaction.tx_summary")}</p>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Annonce</span>
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>{t("transaction.listing")}</span>
                         <span className="font-medium truncate ml-4 text-right" style={{ color: CITADELLE_COLORS.blue, maxWidth: "180px" }}>{tx.listing_title}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Montant en séquestre</span>
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>{t("transaction.escrow_amount")}</span>
                         <span className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{finalAmount?.toLocaleString("fr-FR")} €</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Acheteur</span>
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>{t("transaction.buyer_label")}</span>
                         <span style={{ color: CITADELLE_COLORS.textMuted }}>{tx.buyer_email}</span>
                       </div>
                     </div>
@@ -747,16 +746,16 @@ export default function CitadelleTransactionDetail() {
 
                   {/* Facturation des frais de service */}
                   <div className="p-4 rounded-xl" style={{ background: "rgba(220,38,38,0.04)", border: "1px solid rgba(220,38,38,0.2)" }}>
-                    <p className="text-xs font-bold mb-3" style={{ color: "#DC2626" }}>Frais de service d'annulation</p>
+                    <p className="text-xs font-bold mb-3" style={{ color: "#DC2626" }}>{t("transaction.cancel_service_fees")}</p>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Frais de service (à votre charge)</span>
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>{t("transaction.service_fee_your_charge")}</span>
                         <span className="font-black" style={{ color: "#DC2626" }}>
                           {(sellerCancelInfo?.cancellation_fee ?? 49).toLocaleString("fr-FR")} €
                         </span>
                       </div>
                       <div className="flex justify-between text-sm pt-1.5" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}` }}>
-                        <span style={{ color: CITADELLE_COLORS.textMuted }}>Remboursement acheteur</span>
+                        <span style={{ color: CITADELLE_COLORS.textMuted }}>{t("transaction.buyer_refund")}</span>
                         <span className="font-bold" style={{ color: "#22C55E" }}>
                           {(sellerCancelInfo?.refund_amount ?? (finalAmount - 49))?.toLocaleString("fr-FR")} €
                         </span>
@@ -768,7 +767,7 @@ export default function CitadelleTransactionDetail() {
                   <div className="p-3 rounded-xl flex items-start gap-2.5" style={{ background: "rgba(220,38,38,0.05)", border: "1px solid rgba(220,38,38,0.15)" }}>
                     <AlertTriangle size={14} style={{ color: "#DC2626", flexShrink: 0, marginTop: 1 }} />
                     <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      Cette action est <strong>définitive et irréversible</strong>. Les frais de service seront collectés et l'acheteur sera remboursé du reste. L'annonce sera remise en vente.
+                      {t("transaction.seller_cancel_warning_1")} <strong>{t("transaction.seller_cancel_warning_strong")}</strong>{t("transaction.seller_cancel_warning_2")}
                     </p>
                   </div>
                 </div>
@@ -780,7 +779,7 @@ export default function CitadelleTransactionDetail() {
                   onClick={() => setSellerCancelModal(false)}
                   className="flex-1 py-3 rounded-xl text-sm font-medium"
                   style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-                  Ne pas annuler
+                  {t("transaction.dont_cancel")}
                 </button>
                 <button
                   onClick={async () => {
@@ -791,7 +790,7 @@ export default function CitadelleTransactionDetail() {
                   className="flex-1 py-3 rounded-xl text-sm font-bold disabled:opacity-60 transition-all"
                   style={{ background: "#DC2626", color: "white" }}
                   data-testid="seller-cancel-confirm-btn">
-                  Confirmer et payer les frais
+                  {t("transaction.confirm_pay_fees")}
                 </button>
               </div>
             </div>
@@ -804,16 +803,16 @@ export default function CitadelleTransactionDetail() {
             <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle size={18} style={{ color: "#DC2626" }} />
-                <h3 className="font-bold text-lg" style={{ color: CITADELLE_COLORS.blue }}>Ouvrir un litige</h3>
+                <h3 className="font-bold text-lg" style={{ color: CITADELLE_COLORS.blue }}>{t("transaction.open_dispute_title")}</h3>
               </div>
               <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Décrivez précisément le problème rencontré. L'administrateur (La Garde) examinera votre dossier et contactera le vendeur.
+                {t("transaction.dispute_modal_desc")}
               </p>
               <textarea
                 value={disputeReason}
                 onChange={e => setDisputeReason(e.target.value)}
                 rows={5}
-                placeholder="Ex : Le vendeur n'a pas transmis les accès dans les délais convenus..."
+                placeholder={t("transaction.dispute_reason_placeholder")}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
                 style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
                 data-testid="dispute-reason-input"
@@ -823,7 +822,7 @@ export default function CitadelleTransactionDetail() {
                 <button onClick={() => { setDisputeModal(false); setDisputeReason(""); }}
                   className="flex-1 py-2.5 rounded-xl text-sm font-medium"
                   style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-                  Annuler
+                  {t("transaction.cancel")}
                 </button>
                 <button
                   onClick={async () => {
@@ -835,7 +834,7 @@ export default function CitadelleTransactionDetail() {
                   className="flex-1 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
                   style={{ background: "#DC2626", color: "white" }}
                   data-testid="dispute-submit-btn">
-                  Ouvrir le litige
+                  {t("transaction.open_dispute_submit")}
                 </button>
               </div>
             </div>
@@ -848,7 +847,7 @@ export default function CitadelleTransactionDetail() {
             <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
               <div className="flex items-center gap-2 mb-4">
                 <Ban size={18} style={{ color: CITADELLE_COLORS.blue }} />
-                <h3 className="font-bold text-lg" style={{ color: CITADELLE_COLORS.blue }}>Annuler l'achat</h3>
+                <h3 className="font-bold text-lg" style={{ color: CITADELLE_COLORS.blue }}>{t("transaction.cancel_purchase_btn")}</h3>
               </div>
               {cancelInfoLoading ? (
                 <div className="py-8 text-center">
@@ -860,26 +859,26 @@ export default function CitadelleTransactionDetail() {
                     <>
                       <div className="p-4 rounded-xl mb-4" style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}` }}>
                         <div className="flex justify-between text-sm mb-2">
-                          <span style={{ color: CITADELLE_COLORS.textMuted }}>Montant payé</span>
+                          <span style={{ color: CITADELLE_COLORS.textMuted }}>{t("transaction.amount_paid")}</span>
                           <span className="font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{cancelInfo.payment_amount?.toLocaleString("fr-FR")} €</span>
                         </div>
                         <div className="flex justify-between text-sm mb-2">
-                          <span style={{ color: "#DC2626" }}>Frais d'annulation</span>
+                          <span style={{ color: "#DC2626" }}>{t("transaction.cancellation_fee")}</span>
                           <span className="font-semibold" style={{ color: "#DC2626" }}>— {cancelInfo.cancellation_fee?.toLocaleString("fr-FR")} €</span>
                         </div>
                         <div className="flex justify-between text-sm pt-2" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}` }}>
-                          <span className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>Remboursement estimé</span>
+                          <span className="font-bold" style={{ color: CITADELLE_COLORS.blue }}>{t("transaction.estimated_refund")}</span>
                           <span className="font-black" style={{ color: "#22C55E" }}>{cancelInfo.refund_amount?.toLocaleString("fr-FR")} €</span>
                         </div>
                       </div>
                       <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
-                        Les frais d'annulation de {cancelInfo.cancellation_fee?.toLocaleString("fr-FR")} € sont prélevés conformément aux conditions générales. Le remboursement est traité sous 5 à 10 jours ouvrés.
+                        {t("transaction.cancel_fee_note", { fee: cancelInfo.cancellation_fee?.toLocaleString("fr-FR") })}
                       </p>
                       <div className="flex gap-3">
                         <button onClick={() => setCancelModal(false)}
                           className="flex-1 py-2.5 rounded-xl text-sm font-medium"
                           style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-                          Ne pas annuler
+                          {t("transaction.dont_cancel")}
                         </button>
                         <button
                           onClick={async () => {
@@ -890,7 +889,7 @@ export default function CitadelleTransactionDetail() {
                           className="flex-1 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
                           style={{ background: "#DC2626", color: "white" }}
                           data-testid="cancel-confirm-btn">
-                          Confirmer l'annulation
+                          {t("transaction.confirm_cancellation")}
                         </button>
                       </div>
                     </>
@@ -899,23 +898,22 @@ export default function CitadelleTransactionDetail() {
                       <div className="p-4 rounded-xl mb-4 flex items-start gap-3" style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)" }}>
                         <Clock size={16} style={{ color: "#F59E0B", flexShrink: 0, marginTop: 2 }} />
                         <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
-                          L'annulation sera disponible dans <strong>{cancelInfo.jours_restants} jour(s)</strong>.
-                          Vous pourrez annuler 7 jours après le paiement.
+                          {t("transaction.cancel_available_in", { days: cancelInfo.jours_restants })}
                         </p>
                       </div>
                       <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
-                        Si vous avez un problème urgent, vous pouvez ouvrir un litige pour alerter La Garde.
+                        {t("transaction.urgent_open_dispute")}
                       </p>
                       <button onClick={() => setCancelModal(false)}
                         className="w-full py-2.5 rounded-xl text-sm font-medium"
                         style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-                        Fermer
+                        {t("transaction.close")}
                       </button>
                     </>
                   )}
                 </>
               ) : (
-                <p className="text-sm text-center py-4" style={{ color: CITADELLE_COLORS.textMuted }}>Impossible de charger les informations.</p>
+                <p className="text-sm text-center py-4" style={{ color: CITADELLE_COLORS.textMuted }}>{t("transaction.load_error")}</p>
               )}
             </div>
           </div>
@@ -926,24 +924,24 @@ export default function CitadelleTransactionDetail() {
             <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
               <div className="flex items-center gap-2 mb-4">
                 <Ban size={18} style={{ color: CITADELLE_COLORS.blue }} />
-                <h3 className="font-bold text-lg" style={{ color: CITADELLE_COLORS.blue }}>Abandonner ma proposition</h3>
+                <h3 className="font-bold text-lg" style={{ color: CITADELLE_COLORS.blue }}>{t("transaction.withdraw_title")}</h3>
               </div>
               <div className="p-4 rounded-xl mb-4 flex items-start gap-3" style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
                 <Info size={16} style={{ color: "#22C55E", flexShrink: 0, marginTop: 2 }} />
                 <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  Aucun paiement n'a encore été effectué : votre proposition sera retirée <strong>sans aucun frais</strong>.
-                  {tx.status === "offer_accepted" && " Même si le vendeur a accepté, vous n'êtes pas engagé tant que vous n'avez pas payé."}
+                  {t("transaction.withdraw_no_payment_1")} <strong>{t("transaction.withdraw_no_payment_strong")}</strong>{t("transaction.withdraw_no_payment_2")}
+                  {tx.status === "offer_accepted" && t("transaction.withdraw_accepted_note")}
                 </p>
               </div>
               <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Cette action est définitive. Vous pourrez soumettre une nouvelle offre plus tard si l'annonce est toujours disponible.
+                {t("transaction.withdraw_final_note")}
               </p>
               <div className="flex gap-3">
                 <button onClick={() => setWithdrawModal(false)}
                   className="flex-1 py-2.5 rounded-xl text-sm font-medium"
                   style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
                   data-testid="withdraw-cancel-btn">
-                  Ne pas retirer
+                  {t("transaction.dont_withdraw")}
                 </button>
                 <button
                   onClick={async () => {
@@ -954,7 +952,7 @@ export default function CitadelleTransactionDetail() {
                   className="flex-1 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
                   style={{ background: "#DC2626", color: "white" }}
                   data-testid="withdraw-confirm-btn">
-                  Confirmer le retrait
+                  {t("transaction.confirm_withdraw")}
                 </button>
               </div>
             </div>
@@ -964,20 +962,20 @@ export default function CitadelleTransactionDetail() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.6)" }}>
             <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
               <h3 className="font-bold text-lg mb-4" style={{ color: CITADELLE_COLORS.blue }}>
-                {isBuyer ? "Nouvelle proposition" : "Contre-offre"}
+                {isBuyer ? t("transaction.new_proposal_title") : t("transaction.counter_title")}
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: CITADELLE_COLORS.blue }}>Montant (€)</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: CITADELLE_COLORS.blue }}>{t("transaction.amount_label")}</label>
                   <input type="number" value={counterAmount} onChange={e => setCounterAmount(e.target.value)}
-                    placeholder="Votre prix" min="1" className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                    placeholder={t("transaction.your_price")} min="1" className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                     style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
                     data-testid="counter-amount" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: CITADELLE_COLORS.blue }}>Message</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: CITADELLE_COLORS.blue }}>{t("transaction.message_label")}</label>
                   <textarea value={counterMsg} onChange={e => setCounterMsg(e.target.value)} rows={3}
-                    placeholder={isBuyer ? "Justifiez votre nouvelle proposition..." : "Justifiez votre contre-offre..."}
+                    placeholder={isBuyer ? t("transaction.justify_new_proposal") : t("transaction.justify_counter")}
                     className="w-full px-4 py-2.5 rounded-xl text-sm outline-none resize-none"
                     style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
                     data-testid="counter-message" />
@@ -986,7 +984,7 @@ export default function CitadelleTransactionDetail() {
               <div className="flex gap-3 mt-5">
                 <button onClick={() => setCounterModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-medium"
                   style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-                  Annuler
+                  {t("transaction.cancel")}
                 </button>
                 <button onClick={async () => {
                   await doAction(isBuyer ? "buyer-counter" : "counter", { amount: parseFloat(counterAmount), message: counterMsg });
@@ -995,7 +993,7 @@ export default function CitadelleTransactionDetail() {
                   className="flex-1 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
                   style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                   data-testid="counter-submit">
-                  Envoyer
+                  {t("transaction.send")}
                 </button>
               </div>
             </div>
@@ -1008,20 +1006,20 @@ export default function CitadelleTransactionDetail() {
             <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}>
               <div className="flex items-center gap-2 mb-4">
                 <Shield size={18} style={{ color: CITADELLE_COLORS.gold }} />
-                <h3 className="font-bold text-lg" style={{ color: CITADELLE_COLORS.blue }}>Transmettre les accès</h3>
+                <h3 className="font-bold text-lg" style={{ color: CITADELLE_COLORS.blue }}>{t("transaction.transmit_access")}</h3>
               </div>
               <p className="text-xs mb-4" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Ces informations seront transmises à l'administrateur pour vérification. Elles ne seront envoyées à l'acheteur qu'après validation.
+                {t("transaction.credentials_modal_desc")}
               </p>
               <textarea value={credentialsData} onChange={e => setCredentialsData(e.target.value)} rows={6}
-                placeholder="Identifiants, URL admin, clés API, instructions de transfert..."
+                placeholder={t("transaction.credentials_placeholder")}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
                 style={{ background: CITADELLE_COLORS.bg, border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
                 data-testid="credentials-data" />
               <div className="flex gap-3 mt-5">
                 <button onClick={() => setCredentialsModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-medium"
                   style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-                  Annuler
+                  {t("transaction.cancel")}
                 </button>
                 <button onClick={async () => {
                   await doAction("credentials", { data: credentialsData });
@@ -1030,7 +1028,7 @@ export default function CitadelleTransactionDetail() {
                   className="flex-1 py-2.5 rounded-xl text-sm font-bold disabled:opacity-60"
                   style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                   data-testid="credentials-submit">
-                  Transmettre
+                  {t("transaction.transmit")}
                 </button>
               </div>
             </div>
@@ -1044,10 +1042,13 @@ export default function CitadelleTransactionDetail() {
 
 // ── Bannière KYC vendeur (soft block) ─────────────────────────────────────────
 function KycSellerBanner({ user, onDismiss }) {
+  const { t } = useTranslation();
   const missing = [];
-  if (!user?.phone)         missing.push("numéro de téléphone");
-  if (!user?.date_of_birth) missing.push("date de naissance");
+  if (!user?.phone)         missing.push(t("transaction.kyc_phone"));
+  if (!user?.date_of_birth) missing.push(t("transaction.kyc_dob"));
   if (!missing.length)      return null;
+
+  const verb = missing.length > 1 ? t("transaction.kyc_are_missing") : t("transaction.kyc_is_missing");
 
   return (
     <div
@@ -1058,11 +1059,10 @@ function KycSellerBanner({ user, onDismiss }) {
       <Info size={16} style={{ color: CITADELLE_COLORS.gold, flexShrink: 0, marginTop: 2 }} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold" style={{ color: CITADELLE_COLORS.gold }}>
-          Complétez votre profil pour recevoir vos fonds
+          {t("transaction.kyc_title")}
         </p>
         <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-          Votre {missing.join(" et votre ")} {missing.length > 1 ? "sont manquants" : "est manquant"}.
-          Ces informations sont requises pour vous virer les fonds à la finalisation de la vente.
+          {t("transaction.kyc_desc", { missing: missing.join(t("transaction.kyc_join")), verb })}
         </p>
         <Link
           to="/citadelle/espace-membre/profil"
@@ -1070,7 +1070,7 @@ function KycSellerBanner({ user, onDismiss }) {
           style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
           data-testid="kyc-banner-profile-link"
         >
-          Compléter mon profil
+          {t("transaction.kyc_complete_btn")}
         </Link>
       </div>
       <button
@@ -1078,7 +1078,7 @@ function KycSellerBanner({ user, onDismiss }) {
         className="flex-shrink-0 p-1 rounded-lg opacity-50 hover:opacity-100 transition-opacity"
         style={{ color: CITADELLE_COLORS.textMuted }}
         data-testid="kyc-banner-dismiss"
-        title="Fermer"
+        title={t("transaction.close")}
       >
         <X size={14} />
       </button>

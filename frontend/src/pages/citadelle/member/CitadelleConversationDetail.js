@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Send, MessageSquare, ExternalLink } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
@@ -14,6 +15,7 @@ import { AttachmentButton, AttachmentPreview, MessageAttachments } from "@/compo
 import { ReportConversationButton } from "@/components/citadelle/ReportConversationButton";
 
 export default function CitadelleConversationDetail() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const { user } = useCitadelleAuth();
   const [conv, setConv] = useState(null);
@@ -76,10 +78,10 @@ export default function CitadelleConversationDetail() {
     <CitadelleLayout>
       <div className="max-w-xl mx-auto px-4 py-24 text-center">
         <p className="text-5xl mb-4">🏰</p>
-        <h1 className="text-xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>Conversation introuvable</h1>
+        <h1 className="text-xl font-bold mb-3" style={{ color: CITADELLE_COLORS.blue }}>{t("member.conv_not_found")}</h1>
         <Link to="/citadelle/espace-membre/messages" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm"
           style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-          <ArrowLeft size={16} /> Retour
+          <ArrowLeft size={16} /> {t("member.conv_back")}
         </Link>
       </div>
     </CitadelleLayout>
@@ -102,14 +104,14 @@ export default function CitadelleConversationDetail() {
               {conv.listing_title}
             </h1>
             <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-              {isBuyer ? "Vendeur" : "Acheteur"} : {otherName}
+              {isBuyer ? t("member.role_seller") : t("member.role_buyer")} : {otherName}
             </p>
           </div>
           <ReportConversationButton conversationType="presale" conversationId={conv.id} compact />
           <Link to={`/citadelle/annonces/${conv.listing_slug}`}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
             style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.textMuted }}>
-            <ExternalLink size={12} /> Voir l'annonce
+            <ExternalLink size={12} /> {t("member.conv_view_listing")}
           </Link>
         </div>
 
@@ -117,8 +119,8 @@ export default function CitadelleConversationDetail() {
         <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${CITADELLE_COLORS.border}` }}>
           <div className="px-4 py-3 flex items-center gap-2" style={{ background: CITADELLE_COLORS.bg, borderBottom: `1px solid ${CITADELLE_COLORS.border}` }}>
             <MessageSquare size={15} style={{ color: CITADELLE_COLORS.gold }} />
-            <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>Conversation</span>
-            <span className="text-xs ml-auto" style={{ color: CITADELLE_COLORS.textMuted }}>{conv.messages?.length || 0} messages</span>
+            <span className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{t("member.conv_header")}</span>
+            <span className="text-xs ml-auto" style={{ color: CITADELLE_COLORS.textMuted }}>{t("member.conv_messages_count", { count: conv.messages?.length || 0 })}</span>
           </div>
 
           {/* Bannière conversation bloquée */}
@@ -127,7 +129,7 @@ export default function CitadelleConversationDetail() {
               style={{ background: "rgba(220,38,38,0.05)", borderBottom: `1px solid rgba(220,38,38,0.15)` }}>
               <span style={{ color: "#DC2626", flexShrink: 0, marginTop: 1 }}>⛔</span>
               <p className="text-xs leading-relaxed" style={{ color: "#B91C1C" }}>
-                Cette conversation est fermée — ce site a été vendu. Merci de votre intérêt.
+                {t("member.conv_blocked")}
               </p>
             </div>
           )}
@@ -147,7 +149,7 @@ export default function CitadelleConversationDetail() {
                 <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}>
                   <div className="max-w-xs">
                     <p className="text-xs mb-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      {msg.sender_id === user?.id ? "Vous" : (msg.sender_name || (msg.sender_id === conv.seller_id ? "Vendeur" : "Acheteur"))}
+                      {msg.sender_id === user?.id ? t("member.conv_you") : (msg.sender_name || (msg.sender_id === conv.seller_id ? t("member.role_seller") : t("member.role_buyer")))}
                     </p>
                     <div className="px-3 py-2 rounded-xl text-sm" style={{
                       background: msg.sender_id === user?.id ? CITADELLE_COLORS.blue : CITADELLE_COLORS.bg,
@@ -157,7 +159,7 @@ export default function CitadelleConversationDetail() {
                       <MessageAttachments attachments={msg.attachments} mine={msg.sender_id === user?.id} />
                     </div>
                     <p className="text-xs mt-0.5 text-right" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      {new Date(msg.sent_at).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      {new Date(msg.sent_at).toLocaleString(i18n.language === "en" ? "en-GB" : "fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
                 </div>
@@ -171,12 +173,12 @@ export default function CitadelleConversationDetail() {
             <div className="px-4 py-4 text-center"
               style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}`, background: CITADELLE_COLORS.bg }}>
               <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Les échanges sont fermés pour cette annonce.
+                {t("member.conv_closed")}
               </p>
               <Link to="/citadelle/annonces"
                 className="inline-block mt-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all hover:scale-105"
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-                Voir les autres annonces
+                {t("member.conv_see_others")}
               </Link>
             </div>
           ) : (
@@ -189,7 +191,7 @@ export default function CitadelleConversationDetail() {
                     style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#92400E" }}
                     data-testid="sanitized-warning"
                   >
-                    Certaines informations de contact ont été masquées afin de maintenir les échanges sur La Citadelle.
+                    {t("member.conv_sanitized")}
                   </div>
                 </div>
               )}
@@ -200,7 +202,7 @@ export default function CitadelleConversationDetail() {
                   value={message}
                   onChange={e => setMessage(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && sendMessage()}
-                  placeholder="Votre message..."
+                  placeholder={t("member.conv_input_ph")}
                   className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
                   style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
                   data-testid="message-input"
