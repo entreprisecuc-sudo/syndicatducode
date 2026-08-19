@@ -7,19 +7,22 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, TrendingDown, BarChart2, Calendar, ShieldCheck, Star, Hammer, Clock } from "lucide-react";
 import { CITADELLE_COLORS, getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
+import { useTranslation } from "react-i18next";
 
 const TYPE_CONFIG = {
-  website:       { label: "Site internet",    icon: Globe },
-  ecommerce:     { label: "E-commerce",       icon: ShoppingCart },
-  saas:          { label: "SaaS",             icon: Cloud },
-  webapp:        { label: "Application web",  icon: Monitor },
-  social_account:{ label: "Réseau social",    icon: Users },
+  website:       { key: "type_website",        icon: Globe },
+  ecommerce:     { key: "type_ecommerce",      icon: ShoppingCart },
+  saas:          { key: "type_saas",           icon: Cloud },
+  webapp:        { key: "type_webapp",         icon: Monitor },
+  social_account:{ key: "type_social_account", icon: Users },
 };
 
 const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240' fill='%230F2747'%3E%3Crect width='400' height='240'/%3E%3Ctext x='50%25' y='50%25' fill='%23C9A45C' font-size='40' text-anchor='middle' dominant-baseline='middle'%3E🏰%3C/text%3E%3C/svg%3E";
 
 export default function ListingCard({ listing, search = "" }) {
-  const { label: typeLabel, icon: TypeIcon } = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
+  const { t } = useTranslation();
+  const { key: typeKey, icon: TypeIcon } = TYPE_CONFIG[listing.type] || TYPE_CONFIG.website;
+  const typeLabel = t(`card.${typeKey}`);
   const firstImage = listing.images?.filter(Boolean).find(img => isImageFile(img));
   const mainImage = firstImage ? getListingImageUrl(firstImage) : PLACEHOLDER_IMG;
   const isSold = listing.status === "sold";
@@ -55,7 +58,7 @@ export default function ListingCard({ listing, search = "" }) {
             style={{ background: "linear-gradient(135deg, #1a1626 0%, #2d1b2e 100%)" }} data-testid={`listing-adult-cover-${listing.slug}`}>
             <span className="flex items-center justify-center w-12 h-12 rounded-full text-lg font-black"
               style={{ background: "rgba(220,38,38,0.2)", color: "#f87171", border: "2px solid #f87171" }}>18+</span>
-            <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>Contenu adulte</span>
+            <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>{t('card.adult_content')}</span>
           </div>
         ) : (
           <img
@@ -99,13 +102,13 @@ export default function ListingCard({ listing, search = "" }) {
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
                 <Star size={11} />
-                Recommandé
+                {t('card.recommended')}
               </span>
             )}
             {isAdult && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold"
                 style={{ background: "#DC2626", color: "white" }} data-testid={`listing-adult-badge-${listing.slug}`}>
-                Contenu adulte 18+
+                {t('card.adult_badge')}
               </span>
             )}
           </div>
@@ -121,7 +124,7 @@ export default function ListingCard({ listing, search = "" }) {
               }}
               data-testid={`listing-auction-badge-${listing.slug}`}>
               <Hammer size={11} />
-              ENCHÈRE — {tempsRestant}
+              {t('card.auction')} — {tempsRestant}
             </span>
           </div>
         )}
@@ -130,7 +133,7 @@ export default function ListingCard({ listing, search = "" }) {
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
               style={{ background: "#22C55E", color: "white" }}>
               <ShieldCheck size={11} />
-              Vérifié
+              {t('card.verified')}
             </span>
           </div>
         )}
@@ -147,7 +150,7 @@ export default function ListingCard({ listing, search = "" }) {
               data-testid={`garde-badge-${listing.slug}`}
             >
               <ShieldCheck size={11} />
-              Vérifié La Garde
+              {t('card.garde_verified')}
             </span>
           </div>
         )}
@@ -173,7 +176,7 @@ export default function ListingCard({ listing, search = "" }) {
                 style={{ background: "rgba(220,38,38,0.1)", color: "#DC2626" }}
                 data-testid={`listing-price-drop-${listing.slug}`}>
                 <TrendingDown size={11} />
-                Prix en baisse
+                {t('card.price_drop')}
               </span>
             </div>
           )}
@@ -181,7 +184,7 @@ export default function ListingCard({ listing, search = "" }) {
             {listing.price?.toLocaleString("fr-FR")} €
           </span>
           {listing.price_negotiable && !isSold && (
-            <span className="ml-2 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>Négociable</span>
+            <span className="ml-2 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>{t('card.negotiable')}</span>
           )}
         </div>
 
@@ -190,19 +193,19 @@ export default function ListingCard({ listing, search = "" }) {
           {listing.monthly_revenue != null && (
             <div className="flex items-center gap-1 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
               <TrendingUp size={12} style={{ color: CITADELLE_COLORS.gold }} />
-              {listing.monthly_revenue.toLocaleString("fr-FR")} €/mois
+              {listing.monthly_revenue.toLocaleString("fr-FR")} {t('card.per_month')}
             </div>
           )}
           {listing.monthly_traffic != null && (
             <div className="flex items-center gap-1 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
               <BarChart2 size={12} style={{ color: CITADELLE_COLORS.gold }} />
-              {listing.monthly_traffic.toLocaleString("fr-FR")} visiteurs
+              {listing.monthly_traffic.toLocaleString("fr-FR")} {t('card.visitors')}
             </div>
           )}
           {listing.age_months != null && (
             <div className="flex items-center gap-1 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
               <Calendar size={12} style={{ color: CITADELLE_COLORS.gold }} />
-              {listing.age_months} mois
+              {listing.age_months} {t('card.months')}
             </div>
           )}
         </div>
@@ -210,13 +213,13 @@ export default function ListingCard({ listing, search = "" }) {
         {/* Footer */}
         <div className="flex items-center justify-between pt-3" style={{ borderTop: `1px solid ${CITADELLE_COLORS.border}` }}>
           <span className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-            {listing.published_at ? new Date(listing.published_at).toLocaleDateString("fr-FR") : "Récent"}
+            {listing.published_at ? new Date(listing.published_at).toLocaleDateString("fr-FR") : t('card.recent')}
           </span>
           {isSold ? (
-            <span className="text-xs font-bold" style={{ color: "#DC2626" }}>Vendu</span>
+            <span className="text-xs font-bold" style={{ color: "#DC2626" }}>{t('card.sold')}</span>
           ) : (
             <span className="text-xs font-semibold transition-colors group-hover:underline" style={{ color: CITADELLE_COLORS.gold }}>
-              Voir l'annonce →
+              {t('card.see_listing')}
             </span>
           )}
         </div>

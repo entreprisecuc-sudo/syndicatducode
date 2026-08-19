@@ -9,8 +9,10 @@ import { useState, useEffect } from "react";
 import { Shield } from "lucide-react";
 import { CITADELLE_COLORS, COMMISSION_RATE, COMMISSION_MINIMUM_EUR } from "@/config/citadelleConstants";
 import citadelleApi from "@/services/citadelleApi";
+import { useTranslation } from "react-i18next";
 
 export default function CommissionInfoPopup({ onAcknowledge }) {
+  const { t } = useTranslation();
   const [rate, setRate]       = useState(COMMISSION_RATE);
   const [minEur, setMinEur]   = useState(COMMISSION_MINIMUM_EUR);
 
@@ -49,10 +51,10 @@ export default function CommissionInfoPopup({ onAcknowledge }) {
               className="font-black text-base"
               style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}
             >
-              Commission La Citadelle
+              {t('commission.title')}
             </h3>
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
-              À lire avant de fixer votre prix
+              {t('commission.subtitle')}
             </p>
           </div>
         </div>
@@ -73,7 +75,7 @@ export default function CommissionInfoPopup({ onAcknowledge }) {
                 {(rate * 100).toFixed(0)} %
               </p>
               <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                du prix de vente
+                {t('commission.of_sale_price')}
               </p>
             </div>
 
@@ -89,17 +91,17 @@ export default function CommissionInfoPopup({ onAcknowledge }) {
                 {minEur} €
               </p>
               <p className="text-xs mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                minimum prélevé
+                {t('commission.min_charged')}
               </p>
             </div>
           </div>
 
           {/* Message */}
           <p className="text-sm leading-relaxed mb-2" style={{ color: CITADELLE_COLORS.blue }}>
-            Pour chaque vente réalisée sur La Citadelle Numérique, une commission est prélevée au profit de la plateforme.
+            {t('commission.msg1')}
           </p>
           <p className="text-sm leading-relaxed mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Nous vous invitons à en tenir compte lors de la fixation de votre prix de vente afin de vous assurer la marge souhaitée.
+            {t('commission.msg2')}
           </p>
 
           {/* Exemple illustratif */}
@@ -108,22 +110,22 @@ export default function CommissionInfoPopup({ onAcknowledge }) {
             style={{ background: "rgba(201,164,92,0.07)", border: "1px solid rgba(201,164,92,0.2)" }}
           >
             <p className="text-xs font-semibold mb-2" style={{ color: CITADELLE_COLORS.gold }}>
-              Exemple
+              {t('commission.example')}
             </p>
             <div className="space-y-1 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
               <div className="flex justify-between">
-                <span>Prix de vente affiché</span>
+                <span>{t('commission.ex_price')}</span>
                 <span className="font-semibold" style={{ color: CITADELLE_COLORS.blue }}>1 000 €</span>
               </div>
               <div className="flex justify-between">
-                <span>Commission ({(rate * 100).toFixed(0)} %)</span>
+                <span>{t('commission.ex_commission', { rate: (rate * 100).toFixed(0) })}</span>
                 <span className="font-semibold" style={{ color: "#DC2626" }}>
                   — {Math.max(1000 * rate, minEur).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €
                 </span>
               </div>
               <div className="h-px my-2" style={{ background: CITADELLE_COLORS.border }} />
               <div className="flex justify-between font-bold">
-                <span style={{ color: CITADELLE_COLORS.blue }}>Vous recevez</span>
+                <span style={{ color: CITADELLE_COLORS.blue }}>{t('commission.ex_receive')}</span>
                 <span style={{ color: CITADELLE_COLORS.blue }}>
                   {(1000 - Math.max(1000 * rate, minEur)).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €
                 </span>
@@ -138,7 +140,7 @@ export default function CommissionInfoPopup({ onAcknowledge }) {
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night, fontFamily: "'Montserrat', sans-serif" }}
             data-testid="commission-popup-ok"
           >
-            J'ai compris — Fixer mon prix
+            {t('commission.ok_btn')}
           </button>
         </div>
       </div>

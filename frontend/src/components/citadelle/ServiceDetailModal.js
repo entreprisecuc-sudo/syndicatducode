@@ -8,12 +8,14 @@ import { useState } from "react";
 import { X, Handshake, ShoppingCart, ExternalLink, ArrowLeft, Send, Loader, CheckCircle } from "lucide-react";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import citadelleApi from "@/services/citadelleApi";
+import { useTranslation } from "react-i18next";
 
 const isPayable = (svc) => svc.service_type === "paid" && svc.price > 0;
 
 const FORM_INITIAL = { nom: "", email: "", message: "" };
 
 export default function ServiceDetailModal({ service, onClose, onBuy }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState("detail"); // detail | form | success
   const [form, setForm] = useState(FORM_INITIAL);
   const [submitting, setSubmitting] = useState(false);
@@ -35,15 +37,15 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
 
   const handleSubmit = async () => {
     if (!form.nom.trim() || form.nom.trim().length < 2) {
-      setError("Veuillez renseigner votre nom (min. 2 caractères).");
+      setError(t('service_modal.err_name'));
       return;
     }
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      setError("Veuillez renseigner une adresse email valide.");
+      setError(t('service_modal.err_email'));
       return;
     }
     if (!form.message.trim() || form.message.trim().length < 10) {
-      setError("Veuillez décrire votre demande (min. 10 caractères).");
+      setError(t('service_modal.err_message'));
       return;
     }
 
@@ -58,7 +60,7 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
       });
       setStep("success");
     } catch (err) {
-      setError(err.response?.data?.detail || "Une erreur est survenue. Veuillez réessayer.");
+      setError(err.response?.data?.detail || t('service_modal.err_generic'));
     } finally {
       setSubmitting(false);
     }
@@ -115,7 +117,7 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
                 className="text-2xl font-black mb-4"
                 style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
               >
-                {service.price > 0 ? `${service.price.toLocaleString("fr-FR")} €` : "Gratuit"}
+                {service.price > 0 ? `${service.price.toLocaleString("fr-FR")} €` : t('service_modal.free')}
               </p>
             ) : null}
 
@@ -126,7 +128,7 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
               >
                 <Handshake size={15} style={{ color: "#3B82F6" }} />
                 <span className="text-sm" style={{ color: "#3B82F6" }}>
-                  Service partenaire — {service.partner_name}
+                  {t('service_modal.partner')} {service.partner_name}
                 </span>
               </div>
             )}
@@ -137,7 +139,7 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium"
                 style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
               >
-                Fermer
+                {t('service_modal.close')}
               </button>
 
               {isPayable(service) ? (
@@ -148,7 +150,7 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
                   data-testid="detail-modal-buy-btn"
                 >
                   <ShoppingCart size={13} />
-                  Acheter — {service.price.toLocaleString("fr-FR")} €
+                  {t('service_modal.buy')} {service.price.toLocaleString("fr-FR")} €
                 </button>
               ) : service.cta_url ? (
                 <a
@@ -168,7 +170,7 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
                   data-testid="detail-modal-contact-btn"
                 >
                   <Send size={13} />
-                  Nous contacter
+                  {t('service_modal.contact')}
                 </button>
               )}
             </div>
@@ -193,7 +195,7 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
                   className="font-black text-lg"
                   style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
                 >
-                  Nous contacter
+                  {t('service_modal.contact')}
                 </h3>
                 <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
                   {service.title}
@@ -214,10 +216,10 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
               style={{ background: "rgba(15,39,71,0.05)", border: `1px solid ${CITADELLE_COLORS.border}` }}
             >
               <span className="text-xs font-semibold" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Sujet :
+                {t('service_modal.subject_label')}
               </span>
               <span className="text-sm font-medium" style={{ color: CITADELLE_COLORS.blue }}>
-                Service : {service.title}
+                {t('service_modal.subject_value')} {service.title}
               </span>
             </div>
 
@@ -225,12 +227,12 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
             <div className="space-y-3 mb-4">
               <div>
                 <label className="block text-xs font-medium mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  Votre nom *
+                  {t('service_modal.form_name')}
                 </label>
                 <input
                   value={form.nom}
                   onChange={(e) => setForm((p) => ({ ...p, nom: e.target.value }))}
-                  placeholder="Jean Dupont"
+                  placeholder={t('service_modal.ph_name')}
                   disabled={submitting}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                   style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
@@ -239,13 +241,13 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  Votre email *
+                  {t('service_modal.form_email')}
                 </label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                  placeholder="jean@example.com"
+                  placeholder={t('service_modal.ph_email')}
                   disabled={submitting}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                   style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
@@ -254,12 +256,12 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  Votre demande *
+                  {t('service_modal.form_request')}
                 </label>
                 <textarea
                   value={form.message}
                   onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
-                  placeholder="Décrivez votre projet et vos besoins..."
+                  placeholder={t('service_modal.ph_request')}
                   rows={4}
                   disabled={submitting}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
@@ -287,9 +289,9 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
               data-testid="contact-submit"
             >
               {submitting ? (
-                <><Loader size={15} className="animate-spin" /> Envoi en cours…</>
+                <><Loader size={15} className="animate-spin" /> {t('service_modal.sending')}</>
               ) : (
-                <><Send size={14} /> Envoyer ma demande</>
+                <><Send size={14} /> {t('service_modal.send_request')}</>
               )}
             </button>
           </>
@@ -308,16 +310,16 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
               className="font-black text-xl mb-2"
               style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
             >
-              Demande envoyée !
+              {t('service_modal.success_title')}
             </h3>
             <p className="text-sm mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Votre demande concernant
+              {t('service_modal.success_1')}
             </p>
             <p className="text-sm font-semibold mb-4" style={{ color: CITADELLE_COLORS.blue }}>
               « {service.title} »
             </p>
             <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-              a bien été transmise. Notre équipe vous répondra sous 48h.
+              {t('service_modal.success_2')}
             </p>
             <button
               onClick={handleClose}
@@ -325,7 +327,7 @@ export default function ServiceDetailModal({ service, onClose, onBuy }) {
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
               data-testid="contact-close-success"
             >
-              Fermer
+              {t('service_modal.close')}
             </button>
           </div>
         )}

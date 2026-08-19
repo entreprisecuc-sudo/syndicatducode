@@ -11,11 +11,13 @@ import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { SeoNoIndex } from "@/components/citadelle/SeoNoIndex";
+import { useTranslation } from "react-i18next";
 
 const MAX_POLLS = 8;
 const POLL_INTERVAL_MS = 2500;
 
 export default function CitadellePaymentSuccess() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const { isAuthenticated } = useCitadelleAuth();
@@ -85,14 +87,14 @@ export default function CitadellePaymentSuccess() {
             <>
               <Loader size={40} className="animate-spin mx-auto mb-4" style={{ color: CITADELLE_COLORS.gold }} />
               <h2 className="font-black text-xl mb-2" style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                Vérification du paiement…
+                {t('payment.verifying')}
               </h2>
               <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Merci de patienter, nous confirmons votre transaction avec Stripe.
+                {t('payment.verifying_sub')}
               </p>
               {attempts > 2 && (
                 <p className="text-xs mt-3" style={{ color: CITADELLE_COLORS.textMuted }}>
-                  Cela peut prendre quelques secondes…
+                  {t('payment.verifying_wait')}
                 </p>
               )}
             </>
@@ -117,7 +119,7 @@ export default function CitadellePaymentSuccess() {
                   style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
                   data-testid="payment-success-title"
                 >
-                  {isEstimation ? "Demande d'estimation enregistrée !" : "Paiement confirmé !"}
+                  {isEstimation ? t('payment.estimation_success') : t('payment.paid_success')}
                 </h2>
                 {data?.service_title && (
                   <p className="text-sm font-semibold mb-1" style={{ color: CITADELLE_COLORS.gold }}>
@@ -131,8 +133,8 @@ export default function CitadellePaymentSuccess() {
                 )}
                 <p className="text-sm leading-relaxed mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
                   {isEstimation
-                    ? <>Notre expert analyse votre dossier et vous contacte sous <strong>48h ouvrées</strong> à <strong>{data?.client_email}</strong> avec votre rapport de valorisation.</>
-                    : <>Un email de confirmation a été envoyé à <strong>{data?.client_email}</strong>. Notre équipe vous contacte très prochainement.</>}
+                    ? <>{t('payment.estimation_desc_before')}<strong>{t('payment.estimation_desc_delay')}</strong>{t('payment.estimation_desc_mid')}<strong>{data?.client_email}</strong>{t('payment.estimation_desc_after')}</>
+                    : <>{t('payment.paid_desc_before')}<strong>{data?.client_email}</strong>{t('payment.paid_desc_after')}</>}
                 </p>
 
                 <div className="space-y-3">
@@ -144,7 +146,7 @@ export default function CitadellePaymentSuccess() {
                       style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                       data-testid="payment-success-back-btn"
                     >
-                      Voir mes services <ArrowRight size={16} />
+                      {t('payment.see_my_services')} <ArrowRight size={16} />
                     </Link>
                   ) : (
                     <Link
@@ -153,7 +155,7 @@ export default function CitadellePaymentSuccess() {
                       style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
                       data-testid="payment-success-back-btn"
                     >
-                      <UserPlus size={16} /> Créer mon espace client
+                      <UserPlus size={16} /> {t('payment.create_account')}
                     </Link>
                   )}
 
@@ -163,7 +165,7 @@ export default function CitadellePaymentSuccess() {
                     className="block w-full py-3 rounded-xl text-sm font-medium"
                     style={{ color: CITADELLE_COLORS.textMuted }}
                   >
-                    {isEstimation ? "Parcourir les annonces" : "Retour aux services"}
+                    {isEstimation ? t('payment.browse_listings') : t('payment.back_services')}
                   </Link>
                 </div>
               </>
@@ -178,17 +180,17 @@ export default function CitadellePaymentSuccess() {
                 className="font-black text-xl mb-2"
                 style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
               >
-                Session expirée
+                {t('payment.expired_title')}
               </h2>
               <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-                La session de paiement a expiré. Aucun montant n'a été débité. Vous pouvez recommencer.
+                {t('payment.expired_desc')}
               </p>
               <Link
                 to="/citadelle/services"
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm"
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
               >
-                Retour aux services
+                {t('payment.back_services')}
               </Link>
             </>
           )}
@@ -201,10 +203,10 @@ export default function CitadellePaymentSuccess() {
                 className="font-black text-xl mb-2"
                 style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
               >
-                Paiement non confirmé
+                {t('payment.failed_title')}
               </h2>
               <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-                Nous n'avons pas pu confirmer votre paiement. Si vous avez été débité, contactez-nous à{" "}
+                {t('payment.failed_desc_before')}
                 <a href="mailto:lagarde@lacitadellenumerique.fr" style={{ color: CITADELLE_COLORS.gold }}>
                   lagarde@lacitadellenumerique.fr
                 </a>
@@ -214,7 +216,7 @@ export default function CitadellePaymentSuccess() {
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm"
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
               >
-                Retour aux services
+                {t('payment.back_services')}
               </Link>
             </>
           )}

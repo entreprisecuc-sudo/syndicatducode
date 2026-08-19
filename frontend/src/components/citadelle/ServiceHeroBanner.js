@@ -5,16 +5,18 @@
 
 import { Shield, Info } from "lucide-react";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
+import { useTranslation } from "react-i18next";
 
 const ETAPES = [
-  { num: "1", label: "Paiement acheteur" },
-  { num: "2", label: "Fonds sécurisés" },
-  { num: "3", label: "Transmission projet" },
-  { num: "4", label: "Validation transfert" },
-  { num: "5", label: "Libération des fonds" },
+  { num: "1", key: "step1" },
+  { num: "2", key: "step2" },
+  { num: "3", key: "step3" },
+  { num: "4", key: "step4" },
+  { num: "5", key: "step5" },
 ];
 
 export default function ServiceHeroBanner({ service, onDetails }) {
+  const { t } = useTranslation();
   if (!service) return null;
 
   return (
@@ -33,7 +35,7 @@ export default function ServiceHeroBanner({ service, onDetails }) {
           className="text-xs font-black tracking-widest"
           style={{ color: CITADELLE_COLORS.night, textTransform: "uppercase", letterSpacing: "2px" }}
         >
-          Service obligatoire pour toutes les ventes sur La Citadelle
+          {t('service_banner.mandatory')}
         </span>
       </div>
 
@@ -61,7 +63,7 @@ export default function ServiceHeroBanner({ service, onDetails }) {
                   className="px-3 py-1 rounded-full text-xs font-black"
                   style={{ background: "rgba(201,164,92,0.15)", color: CITADELLE_COLORS.gold, border: "1px solid rgba(201,164,92,0.35)" }}
                 >
-                  {service.price_label || "Inclus"}
+                  {service.price_label || t('service_banner.included')}
                 </span>
               </div>
               <p className="text-sm md:text-base" style={{ color: "rgba(255,255,255,0.65)" }}>
@@ -82,7 +84,7 @@ export default function ServiceHeroBanner({ service, onDetails }) {
             data-testid="hero-service-details"
           >
             <Info size={15} />
-            En savoir plus
+            {t('service_banner.learn_more')}
           </button>
         </div>
 
@@ -92,7 +94,7 @@ export default function ServiceHeroBanner({ service, onDetails }) {
             className="text-xs font-semibold mb-4 uppercase tracking-widest"
             style={{ color: "rgba(255,255,255,0.4)" }}
           >
-            Comment ça fonctionne
+            {t('service_banner.how_it_works')}
           </p>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             {ETAPES.map((e, i) => (
@@ -106,7 +108,7 @@ export default function ServiceHeroBanner({ service, onDetails }) {
                     {e.num}
                   </div>
                   <span className="text-sm whitespace-nowrap" style={{ color: "rgba(255,255,255,0.8)" }}>
-                    {e.label}
+                    {t(`service_banner.${e.key}`)}
                   </span>
                 </div>
                 {/* Connecteur */}

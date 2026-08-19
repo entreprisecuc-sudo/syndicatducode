@@ -10,10 +10,12 @@ import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import citadelleApi from "@/services/citadelleApi";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { isPromoOn, promoDiscounted } from "@/utils/promo";
+import { useTranslation } from "react-i18next";
 
 const FORM_INITIAL = { client_name: "", client_email: "", client_message: "" };
 
 export default function ServiceCheckoutModal({ service, onClose }) {
+  const { t } = useTranslation();
   const { user } = useCitadelleAuth();
   const [form, setForm]               = useState(FORM_INITIAL);
   const [step, setStep]               = useState("form"); // form | redirecting
@@ -62,11 +64,11 @@ export default function ServiceCheckoutModal({ service, onClose }) {
         setPromoError("");
       } else {
         setPromoApplied(null);
-        setPromoError("Code promo invalide.");
+        setPromoError(t('checkout.promo_invalid'));
       }
     } catch {
       setPromoApplied(null);
-      setPromoError("Impossible de vérifier le code. Réessayez.");
+      setPromoError(t('checkout.promo_check_fail'));
     } finally {
       setPromoChecking(false);
     }
@@ -85,11 +87,11 @@ export default function ServiceCheckoutModal({ service, onClose }) {
   const handleSubmit = async () => {
     const { client_name, client_email } = form;
     if (!client_name.trim() || client_name.trim().length < 2) {
-      setError("Veuillez renseigner votre nom complet (min. 2 caractères).");
+      setError(t('checkout.err_name'));
       return;
     }
     if (!client_email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client_email.trim())) {
-      setError("Veuillez renseigner une adresse email valide.");
+      setError(t('checkout.err_email'));
       return;
     }
     setError("");
@@ -107,7 +109,7 @@ export default function ServiceCheckoutModal({ service, onClose }) {
       });
       window.location.href = res.data.checkout_url;
     } catch (err) {
-      setError(err.response?.data?.detail || "Une erreur est survenue. Veuillez réessayer.");
+      setError(err.response?.data?.detail || t('checkout.err_generic'));
       setStep("form");
     }
   };
@@ -128,7 +130,7 @@ export default function ServiceCheckoutModal({ service, onClose }) {
               className="font-black text-lg"
               style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
             >
-              Commander ce service
+              {t('checkout.title')}
             </h3>
             <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
               {service.title}
@@ -148,7 +150,7 @@ export default function ServiceCheckoutModal({ service, onClose }) {
         {/* Montant */}
         <div className="p-4 rounded-xl mb-4 text-center" style={{ background: CITADELLE_COLORS.blue }}>
           <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "1px" }}>
-            Montant
+            {t('checkout.amount')}
           </p>
           <p className="text-3xl font-black" style={{ color: CITADELLE_COLORS.gold, fontFamily: "'Montserrat', sans-serif" }}>
             {(promoApplied || isPromoOn(promo, service.price)) ? (
@@ -164,7 +166,7 @@ export default function ServiceCheckoutModal({ service, onClose }) {
           </p>
           {promoApplied && (
             <p className="text-xs mt-1 font-bold" style={{ color: "#22C55E" }}>
-              Code {promoApplied.code} · -{promoApplied.discount_percent}%
+              {t('checkout.code_prefix')} {promoApplied.code} · -{promoApplied.discount_percent}%
             </p>
           )}
           {!promoApplied && isPromoOn(promo, service.price) && (
@@ -177,14 +179,14 @@ export default function ServiceCheckoutModal({ service, onClose }) {
         {/* Code promo */}
         <div className="mb-4">
           <label className="block text-xs font-medium mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Code promo (optionnel)
+            {t('checkout.promo_label')}
           </label>
           <div className="flex gap-2">
             <input
               value={promoCode}
               onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoApplied(null); setPromoError(""); }}
               onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
-              placeholder="ex : EMERGENT"
+              placeholder={t('checkout.promo_ph')}
               disabled={step === "redirecting"}
               className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none font-mono tracking-wider"
               style={{ border: `1px solid ${promoApplied ? "#22C55E" : CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
@@ -197,12 +199,12 @@ export default function ServiceCheckoutModal({ service, onClose }) {
               style={{ background: CITADELLE_COLORS.blue, color: "white" }}
               data-testid="checkout-promo-apply"
             >
-              {promoChecking ? <Loader size={13} className="animate-spin" /> : "Appliquer"}
+              {promoChecking ? <Loader size={13} className="animate-spin" /> : t('checkout.apply')}
             </button>
           </div>
           {promoApplied && (
             <p className="flex items-center gap-1 text-xs mt-1.5 font-semibold" style={{ color: "#16A34A" }}>
-              <CheckCircle size={12} /> Code appliqué — {promoApplied.discount_percent}% de réduction
+              <CheckCircle size={12} /> {t('checkout.promo_applied', { percent: promoApplied.discount_percent })}
             </p>
           )}
           {promoError && (
@@ -216,12 +218,12 @@ export default function ServiceCheckoutModal({ service, onClose }) {
         <div className="space-y-3 mb-4">
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Nom complet *
+              {t('checkout.name_label')}
             </label>
             <input
               value={form.client_name}
               onChange={(e) => setForm((p) => ({ ...p, client_name: e.target.value }))}
-              placeholder="Jean Dupont"
+              placeholder={t('checkout.ph_name')}
               disabled={step === "redirecting"}
               className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
               style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
@@ -230,13 +232,13 @@ export default function ServiceCheckoutModal({ service, onClose }) {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Adresse email *
+              {t('checkout.email_label')}
             </label>
             <input
               type="email"
               value={form.client_email}
               onChange={(e) => setForm((p) => ({ ...p, client_email: e.target.value }))}
-              placeholder="jean@example.com"
+              placeholder={t('checkout.ph_email')}
               disabled={step === "redirecting"}
               className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
               style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
@@ -245,12 +247,12 @@ export default function ServiceCheckoutModal({ service, onClose }) {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Message / précisions (optionnel)
+              {t('checkout.message_label')}
             </label>
             <textarea
               value={form.client_message}
               onChange={(e) => setForm((p) => ({ ...p, client_message: e.target.value }))}
-              placeholder="Décrivez votre projet ou vos besoins..."
+              placeholder={t('checkout.ph_message')}
               rows={3}
               disabled={step === "redirecting"}
               className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
@@ -279,12 +281,12 @@ export default function ServiceCheckoutModal({ service, onClose }) {
         >
           {step === "redirecting" ? (
             <>
-              <Loader size={15} className="animate-spin" /> Redirection vers Stripe…
+              <Loader size={15} className="animate-spin" /> {t('checkout.redirecting')}
             </>
           ) : (
             <>
               <CreditCard size={14} />
-              Payer {finalPrice.toLocaleString("fr-FR")} € via Stripe
+              {t('checkout.pay_via_stripe', { price: finalPrice.toLocaleString("fr-FR") })}
             </>
           )}
         </button>
@@ -295,7 +297,7 @@ export default function ServiceCheckoutModal({ service, onClose }) {
             <text x="30" y="15.5" textAnchor="middle" fill="white" fontSize="8" fontFamily="sans-serif" fontWeight="bold">stripe</text>
           </svg>
           <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Paiement 100% sécurisé · Données cryptées
+            {t('checkout.secure_payment')}
           </p>
         </div>
       </div>

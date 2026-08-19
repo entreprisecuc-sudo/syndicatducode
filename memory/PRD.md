@@ -942,3 +942,28 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
   - `CitadelleContact.js` : migration Helmet→useEffect, `useTranslation` dans composant principal + SuccessMessage, 15 strings traduits + sujets via `t('contact.subjects', { returnObjects: true })`
 - **Issue 1 avancement** : Helmet migré → useEffect dans 4 fichiers supplémentaires (Blog, Guides, Parutions, Contact). Reste ~6 fichiers.
 - **Validé** : compilation sans erreur, pages Blog et Contact FR vérifiées par screenshots. Testing agent NON utilisé (Règle 6).
+
+
+## ⭐ Session 19/08/2026 — Traduction i18n (LOT P0 en cours)
+### Audit honnête
+- Rien de cassé (JSON valide, parité 566/566 clés FR/EN, build OK).
+- Le vrai problème = traduction INCOMPLÈTE. Ampleur RÉELLE bien supérieure à l audit précédent : le contenu est majoritairement dans des constantes JS (tableaux), pas seulement dans le JSX. Ex: CitadelleVendre.js ~50 chaînes en dur.
+### Terminé et vérifié (FR+EN, compile) — 7 fichiers
+- components/citadelle/ListingCard.js (section i18n `card`)
+- components/citadelle/ServiceHeroBanner.js (`service_banner`)
+- components/citadelle/CommissionInfoPopup.js (`commission`)
+- pages/citadelle/CitadellePaymentSuccess.js (`payment`)
+- components/citadelle/ServiceDetailModal.js (`service_modal`)
+- components/citadelle/ServiceCheckoutModal.js (`checkout`)
+- pages/citadelle/CitadelleHome.js — RÉÉCRIT, section `hp` (89 clés) ; imports morts retirés (useRef, ChevronLeft, CITADELLE_CONFIG...). Note (dette Règle 11) : quelques mots-clés SEO en gras (<strong>) des paragraphes éditoriaux passés en texte simple pour permettre la traduction.
+### Reste P0
+- CitadelleVendre.js (contenu JS ~50 chaînes), CitadelleListingDetail.js (~50+ chaînes JS), CitadelleEstimation.js (1049 l.)
+### Reste P1/P2 : espace membre + secondaires (voir audit).
+- Règle 6 respectée : vérif par screenshots, aucun testing_agent.
+
+### MAJ — Gras SEO restauré sur l accueil (Règle 11 levée)
+- Mots-clés SEO remis en gras (blanc) dans les 4 paragraphes éditoriaux via helper boldKeywords + listes hp.*_kw (FR/EN). Parité 570/570. Build OK.
+- Mots-clés : intro (vente/vendre/acheter un site internet), p1 (vente de business en ligne, site internet à vendre), p2 (marketplace de sites internet, vente de SaaS, vente de boutiques e-commerce, vente d applications), garanties (séquestre, médiation, attestation de transmission).
+### PROCHAIN LOT (P0 restant, non commencé)
+- CitadelleVendre.js : contenu 100% en dur dans constantes JS (AVANTAGES, ETAPES, MODES_VENTE, SERVICES_VENDEUR, FAQ_ITEMS) + JSX. ~60 chaînes. Section i18n `vendre` à étendre.
+- CitadelleListingDetail.js (~50+ chaînes JS), CitadelleEstimation.js (1049 l.).
