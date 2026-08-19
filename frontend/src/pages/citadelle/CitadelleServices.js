@@ -432,15 +432,19 @@ export default function CitadelleServices() {
       </div>
 
       {/* Modales */}
-      <ServiceDetailModal
-        service={selectedService}
-        onClose={() => setSelectedService(null)}
-        onBuy={openBuy}
-      />
-      <ServiceCheckoutModal
-        service={checkoutService}
-        onClose={() => setCheckoutService(null)}
-      />
+      {selectedService && (
+        <ServiceDetailModal
+          service={selectedService}
+          onClose={() => setSelectedService(null)}
+          onBuy={openBuy}
+        />
+      )}
+      {checkoutService && (
+        <ServiceCheckoutModal
+          service={checkoutService}
+          onClose={() => setCheckoutService(null)}
+        />
+      )}
     </CitadelleLayout>
   );
 }

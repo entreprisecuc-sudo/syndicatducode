@@ -72,6 +72,9 @@ export default function ServiceCheckoutModal({ service, onClose }) {
     }
   };
 
+  // ── Garde de sécurité : après tous les hooks, avant tout accès aux props ──
+  if (!service) return null;
+
   // Prix après promo globale
   const basePrice = isPromoOn(promo, service.price) ? promoDiscounted(service.price, promo) : service.price;
   // Prix après code promo personnel
@@ -108,8 +111,6 @@ export default function ServiceCheckoutModal({ service, onClose }) {
       setStep("form");
     }
   };
-
-  if (!service) return null;
 
   return (
     <div
