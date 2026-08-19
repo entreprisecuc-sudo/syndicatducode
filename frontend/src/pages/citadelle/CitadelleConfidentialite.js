@@ -1,9 +1,10 @@
 /**
  * Politique de Confidentialité (RGPD) — La Citadelle Numérique
  */
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
-import { Helmet } from "react-helmet-async";
-import { CITADELLE_COLORS, CITADELLE_PUBLIC_URL } from "@/config/citadelleConstants";
+import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 
 const Section = ({ num, title, children }) => (
   <div className="mb-8">
@@ -32,20 +33,28 @@ const TableRow = ({ col1, col2, col3 }) => (
 );
 
 export default function CitadelleConfidentialite() {
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('legal.confidentialite_title')} | La Citadelle Numérique`;
+  }, [t]);
+
   return (
     <CitadelleLayout>
-      <Helmet>
-        <title>Politique de Confidentialité (RGPD) | La Citadelle Numérique</title>
-        <meta name="description" content="Politique de confidentialité de La Citadelle Numérique conforme au RGPD : données collectées, finalités, durée de conservation et exercice de vos droits." />
-        <link rel="canonical" href={`${CITADELLE_PUBLIC_URL}/citadelle/confidentialite`} />
-      </Helmet>
       <div className="py-14 text-center" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
-        <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: CITADELLE_COLORS.gold }}>La Citadelle Numérique</p>
-        <h1 className="font-black text-3xl" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>Politique de Confidentialité</h1>
-        <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.5)" }}>Conforme RGPD — Dernière mise à jour : juin 2026 — Version 1.0</p>
+        <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: CITADELLE_COLORS.gold }}>{t('legal.confidentialite_badge')}</p>
+        <h1 className="font-black text-3xl" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>{t('legal.confidentialite_title')}</h1>
+        <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.5)" }}>{t('legal.confidentialite_updated')}</p>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 md:px-8 py-14" data-testid="confidentialite-content">
+
+        {t('legal.fr_only_notice') && (
+          <div className="p-4 rounded-xl mb-6 text-sm flex items-start gap-3" style={{ background: "rgba(201,164,92,0.1)", border: `1px solid ${CITADELLE_COLORS.gold}50`, color: "#666" }}>
+            <span className="text-lg leading-none">⚠️</span>
+            <span>{t('legal.fr_only_notice')}</span>
+          </div>
+        )}
 
         <div className="p-4 rounded-xl mb-10 text-sm" style={{ background: "rgba(201,164,92,0.08)", border: `1px solid ${CITADELLE_COLORS.gold}30`, color: "#555" }}>
           La protection de vos données personnelles est une priorité pour La Citadelle Numérique.

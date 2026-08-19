@@ -6,22 +6,24 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Shield, Mail, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 import { SeoNoIndex } from "@/components/citadelle/SeoNoIndex";
 
 export default function CitadelleForgotPassword() {
+  const { t } = useTranslation();
   const [email, setEmail]   = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent]     = useState(false);
   const [error, setError]   = useState("");
 
-  useCitadellePageMeta("Mot de passe oublié");
+  useCitadellePageMeta(t('auth.forgot_title'));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim()) { setError("Veuillez saisir votre adresse email"); return; }
+    if (!email.trim()) { setError(t('auth.err_email_input')); return; }
     setLoading(true);
     setError("");
     try {
@@ -66,20 +68,20 @@ export default function CitadelleForgotPassword() {
                 <CheckCircle size={28} style={{ color: "#22C55E" }} />
               </div>
               <h1 className="text-xl font-bold mb-2" style={{ color: CITADELLE_COLORS.white }}>
-                Email envoyé !
+                {t('auth.email_sent_title')}
               </h1>
               <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.5)" }}>
-                Si un compte Citadelle existe avec l'adresse <strong style={{ color: CITADELLE_COLORS.white }}>{email}</strong>, vous recevrez un lien de réinitialisation dans quelques minutes.
+                {t('auth.email_sent_desc_1')} <strong style={{ color: CITADELLE_COLORS.white }}>{email}</strong>{t('auth.email_sent_desc_2')}
               </p>
               <p className="text-xs mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
-                Vérifiez vos courriers indésirables si vous ne recevez rien.
+                {t('auth.email_sent_spam')}
               </p>
               <Link
                 to="/citadelle/connexion"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm"
                 style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
               >
-                Retour à la connexion
+                {t('auth.back_to_login')}
               </Link>
             </div>
           ) : (
@@ -87,10 +89,10 @@ export default function CitadelleForgotPassword() {
             <>
               <div className="mb-6">
                 <h1 className="text-xl font-bold mb-1" style={{ color: CITADELLE_COLORS.white }}>
-                  Mot de passe oublié ?
+                  {t('auth.forgot_title')}
                 </h1>
                 <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-                  Saisissez votre email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+                  {t('auth.forgot_sub')}
                 </p>
               </div>
 
@@ -104,7 +106,7 @@ export default function CitadelleForgotPassword() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.75)" }}>
-                    Adresse email
+                    {t('auth.email_label')}
                   </label>
                   <div className="relative">
                     <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }} />
@@ -134,7 +136,7 @@ export default function CitadelleForgotPassword() {
                 >
                   {loading
                     ? <div className="w-5 h-5 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
-                    : "Envoyer le lien"}
+                    : t('auth.send_link')}
                 </button>
               </form>
 
@@ -144,7 +146,7 @@ export default function CitadelleForgotPassword() {
                   className="inline-flex items-center gap-1 font-medium transition-colors"
                   style={{ color: CITADELLE_COLORS.gold }}
                 >
-                  <ArrowLeft size={14} /> Retour à la connexion
+                  <ArrowLeft size={14} /> {t('auth.back_to_login')}
                 </Link>
               </p>
             </>

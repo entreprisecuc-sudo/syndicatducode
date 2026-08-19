@@ -7,6 +7,27 @@
 
 ---
 
+## ⭐ Session 19/08/2026 — Phase 4 i18n : Pages Auth + Pages Légales ✅
+
+### Fichiers modifiés (8 composants + 2 JSON)
+- `fr.json` : ajout sections `auth` (59 clés) + `legal` (10 clés) + clés modal
+- `en.json` : ajout sections `auth` (59 clés) + `legal` (10 clés) complètes
+- `CitadelleLogin.js` — `useTranslation()` + suppression hardcoding
+- `CitadelleRegister.js` — `useTranslation()` + suppression hardcoding
+- `CitadelleForgotPassword.js` — `useTranslation()` + suppression hardcoding
+- `CitadelleResetPassword.js` — `useTranslation()` + suppression hardcoding
+- `CitadelleConfidentialite.js` — **Helmet supprimé** → `useEffect` + `useTranslation` + disclaimer EN
+- `CitadelleCGV.js` — **Helmet supprimé** → `useEffect` + `useTranslation` + disclaimer EN
+- `CitadelleMentionsLegales.js` — **Helmet supprimé** → `useEffect` + `useTranslation` + disclaimer EN
+- `CitadelleAuthModal.js` — `useTranslation()` + correction conflit de nommage `t` dans `.map()`
+
+### Bug Babel (react-helmet-async) — RÉSOLU sur Phase 4
+- Pages légales : `import { Helmet }` remplacé par `useEffect(() => { document.title = t(...) }, [t])`
+- Contenu légal : reste en français, avec disclaimer EN conditionnel via `t('legal.fr_only_notice')`
+- Restant Helmet (hors scope Phase 4) : `CitadelleCGU.js`, `CitadelleChroniques.js`, `CitadelleEstimation.js`, `SeoNoIndex.jsx`
+
+---
+
 ## ⭐ Session 14/08/2026 — Email relance automatique 31j + Barre de partage + Espacement cartes ✅
 
 ### 1. Espacement des cartes — CitadelleListingDetail.js ✅

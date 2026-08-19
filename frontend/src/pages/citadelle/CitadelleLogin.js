@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Shield, Eye, EyeOff, LogIn, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
@@ -15,6 +16,7 @@ import { startCitadelleGoogleLogin } from "@/services/citadelleGoogleAuth";
 import { SeoNoIndex } from "@/components/citadelle/SeoNoIndex";
 
 export default function CitadelleLogin() {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ email: "", password: "", remember_me: false });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -25,7 +27,7 @@ export default function CitadelleLogin() {
   const [cguLoading, setCguLoading] = useState(false);
   const { login } = useCitadelleAuth();
   const navigate = useNavigate();
-  useCitadellePageMeta("Connexion");
+  useCitadellePageMeta(t('auth.login_title'));
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     setError("");
@@ -34,7 +36,7 @@ export default function CitadelleLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.email || !form.password) {
-      setError("Veuillez remplir tous les champs");
+      setError(t('auth.err_required'));
       return;
     }
     setLoading(true);
@@ -49,7 +51,7 @@ export default function CitadelleLogin() {
         navigate("/citadelle/espace-membre");
       }
     } catch (err) {
-      setError(err.response?.data?.detail || "Email ou mot de passe incorrect");
+      setError(err.response?.data?.detail || t('auth.err_email_password'));
     } finally {
       setLoading(false);
     }
@@ -68,7 +70,7 @@ export default function CitadelleLogin() {
       setShowCGU(false);
       navigate("/citadelle/espace-membre");
     } catch (err) {
-      setError("Erreur lors de l'enregistrement du consentement. Veuillez réessayer.");
+      setError(t('auth.err_cgu'));
       setShowCGU(false);
     } finally {
       setCguLoading(false);
@@ -93,10 +95,10 @@ export default function CitadelleLogin() {
             <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-20 w-auto mx-auto mb-4" />
           </Link>
           <h1 className="text-2xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif", color: "white" }}>
-            Connexion
+            {t('auth.login_title')}
           </h1>
           <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.5)" }}>
-            Accédez à votre espace La Citadelle Numérique
+            {t('auth.login_sub')}
           </p>
         </div>
 
@@ -121,13 +123,13 @@ export default function CitadelleLogin() {
               <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
               <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
             </svg>
-            Continuer avec Google
+            {t('auth.continue_google')}
           </button>
 
           {/* Séparateur */}
           <div className="flex items-center gap-3 mb-5">
             <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.1)" }} />
-            <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>ou</span>
+            <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{t('auth.or')}</span>
             <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.1)" }} />
           </div>
 
@@ -143,7 +145,7 @@ export default function CitadelleLogin() {
             {/* Email */}
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.75)" }}>
-                Adresse email
+                {t('auth.email_label')}
               </label>
               <input
                 type="email"
@@ -161,7 +163,7 @@ export default function CitadelleLogin() {
             {/* Mot de passe */}
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.75)" }}>
-                Mot de passe
+                {t('auth.password_label')}
               </label>
               <div className="relative">
                 <input
@@ -196,14 +198,14 @@ export default function CitadelleLogin() {
                   className="w-4 h-4 cursor-pointer accent-[#C9A45C]"
                   data-testid="citadelle-login-remember-me"
                 />
-                Se souvenir de moi
+                {t('auth.remember_me')}
               </label>
               <Link
                 to="/citadelle/mot-de-passe-oublie"
                 className="text-xs transition-colors hover:opacity-80"
                 style={{ color: CITADELLE_COLORS.gold }}
               >
-                Mot de passe oublié ?
+                {t('auth.forgot_password')}
               </Link>
             </div>
 
@@ -220,7 +222,7 @@ export default function CitadelleLogin() {
               ) : (
                 <>
                   <LogIn size={16} />
-                  Se connecter
+                  {t('auth.submit_login')}
                 </>
               )}
             </button>
@@ -229,13 +231,13 @@ export default function CitadelleLogin() {
           {/* Liens */}
           <div className="mt-6 text-center space-y-3">
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Pas encore de compte ?{" "}
+              {t('auth.no_account')}{" "}
               <Link to="/citadelle/inscription" className="font-semibold transition-colors" style={{ color: CITADELLE_COLORS.gold }} data-testid="citadelle-login-register-link">
-                Créer un compte
+                {t('auth.create_account')}
               </Link>
             </p>
             <Link to="/citadelle" className="block text-xs transition-colors" style={{ color: "rgba(255,255,255,0.3)" }}>
-              Retour à l'accueil
+              {t('auth.back_home')}
             </Link>
           </div>
         </div>
@@ -243,7 +245,7 @@ export default function CitadelleLogin() {
         {/* Sécurité */}
         <div className="mt-6 flex items-center justify-center gap-2 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
           <Shield size={12} />
-          Connexion sécurisée — Données chiffrées
+          {t('auth.secure_connection')}
         </div>
       </div>
 

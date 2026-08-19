@@ -6,12 +6,14 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Shield, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 import { useCitadellePageMeta } from "@/hooks/useCitadellePageMeta";
 import { SeoNoIndex } from "@/components/citadelle/SeoNoIndex";
 
 export default function CitadelleResetPassword() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -21,7 +23,7 @@ export default function CitadelleResetPassword() {
   const [success, setSuccess]     = useState(false);
   const [error, setError]         = useState("");
 
-  useCitadellePageMeta("Nouveau mot de passe");
+  useCitadellePageMeta(t('auth.reset_title'));
 
   const token = searchParams.get("token");
 
@@ -35,10 +37,10 @@ export default function CitadelleResetPassword() {
     setError("");
 
     if (form.password.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères"); return;
+      setError(t('auth.err_password_length')); return;
     }
     if (form.password !== form.confirm) {
-      setError("Les mots de passe ne correspondent pas"); return;
+      setError(t('auth.err_password_match')); return;
     }
 
     setLoading(true);
@@ -51,7 +53,7 @@ export default function CitadelleResetPassword() {
       // Redirection automatique vers la connexion après 3 secondes
       setTimeout(() => navigate("/citadelle/connexion"), 3000);
     } catch (err) {
-      setError(err.response?.data?.detail || "Une erreur est survenue. Le lien est peut-être expiré.");
+      setError(err.response?.data?.detail || t('auth.err_reset_expired'));
     } finally {
       setLoading(false);
     }
@@ -90,10 +92,10 @@ export default function CitadelleResetPassword() {
                 <CheckCircle size={28} style={{ color: "#22C55E" }} />
               </div>
               <h1 className="text-xl font-bold mb-2" style={{ color: CITADELLE_COLORS.white }}>
-                Mot de passe modifié !
+                {t('auth.reset_success_title')}
               </h1>
               <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-                Votre mot de passe a été réinitialisé avec succès. Redirection vers la connexion dans 3 secondes...
+                {t('auth.reset_success_sub')}
               </p>
             </div>
           ) : (
@@ -101,10 +103,10 @@ export default function CitadelleResetPassword() {
             <>
               <div className="mb-6">
                 <h1 className="text-xl font-bold mb-1" style={{ color: CITADELLE_COLORS.white }}>
-                  Nouveau mot de passe
+                  {t('auth.reset_title')}
                 </h1>
                 <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-                  Choisissez un mot de passe sécurisé pour votre compte Citadelle.
+                  {t('auth.reset_sub')}
                 </p>
               </div>
 
@@ -120,7 +122,7 @@ export default function CitadelleResetPassword() {
                 {/* Nouveau mot de passe */}
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.75)" }}>
-                    Nouveau mot de passe
+                    {t('auth.new_password_label')}
                   </label>
                   <div className="relative">
                     <input
@@ -147,14 +149,14 @@ export default function CitadelleResetPassword() {
                     </button>
                   </div>
                   <p className="text-xs mt-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                    Doit contenir : 8 caractères min, 1 majuscule, 1 minuscule, 1 chiffre
+                    {t('auth.password_rules')}
                   </p>
                 </div>
 
                 {/* Confirmation */}
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: "rgba(255,255,255,0.75)" }}>
-                    Confirmer le mot de passe
+                    {t('auth.confirm_password_label')}
                   </label>
                   <input
                     type={showPassword ? "text" : "password"}
@@ -180,7 +182,7 @@ export default function CitadelleResetPassword() {
                 >
                   {loading
                     ? <div className="w-5 h-5 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: CITADELLE_COLORS.night }} />
-                    : "Enregistrer le nouveau mot de passe"}
+                    : t('auth.save_password')}
                 </button>
               </form>
             </>

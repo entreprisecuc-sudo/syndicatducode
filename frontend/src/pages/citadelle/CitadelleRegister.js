@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Shield, Eye, EyeOff, UserPlus, AlertCircle, CheckCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, CITADELLE_CONFIG } from "@/config/citadelleConstants";
@@ -14,6 +15,7 @@ import CGUAcceptanceModal from "@/components/citadelle/CGUAcceptanceModal";
 import { SeoNoIndex } from "@/components/citadelle/SeoNoIndex";
 
 export default function CitadelleRegister() {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ first_name: "", last_name: "", email: "", password: "", confirm: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,7 +24,7 @@ export default function CitadelleRegister() {
   const [showCGU, setShowCGU] = useState(false);
   const { login } = useCitadelleAuth();
   const navigate = useNavigate();
-  useCitadellePageMeta("Inscription");
+  useCitadellePageMeta(t('auth.register_title'));
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -30,12 +32,12 @@ export default function CitadelleRegister() {
   };
 
   const validate = () => {
-    if (!form.first_name.trim() || !form.last_name.trim()) return "Prénom et nom obligatoires";
-    if (!form.email) return "Email obligatoire";
-    if (form.password.length < 8) return "Le mot de passe doit contenir au moins 8 caractères";
-    if (!/[A-Z]/.test(form.password)) return "Le mot de passe doit contenir au moins une majuscule";
-    if (!/\d/.test(form.password)) return "Le mot de passe doit contenir au moins un chiffre";
-    if (form.password !== form.confirm) return "Les mots de passe ne correspondent pas";
+    if (!form.first_name.trim() || !form.last_name.trim()) return t('auth.err_fields_required');
+    if (!form.email) return t('auth.err_email_required');
+    if (form.password.length < 8) return t('auth.err_password_length');
+    if (!/[A-Z]/.test(form.password)) return t('auth.err_password_uppercase');
+    if (!/\d/.test(form.password)) return t('auth.err_password_digit');
+    if (form.password !== form.confirm) return t('auth.err_password_match');
     return null;
   };
 
@@ -66,7 +68,7 @@ export default function CitadelleRegister() {
       setTimeout(() => navigate("/citadelle/espace-membre"), 1500);
     } catch (err) {
       setShowCGU(false);
-      setError(err.response?.data?.detail || "Une erreur est survenue lors de l'inscription");
+      setError(err.response?.data?.detail || t('auth.err_register'));
     } finally {
       setLoading(false);
     }
@@ -77,8 +79,8 @@ export default function CitadelleRegister() {
       <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
         <div className="text-center">
           <CheckCircle size={64} style={{ color: CITADELLE_COLORS.gold }} className="mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white" style={{ fontFamily: "'Montserrat', sans-serif" }}>Compte créé avec succès !</h2>
-          <p className="mt-2" style={{ color: "rgba(255,255,255,0.6)" }}>Redirection vers votre espace membre...</p>
+          <h2 className="text-2xl font-bold text-white" style={{ fontFamily: "'Montserrat', sans-serif" }}>{t('auth.register_success')}</h2>
+          <p className="mt-2" style={{ color: "rgba(255,255,255,0.6)" }}>{t('auth.register_success_sub')}</p>
         </div>
       </div>
     );
@@ -101,10 +103,10 @@ export default function CitadelleRegister() {
             <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-20 w-auto mx-auto mb-4" />
           </Link>
           <h1 className="text-2xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif", color: "white" }}>
-            Créer un compte
+            {t('auth.register_title')}
           </h1>
           <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.5)" }}>
-            Rejoignez la Citadelle — Publication gratuite
+            {t('auth.register_sub')}
           </p>
         </div>
 
@@ -122,14 +124,14 @@ export default function CitadelleRegister() {
             {/* Prénom + Nom */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>Prénom</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>{t('auth.firstname_label')}</label>
                 <input type="text" name="first_name" value={form.first_name} onChange={handleChange}
                   placeholder="Jean" className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                   style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "white" }}
                   data-testid="citadelle-register-firstname" />
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>Nom</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>{t('auth.lastname_label')}</label>
                 <input type="text" name="last_name" value={form.last_name} onChange={handleChange}
                   placeholder="Dupont" className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                   style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "white" }}
@@ -139,7 +141,7 @@ export default function CitadelleRegister() {
 
             {/* Email */}
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>Adresse email</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>{t('auth.email_label')}</label>
               <input type="email" name="email" value={form.email} onChange={handleChange}
                 placeholder="jean.dupont@email.fr" autoComplete="email" className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                 style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "white" }}
@@ -148,7 +150,7 @@ export default function CitadelleRegister() {
 
             {/* Mot de passe */}
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>Mot de passe</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>{t('auth.password_label')}</label>
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} name="password" value={form.password} onChange={handleChange}
                   placeholder="Min. 8 caractères, 1 majuscule, 1 chiffre" className="w-full px-3 py-2.5 pr-10 rounded-xl text-sm outline-none"
@@ -162,7 +164,7 @@ export default function CitadelleRegister() {
 
             {/* Confirmation */}
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>Confirmer le mot de passe</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>{t('auth.confirm_label')}</label>
               <input type="password" name="confirm" value={form.confirm} onChange={handleChange}
                 placeholder="••••••••" className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                 style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "white" }}
@@ -182,7 +184,7 @@ export default function CitadelleRegister() {
               ) : (
                 <>
                   <UserPlus size={16} />
-                  Créer mon compte gratuitement
+                  {t('auth.submit_register')}
                 </>
               )}
             </button>
@@ -190,9 +192,9 @@ export default function CitadelleRegister() {
 
           <div className="mt-5 text-center">
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Déjà un compte ?{" "}
+              {t('auth.already_account')}{" "}
               <Link to="/citadelle/connexion" className="font-semibold" style={{ color: CITADELLE_COLORS.gold }} data-testid="citadelle-register-login-link">
-                Se connecter
+                {t('auth.sign_in')}
               </Link>
             </p>
           </div>
@@ -200,7 +202,7 @@ export default function CitadelleRegister() {
 
         <div className="mt-4 flex items-center justify-center gap-2 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
           <Shield size={12} />
-          Vos données sont protégées — Aucun paiement requis
+          {t('auth.data_protected')}
         </div>
       </div>
 

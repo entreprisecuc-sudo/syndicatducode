@@ -1,9 +1,10 @@
 /**
  * Mentions Légales — La Citadelle Numérique
  */
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
-import { Helmet } from "react-helmet-async";
-import { CITADELLE_COLORS, CITADELLE_PUBLIC_URL } from "@/config/citadelleConstants";
+import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 
 const Section = ({ title, children }) => (
   <div className="mb-8">
@@ -24,22 +25,30 @@ const Row = ({ label, value }) => (
 );
 
 export default function CitadelleMentionsLegales() {
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('legal.mentions_title')} | La Citadelle Numérique`;
+  }, [t]);
+
   return (
     <CitadelleLayout>
-      <Helmet>
-        <title>Mentions Légales | La Citadelle Numérique</title>
-        <meta name="description" content="Mentions légales de La Citadelle Numérique : éditeur du site, hébergeur, propriété intellectuelle et coordonnées de l'entreprise." />
-        <link rel="canonical" href={`${CITADELLE_PUBLIC_URL}/citadelle/mentions-legales`} />
-      </Helmet>
       {/* En-tête */}
       <div className="py-14 text-center" style={{ background: `linear-gradient(135deg, ${CITADELLE_COLORS.night} 0%, ${CITADELLE_COLORS.blue} 100%)` }}>
-        <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: CITADELLE_COLORS.gold }}>La Citadelle Numérique</p>
-        <h1 className="font-black text-3xl" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>Mentions Légales</h1>
-        <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.5)" }}>Dernière mise à jour : juin 2026</p>
+        <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: CITADELLE_COLORS.gold }}>{t('legal.mentions_badge')}</p>
+        <h1 className="font-black text-3xl" style={{ color: "white", fontFamily: "'Montserrat', sans-serif" }}>{t('legal.mentions_title')}</h1>
+        <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.5)" }}>{t('legal.mentions_updated')}</p>
       </div>
 
       {/* Contenu */}
       <div className="max-w-3xl mx-auto px-4 md:px-8 py-14" data-testid="mentions-legales-content">
+
+        {t('legal.fr_only_notice') && (
+          <div className="p-4 rounded-xl mb-6 text-sm flex items-start gap-3" style={{ background: "rgba(201,164,92,0.1)", border: `1px solid ${CITADELLE_COLORS.gold}50`, color: "#666" }}>
+            <span className="text-lg leading-none">⚠️</span>
+            <span>{t('legal.fr_only_notice')}</span>
+          </div>
+        )}
 
         <Section title="1. Éditeur du site">
           <Row label="Raison sociale" value="JOERKE.B" />

@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import { X, Mail, Lock, Eye, EyeOff, User, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import citadelleApi from "@/services/citadelleApi";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
@@ -22,6 +23,7 @@ const GoogleIcon = () => (
 );
 
 export default function CitadelleAuthModal({ isOpen, onClose, onSuccess, listingTitle }) {
+  const { t } = useTranslation();
   const { login } = useCitadelleAuth();
   const [tab, setTab] = useState("login");
 
@@ -56,7 +58,7 @@ export default function CitadelleAuthModal({ isOpen, onClose, onSuccess, listing
       onSuccess && onSuccess();
       onClose();
     } catch (err) {
-      setLoginError(err.response?.data?.detail || "Email ou mot de passe incorrect");
+      setLoginError(err.response?.data?.detail || t('auth.err_email_password'));
     } finally {
       setLoginLoading(false);
     }
@@ -75,7 +77,7 @@ export default function CitadelleAuthModal({ isOpen, onClose, onSuccess, listing
       onSuccess && onSuccess();
       onClose();
     } catch (err) {
-      setRegError(err.response?.data?.detail || "Erreur lors de l'inscription");
+      setRegError(err.response?.data?.detail || t('auth.err_register'));
     } finally {
       setRegLoading(false);
     }
@@ -99,7 +101,7 @@ export default function CitadelleAuthModal({ isOpen, onClose, onSuccess, listing
         <div className="flex items-center justify-between px-6 pt-6 pb-4">
           <div>
             <h2 className="text-lg font-bold" style={{ color: CITADELLE_COLORS.text }}>
-              {listingTitle ? "Accédez à cette annonce" : "Espace Citadelle"}
+              {listingTitle ? t('auth.modal_title_listing') : t('auth.modal_title')}
             </h2>
             {listingTitle && (
               <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.gold }}>
@@ -119,29 +121,29 @@ export default function CitadelleAuthModal({ isOpen, onClose, onSuccess, listing
             className="w-full flex items-center justify-center gap-3 py-3 rounded-xl font-medium text-sm transition-all hover:opacity-90 active:scale-95"
             style={{ background: "white", color: "#333" }}>
             <GoogleIcon />
-            Continuer avec Google
+            {t('auth.continue_google')}
           </button>
         </div>
 
         {/* Séparateur */}
         <div className="flex items-center gap-3 px-6 pb-4">
           <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.1)" }} />
-          <span className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>ou</span>
+          <span className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>{t('auth.or')}</span>
           <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.1)" }} />
         </div>
 
         {/* Onglets */}
         <div className="flex mx-6 mb-4 rounded-xl overflow-hidden"
           style={{ background: "rgba(255,255,255,0.06)" }}>
-          {["login", "register"].map(t => (
-            <button key={t} onClick={() => setTab(t)}
+          {["login", "register"].map(tabKey => (
+            <button key={tabKey} onClick={() => setTab(tabKey)}
               className="flex-1 py-2 text-sm font-medium transition-all"
               style={{
-                background: tab === t ? CITADELLE_COLORS.gold : "transparent",
-                color: tab === t ? CITADELLE_COLORS.night : CITADELLE_COLORS.textMuted,
+                background: tab === tabKey ? CITADELLE_COLORS.gold : "transparent",
+                color: tab === tabKey ? CITADELLE_COLORS.night : CITADELLE_COLORS.textMuted,
                 borderRadius: "10px"
               }}>
-              {t === "login" ? "Se connecter" : "Créer un compte"}
+              {tabKey === "login" ? t('auth.submit_login') : t('auth.create_account')}
             </button>
           ))}
         </div>
@@ -174,7 +176,7 @@ export default function CitadelleAuthModal({ isOpen, onClose, onSuccess, listing
             <button type="submit" disabled={loginLoading} data-testid="modal-login-btn"
               className="w-full py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50"
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-              {loginLoading ? "Connexion..." : "Se connecter"}
+              {loginLoading ? t('auth.modal_login_loading') : t('auth.submit_login')}
             </button>
           </form>
         )}
@@ -219,12 +221,12 @@ export default function CitadelleAuthModal({ isOpen, onClose, onSuccess, listing
               </button>
             </div>
             <p className="text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
-              En créant un compte, vous acceptez nos <span style={{ color: CITADELLE_COLORS.gold }}>CGU</span>.
+              {t('auth.modal_cgu_notice')}
             </p>
             <button type="submit" disabled={regLoading} data-testid="modal-register-btn"
               className="w-full py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50"
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-              {regLoading ? "Création..." : "Créer mon compte"}
+              {regLoading ? t('auth.modal_register_loading') : t('auth.modal_register_btn')}
             </button>
           </form>
         )}
