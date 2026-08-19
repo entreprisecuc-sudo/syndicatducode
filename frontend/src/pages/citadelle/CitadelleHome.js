@@ -16,6 +16,7 @@ import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import NewsletterSection from "@/components/citadelle/NewsletterSection";
 import ListingsCarousel from "@/components/citadelle/ListingsCarousel";
 import { CITADELLE_COLORS, CITADELLE_CATEGORIES, CITADELLE_SERVICES } from "@/config/citadelleConstants";
+import { localizeCategory, localizeHomeService } from "@/i18n/configCatalogEn";
 
 // ── Icônes par slug ───────────────────────────────────────────────────────────
 
@@ -308,7 +309,7 @@ const BUDGET_OPTIONS = [
 ];
 
 const SearchBar = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [keyword, setKeyword] = useState("");
   const [type, setType] = useState("");
   const [budget, setBudget] = useState("");
@@ -350,7 +351,7 @@ const SearchBar = () => {
             style={{ color: type ? "white" : "rgba(255,255,255,0.45)" }} data-testid="citadelle-search-type">
             <option value="" style={{ background: "#0F2747" }}>{t("hp.sb_type_default")}</option>
             {CITADELLE_CATEGORIES.map(c => (
-              <option key={c.slug} value={c.slug} style={{ background: "#0F2747" }}>{c.label}</option>
+              <option key={c.slug} value={c.slug} style={{ background: "#0F2747" }}>{localizeCategory(c, i18n.language).label}</option>
             ))}
           </select>
         </div>
@@ -394,7 +395,7 @@ const SearchBar = () => {
               style={{ color: type ? "white" : "rgba(255,255,255,0.45)" }}>
               <option value="" style={{ background: "#0F2747" }}>{t("hp.sb_type_short")}</option>
               {CITADELLE_CATEGORIES.map(c => (
-                <option key={c.slug} value={c.slug} style={{ background: "#0F2747" }}>{c.label}</option>
+                <option key={c.slug} value={c.slug} style={{ background: "#0F2747" }}>{localizeCategory(c, i18n.language).label}</option>
               ))}
             </select>
           </div>
@@ -515,7 +516,7 @@ const HeroSection = () => {
 // ── Section Catégories ────────────────────────────────────────────────────────
 
 const CategoriesSection = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   return (
     <section className="py-20" style={{ background: CITADELLE_COLORS.bg }} data-testid="citadelle-categories">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -527,7 +528,8 @@ const CategoriesSection = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {CITADELLE_CATEGORIES.map((cat) => {
+          {CITADELLE_CATEGORIES.map((rawCat) => {
+            const cat = localizeCategory(rawCat, i18n.language);
             const Icon = CATEGORY_ICONS[cat.icon] || Globe;
             return (
               <Link
@@ -693,7 +695,7 @@ const HowItWorksSection = () => {
 // ── Section Services ──────────────────────────────────────────────────────────
 
 const ServicesSection = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   return (
     <section className="py-20" style={{ background: "white" }} data-testid="citadelle-services">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -705,7 +707,8 @@ const ServicesSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {CITADELLE_SERVICES.map((service) => {
+          {CITADELLE_SERVICES.map((rawService) => {
+            const service = localizeHomeService(rawService, i18n.language);
             const Icon = SERVICE_ICONS[service.icon] || Shield;
             return (
               <div

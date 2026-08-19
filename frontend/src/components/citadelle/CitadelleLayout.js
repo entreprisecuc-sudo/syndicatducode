@@ -274,7 +274,7 @@ const CitadelleFooter = () => {
         <div>
           <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-14 w-auto mb-4" />
           <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
-            {CITADELLE_CONFIG.description}
+            {t("footer.description")}
           </p>
           <p className="text-xs mt-3 font-semibold tracking-wider" style={{ color: CITADELLE_COLORS.gold }}>
             {t("footer.tagline")}

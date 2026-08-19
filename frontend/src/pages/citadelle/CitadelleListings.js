@@ -14,26 +14,27 @@ import { useModal } from "@/context/ModalContext";
 import citadelleApi from "@/services/citadelleApi";
 import { useTranslation } from "react-i18next";
 import { CITADELLE_COLORS, CITADELLE_ALL_CATEGORIES } from "@/config/citadelleConstants";
+import { localizeCategory } from "@/i18n/configCatalogEn";
 
 const BUDGET_OPTIONS = [
-  { value: "", label: "Tous budgets" },
-  { value: "0-5000", label: "< 5 000 €" },
-  { value: "5000-20000", label: "5 000 – 20 000 €" },
-  { value: "20000-50000", label: "20 000 – 50 000 €" },
-  { value: "50000-100000", label: "50 000 – 100 000 €" },
-  { value: "100000+", label: "> 100 000 €" },
+  { value: "", key: "budget_all" },
+  { value: "0-5000", key: "budget_lt5k" },
+  { value: "5000-20000", key: "budget_5k20k" },
+  { value: "20000-50000", key: "budget_20k50k" },
+  { value: "50000-100000", key: "budget_50k100k" },
+  { value: "100000+", key: "budget_gt100k" },
 ];
 
 const SORT_OPTIONS = [
-  { value: "recent", label: "Plus récent" },
-  { value: "price_asc", label: "Prix croissant" },
-  { value: "price_desc", label: "Prix décroissant" },
-  { value: "revenue", label: "Revenus" },
+  { value: "recent", key: "sort_recent" },
+  { value: "price_asc", key: "sort_price_asc" },
+  { value: "price_desc", key: "sort_price_desc" },
+  { value: "revenue", key: "sort_revenue" },
 ];
 
 export default function CitadelleListings() {
   const { openModal } = useModal();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [listings, setListings] = useState([]);
   const [total, setTotal] = useState(0);
@@ -125,7 +126,7 @@ export default function CitadelleListings() {
             style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
             data-testid="listings-filter-type">
             <option value="">{t('listings.all_types')}</option>
-            {CITADELLE_ALL_CATEGORIES.map(c => <option key={c.slug} value={c.slug}>{c.label}</option>)}
+            {CITADELLE_ALL_CATEGORIES.map(c => { const lc = localizeCategory(c, i18n.language); return <option key={c.slug} value={c.slug}>{lc.label}</option>; })}
           </select>
 
           {/* Budget */}
@@ -133,7 +134,7 @@ export default function CitadelleListings() {
             className="px-3 py-2 rounded-lg text-sm outline-none cursor-pointer"
             style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
             data-testid="listings-filter-budget">
-            {BUDGET_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {BUDGET_OPTIONS.map(o => <option key={o.value} value={o.value}>{t(`listings.${o.key}`)}</option>)}
           </select>
 
           {/* Tri */}
@@ -141,7 +142,7 @@ export default function CitadelleListings() {
             className="px-3 py-2 rounded-lg text-sm outline-none cursor-pointer"
             style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}
             data-testid="listings-sort">
-            {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{t(`listings.${o.key}`)}</option>)}
           </select>
 
           {(q || type || budget) && (
@@ -304,14 +305,14 @@ export default function CitadelleListings() {
                     className="text-2xl md:text-3xl font-bold mb-2"
                     style={{ color: CITADELLE_COLORS.blue }}
                   >
-                    Le projet de vos rêves n'existe pas encore ? Créons-le.
+                    {t('listings.syndicat_title')}
                   </h3>
                   <p className="text-sm md:text-base" style={{ color: "#4A5568" }}>
-                    Quand la perle rare n'est pas sur La Citadelle,{" "}
+                    {t('listings.syndicat_desc_a')}
                     <span className="font-semibold" style={{ color: CITADELLE_COLORS.blue }}>
-                      notre partenaire le Syndicat du Code
-                    </span>{" "}
-                    la façonne pour vous : sites, applications, SaaS — construits sur mesure.
+                      {t('listings.syndicat_partner')}
+                    </span>
+                    {t('listings.syndicat_desc_b')}
                   </p>
                 </div>
 
@@ -323,7 +324,7 @@ export default function CitadelleListings() {
                     className="px-8 py-4 rounded-xl font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg whitespace-nowrap"
                     style={{ background: "linear-gradient(135deg, var(--sage-dark, #2F4A38), var(--sage, #4A6B4F))" }}
                   >
-                    Parler de mon projet
+                    {t('listings.syndicat_cta')}
                   </button>
                 </div>
               </div>

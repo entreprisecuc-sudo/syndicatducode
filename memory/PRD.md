@@ -975,3 +975,23 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - P0 : CitadelleEstimation.js (1049 lignes) — NON commencé.
 - P1 : espace membre (profil, mes-annonces, messages, transactions, factures, notifications...) + composants (MemberActivityPanel, MemberEarningsPanel...).
 - IMPORTANT : le FOOTER partagé (CitadelleLayout.js) contient encore du FR (NAVIGATION/VENDEURS/ACHETEURS + descriptions) — visible sur TOUTES les pages, à traduire (P1).
+
+### MAJ Session 19/08 (suite 2) — décision client : SITE FULL ENGLISH (juridique inclus) + testing_agent AUTORISÉ
+#### Traduits & vérifiés (parité 100%, compile OK)
+- Accueil (hp) + gras SEO, Vendre, Fiche annonce, Services (+ catalogue EN data BDD serviceCatalogEn.js), composants services/paiement.
+- Catégories & services accueil : config traduite via i18n/configCatalogEn.js (localizeCategory/localizeHomeService, repli FR).
+- CitadelleListings.js : budgets, tri, catégories, encart Syndicat -> i18n.
+- CitadelleContact.js : erreur générique + placeholders -> i18n.
+#### RESTE (site full english)
+- P0 public : CitadelleEstimation.js (~34, dont FAQ/SEO longs) — NON commencé.
+- Espace membre : CreateListing(47), TransactionDetail(27), Profile(27), EditListing(10), MyTransactions(8), MyInvoices(3), MyTransmissions(2), panels, report buttons.
+- Secondaire : Parutions (aria), Register, ResetPassword, AuthModal, CGUAcceptanceModal, ImageUpload, MemberActivity, messageAttachments.
+- JURIDIQUE (à traduire EN complet) : CGU(86), CGV(69), Confidentialite(68), MentionsLegales(13).
+- testing_agent : autorisé par le client pour audit FR/EN complet.
+
+### MAJ Session 19/08 (suite 3) — testing_agent PASSÉ sur pages publiques
+- testing_agent iteration_29 : sélecteur FR<->EN OK + persistance localStorage. Pages Accueil/Services/Vendre/Annonces/Contact traduites et validées.
+- Corrigés suite audit : footer.description (constants -> i18n footer.description) + NewsletterSection.jsx (100% i18n, section newsletter). Parité OK, compile OK.
+- Résidu MEDIUM = descriptions annonces SEED en base (contenu BDD de test, pas i18n) -> non bloquant.
+#### RESTE (site full english)
+- CitadelleEstimation.js (P0), espace membre (CreateListing/TransactionDetail/Profile/EditListing/MyTransactions/MyInvoices/MyTransmissions/panels/report buttons), pages JURIDIQUES (CGU/CGV/Confidentialite/MentionsLegales, ~236 lignes), + petits (Parutions aria, Register, ResetPassword, AuthModal, CGUAcceptanceModal, ImageUpload).

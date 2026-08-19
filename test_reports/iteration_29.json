@@ -1,0 +1,33 @@
+{
+  "summary": "Frontend-only i18n audit of Citadelle public pages (Home, Services, Vendre, Annonces, Contact) in EN mode. Language switcher (data-testid='lang-switcher') works correctly: click toggles the whole app FR<->EN without reload, and localStorage 'citadelle_lang'='en' persists across navigations. Most content is translated (nav, hero, categories, search filters, service cards including 'Standard Estimate'/'Expert Estimate'/'La Garde Verification'/'Premium Secure Transaction', 'Included for free', 'How it works', FAQ, CTAs, Vendre steps/advantages/modes, listing filters/sort/budgets, Contact labels/placeholders/subject options, footer nav labels). However, three French residues remain in EN mode across pages.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Footer (citadelleConstants.js)", "issue": "Tagline 'La plateforme française dédiée à l'achat et à la vente d'actifs numériques.' is hardcoded in French and shown on the footer of EVERY citadelle page (Home, Services, Vendre, Annonces, Contact...). It is imported from src/config/citadelleConstants.js:12 (SITE_META.description) and rendered as-is regardless of i18n language.", "selector": "footer p (top block)", "priority": "HIGH"},
+      {"component": "NewsletterSection.jsx (Home)", "issue": "Entire newsletter block is hardcoded French, no i18n usage. Untranslated strings visible in EN mode: 'Recevez les nouvelles annonces chaque semaine' (line 79), 'Inscrivez-vous à notre newsletter et soyez le premier informé des nouveaux actifs numériques disponibles — sites, SaaS, e-commerce et plus encore.' (line 84), 'Sans spam · Désinscription en un clic dans chaque email · Conformité RGPD' (line 164). Likely also the email input placeholder and button label. File: /app/frontend/src/components/citadelle/NewsletterSection.jsx", "selector": "Home newsletter section", "priority": "HIGH"},
+      {"component": "CitadelleListings cards (seeded data)", "issue": "Some listing descriptions coming from the backend/seed data are in French and appear as-is on /citadelle/annonces even in EN mode, e.g. 'Blog fitness et santé avec 30k visiteurs/mois et 1800€ de revenus mensuels' and 'Blog culinaire français avec 45k visiteurs/mois et 2500€ de revenus publicitaires'. This is DB content, not an i18n key — either translate the seed data or add a translated field on the listing model.", "selector": "[data-testid^='listing-card']", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "All Citadelle pages (React DevTools console)", "issues": ["Recurring React hydration warning: '<span> cannot be a child of <select>' — a <span data-ve-dynamic='true'> wrapper is being inserted between <select> and <option> in CitadelleHome SearchBar (line 349/352), CitadelleListings filter (line 124/128) and CitadelleContact select (line 165/174). Non-blocking but noisy; likely a Visual Edits/dynamic-content wrapper leaking into invalid HTML positions."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "In src/config/citadelleConstants.js, replace SITE_META.description with an i18n key (e.g. footer.tagline) and use t('footer.tagline') where the footer renders the description. Add EN translation 'The French marketplace dedicated to buying and selling digital assets.' (or similar) in en.json.",
+    "Refactor components/citadelle/NewsletterSection.jsx to use useTranslation() and move all hardcoded FR strings (title, subtitle, disclaimer, placeholder, button) into fr.json + en.json.",
+    "Translate seeded listing descriptions (Blog fitness/culinaire) or add an English translation field on the listing model so /citadelle/annonces has no French text in EN mode.",
+    "(Optional/low) Remove the invalid <span data-ve-dynamic> wrapper injected between <select> and <option> to silence React hydration warnings on Home, Annonces, and Contact."
+  ],
+  "critical_code_review_comments": [
+    "i18n coverage is not enforced: two components (NewsletterSection, footer description via constants) bypass react-i18next entirely. Consider a lint rule / grep guard in CI that fails when Citadelle components ship untranslated user-facing FR strings.",
+    "Mixing raw DB content with i18n UI is a recurring pitfall; either localize seeds or expose title_en/description_en fields on listings and read the right one via i18n.language."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "~85% (switcher + 5 pages translated except footer tagline, Home newsletter block, and French seed listings)"},
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Language toggle via data-testid='lang-switcher' works and persists in localStorage 'citadelle_lang'. To force EN before any nav: await page.evaluate(\"localStorage.setItem('citadelle_lang','en')\") then goto. When re-checking, verify: (1) footer tagline no longer contains 'La plateforme française dédiée...' in EN mode across all citadelle pages, (2) Home newsletter block reads in English, (3) /citadelle/annonces has no French sentences in listing cards. Ignore 'La Garde', 'La Citadelle Numérique', 'Syndicat du Code' — those are brand names kept intentionally.",
+  "rca of the issue": "Two components were not migrated to i18n during the FR->EN localization pass: (a) src/config/citadelleConstants.js SITE_META.description is a plain string consumed by the footer, so the footer tagline is language-agnostic and always French; (b) src/components/citadelle/NewsletterSection.jsx contains hardcoded French JSX with no useTranslation() import. Additionally, /citadelle/annonces displays raw backend listing.description values that were seeded in French only. Reproduction: localStorage.setItem('citadelle_lang','en'); reload /citadelle -> scroll to footer and newsletter -> French strings visible. Mitigation: introduce t() calls with new keys in fr.json/en.json for both components, and either localize DB seeds or add English fields on listings."
+}

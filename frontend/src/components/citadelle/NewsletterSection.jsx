@@ -6,9 +6,11 @@
 
 import { useState } from "react";
 import { Mail, Bell, ArrowRight, CheckCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { CITADELLE_COLORS, CITADELLE_API_URL } from "@/config/citadelleConstants";
 
 export default function NewsletterSection() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle | loading | success | error
   const [message, setMessage] = useState("");
@@ -31,15 +33,15 @@ export default function NewsletterSection() {
 
       if (res.ok) {
         setStatus("success");
-        setMessage(data.message || "Inscription réussie !");
+        setMessage(data.message || t("newsletter.success_default"));
         setEmail("");
       } else {
         setStatus("error");
-        setMessage(data.detail || "Une erreur est survenue.");
+        setMessage(data.detail || t("newsletter.error_generic"));
       }
     } catch {
       setStatus("error");
-      setMessage("Impossible de contacter le serveur. Veuillez réessayer.");
+      setMessage(t("newsletter.error_network"));
     }
   };
 
@@ -76,13 +78,12 @@ export default function NewsletterSection() {
             color: "white",
           }}
         >
-          Recevez les nouvelles annonces chaque semaine
+          {t("newsletter.title")}
         </h2>
 
         {/* Sous-titre */}
         <p className="mb-8" style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.95rem", lineHeight: 1.7 }}>
-          Inscrivez-vous à notre newsletter et soyez le premier informé des nouveaux actifs
-          numériques disponibles — sites, SaaS, e-commerce et plus encore.
+          {t("newsletter.subtitle")}
         </p>
 
         {/* Formulaire ou confirmation */}
@@ -111,7 +112,7 @@ export default function NewsletterSection() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="votre@email.com"
+                placeholder={t("newsletter.ph_email")}
                 required
                 disabled={status === "loading"}
                 className="bg-transparent outline-none text-sm w-full placeholder-white/40"
@@ -136,11 +137,11 @@ export default function NewsletterSection() {
                     className="w-4 h-4 border-2 rounded-full animate-spin"
                     style={{ borderColor: `${CITADELLE_COLORS.night}30`, borderTopColor: CITADELLE_COLORS.night }}
                   />
-                  Inscription...
+                  {t("newsletter.subscribing")}
                 </>
               ) : (
                 <>
-                  M&apos;inscrire
+                  {t("newsletter.subscribe")}
                   <ArrowRight size={15} />
                 </>
               )}
@@ -161,7 +162,7 @@ export default function NewsletterSection() {
 
         {/* Mention RGPD */}
         <p className="mt-5 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-          Sans spam · Désinscription en un clic dans chaque email · Conformité RGPD
+          {t("newsletter.rgpd")}
         </p>
       </div>
     </section>

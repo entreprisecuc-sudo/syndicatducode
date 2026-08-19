@@ -28,13 +28,28 @@
       "privacy": "Confidentialité (RGPD)",
       "legal": "Mentions légales"
     },
-    "seller_services": ["Estimation Standard","Estimation Expert","Vérification La Garde","Accompagnement Vente Premium","Vente aux enchères"],
-    "buyer_services": ["Audit SEO","Audit Sécurité","Migration de site","Refonte / Optimisation","Transaction Sécurisée Premium"],
+    "seller_services": [
+      "Estimation Standard",
+      "Estimation Expert",
+      "Vérification La Garde",
+      "Accompagnement Vente Premium",
+      "Vente aux enchères"
+    ],
+    "buyer_services": [
+      "Audit SEO",
+      "Audit Sécurité",
+      "Migration de site",
+      "Refonte / Optimisation",
+      "Transaction Sécurisée Premium"
+    ],
     "syndicate": "Un service du Syndicat du Code",
     "copyright": "Tous droits réservés.",
-    "tagline": "Plateforme française — Transactions sécurisées"
+    "tagline": "Plateforme française — Transactions sécurisées",
+    "description": "La plateforme française dédiée à l'achat et à la vente d'actifs numériques."
   },
-  "lang_switcher": { "label": "Langue" },
+  "lang_switcher": {
+    "label": "Langue"
+  },
   "home": {
     "badge": "Plateforme française sécurisée",
     "hero_h1_1": "Achetez.",
@@ -90,7 +105,22 @@
     "empty_default": "Soyez le premier à publier un actif numérique",
     "empty_cta": "Publier une annonce",
     "load_more": "Voir plus d'annonces",
-    "result_count": "{{count}} résultat(s)"
+    "result_count": "{{count}} résultat(s)",
+    "budget_all": "Tous budgets",
+    "budget_lt5k": "< 5 000 €",
+    "budget_5k20k": "5 000 – 20 000 €",
+    "budget_20k50k": "20 000 – 50 000 €",
+    "budget_50k100k": "50 000 – 100 000 €",
+    "budget_gt100k": "> 100 000 €",
+    "sort_recent": "Plus récent",
+    "sort_price_asc": "Prix croissant",
+    "sort_price_desc": "Prix décroissant",
+    "sort_revenue": "Revenus",
+    "syndicat_title": "Le projet de vos rêves n'existe pas encore ? Créons-le.",
+    "syndicat_desc_a": "Quand la perle rare n'est pas sur La Citadelle, ",
+    "syndicat_partner": "notre partenaire le Syndicat du Code",
+    "syndicat_desc_b": " la façonne pour vous : sites, applications, SaaS — construits sur mesure.",
+    "syndicat_cta": "Parler de mon projet"
   },
   "listing_detail": {
     "back": "Retour aux annonces",
@@ -308,7 +338,12 @@
     "garde_title": "La Garde veille sur chaque transaction",
     "garde_p1": "La Garde accompagne les vendeurs et les acheteurs afin d'assurer des transactions transparentes, sécurisées et professionnelles.",
     "garde_p2": "Nos experts peuvent intervenir depuis l'évaluation du projet jusqu'à la validation finale du transfert.",
-    "garde_chips": ["Séquestre des fonds", "Vérification des accès", "Gestion des litiges", "Transmission sécurisée"],
+    "garde_chips": [
+      "Séquestre des fonds",
+      "Vérification des accès",
+      "Gestion des litiges",
+      "Transmission sécurisée"
+    ],
     "faq_h2": "Vous avez des questions ?",
     "faq_not_listed": "Une question non répertoriée ?",
     "faq_contact": "Contactez-nous",
@@ -316,37 +351,128 @@
     "cta_sub": "Publiez votre annonce gratuitement et trouvez le bon acheteur grâce à La Citadelle Numérique.",
     "cta_note": "Gratuit · Validé sous 24h · Commission 5% uniquement si la vente aboutit",
     "avantages": [
-      { "titre": "Transaction sécurisée", "texte": "Toutes les ventes sont protégées par notre système de transaction sécurisée. Les fonds sont placés en séquestre jusqu'à la validation finale du transfert." },
-      { "titre": "Réseau d'acheteurs qualifiés", "texte": "Votre projet est présenté à une audience ciblée d'investisseurs et d'entrepreneurs activement à la recherche d'actifs numériques." },
-      { "titre": "Expertise indépendante", "texte": "Possibilité d'obtenir une évaluation professionnelle de votre projet par nos experts certifiés afin de valoriser votre annonce au juste prix." },
-      { "titre": "Accompagnement personnalisé", "texte": "La Garde et les partenaires du Syndicat du Code peuvent vous accompagner avant, pendant et après la vente selon vos besoins." }
+      {
+        "titre": "Transaction sécurisée",
+        "texte": "Toutes les ventes sont protégées par notre système de transaction sécurisée. Les fonds sont placés en séquestre jusqu'à la validation finale du transfert."
+      },
+      {
+        "titre": "Réseau d'acheteurs qualifiés",
+        "texte": "Votre projet est présenté à une audience ciblée d'investisseurs et d'entrepreneurs activement à la recherche d'actifs numériques."
+      },
+      {
+        "titre": "Expertise indépendante",
+        "texte": "Possibilité d'obtenir une évaluation professionnelle de votre projet par nos experts certifiés afin de valoriser votre annonce au juste prix."
+      },
+      {
+        "titre": "Accompagnement personnalisé",
+        "texte": "La Garde et les partenaires du Syndicat du Code peuvent vous accompagner avant, pendant et après la vente selon vos besoins."
+      }
     ],
     "etapes": [
-      { "num": "01", "titre": "Publiez votre annonce gratuitement", "texte": "Créez votre annonce en quelques minutes. Publication gratuite, validation par notre équipe sous 24h.", "services": [] },
-      { "num": "02", "titre": "Recevez les premières demandes", "texte": "Les acheteurs intéressés vous contactent directement via notre messagerie sécurisée. Répondez à leurs questions et échangez librement.", "services": [] },
-      { "num": "03", "titre": "Choisissez les services adaptés", "texte": "Boostez votre vente avec les services professionnels de La Citadelle :", "services": ["Estimation Standard", "Estimation Expert", "Vérification La Garde", "Accompagnement Vente Premium"] },
-      { "num": "04", "titre": "Finalisez via notre système sécurisé", "texte": "Acceptez l'offre de votre choix. Le paiement est sécurisé et les fonds bloqués jusqu'à la livraison complète du projet.", "services": [] },
-      { "num": "05", "titre": "Transférez votre projet", "texte": "Transmettez les accès à l'acheteur avec ou sans assistance technique de nos partenaires. La Garde supervise la clôture.", "services": [] }
+      {
+        "num": "01",
+        "titre": "Publiez votre annonce gratuitement",
+        "texte": "Créez votre annonce en quelques minutes. Publication gratuite, validation par notre équipe sous 24h.",
+        "services": []
+      },
+      {
+        "num": "02",
+        "titre": "Recevez les premières demandes",
+        "texte": "Les acheteurs intéressés vous contactent directement via notre messagerie sécurisée. Répondez à leurs questions et échangez librement.",
+        "services": []
+      },
+      {
+        "num": "03",
+        "titre": "Choisissez les services adaptés",
+        "texte": "Boostez votre vente avec les services professionnels de La Citadelle :",
+        "services": [
+          "Estimation Standard",
+          "Estimation Expert",
+          "Vérification La Garde",
+          "Accompagnement Vente Premium"
+        ]
+      },
+      {
+        "num": "04",
+        "titre": "Finalisez via notre système sécurisé",
+        "texte": "Acceptez l'offre de votre choix. Le paiement est sécurisé et les fonds bloqués jusqu'à la livraison complète du projet.",
+        "services": []
+      },
+      {
+        "num": "05",
+        "titre": "Transférez votre projet",
+        "texte": "Transmettez les accès à l'acheteur avec ou sans assistance technique de nos partenaires. La Garde supervise la clôture.",
+        "services": []
+      }
     ],
     "modes": [
-      { "titre": "Prix fixe", "texte": "Définissez librement le prix de vente de votre actif. L'acheteur peut contacter et acheter au prix affiché.", "badge": "Le plus courant" },
-      { "titre": "Prix négociable", "texte": "Les acheteurs peuvent proposer une offre inférieure à votre prix. Vous gardez le contrôle total en acceptant ou refusant.", "badge": null },
-      { "titre": "Vente aux enchères", "texte": "Définissez un prix minimum, une durée et laissez les acheteurs enchérir. La Transaction Sécurisée est active sur toutes les enchères.", "badge": "Popularité croissante" }
+      {
+        "titre": "Prix fixe",
+        "texte": "Définissez librement le prix de vente de votre actif. L'acheteur peut contacter et acheter au prix affiché.",
+        "badge": "Le plus courant"
+      },
+      {
+        "titre": "Prix négociable",
+        "texte": "Les acheteurs peuvent proposer une offre inférieure à votre prix. Vous gardez le contrôle total en acceptant ou refusant.",
+        "badge": null
+      },
+      {
+        "titre": "Vente aux enchères",
+        "texte": "Définissez un prix minimum, une durée et laissez les acheteurs enchérir. La Transaction Sécurisée est active sur toutes les enchères.",
+        "badge": "Popularité croissante"
+      }
     ],
     "services": [
-      { "titre": "Estimation Standard", "texte": "Connaître rapidement la valeur de son projet grâce à notre méthode d'analyse propriétaire.", "type": "49 €" },
-      { "titre": "Estimation Expert", "texte": "Obtenir une expertise complète avec rapport PDF détaillé pour maximiser votre prix de vente.", "type": "149 €" },
-      { "titre": "Vérification La Garde", "texte": "Obtenez le badge « Vérifié par La Garde » pour rassurer les acheteurs et accélérer la vente.", "type": "99 €" },
-      { "titre": "Accompagnement Vente Premium", "texte": "Soyez accompagné à chaque étape de la vente, de la rédaction de l'annonce jusqu'à la signature.", "type": "399 €" }
+      {
+        "titre": "Estimation Standard",
+        "texte": "Connaître rapidement la valeur de son projet grâce à notre méthode d'analyse propriétaire.",
+        "type": "49 €"
+      },
+      {
+        "titre": "Estimation Expert",
+        "texte": "Obtenir une expertise complète avec rapport PDF détaillé pour maximiser votre prix de vente.",
+        "type": "149 €"
+      },
+      {
+        "titre": "Vérification La Garde",
+        "texte": "Obtenez le badge « Vérifié par La Garde » pour rassurer les acheteurs et accélérer la vente.",
+        "type": "99 €"
+      },
+      {
+        "titre": "Accompagnement Vente Premium",
+        "texte": "Soyez accompagné à chaque étape de la vente, de la rédaction de l'annonce jusqu'à la signature.",
+        "type": "399 €"
+      }
     ],
     "faq": [
-      { "question": "Combien coûte la publication d'une annonce ?", "reponse": "La publication d'une annonce est entièrement gratuite. Aucun frais n'est appliqué tant que votre projet n'est pas vendu." },
-      { "question": "Quel est le montant de la commission ?", "reponse": "La commission de La Citadelle est de 5% du prix de vente final, avec un minimum de 49 €. Elle est uniquement prélevée en cas de vente aboutie." },
-      { "question": "Puis-je vendre aux enchères ?", "reponse": "Oui. Lors de la création de votre annonce, activez le mode Enchères, définissez un prix de réserve et une durée. Les acheteurs enchérissent jusqu'à la clôture." },
-      { "question": "Puis-je faire évaluer mon projet ?", "reponse": "Absolument. Nos services d'évaluation (Standard et Expert Certifiée) sont accessibles depuis la page Services. Une évaluation professionnelle rassure les acheteurs et valorise votre projet." },
-      { "question": "Qui réalise les refontes ?", "reponse": "Les refontes sont réalisées par les partenaires certifiés du Syndicat du Code, sous supervision de La Garde. Chaque intervention fait l'objet d'un devis et d'un suivi personnalisé." },
-      { "question": "Comment fonctionne la transaction sécurisée ?", "reponse": "Lorsqu'une offre est acceptée, les fonds de l'acheteur sont bloqués dans notre système de séquestre. Le vendeur transmet les accès, La Garde vérifie, et les fonds sont libérés après validation. Aucun transfert sans confirmation." },
-      { "question": "Que se passe-t-il en cas de litige ?", "reponse": "La Garde dispose d'un système de gestion des litiges intégré. L'acheteur ou le vendeur peut ouvrir un litige. Nos experts analysent la situation et proposent une résolution juste dans les meilleurs délais." }
+      {
+        "question": "Combien coûte la publication d'une annonce ?",
+        "reponse": "La publication d'une annonce est entièrement gratuite. Aucun frais n'est appliqué tant que votre projet n'est pas vendu."
+      },
+      {
+        "question": "Quel est le montant de la commission ?",
+        "reponse": "La commission de La Citadelle est de 5% du prix de vente final, avec un minimum de 49 €. Elle est uniquement prélevée en cas de vente aboutie."
+      },
+      {
+        "question": "Puis-je vendre aux enchères ?",
+        "reponse": "Oui. Lors de la création de votre annonce, activez le mode Enchères, définissez un prix de réserve et une durée. Les acheteurs enchérissent jusqu'à la clôture."
+      },
+      {
+        "question": "Puis-je faire évaluer mon projet ?",
+        "reponse": "Absolument. Nos services d'évaluation (Standard et Expert Certifiée) sont accessibles depuis la page Services. Une évaluation professionnelle rassure les acheteurs et valorise votre projet."
+      },
+      {
+        "question": "Qui réalise les refontes ?",
+        "reponse": "Les refontes sont réalisées par les partenaires certifiés du Syndicat du Code, sous supervision de La Garde. Chaque intervention fait l'objet d'un devis et d'un suivi personnalisé."
+      },
+      {
+        "question": "Comment fonctionne la transaction sécurisée ?",
+        "reponse": "Lorsqu'une offre est acceptée, les fonds de l'acheteur sont bloqués dans notre système de séquestre. Le vendeur transmet les accès, La Garde vérifie, et les fonds sont libérés après validation. Aucun transfert sans confirmation."
+      },
+      {
+        "question": "Que se passe-t-il en cas de litige ?",
+        "reponse": "La Garde dispose d'un système de gestion des litiges intégré. L'acheteur ou le vendeur peut ouvrir un litige. Nos experts analysent la situation et proposent une résolution juste dans les meilleurs délais."
+      }
     ]
   },
   "services": {
@@ -357,7 +483,14 @@
     "from_price": "À partir de",
     "order_cta": "Commander ce service",
     "promo_badge": "Promotion",
-    "popular_badge": "Populaire"
+    "popular_badge": "Populaire",
+    "btn_details": "Détails",
+    "btn_buy": "Acheter",
+    "btn_see": "Voir",
+    "free_title": "Inclus gratuitement",
+    "free_sub": "Fonctionnalités accessibles sans frais pour tout membre inscrit.",
+    "sellers_sub": "Évaluez, optimisez et valorisez votre projet avant la vente.",
+    "buyers_sub": "Sécurisez votre investissement avant et après l'acquisition."
   },
   "blog": {
     "page_title": "Blog",
@@ -437,7 +570,10 @@
       "Problème technique",
       "Partenariat",
       "Autre"
-    ]
+    ],
+    "error_generic": "Une erreur est survenue. Veuillez réessayer.",
+    "ph_name": "Jean Dupont",
+    "ph_email": "jean@exemple.fr"
   },
   "auth": {
     "login_title": "Connexion",
@@ -804,23 +940,87 @@
     "seo_buy_cta": "Voir les annonces",
     "seo_guarantees_title": "Nos garanties",
     "seo_guarantees": "Chaque vente de site internet est protégée par un séquestre : l'argent de l'acheteur n'est libéré qu'après la vérification et la transmission des accès par La Garde. En cas de désaccord, notre équipe assure une médiation et délivre une attestation de transmission qui officialise la cession. Vendeurs et acheteurs bénéficient ainsi d'un cadre professionnel, transparent et entièrement sécurisé pour acheter ou vendre un business en ligne.",
-    "seo_intro_kw": ["vente de sites internet", "vendre un site internet", "acheter un site internet"],
-    "seo_p1_kw": ["vente de business en ligne", "site internet à vendre"],
-    "seo_p2_kw": ["marketplace de sites internet", "vente de SaaS", "vente de boutiques e-commerce", "vente d'applications"],
-    "seo_guarantees_kw": ["séquestre", "médiation", "attestation de transmission"],
-    "hero_cats": ["Sites internet", "E-commerce", "SaaS", "Applications", "Comptes TikTok", "Comptes Instagram", "Pages Facebook", "Chaînes YouTube", "Noms de domaine"],
+    "seo_intro_kw": [
+      "vente de sites internet",
+      "vendre un site internet",
+      "acheter un site internet"
+    ],
+    "seo_p1_kw": [
+      "vente de business en ligne",
+      "site internet à vendre"
+    ],
+    "seo_p2_kw": [
+      "marketplace de sites internet",
+      "vente de SaaS",
+      "vente de boutiques e-commerce",
+      "vente d'applications"
+    ],
+    "seo_guarantees_kw": [
+      "séquestre",
+      "médiation",
+      "attestation de transmission"
+    ],
+    "hero_cats": [
+      "Sites internet",
+      "E-commerce",
+      "SaaS",
+      "Applications",
+      "Comptes TikTok",
+      "Comptes Instagram",
+      "Pages Facebook",
+      "Chaînes YouTube",
+      "Noms de domaine"
+    ],
     "est_faq": [
-      { "q": "Combien vaut mon site internet ?", "a": "La valeur de votre site se calcule en multipliant votre bénéfice net mensuel moyen par un multiple de marché (8x à 30x selon le type et l'ancienneté). Un site de contenu générant 1 000 €/mois vaut généralement entre 12 000 € et 18 000 € sur le marché français." },
-      { "q": "Comment estimer la valeur d'un site web en France ?", "a": "La méthode standard en France est le multiple de SDE : Valeur = Bénéfice net mensuel × Multiple. Ce multiple varie de 8x (site récent) à 30x (SaaS mature). Notre équipe réalise des estimations professionnelles gratuites basées sur vos vraies données." },
-      { "q": "Quel est le prix d'un site internet rentable à vendre ?", "a": "Un site rentable se vend entre 12 et 22 fois son bénéfice net mensuel en France. Les SaaS bien établis peuvent atteindre 22 à 30 fois. L'ancienneté, la diversification des revenus et la qualité SEO influencent fortement le multiple." }
+      {
+        "q": "Combien vaut mon site internet ?",
+        "a": "La valeur de votre site se calcule en multipliant votre bénéfice net mensuel moyen par un multiple de marché (8x à 30x selon le type et l'ancienneté). Un site de contenu générant 1 000 €/mois vaut généralement entre 12 000 € et 18 000 € sur le marché français."
+      },
+      {
+        "q": "Comment estimer la valeur d'un site web en France ?",
+        "a": "La méthode standard en France est le multiple de SDE : Valeur = Bénéfice net mensuel × Multiple. Ce multiple varie de 8x (site récent) à 30x (SaaS mature). Notre équipe réalise des estimations professionnelles gratuites basées sur vos vraies données."
+      },
+      {
+        "q": "Quel est le prix d'un site internet rentable à vendre ?",
+        "a": "Un site rentable se vend entre 12 et 22 fois son bénéfice net mensuel en France. Les SaaS bien établis peuvent atteindre 22 à 30 fois. L'ancienneté, la diversification des revenus et la qualité SEO influencent fortement le multiple."
+      }
     ],
     "home_faq": [
-      { "q": "Comment vendre un site internet sur La Citadelle Numérique ?", "a": "Créez un compte gratuit, publiez votre annonce (activité, technologies, trafic, revenus, prix) et validez-la. Une fois un acheteur trouvé, le paiement est bloqué sous séquestre : vous transmettez le site, puis les fonds vous sont versés après vérification." },
-      { "q": "Comment acheter un site internet ou un business en ligne ?", "a": "Parcourez les annonces vérifiées, échangez avec le vendeur, puis payez via la plateforme. Vos fonds restent sous séquestre par La Garde de La Citadelle jusqu'à la transmission complète et vérifiée de l'actif." },
-      { "q": "Quels types d'actifs numériques puis-je acheter ou vendre ?", "a": "Sites internet, blogs, boutiques e-commerce (Shopify, WooCommerce, PrestaShop), SaaS et applications, noms de domaine, chaînes YouTube, comptes et pages de réseaux sociaux, serveurs Discord, newsletters, podcasts et autres projets numériques monétisables." },
-      { "q": "Comment fonctionne le paiement sécurisé (séquestre) ?", "a": "L'acheteur paie via la plateforme ; les fonds sont conservés par un tiers de confiance (La Garde de La Citadelle) et ne sont versés au vendeur qu'une fois l'actif transmis et vérifié. Le séquestre est assuré techniquement via Stripe Connect." },
-      { "q": "Combien coûte la publication d'une annonce ?", "a": "La publication d'une annonce est gratuite. Une commission n'est prélevée qu'en cas de vente réussie." },
-      { "q": "Comment est estimée la valeur d'un site ou d'un SaaS ?", "a": "La Citadelle propose une Estimation Standard (rapide) et une Estimation Expert (rapport détaillé). L'estimation repose sur un multiple des revenus, ajusté selon le trafic, la diversité des revenus, la technologie et la stabilité de l'activité." }
+      {
+        "q": "Comment vendre un site internet sur La Citadelle Numérique ?",
+        "a": "Créez un compte gratuit, publiez votre annonce (activité, technologies, trafic, revenus, prix) et validez-la. Une fois un acheteur trouvé, le paiement est bloqué sous séquestre : vous transmettez le site, puis les fonds vous sont versés après vérification."
+      },
+      {
+        "q": "Comment acheter un site internet ou un business en ligne ?",
+        "a": "Parcourez les annonces vérifiées, échangez avec le vendeur, puis payez via la plateforme. Vos fonds restent sous séquestre par La Garde de La Citadelle jusqu'à la transmission complète et vérifiée de l'actif."
+      },
+      {
+        "q": "Quels types d'actifs numériques puis-je acheter ou vendre ?",
+        "a": "Sites internet, blogs, boutiques e-commerce (Shopify, WooCommerce, PrestaShop), SaaS et applications, noms de domaine, chaînes YouTube, comptes et pages de réseaux sociaux, serveurs Discord, newsletters, podcasts et autres projets numériques monétisables."
+      },
+      {
+        "q": "Comment fonctionne le paiement sécurisé (séquestre) ?",
+        "a": "L'acheteur paie via la plateforme ; les fonds sont conservés par un tiers de confiance (La Garde de La Citadelle) et ne sont versés au vendeur qu'une fois l'actif transmis et vérifié. Le séquestre est assuré techniquement via Stripe Connect."
+      },
+      {
+        "q": "Combien coûte la publication d'une annonce ?",
+        "a": "La publication d'une annonce est gratuite. Une commission n'est prélevée qu'en cas de vente réussie."
+      },
+      {
+        "q": "Comment est estimée la valeur d'un site ou d'un SaaS ?",
+        "a": "La Citadelle propose une Estimation Standard (rapide) et une Estimation Expert (rapport détaillé). L'estimation repose sur un multiple des revenus, ajusté selon le trafic, la diversité des revenus, la technologie et la stabilité de l'activité."
+      }
     ]
+  },
+  "newsletter": {
+    "title": "Recevez les nouvelles annonces chaque semaine",
+    "subtitle": "Inscrivez-vous à notre newsletter et soyez le premier informé des nouveaux actifs numériques disponibles — sites, SaaS, e-commerce et plus encore.",
+    "ph_email": "votre@email.com",
+    "subscribing": "Inscription...",
+    "subscribe": "M'inscrire",
+    "rgpd": "Sans spam · Désinscription en un clic dans chaque email · Conformité RGPD",
+    "success_default": "Inscription réussie !",
+    "error_generic": "Une erreur est survenue.",
+    "error_network": "Impossible de contacter le serveur. Veuillez réessayer."
   }
 }

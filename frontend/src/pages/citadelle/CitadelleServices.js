@@ -15,6 +15,7 @@ import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 import { PriceDisplay, PromoBanner } from "@/utils/promo";
 import { useTranslation } from "react-i18next";
+import { localizeService } from "@/i18n/serviceCatalogEn";
 
 // ── Icônes par type de service ─────────────────────────────────────────────────
 const TYPE_ICONS = { paid: Zap, free: Star, partner: Handshake, quote: Shield };
@@ -25,6 +26,7 @@ const isPayable = (svc) => svc.service_type === "paid" && svc.price > 0;
 // ── Carte pour la zone VENDEURS (fond sombre) ─────────────────────────────────
 
 function DarkServiceCard({ svc, index, onDetails, onBuy, promo }) {
+  const { t } = useTranslation();
   const TypeIcon = TYPE_ICONS[svc.service_type] || Star;
   const payable = isPayable(svc);
 
@@ -87,7 +89,7 @@ function DarkServiceCard({ svc, index, onDetails, onBuy, promo }) {
           style={{ border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)" }}
           data-testid={`service-details-btn-${svc.id}`}
         >
-          Détails
+          {t('services.btn_details')}
         </button>
         {payable ? (
           <button
@@ -96,7 +98,7 @@ function DarkServiceCard({ svc, index, onDetails, onBuy, promo }) {
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
             data-testid={`service-buy-btn-${svc.id}`}
           >
-            <ShoppingCart size={11} /> Acheter
+            <ShoppingCart size={11} /> {t('services.btn_buy')}
           </button>
         ) : (
           <button
@@ -104,7 +106,7 @@ function DarkServiceCard({ svc, index, onDetails, onBuy, promo }) {
             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all hover:scale-[1.02]"
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
           >
-            Voir <ArrowRight size={11} />
+            {t('services.btn_see')} <ArrowRight size={11} />
           </button>
         )}
       </div>
@@ -116,6 +118,7 @@ function DarkServiceCard({ svc, index, onDetails, onBuy, promo }) {
 // ── Carte pour la zone ACHETEURS (fond clair) ─────────────────────────────────
 
 function LightServiceCard({ svc, index, onDetails, onBuy, promo }) {
+  const { t } = useTranslation();
   const TypeIcon = TYPE_ICONS[svc.service_type] || Star;
   const payable = isPayable(svc);
 
@@ -179,7 +182,7 @@ function LightServiceCard({ svc, index, onDetails, onBuy, promo }) {
           style={{ border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.textMuted }}
           data-testid={`service-details-btn-${svc.id}`}
         >
-          Détails
+          {t('services.btn_details')}
         </button>
         {payable ? (
           <button
@@ -188,7 +191,7 @@ function LightServiceCard({ svc, index, onDetails, onBuy, promo }) {
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
             data-testid={`service-buy-btn-${svc.id}`}
           >
-            <ShoppingCart size={11} /> Acheter
+            <ShoppingCart size={11} /> {t('services.btn_buy')}
           </button>
         ) : (
           <button
@@ -196,7 +199,7 @@ function LightServiceCard({ svc, index, onDetails, onBuy, promo }) {
             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all hover:scale-[1.02]"
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
           >
-            Voir <ArrowRight size={11} />
+            {t('services.btn_see')} <ArrowRight size={11} />
           </button>
         )}
       </div>
@@ -228,7 +231,7 @@ export default function CitadelleServices() {
   const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState(null);
   const [checkoutService, setCheckoutService] = useState(null);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     document.title = `${t('services.page_title')} — La Citadelle Numérique`;
@@ -254,6 +257,8 @@ export default function CitadelleServices() {
     setSelectedService(null);
     setCheckoutService(svc);
   };
+
+  const L = (svc) => localizeService(svc, i18n.language);
 
   return (
     <CitadelleLayout>
@@ -281,7 +286,7 @@ export default function CitadelleServices() {
             {/* 1. Transaction Sécurisée — hero pleine largeur */}
             {commonService && (
               <ServiceHeroBanner
-                service={commonService}
+                service={L(commonService)}
                 onDetails={setSelectedService}
               />
             )}
@@ -298,10 +303,10 @@ export default function CitadelleServices() {
                     className="text-base font-black"
                     style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}
                   >
-                    Inclus gratuitement
+                    {t('services.free_title')}
                   </h3>
                   <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    Fonctionnalités accessibles sans frais pour tout membre inscrit.
+                    {t('services.free_sub')}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -316,7 +321,7 @@ export default function CitadelleServices() {
                       }}
                     >
                       <Check size={13} />
-                      {svc.title}
+                      {L(svc).title}
                     </div>
                   ))}
                 </div>
@@ -348,14 +353,14 @@ export default function CitadelleServices() {
                     </h2>
                   </div>
                   <p className="text-xs pl-12" style={{ color: CITADELLE_COLORS.textMuted }}>
-                    Évaluez, optimisez et valorisez votre projet avant la vente.
+                    {t('services.sellers_sub')}
                   </p>
                 </div>
                 <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {vendorServices.map((svc, i) => (
                     <LightServiceCard
                       key={svc.id}
-                      svc={svc}
+                      svc={L(svc)}
                       index={i}
                       onDetails={setSelectedService}
                       onBuy={openBuy}
@@ -409,14 +414,14 @@ export default function CitadelleServices() {
                     </h2>
                   </div>
                   <p className="text-xs pl-12" style={{ color: "rgba(255,255,255,0.45)" }}>
-                    Sécurisez votre investissement avant et après l'acquisition.
+                    {t('services.buyers_sub')}
                   </p>
                 </div>
                 <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {buyerServices.map((svc, i) => (
                     <DarkServiceCard
                       key={svc.id}
-                      svc={svc}
+                      svc={L(svc)}
                       index={i}
                       onDetails={setSelectedService}
                       onBuy={openBuy}

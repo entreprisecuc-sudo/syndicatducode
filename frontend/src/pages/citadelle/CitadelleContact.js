@@ -41,7 +41,7 @@ export default function CitadelleContact() {
       setEnvoi("success");
       setForm({ nom: "", email: "", sujet: "", message: "" });
     } catch (err) {
-      setErreur(err?.response?.data?.detail || "Une erreur est survenue. Veuillez réessayer.");
+      setErreur(err?.response?.data?.detail || t('contact.error_generic'));
       setEnvoi("error");
     }
   };
@@ -154,8 +154,8 @@ export default function CitadelleContact() {
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <ChampFormulaire label={t('contact.field_name')} name="nom" type="text" value={form.nom} onChange={handleChange} required placeholder="Jean Dupont" />
-                    <ChampFormulaire label={t('contact.field_email')} name="email" type="email" value={form.email} onChange={handleChange} required placeholder="jean@exemple.fr" />
+                    <ChampFormulaire label={t('contact.field_name')} name="nom" type="text" value={form.nom} onChange={handleChange} required placeholder={t('contact.ph_name')} />
+                    <ChampFormulaire label={t('contact.field_email')} name="email" type="email" value={form.email} onChange={handleChange} required placeholder={t('contact.ph_email')} />
                   </div>
 
                   <div>

@@ -44,7 +44,8 @@
     ],
     "syndicate": "A Syndicat du Code service",
     "copyright": "All rights reserved.",
-    "tagline": "French platform — Secured transactions"
+    "tagline": "French platform — Secured transactions",
+    "description": "The French marketplace dedicated to buying and selling digital assets."
   },
   "lang_switcher": {
     "label": "Language"
@@ -104,7 +105,22 @@
     "empty_default": "Be the first to list a digital asset",
     "empty_cta": "Publish a listing",
     "load_more": "See more listings",
-    "result_count": "{{count}} result(s)"
+    "result_count": "{{count}} result(s)",
+    "budget_all": "All budgets",
+    "budget_lt5k": "< €5,000",
+    "budget_5k20k": "€5,000 – €20,000",
+    "budget_20k50k": "€20,000 – €50,000",
+    "budget_50k100k": "€50,000 – €100,000",
+    "budget_gt100k": "> €100,000",
+    "sort_recent": "Most recent",
+    "sort_price_asc": "Price ascending",
+    "sort_price_desc": "Price descending",
+    "sort_revenue": "Revenue",
+    "syndicat_title": "Your dream project doesn't exist yet? Let's build it.",
+    "syndicat_desc_a": "When the rare gem is not on La Citadelle, ",
+    "syndicat_partner": "our partner the Syndicat du Code",
+    "syndicat_desc_b": " crafts it for you: websites, apps, SaaS — built to measure.",
+    "syndicat_cta": "Talk about my project"
   },
   "listing_detail": {
     "back": "Back to listings",
@@ -322,7 +338,12 @@
     "garde_title": "La Garde watches over every transaction",
     "garde_p1": "La Garde supports sellers and buyers to ensure transparent, secure and professional transactions.",
     "garde_p2": "Our experts can step in from the project valuation to the final validation of the transfer.",
-    "garde_chips": ["Escrow of funds", "Access verification", "Dispute management", "Secure handover"],
+    "garde_chips": [
+      "Escrow of funds",
+      "Access verification",
+      "Dispute management",
+      "Secure handover"
+    ],
     "faq_h2": "Do you have questions?",
     "faq_not_listed": "A question not listed?",
     "faq_contact": "Contact us",
@@ -330,37 +351,128 @@
     "cta_sub": "Publish your listing for free and find the right buyer thanks to La Citadelle Numérique.",
     "cta_note": "Free · Validated within 24h · 5% commission only if the sale succeeds",
     "avantages": [
-      { "titre": "Secure transaction", "texte": "All sales are protected by our secure transaction system. Funds are held in escrow until the final validation of the transfer." },
-      { "titre": "Network of qualified buyers", "texte": "Your project is presented to a targeted audience of investors and entrepreneurs actively looking for digital assets." },
-      { "titre": "Independent expertise", "texte": "Get a professional valuation of your project by our certified experts to price your listing fairly." },
-      { "titre": "Personalized support", "texte": "La Garde and the partners of the Syndicat du Code can support you before, during and after the sale according to your needs." }
+      {
+        "titre": "Secure transaction",
+        "texte": "All sales are protected by our secure transaction system. Funds are held in escrow until the final validation of the transfer."
+      },
+      {
+        "titre": "Network of qualified buyers",
+        "texte": "Your project is presented to a targeted audience of investors and entrepreneurs actively looking for digital assets."
+      },
+      {
+        "titre": "Independent expertise",
+        "texte": "Get a professional valuation of your project by our certified experts to price your listing fairly."
+      },
+      {
+        "titre": "Personalized support",
+        "texte": "La Garde and the partners of the Syndicat du Code can support you before, during and after the sale according to your needs."
+      }
     ],
     "etapes": [
-      { "num": "01", "titre": "Publish your listing for free", "texte": "Create your listing in a few minutes. Free publication, validated by our team within 24h.", "services": [] },
-      { "num": "02", "titre": "Receive the first requests", "texte": "Interested buyers contact you directly via our secure messaging. Answer their questions and chat freely.", "services": [] },
-      { "num": "03", "titre": "Choose the right services", "texte": "Boost your sale with La Citadelle's professional services:", "services": ["Standard Estimate", "Expert Estimate", "La Garde Verification", "Premium Sale Support"] },
-      { "num": "04", "titre": "Finalize via our secure system", "texte": "Accept the offer of your choice. Payment is secured and funds held until the complete delivery of the project.", "services": [] },
-      { "num": "05", "titre": "Transfer your project", "texte": "Hand over the access to the buyer, with or without technical assistance from our partners. La Garde supervises the closing.", "services": [] }
+      {
+        "num": "01",
+        "titre": "Publish your listing for free",
+        "texte": "Create your listing in a few minutes. Free publication, validated by our team within 24h.",
+        "services": []
+      },
+      {
+        "num": "02",
+        "titre": "Receive the first requests",
+        "texte": "Interested buyers contact you directly via our secure messaging. Answer their questions and chat freely.",
+        "services": []
+      },
+      {
+        "num": "03",
+        "titre": "Choose the right services",
+        "texte": "Boost your sale with La Citadelle's professional services:",
+        "services": [
+          "Standard Estimate",
+          "Expert Estimate",
+          "La Garde Verification",
+          "Premium Sale Support"
+        ]
+      },
+      {
+        "num": "04",
+        "titre": "Finalize via our secure system",
+        "texte": "Accept the offer of your choice. Payment is secured and funds held until the complete delivery of the project.",
+        "services": []
+      },
+      {
+        "num": "05",
+        "titre": "Transfer your project",
+        "texte": "Hand over the access to the buyer, with or without technical assistance from our partners. La Garde supervises the closing.",
+        "services": []
+      }
     ],
     "modes": [
-      { "titre": "Fixed price", "texte": "Freely set the sale price of your asset. The buyer can contact you and buy at the displayed price.", "badge": "Most common" },
-      { "titre": "Negotiable price", "texte": "Buyers can propose an offer below your price. You keep full control by accepting or declining.", "badge": null },
-      { "titre": "Auction sale", "texte": "Set a minimum price, a duration and let buyers bid. Secure Transaction is active on all auctions.", "badge": "Growing popularity" }
+      {
+        "titre": "Fixed price",
+        "texte": "Freely set the sale price of your asset. The buyer can contact you and buy at the displayed price.",
+        "badge": "Most common"
+      },
+      {
+        "titre": "Negotiable price",
+        "texte": "Buyers can propose an offer below your price. You keep full control by accepting or declining.",
+        "badge": null
+      },
+      {
+        "titre": "Auction sale",
+        "texte": "Set a minimum price, a duration and let buyers bid. Secure Transaction is active on all auctions.",
+        "badge": "Growing popularity"
+      }
     ],
     "services": [
-      { "titre": "Standard Estimate", "texte": "Quickly find out the value of your project thanks to our proprietary analysis method.", "type": "€49" },
-      { "titre": "Expert Estimate", "texte": "Get a full assessment with a detailed PDF report to maximize your sale price.", "type": "€149" },
-      { "titre": "La Garde Verification", "texte": "Get the \"Verified by La Garde\" badge to reassure buyers and speed up the sale.", "type": "€99" },
-      { "titre": "Premium Sale Support", "texte": "Be supported at every step of the sale, from writing the listing to signing.", "type": "€399" }
+      {
+        "titre": "Standard Estimate",
+        "texte": "Quickly find out the value of your project thanks to our proprietary analysis method.",
+        "type": "€49"
+      },
+      {
+        "titre": "Expert Estimate",
+        "texte": "Get a full assessment with a detailed PDF report to maximize your sale price.",
+        "type": "€149"
+      },
+      {
+        "titre": "La Garde Verification",
+        "texte": "Get the \"Verified by La Garde\" badge to reassure buyers and speed up the sale.",
+        "type": "€99"
+      },
+      {
+        "titre": "Premium Sale Support",
+        "texte": "Be supported at every step of the sale, from writing the listing to signing.",
+        "type": "€399"
+      }
     ],
     "faq": [
-      { "question": "How much does it cost to publish a listing?", "reponse": "Publishing a listing is entirely free. No fee applies until your project is sold." },
-      { "question": "What is the commission amount?", "reponse": "La Citadelle's commission is 5% of the final sale price, with a minimum of €49. It is only charged when a sale succeeds." },
-      { "question": "Can I sell by auction?", "reponse": "Yes. When creating your listing, enable Auction mode, set a reserve price and a duration. Buyers bid until the closing." },
-      { "question": "Can I have my project valued?", "reponse": "Absolutely. Our valuation services (Standard and Certified Expert) are accessible from the Services page. A professional valuation reassures buyers and enhances your project." },
-      { "question": "Who carries out the redesigns?", "reponse": "Redesigns are carried out by the certified partners of the Syndicat du Code, under the supervision of La Garde. Each intervention is subject to a quote and personalized follow-up." },
-      { "question": "How does the secure transaction work?", "reponse": "When an offer is accepted, the buyer's funds are held in our escrow system. The seller hands over the access, La Garde verifies, and the funds are released after validation. No transfer without confirmation." },
-      { "question": "What happens in case of a dispute?", "reponse": "La Garde has a built-in dispute management system. The buyer or seller can open a dispute. Our experts analyze the situation and propose a fair resolution as quickly as possible." }
+      {
+        "question": "How much does it cost to publish a listing?",
+        "reponse": "Publishing a listing is entirely free. No fee applies until your project is sold."
+      },
+      {
+        "question": "What is the commission amount?",
+        "reponse": "La Citadelle's commission is 5% of the final sale price, with a minimum of €49. It is only charged when a sale succeeds."
+      },
+      {
+        "question": "Can I sell by auction?",
+        "reponse": "Yes. When creating your listing, enable Auction mode, set a reserve price and a duration. Buyers bid until the closing."
+      },
+      {
+        "question": "Can I have my project valued?",
+        "reponse": "Absolutely. Our valuation services (Standard and Certified Expert) are accessible from the Services page. A professional valuation reassures buyers and enhances your project."
+      },
+      {
+        "question": "Who carries out the redesigns?",
+        "reponse": "Redesigns are carried out by the certified partners of the Syndicat du Code, under the supervision of La Garde. Each intervention is subject to a quote and personalized follow-up."
+      },
+      {
+        "question": "How does the secure transaction work?",
+        "reponse": "When an offer is accepted, the buyer's funds are held in our escrow system. The seller hands over the access, La Garde verifies, and the funds are released after validation. No transfer without confirmation."
+      },
+      {
+        "question": "What happens in case of a dispute?",
+        "reponse": "La Garde has a built-in dispute management system. The buyer or seller can open a dispute. Our experts analyze the situation and propose a fair resolution as quickly as possible."
+      }
     ]
   },
   "services": {
@@ -371,7 +483,14 @@
     "from_price": "From",
     "order_cta": "Order this service",
     "promo_badge": "Promotion",
-    "popular_badge": "Popular"
+    "popular_badge": "Popular",
+    "btn_details": "Details",
+    "btn_buy": "Buy",
+    "btn_see": "View",
+    "free_title": "Included for free",
+    "free_sub": "Features available at no cost for every registered member.",
+    "sellers_sub": "Assess, optimize and enhance your project before the sale.",
+    "buyers_sub": "Secure your investment before and after the acquisition."
   },
   "blog": {
     "page_title": "Blog",
@@ -451,7 +570,10 @@
       "Technical issue",
       "Partnership",
       "Other"
-    ]
+    ],
+    "error_generic": "An error occurred. Please try again.",
+    "ph_name": "John Doe",
+    "ph_email": "john@example.com"
   },
   "auth": {
     "login_title": "Log in",
@@ -818,23 +940,87 @@
     "seo_buy_cta": "View listings",
     "seo_guarantees_title": "Our guarantees",
     "seo_guarantees": "Every website sale is protected by escrow: the buyer's money is only released after verification and access handover by La Garde. In case of disagreement, our team provides mediation and issues a handover certificate that formalizes the transfer. Sellers and buyers thus benefit from a professional, transparent and fully secure framework to buy or sell an online business.",
-    "seo_intro_kw": ["website sales", "sell a profitable website", "buy an already-positioned website"],
-    "seo_p1_kw": ["online business sales", "website to buy"],
-    "seo_p2_kw": ["website marketplace", "the sale of a SaaS", "an e-commerce store", "an application"],
-    "seo_guarantees_kw": ["escrow", "mediation", "handover certificate"],
-    "hero_cats": ["Websites", "E-commerce", "SaaS", "Applications", "TikTok accounts", "Instagram accounts", "Facebook pages", "YouTube channels", "Domain names"],
+    "seo_intro_kw": [
+      "website sales",
+      "sell a profitable website",
+      "buy an already-positioned website"
+    ],
+    "seo_p1_kw": [
+      "online business sales",
+      "website to buy"
+    ],
+    "seo_p2_kw": [
+      "website marketplace",
+      "the sale of a SaaS",
+      "an e-commerce store",
+      "an application"
+    ],
+    "seo_guarantees_kw": [
+      "escrow",
+      "mediation",
+      "handover certificate"
+    ],
+    "hero_cats": [
+      "Websites",
+      "E-commerce",
+      "SaaS",
+      "Applications",
+      "TikTok accounts",
+      "Instagram accounts",
+      "Facebook pages",
+      "YouTube channels",
+      "Domain names"
+    ],
     "est_faq": [
-      { "q": "How much is my website worth?", "a": "Your site's value is calculated by multiplying your average monthly net profit by a market multiple (8x to 30x depending on type and age). A content site generating €1,000/month is generally worth between €12,000 and €18,000 on the French market." },
-      { "q": "How to estimate the value of a website in France?", "a": "The standard method in France is the SDE multiple: Value = Monthly net profit × Multiple. This multiple ranges from 8x (recent site) to 30x (mature SaaS). Our team performs free professional estimates based on your real data." },
-      { "q": "What is the price of a profitable website to sell?", "a": "A profitable site sells for between 12 and 22 times its monthly net profit in France. Well-established SaaS can reach 22 to 30 times. Age, revenue diversification and SEO quality strongly influence the multiple." }
+      {
+        "q": "How much is my website worth?",
+        "a": "Your site's value is calculated by multiplying your average monthly net profit by a market multiple (8x to 30x depending on type and age). A content site generating €1,000/month is generally worth between €12,000 and €18,000 on the French market."
+      },
+      {
+        "q": "How to estimate the value of a website in France?",
+        "a": "The standard method in France is the SDE multiple: Value = Monthly net profit × Multiple. This multiple ranges from 8x (recent site) to 30x (mature SaaS). Our team performs free professional estimates based on your real data."
+      },
+      {
+        "q": "What is the price of a profitable website to sell?",
+        "a": "A profitable site sells for between 12 and 22 times its monthly net profit in France. Well-established SaaS can reach 22 to 30 times. Age, revenue diversification and SEO quality strongly influence the multiple."
+      }
     ],
     "home_faq": [
-      { "q": "How to sell a website on La Citadelle Numérique?", "a": "Create a free account, publish your listing (activity, technologies, traffic, revenue, price) and validate it. Once a buyer is found, payment is held in escrow: you hand over the site, then the funds are paid to you after verification." },
-      { "q": "How to buy a website or an online business?", "a": "Browse verified listings, chat with the seller, then pay via the platform. Your funds remain in escrow with La Garde de La Citadelle until the complete and verified handover of the asset." },
-      { "q": "What types of digital assets can I buy or sell?", "a": "Websites, blogs, e-commerce stores (Shopify, WooCommerce, PrestaShop), SaaS and applications, domain names, YouTube channels, social media accounts and pages, Discord servers, newsletters, podcasts and other monetizable digital projects." },
-      { "q": "How does secure payment (escrow) work?", "a": "The buyer pays via the platform; funds are held by a trusted third party (La Garde de La Citadelle) and are only paid to the seller once the asset is handed over and verified. Escrow is technically provided via Stripe Connect." },
-      { "q": "How much does it cost to publish a listing?", "a": "Publishing a listing is free. A commission is only charged in case of a successful sale." },
-      { "q": "How is the value of a site or SaaS estimated?", "a": "La Citadelle offers a Standard Estimate (quick) and an Expert Estimate (detailed report). The estimate is based on a revenue multiple, adjusted for traffic, revenue diversity, technology and business stability." }
+      {
+        "q": "How to sell a website on La Citadelle Numérique?",
+        "a": "Create a free account, publish your listing (activity, technologies, traffic, revenue, price) and validate it. Once a buyer is found, payment is held in escrow: you hand over the site, then the funds are paid to you after verification."
+      },
+      {
+        "q": "How to buy a website or an online business?",
+        "a": "Browse verified listings, chat with the seller, then pay via the platform. Your funds remain in escrow with La Garde de La Citadelle until the complete and verified handover of the asset."
+      },
+      {
+        "q": "What types of digital assets can I buy or sell?",
+        "a": "Websites, blogs, e-commerce stores (Shopify, WooCommerce, PrestaShop), SaaS and applications, domain names, YouTube channels, social media accounts and pages, Discord servers, newsletters, podcasts and other monetizable digital projects."
+      },
+      {
+        "q": "How does secure payment (escrow) work?",
+        "a": "The buyer pays via the platform; funds are held by a trusted third party (La Garde de La Citadelle) and are only paid to the seller once the asset is handed over and verified. Escrow is technically provided via Stripe Connect."
+      },
+      {
+        "q": "How much does it cost to publish a listing?",
+        "a": "Publishing a listing is free. A commission is only charged in case of a successful sale."
+      },
+      {
+        "q": "How is the value of a site or SaaS estimated?",
+        "a": "La Citadelle offers a Standard Estimate (quick) and an Expert Estimate (detailed report). The estimate is based on a revenue multiple, adjusted for traffic, revenue diversity, technology and business stability."
+      }
     ]
+  },
+  "newsletter": {
+    "title": "Get new listings every week",
+    "subtitle": "Subscribe to our newsletter and be the first to know about newly available digital assets — websites, SaaS, e-commerce and more.",
+    "ph_email": "your@email.com",
+    "subscribing": "Subscribing...",
+    "subscribe": "Subscribe",
+    "rgpd": "No spam · One-click unsubscribe in every email · GDPR compliant",
+    "success_default": "Subscription successful!",
+    "error_generic": "An error occurred.",
+    "error_network": "Unable to reach the server. Please try again."
   }
 }
