@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
 import { BookOpen, ChevronRight, Calendar, User, Search, X } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
@@ -40,6 +40,11 @@ export default function CitadelleBlog() {
   const [activeCategory, setActiveCategory] = useState("");
   const [searchQuery, setSearchQuery]   = useState("");
   const inputRef = useRef(null);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('blog.page_title')} — La Citadelle Numérique`;
+  }, [t]);
 
   // Chargement unique de tous les articles
   useEffect(() => {
@@ -72,23 +77,16 @@ export default function CitadelleBlog() {
 
   return (
     <CitadelleLayout>
-      <Helmet>
-        <title>Blog — Achat, vente et valorisation d'actifs numériques | La Citadelle Numérique</title>
-        <meta name="description" content="Conseils, analyses et guides sur l'achat et la vente de sites web, SaaS, boutiques e-commerce. Retrouvez nos articles experts pour maximiser la valeur de vos actifs numériques." />
-        <meta property="og:title" content="Blog La Citadelle Numérique | Actifs numériques & marketplace" />
-        <meta property="og:description" content="Guides, conseils et analyses pour acheter et vendre des actifs numériques. Plus de 56 articles experts." />
-        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/blog" />
-      </Helmet>
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-12" data-testid="citadelle-blog">
 
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-black"
             style={{ fontFamily: "'Montserrat', sans-serif", color: CITADELLE_COLORS.blue }}>
-            Blog
+            {t('blog.page_title')}
           </h1>
           <p className="text-sm mt-3 max-w-xl" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Actualités, conseils et analyses sur le marché des actifs numériques.
+            {t('blog.page_sub')}
           </p>
         </div>
 
@@ -108,11 +106,11 @@ export default function CitadelleBlog() {
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Rechercher un article, un sujet, un mot-clé…"
+              placeholder={t('blog.search_placeholder')}
               className="flex-1 bg-transparent outline-none text-sm"
               style={{ color: CITADELLE_COLORS.blue }}
               data-testid="blog-search-input"
-              aria-label="Rechercher dans le blog"
+              aria-label={t('blog.search_placeholder')}
             />
             {hasSearch && (
               <button
@@ -130,8 +128,8 @@ export default function CitadelleBlog() {
           {!loading && hasSearch && (
             <p className="absolute -bottom-5 left-1 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
               {filtered.length === 0
-                ? "Aucun résultat"
-                : `${filtered.length} article${filtered.length > 1 ? "s" : ""} trouvé${filtered.length > 1 ? "s" : ""}`}
+                ? t('blog.no_result')
+                : t(filtered.length === 1 ? 'blog.result_one' : 'blog.result_other', { count: filtered.length })}
             </p>
           )}
         </div>
@@ -166,7 +164,7 @@ export default function CitadelleBlog() {
           <div className="py-20 text-center">
             <Search size={48} className="mx-auto mb-4" style={{ color: CITADELLE_COLORS.textMuted, opacity: 0.2 }} />
             <p className="text-lg font-semibold" style={{ color: CITADELLE_COLORS.textMuted }}>
-              {hasSearch ? `Aucun article pour « ${searchQuery} »` : "Aucun article pour le moment"}
+              {hasSearch ? t('blog.empty_search', { query: searchQuery }) : t('blog.empty_default')}
             </p>
             {hasSearch && (
               <button
@@ -174,7 +172,7 @@ export default function CitadelleBlog() {
                 className="mt-4 text-sm underline"
                 style={{ color: CITADELLE_COLORS.gold }}
               >
-                Effacer la recherche
+                {t('blog.search_clear')}
               </button>
             )}
           </div>

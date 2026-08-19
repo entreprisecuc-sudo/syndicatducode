@@ -882,3 +882,14 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
   - `CitadelleServices.js` : migration Helmet → useEffect, `useTranslation`, 4 strings traduits (titre, sous-titre, labels)
 - **Issue 1 avancement** : Helmet migré → useEffect dans 3 fichiers supplémentaires (Listings, Vendre, Services). Reste 10 fichiers.
 - **Validé** : compilation sans erreur, page FR affichée correctement (screenshot). Testing agent NON utilisé (Règle 6).
+
+## ✨ Session 19/02/2026 — Phase 3 i18n FR/EN (Pages Éditoriales) ✅
+- **Fichiers mis à jour** :
+  - `fr.json` + `en.json` : ajout des sections `blog` (17), `guides` (8), `parutions` (14), `contact` (26 + tableau subjects)
+  - `CitadelleBlog.js` : migration Helmet→useEffect, `useTranslation`, 6 strings traduits
+  - `CitadelleBlogPost.js` : pas de Helmet (déjà useEffect), `useTranslation` dans 3 composants (RelatedCard, RelatedArticles, CitadelleBlogPost), 8 strings traduits
+  - `CitadelleGuides.js` : migration Helmet→useEffect, `useTranslation`, 7 strings traduits
+  - `CitadelleParutions.js` : migration Helmet→useEffect, `useTranslation` dans ArticlesCarousel + RubriqueColumn + CitadelleParutions, 8 strings traduits + props traduites
+  - `CitadelleContact.js` : migration Helmet→useEffect, `useTranslation` dans composant principal + SuccessMessage, 15 strings traduits + sujets via `t('contact.subjects', { returnObjects: true })`
+- **Issue 1 avancement** : Helmet migré → useEffect dans 4 fichiers supplémentaires (Blog, Guides, Parutions, Contact). Reste ~6 fichiers.
+- **Validé** : compilation sans erreur, pages Blog et Contact FR vérifiées par screenshots. Testing agent NON utilisé (Règle 6).

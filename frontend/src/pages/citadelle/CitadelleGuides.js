@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
 import { BookOpen, Calendar, ChevronRight, GraduationCap, Clock } from "lucide-react";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import citadelleApi from "@/services/citadelleApi";
@@ -37,6 +37,11 @@ export default function CitadelleGuides() {
   const [posts, setPosts] = useState([]);
   const [nextPost, setNextPost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('parutions.col_guides_title')} — La Citadelle Numérique`;
+  }, [t]);
 
   useEffect(() => {
     (async () => {
@@ -58,11 +63,6 @@ export default function CitadelleGuides() {
 
   return (
     <CitadelleLayout>
-      <Helmet>
-        <title>Le Guide de La Citadelle — Guides pratiques pour acheter et vendre des actifs numériques</title>
-        <meta name="description" content="Les guides pratiques de La Citadelle : vendre, acheter, estimer, migrer et sécuriser un site, un SaaS ou une application. Des méthodes complètes, étape par étape, chaque samedi." />
-        <link rel="canonical" href="https://lacitadellenumerique.fr/citadelle/guides" />
-      </Helmet>
 
       {/* ── Hero éditorial émeraude ─────────────────────────────────────── */}
       <div style={{ background: GUIDE_COLORS.night, position: "relative", overflow: "hidden" }} data-testid="guides-hero">
@@ -70,7 +70,7 @@ export default function CitadelleGuides() {
           <div>
             <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] mb-4"
               style={{ color: GUIDE_COLORS.accent }}>
-              <GraduationCap size={16} /> Collection premium
+              <GraduationCap size={16} /> {t('guides.collection_label')}
             </span>
             <h1 className="text-3xl md:text-5xl font-black leading-tight"
               style={{ fontFamily: "'Montserrat', sans-serif", color: "white" }}>
@@ -99,12 +99,12 @@ export default function CitadelleGuides() {
                 className="w-full h-full object-cover opacity-90" loading="lazy" />
               <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1"
                 style={{ background: GUIDE_COLORS.accent, color: "white" }}>
-                <Clock size={12} /> À paraître
+                <Clock size={12} /> {t('guides.coming_soon_badge')}
               </span>
             </div>
             <div className="p-6 flex flex-col justify-center">
               <span className="text-xs font-semibold uppercase tracking-[0.15em] mb-2" style={{ color: GUIDE_COLORS.accent }}>
-                Prochain guide — n°{guideNumber(nextPost.slug)}
+                {t('guides.next_guide_label', { num: guideNumber(nextPost.slug) })}
               </span>
               <h2 className="font-bold text-lg leading-snug mb-2 break-words"
                 style={{ color: GUIDE_COLORS.heading, fontFamily: "'Montserrat', sans-serif", overflowWrap: "anywhere" }}
@@ -118,7 +118,7 @@ export default function CitadelleGuides() {
                 </p>
               )}
               <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: GUIDE_COLORS.heading }} data-testid="guides-next-date">
-                <Calendar size={14} style={{ color: GUIDE_COLORS.accent }} /> Parution le {formatDate(nextPost.scheduled_at)}
+                <Calendar size={14} style={{ color: GUIDE_COLORS.accent }} /> {t('guides.release_date', { date: formatDate(nextPost.scheduled_at) })}
               </span>
             </div>
           </div>
@@ -137,10 +137,10 @@ export default function CitadelleGuides() {
           <div className="py-20 text-center" data-testid="guides-empty">
             <BookOpen size={48} className="mx-auto mb-4" style={{ color: GUIDE_COLORS.accent, opacity: 0.4 }} />
             <p className="text-lg font-semibold" style={{ color: GUIDE_COLORS.heading }}>
-              Le premier guide paraît très bientôt
+              {t('guides.empty_title')}
             </p>
             <p className="text-sm mt-2" style={{ color: GUIDE_COLORS.textMuted }}>
-              Revenez chaque samedi pour découvrir le nouveau guide de La Citadelle.
+              {t('guides.empty_sub')}
             </p>
           </div>
         ) : (
@@ -162,7 +162,7 @@ export default function CitadelleGuides() {
                       className="w-full h-full object-cover opacity-95" loading="lazy" />
                     <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold"
                       style={{ background: GUIDE_COLORS.accent, color: "white" }}>
-                      Guide n°{num}
+                      {t('guides.guide_num', { num })}
                     </span>
                   </div>
                   {/* Contenu */}
@@ -183,7 +183,7 @@ export default function CitadelleGuides() {
                       </span>
                       <span className="flex items-center gap-1 text-sm font-semibold transition-colors group-hover:gap-2"
                         style={{ color: GUIDE_COLORS.accent }}>
-                        Lire le guide <ChevronRight size={15} />
+                        {t('guides.read_cta')} <ChevronRight size={15} />
                       </span>
                     </div>
                   </div>

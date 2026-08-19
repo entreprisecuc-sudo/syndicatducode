@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
 import {
   BookOpen, Compass, Shield, ArrowRight, Calendar, Sparkles, ChevronLeft, ChevronRight,
 } from "lucide-react";
@@ -28,6 +28,7 @@ const clamp = (lines) => ({
 function ArticlesCarousel({ posts }) {
   const [idx, setIdx] = useState(0);
   const n = posts.length;
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (n <= 1) return undefined;
@@ -55,7 +56,7 @@ function ArticlesCarousel({ posts }) {
             </div>
             <div className="flex flex-col justify-center gap-3 p-8 md:p-12" style={{ background: CITADELLE_COLORS.blue }}>
               <span className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: CITADELLE_COLORS.gold }}>
-                Article
+                {t('parutions.article_label')}
               </span>
               <h3 className="text-xl md:text-2xl font-bold leading-snug"
                 style={{ color: "#FFFFFF", fontFamily: "'Montserrat', sans-serif", ...clamp(3) }}>
@@ -65,7 +66,7 @@ function ArticlesCarousel({ posts }) {
                 <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)", ...clamp(1) }}>{post.excerpt}</p>
               )}
               <span className="flex items-center gap-2 text-sm font-semibold mt-2" style={{ color: CITADELLE_COLORS.goldLight }}>
-                Lire l'article <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+                {t('parutions.read_article')} <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
               </span>
             </div>
           </Link>
@@ -105,6 +106,7 @@ function ArticlesCarousel({ posts }) {
 
 /** Colonne d'une rubrique (Guide / Chronique) avec sa dernière parution */
 function RubriqueColumn({ variant, icon: Icon, title, href, cta, tag, item, isTeaser }) {
+  const { t } = useTranslation();
   const dark = variant === "dark";
   const accent = variant === "emerald" ? EMERALD : CITADELLE_COLORS.gold;
   const bg = dark ? CITADELLE_COLORS.night : "#FFFFFF";
@@ -149,7 +151,7 @@ function RubriqueColumn({ variant, icon: Icon, title, href, cta, tag, item, isTe
           </div>
           <div className="flex flex-col gap-2 p-5">
             <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: accent }}>
-              {isTeaser ? "Prochaine parution" : tag}
+              {isTeaser ? t('parutions.coming_next') : tag}
             </span>
             <h3 className="text-base md:text-lg font-bold leading-snug"
               style={{ color: titleColor, fontFamily: "'Montserrat', sans-serif", ...clamp(2) }}>
@@ -160,7 +162,7 @@ function RubriqueColumn({ variant, icon: Icon, title, href, cta, tag, item, isTe
             )}
             <span className="flex items-center gap-1.5 text-xs mt-1" style={{ color: metaColor }}>
               <Calendar size={12} style={{ color: accent }} />
-              {isTeaser ? `Parution le ${formatDate(item.scheduled_at)}` : formatDate(item.published_at)}
+              {isTeaser ? t('parutions.release_date', { date: formatDate(item.scheduled_at) }) : formatDate(item.published_at)}
             </span>
           </div>
         </Link>
@@ -168,7 +170,7 @@ function RubriqueColumn({ variant, icon: Icon, title, href, cta, tag, item, isTe
         <div className="flex flex-col items-center justify-center text-center rounded-2xl p-8 flex-1"
           style={{ border: `1px dashed ${accent}` }} data-testid={`empty-${variant}`}>
           <Sparkles size={22} style={{ color: accent }} className="mb-3" />
-          <p className="text-sm" style={{ color: metaColor }}>De nouvelles publications arrivent bientôt.</p>
+          <p className="text-sm" style={{ color: metaColor }}>{t('parutions.coming_soon')}</p>
         </div>
       )}
 
@@ -184,6 +186,11 @@ function RubriqueColumn({ variant, icon: Icon, title, href, cta, tag, item, isTe
 export default function CitadelleParutions() {
   const [data, setData] = useState({ blog: [], guides: null, guidesNext: null, chroniques: null, chroniquesNext: null });
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `Les Parutions — La Citadelle Numérique`;
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -212,10 +219,6 @@ export default function CitadelleParutions() {
 
   return (
     <CitadelleLayout>
-      <Helmet>
-        <title>Les Parutions | La Citadelle Numérique</title>
-        <meta name="description" content="Les dernières publications de La Citadelle Numérique : articles, guides et chroniques consacrés aux actifs numériques, à leur valorisation, leur acquisition et leur transmission." />
-      </Helmet>
 
       <div style={{ background: CITADELLE_COLORS.bg }}>
         <div className="max-w-6xl mx-auto px-4 md:px-8 pt-10 md:pt-14 pb-16 md:pb-24">
@@ -230,7 +233,7 @@ export default function CitadelleParutions() {
             <Link to="/citadelle/blog" data-testid="see-all-blog"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all hover:scale-105"
               style={{ background: CITADELLE_COLORS.blue, color: "#FFFFFF" }}>
-              <BookOpen size={15} /> <span className="hidden sm:inline">Voir tous les articles</span><span className="sm:hidden">Articles</span> <ArrowRight size={14} />
+              <BookOpen size={15} /> <span className="hidden sm:inline">{t('parutions.see_all_articles')}</span><span className="sm:hidden">{t('parutions.see_all_articles_short')}</span> <ArrowRight size={14} />
             </Link>
           </div>
 
@@ -247,20 +250,19 @@ export default function CitadelleParutions() {
               {/* Titre léger */}
               <p className="text-center max-w-3xl mx-auto my-12 md:my-16 text-sm md:text-base leading-relaxed"
                 style={{ color: CITADELLE_COLORS.textMuted }} data-testid="parutions-intro">
-                Retrouvez les dernières publications de La Citadelle Numérique : articles, guides et chroniques
-                consacrés aux actifs numériques, à leur valorisation, leur acquisition et leur transmission.
+                {t('parutions.intro')}
               </p>
 
               {/* 2 colonnes : Guides (gauche) — Chroniques (droite) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <RubriqueColumn
-                  variant="emerald" icon={Compass} title="Le Guide de La Citadelle"
-                  href="/citadelle/guides" cta="Voir tous les guides" tag="Guide"
+                  variant="emerald" icon={Compass} title={t('parutions.col_guides_title')}
+                  href="/citadelle/guides" cta={t('parutions.see_all_guides')} tag={t('parutions.tag_guide')}
                   item={guideItem} isTeaser={!data.guides && !!data.guidesNext}
                 />
                 <RubriqueColumn
-                  variant="dark" icon={Shield} title="Les Chroniques de La Garde"
-                  href="/citadelle/chroniques" cta="Voir toutes les chroniques" tag="Chronique"
+                  variant="dark" icon={Shield} title={t('parutions.col_chroniques_title')}
+                  href="/citadelle/chroniques" cta={t('parutions.see_all_chroniques')} tag={t('parutions.tag_chronique')}
                   item={chroItem} isTeaser={!data.chroniques && !!data.chroniquesNext}
                 />
               </div>

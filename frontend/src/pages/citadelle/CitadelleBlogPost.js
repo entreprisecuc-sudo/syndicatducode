@@ -8,6 +8,7 @@ import { useParams, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowLeft, ArrowRight, Calendar, User, ExternalLink, BookOpen, Eye } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ShareBar from "@/components/citadelle/ShareBar";
 import citadelleApi from "@/services/citadelleApi";
@@ -62,6 +63,7 @@ function useSeoMeta(post) {
 // ── Carte article lié ──────────────────────────────────────────────────────────
 function RelatedCard({ post }) {
   const [hovered, setHovered] = useState(false);
+  const { t } = useTranslation();
   return (
     <Link
       to={`/citadelle/blog/${post.slug}`}
@@ -124,7 +126,7 @@ function RelatedCard({ post }) {
           display: "inline-flex", alignItems: "center", gap: 4,
           transition: "gap 0.2s",
         }}>
-          Lire l'article <ArrowRight size={12} style={{ transition: "transform 0.2s", transform: hovered ? "translateX(3px)" : "none" }} />
+          {t('blog.read_article')} <ArrowRight size={12} style={{ transition: "transform 0.2s", transform: hovered ? "translateX(3px)" : "none" }} />
         </span>
       </div>
     </Link>
@@ -134,6 +136,7 @@ function RelatedCard({ post }) {
 // ── Section articles liés ──────────────────────────────────────────────────────
 function RelatedArticles({ slug }) {
   const [related, setRelated] = useState([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!slug) return;
@@ -153,7 +156,7 @@ function RelatedArticles({ slug }) {
           margin: 0, whiteSpace: "nowrap",
           fontFamily: "'Montserrat', sans-serif",
         }}>
-          Articles liés
+          {t('blog.related')}
         </h2>
         <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${CITADELLE_COLORS.gold}55, transparent)` }} />
       </div>
@@ -175,6 +178,7 @@ export default function CitadelleBlogPost() {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setLoading(true);
@@ -203,15 +207,15 @@ export default function CitadelleBlogPost() {
 
   if (notFound || !post) {
     return (
-      <CitadelleLayout pageTitle="Article introuvable">
+      <CitadelleLayout pageTitle={t('blog.post_not_found')}>
         <div className="max-w-3xl mx-auto px-4 py-20 text-center">
           <BookOpen size={48} className="mx-auto mb-4" style={{ color: CITADELLE_COLORS.textMuted, opacity: 0.2 }} />
-          <h1 className="text-2xl font-bold mb-2" style={{ color: CITADELLE_COLORS.blue }}>Article introuvable</h1>
+          <h1 className="text-2xl font-bold mb-2" style={{ color: CITADELLE_COLORS.blue }}>{t('blog.post_not_found')}</h1>
           <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Cet article n'existe pas ou a été supprimé.
+            {t('blog.post_not_found_desc')}
           </p>
           <Link to="/citadelle/blog" className="text-sm font-semibold" style={{ color: CITADELLE_COLORS.gold }}>
-            ← Retour au blog
+            ← {t('blog.back')}
           </Link>
         </div>
       </CitadelleLayout>
@@ -229,7 +233,7 @@ export default function CitadelleBlogPost() {
         <Link to="/citadelle/blog"
           className="inline-flex items-center gap-2 text-sm font-medium mb-8 hover:opacity-80 transition-opacity"
           style={{ color: CITADELLE_COLORS.textMuted }}>
-          <ArrowLeft size={14} /> Retour au blog
+          <ArrowLeft size={14} /> {t('blog.back')}
         </Link>
 
         {/* Image de couverture avec figcaption SEO/AEO */}
@@ -281,12 +285,12 @@ export default function CitadelleBlogPost() {
             <a href={post.partner_link} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm font-medium hover:underline"
               style={{ color: CITADELLE_COLORS.gold }}>
-              <ExternalLink size={13} /> Article partenaire
+              <ExternalLink size={13} /> {t('blog.partner')}
             </a>
           )}
           {post.view_count > 0 && (
             <span className="flex items-center gap-1.5 text-sm ml-auto" style={{ color: CITADELLE_COLORS.textMuted }}>
-              <Eye size={13} /> {post.view_count} lecture{post.view_count > 1 ? "s" : ""}
+              <Eye size={13} /> {t(post.view_count === 1 ? 'blog.reading_one' : 'blog.reading_other', { count: post.view_count })}
             </span>
           )}
         </div>
@@ -311,7 +315,7 @@ export default function CitadelleBlogPost() {
           <Link to="/citadelle/blog"
             className="inline-flex items-center gap-2 text-sm font-medium hover:opacity-80 transition-opacity"
             style={{ color: CITADELLE_COLORS.gold }}>
-            <ArrowLeft size={14} /> Retour au blog
+            <ArrowLeft size={14} /> {t('blog.back')}
           </Link>
           <ShareBar url={shareUrl} title={post.title} />
         </div>
