@@ -24,6 +24,7 @@ from routes.citadelle.reports import router as citadelle_reports_router, set_dat
 from routes.citadelle.moderation import router as citadelle_moderation_router, set_database as set_citadelle_moderation_db
 from routes.citadelle.analytics import router as citadelle_analytics_router, set_database as set_citadelle_analytics_db
 from routes.citadelle.social import router as citadelle_social_router, set_database as set_citadelle_social_db
+from routes.citadelle.maintenance import router as citadelle_maintenance_router, set_database as set_citadelle_maintenance_db
 
 router = APIRouter(prefix="/citadelle", tags=["La Citadelle Numérique"])
 router.include_router(citadelle_auth_router)
@@ -45,6 +46,7 @@ router.include_router(citadelle_reports_router)
 router.include_router(citadelle_moderation_router)
 router.include_router(citadelle_analytics_router)
 router.include_router(citadelle_social_router)
+router.include_router(citadelle_maintenance_router)
 
 _db = None
 
@@ -69,4 +71,5 @@ def set_database(database):
     set_citadelle_moderation_db(database)
     set_citadelle_analytics_db(database)
     set_citadelle_social_db(database)
+    set_citadelle_maintenance_db(database)
     set_citadelle_dependencies_db(database)

@@ -18,9 +18,21 @@ from config.settings import (
     CITADELLE_SMTP_USER,
     CITADELLE_SMTP_PASSWORD,
     BACKEND_PUBLIC_URL,
+    EMAIL_BLOCKED_DOMAINS,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def is_sendable_email(email: str) -> bool:
+    """
+    Garde-fou anti-bounce : refuse les adresses vides ou dont le domaine figure
+    dans EMAIL_BLOCKED_DOMAINS (adresses de test/factices). Évite les NDR quotidiens.
+    """
+    if not email or "@" not in email:
+        return False
+    domain = email.rsplit("@", 1)[-1].strip().lower()
+    return domain not in EMAIL_BLOCKED_DOMAINS
 
 
 def _envoyer_email(msg: MIMEMultipart) -> None:
@@ -30,6 +42,10 @@ def _envoyer_email(msg: MIMEMultipart) -> None:
     - sinon → credentials Syndicat du Code (atelier@syndicatducode.fr)
     Le serveur SMTP est commun (Hostinger), seuls les credentials diffèrent.
     """
+    to_email = msg.get("To", "")
+    if not is_sendable_email(to_email):
+        logger.warning(f"[Email] Envoi ignoré — destinataire de test/factice bloqué : {to_email}")
+        return
     from_email = msg.get("From", "")
     if from_email == CITADELLE_FROM_EMAIL:
         user, password = CITADELLE_SMTP_USER, CITADELLE_SMTP_PASSWORD

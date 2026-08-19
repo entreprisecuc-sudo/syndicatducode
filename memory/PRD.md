@@ -1008,3 +1008,13 @@ CRUD annonces, validation admin, upload images+documents, pages publiques
 - P2 Pages JURIDIQUES : CGU(86), CGV(69), Confidentialite(68), MentionsLegales(13) — ~236 lignes.
 - Secondaire : Parutions (aria), Register, ResetPassword, AuthModal, CGUAcceptanceModal, ImageUpload.
 - Interdit : sections `admin` et `syndicat du code` (à ne pas toucher).
+
+### MAJ Session 19/08 (suite 5) — Correctif NDR quotidiens (emails de test) ✅
+- **Cause racine** : le job planifié quotidien `send_auction_daily_digests` (`services/newsletter_scheduler.py`, 9h) envoie un digest à `seller_email` de toutes les enchères actives. En PROD, une enchère de test active appartenant à `test.vendeur@citadelle.fr` (domaine factice) provoquait un bounce quotidien vers `lagarde@lacitadellenumerique.fr`. (Le preview `syndicat_base` n'était PAS la source : 0 envoi aujourd'hui.)
+- **Garde-fou anti-bounce** : `services/email_service/core.py` → `is_sendable_email()` gate le point d'envoi unique `_envoyer_email`. Domaines bloqués via env `EMAIL_BLOCKED_DOMAINS` (défaut : citadelle.fr, citadelle-test.fr, test.fr, test.com, example.com, example.org). Défini dans `config/settings.py`.
+- **`TEST_EMAIL_OVERRIDE` retiré** de `backend/.env` (détournait les relances vers un gmail de test). ⚠️ NE PAS le remettre sur le VPS.
+- **Route admin de purge** : `POST /api/citadelle/admin/maintenance/purge-test-data` (`routes/citadelle/maintenance.py`, `require_admin`). Body `{"dry_run": true|false}`. dry_run=true → simulation (comptages + échantillons) ; dry_run=false → suppression réelle (users non-admin, annonces test [TEST]/TEST_ ou seller_email factice, abonnés newsletter factices). Compte admin jamais supprimé.
+- Vérifié : garde-fou unitaire OK ; endpoint sécurisé (401 sans token) ; dry_run détecte 8 users / 10 annonces / 3 abonnés de test.
+- **À faire côté PROD (par l'utilisateur)** : redéployer, puis appeler la route en dry_run=true (vérifier), puis dry_run=false (purger). export_data_for_vps.py n'exporte ni users ni enchères actives → VPS propre.
+- ⚠️ Le garde-fou bloque désormais aussi `marie.testui@citadelle-test.fr` (compte de test) : ne plus compter sur la réception d'emails réels vers ce compte en test.
+

@@ -47,6 +47,17 @@ CITADELLE_SMTP_PASSWORD = os.environ.get('CITADELLE_SMTP_PASSWORD', SMTP_PASSWOR
 # Adresse de substitution pour les tests — si défini, tous les emails automatiques partent ici
 TEST_EMAIL_OVERRIDE = os.environ.get('TEST_EMAIL_OVERRIDE')
 
+# Garde-fou anti-bounce : domaines factices/de test vers lesquels on n'envoie JAMAIS d'email.
+# Empêche les NDR quotidiens si des données de test subsistent en base (enchères, newsletter...).
+EMAIL_BLOCKED_DOMAINS = [
+    d.strip().lower()
+    for d in os.environ.get(
+        'EMAIL_BLOCKED_DOMAINS',
+        'citadelle.fr,citadelle-test.fr,test.fr,test.com,example.com,example.org'
+    ).split(',')
+    if d.strip()
+]
+
 # URL publique du backend (utilisée dans les emails pour les images d'annonces)
 # En production : identique à CITADELLE_URL (K8s route /api/* vers le backend)
 # En preview : renseigner BACKEND_PUBLIC_URL dans .env avec l'URL Kubernetes du pod
