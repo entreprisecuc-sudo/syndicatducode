@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/services/api";
+import { getToken } from "@/services/authService";
 import { MemberModerationActions } from "@/components/admin/MemberModerationActions";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -53,25 +54,43 @@ function KycBadge({ status }) {
   );
 }
 
-// ── Composant document cliquable ───────────────────────────────────────────────
-function DocLink({ label, doc }) {
+// ── Composant document cliquable (SEC-001 : accès authentifié via blob) ─────────
+function DocLink({ label, doc, userId, docType }) {
+  const [loading, setLoading] = useState(false);
   if (!doc) return (
     <div className="flex items-center gap-2 py-2 px-3 rounded-lg text-xs"
       style={{ background: "#f8f9fa", color: "#9ca3af" }}>
       <FileText size={13} /> {label} — <em>non fourni</em>
     </div>
   );
-  const url = `${BACKEND_URL}/api${doc.url}`;
+  const openDoc = async () => {
+    try {
+      setLoading(true);
+      const token = getToken();
+      const res = await fetch(
+        `${BACKEND_URL}/api/citadelle/auth/documents/${userId}/${docType}?token=${encodeURIComponent(token || "")}`
+      );
+      if (!res.ok) throw new Error("fetch failed");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+    } catch (e) {
+      alert("Impossible d'ouvrir le document (accès sécurisé).");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer"
-      className="flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all hover:opacity-80"
+    <button onClick={openDoc} disabled={loading}
+      className="w-full flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all hover:opacity-80 text-left"
       style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.15)", color: "#2563eb" }}
       data-testid={`doc-link-${label.toLowerCase().replace(/\s/g,"-")}`}>
-      <FileText size={13} />
+      {loading ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
       <span className="flex-1 truncate">{doc.filename || label}</span>
       <span className="opacity-40 text-xs">{fmtDate(doc.uploaded_at)}</span>
       <ExternalLink size={11} />
-    </a>
+    </button>
   );
 }
 
@@ -261,9 +280,9 @@ function KycModal({ user, onClose, onSuccess }) {
               </div>
             ) : (
               <div className="space-y-2">
-                <DocLink label="Carte d'identité" doc={docs.identity} />
-                <DocLink label="RIB" doc={docs.rib} />
-                <DocLink label="KBIS" doc={docs.kbis} />
+                <DocLink label="Carte d'identité" doc={docs.identity} userId={user.id} docType="identity" />
+                <DocLink label="RIB" doc={docs.rib} userId={user.id} docType="rib" />
+                <DocLink label="KBIS" doc={docs.kbis} userId={user.id} docType="kbis" />
               </div>
             )}
           </div>

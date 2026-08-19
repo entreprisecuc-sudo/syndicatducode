@@ -319,6 +319,25 @@ app.add_middleware(
 
 
 # ============================================
+# SÉCURITÉ — Blocage accès direct aux documents KYC (SEC-001)
+# ============================================
+from starlette.responses import JSONResponse as _JSONResponse
+
+
+@app.middleware("http")
+async def block_direct_kyc_documents(request, call_next):
+    """SEC-001 : interdit l'accès direct aux documents KYC via le montage statique.
+    Ces fichiers ne sont servis QUE par l'endpoint authentifié
+    /api/citadelle/auth/documents/{user_id}/{doc_type}."""
+    if "/uploads/citadelle/documents/" in request.url.path:
+        return _JSONResponse(
+            status_code=403,
+            content={"detail": "Accès direct interdit. Document servi via un endpoint authentifié."},
+        )
+    return await call_next(request)
+
+
+# ============================================
 # ÉVÉNEMENTS
 # ============================================
 

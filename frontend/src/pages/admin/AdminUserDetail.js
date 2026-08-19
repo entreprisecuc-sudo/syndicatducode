@@ -10,6 +10,7 @@ import {
   ArrowLeft, User, History, FileText, Briefcase, CreditCard, Loader2, Receipt, Landmark, Shield
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { getToken } from "@/services/authService";
 import { useAdminTheme } from "@/context/AdminThemeContext";
 
 // Import des onglets
@@ -202,7 +203,7 @@ const AdminUserDetail = () => {
           <CitadelleBillingSection data={citadelleData} />
         )}
         {activeTab === "citadelle_docs" && citadelleData && (
-          <CitadelleDocsSection data={citadelleData} />
+          <CitadelleDocsSection data={citadelleData} userId={userId} />
         )}
       </div>
     </AdminLayout>
@@ -279,12 +280,30 @@ function CitadelleBillingSection({ data }) {
 
 // ── Section Documents Citadelle (admin) ───────────────────────────────────────
 
-function CitadelleDocsSection({ data }) {
+function CitadelleDocsSection({ data, userId }) {
   const docs = data.documents || {};
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-  const DocRow = ({ label, doc }) => {
-    const url = doc?.url ? (doc.url.startsWith("/uploads/") ? `${backendUrl}/api${doc.url}` : `${backendUrl}${doc.url}`) : null;
+  const DocRow = ({ label, doc, docType }) => {
+    const [loading, setLoading] = useState(false);
+    const openDoc = async () => {
+      try {
+        setLoading(true);
+        const token = getToken();
+        const res = await fetch(
+          `${backendUrl}/api/citadelle/auth/documents/${userId}/${docType}?token=${encodeURIComponent(token || "")}`
+        );
+        if (!res.ok) throw new Error("fetch failed");
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, "_blank", "noopener,noreferrer");
+        setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+      } catch (e) {
+        alert("Impossible d'ouvrir le document (accès sécurisé).");
+      } finally {
+        setLoading(false);
+      }
+    };
     return (
       <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: "var(--admin-bg-card)", border: "1px solid var(--admin-border)" }}>
         <FileText size={18} style={{ color: doc ? "#C9A45C" : "var(--admin-text-secondary)", flexShrink: 0 }} />
@@ -298,12 +317,13 @@ function CitadelleDocsSection({ data }) {
             <p className="text-xs" style={{ color: "var(--admin-text-secondary)" }}>Non fourni</p>
           )}
         </div>
-        {url && (
-          <a href={url} target="_blank" rel="noopener noreferrer"
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:scale-105"
+        {doc && (
+          <button onClick={openDoc} disabled={loading}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:scale-105 flex items-center gap-1"
             style={{ background: "rgba(201,164,92,0.15)", color: "#C9A45C" }}>
+            {loading && <Loader2 size={12} className="animate-spin" />}
             Voir
-          </a>
+          </button>
         )}
       </div>
     );
@@ -311,9 +331,9 @@ function CitadelleDocsSection({ data }) {
 
   return (
     <div className="space-y-3" data-testid="citadelle-docs-section">
-      <DocRow label="Carte d'identité" doc={docs.identity} />
-      <DocRow label="RIB (document bancaire)" doc={docs.rib} />
-      <DocRow label="Extrait KBIS" doc={docs.kbis} />
+      <DocRow label="Carte d'identité" doc={docs.identity} docType="identity" />
+      <DocRow label="RIB (document bancaire)" doc={docs.rib} docType="rib" />
+      <DocRow label="Extrait KBIS" doc={docs.kbis} docType="kbis" />
     </div>
   );
 }

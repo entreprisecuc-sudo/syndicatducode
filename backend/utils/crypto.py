@@ -25,3 +25,15 @@ def decrypt_value(token: str) -> str:
         return _fernet().decrypt(token.encode("utf-8")).decode("utf-8")
     except (InvalidToken, Exception):
         return ""
+
+
+def decrypt_value_or_original(token: str) -> str:
+    """Déchiffre un jeton Fernet ; si la valeur n'en est pas un (donnée héritée
+    stockée en clair avant la mise en place du chiffrement), la retourne telle quelle.
+    Rétro-compatibilité pour la migration progressive des champs sensibles."""
+    if not token:
+        return ""
+    try:
+        return _fernet().decrypt(token.encode("utf-8")).decode("utf-8")
+    except (InvalidToken, Exception):
+        return token

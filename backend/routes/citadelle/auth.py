@@ -7,7 +7,8 @@ platform: "citadelle" — isolation stricte
 import httpx
 import os
 from pathlib import Path as FilePath
-from fastapi import APIRouter, HTTPException, status, Request, UploadFile, File, Depends
+from fastapi import APIRouter, HTTPException, status, Request, UploadFile, File, Depends, Query
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime, timezone, timedelta
@@ -32,6 +33,7 @@ from services.email_service import (
 )
 
 from utils.request_utils import get_client_ip
+from utils.crypto import encrypt_value, decrypt_value_or_original
 
 logger = logging.getLogger(__name__)
 
@@ -791,9 +793,12 @@ async def citadelle_update_billing(
         clean_iban = data.iban.replace(" ", "").upper()
         if clean_iban and len(clean_iban) < 15:
             raise HTTPException(status_code=400, detail="IBAN invalide — minimum 15 caractères")
-        billing["iban"] = clean_iban
+        # SEC-002 : chiffrement au repos (Fernet) — l'IBAN n'est jamais stocké en clair (RGPD)
+        billing["iban"] = encrypt_value(clean_iban) if clean_iban else ""
     if data.bic is not None:
-        billing["bic"] = data.bic.strip().upper()
+        clean_bic = data.bic.strip().upper()
+        # SEC-002 : chiffrement au repos (Fernet)
+        billing["bic"] = encrypt_value(clean_bic) if clean_bic else ""
     if data.bank_name is not None:
         billing["bank_name"] = data.bank_name.strip()
     if data.account_holder is not None:
@@ -858,8 +863,15 @@ async def citadelle_get_billing(request: Request):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable")
 
+    # SEC-002 : déchiffrement des champs bancaires sensibles avant renvoi au propriétaire
+    _billing = dict(user.get("billing", {}))
+    if _billing.get("iban"):
+        _billing["iban"] = decrypt_value_or_original(_billing["iban"])
+    if _billing.get("bic"):
+        _billing["bic"] = decrypt_value_or_original(_billing["bic"])
+
     return {
-        "billing": user.get("billing", {}),
+        "billing": _billing,
         "professional": user.get("professional", {}),
         "address": user.get("address", ""),
         "documents": user.get("documents", {}),
@@ -929,6 +941,67 @@ async def upload_document(
 
     logger.info(f"[Citadelle] Document '{doc_type}' uploadé par {user['email']}: {filename}")
     return {"url": doc_url, "filename": filename, "type": doc_type}
+
+
+@router.get("/documents/{user_id}/{doc_type}")
+async def get_citadelle_document(
+    user_id: str,
+    doc_type: str,
+    request: Request,
+    token: Optional[str] = Query(None, description="Token JWT (query param ou header Authorization)"),
+):
+    """
+    SEC-001 : Sert un document KYC (identity/kbis/rib) de façon AUTHENTIFIÉE.
+    Accès réservé au propriétaire du document OU à un administrateur.
+    Remplace l'accès public direct au dossier /uploads/citadelle/documents.
+    """
+    if doc_type not in ("identity", "kbis", "rib"):
+        raise HTTPException(status_code=400, detail="Type de document invalide")
+
+    auth_token = token
+    if not auth_token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            auth_token = auth_header[7:]
+    if not auth_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token d'authentification requis")
+
+    payload = decode_access_token(auth_token)
+    if payload is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide ou expiré")
+
+    requester_id = payload.get("sub")
+    requester_role = payload.get("role")
+    if requester_role != "admin" and requester_id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Accès non autorisé")
+
+    user = await db.users.find_one(
+        {"id": user_id, "platform": "citadelle"},
+        {"_id": 0, "documents": 1}
+    )
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable")
+
+    doc = (user.get("documents") or {}).get(doc_type)
+    if not doc or not doc.get("url"):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document introuvable")
+
+    filename = doc["url"].split("/")[-1]
+    filepath = DOCS_DIR / filename
+    if not filepath.exists():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Fichier introuvable")
+
+    ext = filepath.suffix.lower()
+    media_types = {
+        ".pdf": "application/pdf", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+        ".png": "image/png", ".webp": "image/webp",
+    }
+    media_type = media_types.get(ext, "application/octet-stream")
+    return FileResponse(
+        path=str(filepath),
+        media_type=media_type,
+        headers={"Content-Disposition": f'inline; filename="{doc.get("filename") or filename}"'}
+    )
 
 
 # ── Route admin : détail utilisateur Citadelle ─────────────────────────────────
