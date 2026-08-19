@@ -9,6 +9,7 @@ import {
   Star, Handshake, Zap, Shield, ExternalLink, ArrowRight, TrendingUp, Search,
   ShoppingCart, Check
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import ServiceCheckoutModal from "@/components/citadelle/ServiceCheckoutModal";
 import ServiceDetailModal from "@/components/citadelle/ServiceDetailModal";
@@ -20,7 +21,7 @@ import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 // ── Configuration ──────────────────────────────────────────────────────────────
 
 const TYPE_ICONS = { paid: Zap, free: Star, partner: Handshake, quote: Shield };
-const TYPE_LABELS = { paid: "Payant", free: "Gratuit", partner: "Partenaire", quote: "Sur devis" };
+/* TYPE_LABELS résolu via t('member.type_<key>') dans le rendu */
 
 // Un service est achetable directement s'il est payant et a un prix positif
 const isPayable = (svc) => svc.service_type === "paid" && svc.price > 0;
@@ -28,6 +29,7 @@ const isPayable = (svc) => svc.service_type === "paid" && svc.price > 0;
 // ── Composant principal ─────────────────────────────────────────────────────────
 
 export default function CitadelleMyServices() {
+  const { t } = useTranslation();
   const { user } = useCitadelleAuth();
   const [services, setServices]           = useState([]);
   const [loadingServices, setLoadingServices] = useState(true);
@@ -95,12 +97,12 @@ export default function CitadelleMyServices() {
           ) : svc.price != null ? (
             <span className="text-lg font-black"
               style={{ color: dark ? "white" : CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-              {svc.price > 0 ? `${svc.price.toLocaleString("fr-FR")} €` : "Gratuit"}
+              {svc.price > 0 ? `${svc.price.toLocaleString("fr-FR")} €` : t('member.type_free')}
             </span>
           ) : (
             <span className="text-xs font-medium"
               style={{ color: dark ? "rgba(255,255,255,0.5)" : CITADELLE_COLORS.textMuted }}>
-              {TYPE_LABELS[svc.service_type]}
+              {t(`member.type_${svc.service_type}`) || svc.service_type}
             </span>
           )}
         </div>
@@ -112,7 +114,7 @@ export default function CitadelleMyServices() {
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
             data-testid={`my-service-buy-btn-${svc.id}`}>
             <ShoppingCart size={13} />
-            Acheter — {svc.price.toLocaleString("fr-FR")} €
+            {t('member.buy_btn', { price: svc.price.toLocaleString("fr-FR") })}
           </button>
         ) : svc.cta_url ? (
           <a href={svc.cta_url} target="_blank" rel="noopener noreferrer"
@@ -120,7 +122,7 @@ export default function CitadelleMyServices() {
             style={dark
               ? { border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.8)" }
               : { border: `1px solid ${CITADELLE_COLORS.gold}`, color: CITADELLE_COLORS.gold }}>
-            {svc.cta_label || "En savoir plus"} <ExternalLink size={12} />
+            {svc.cta_label || t('member.cta_learn_more')} <ExternalLink size={12} />
           </a>
         ) : (
           <a href={`mailto:atelier@syndicatducode.fr?subject=Service: ${svc.title}`}
@@ -128,7 +130,7 @@ export default function CitadelleMyServices() {
             style={dark
               ? { border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.8)" }
               : { border: `1px solid ${CITADELLE_COLORS.border}`, color: CITADELLE_COLORS.blue }}>
-            {svc.cta_label || "Nous contacter"} <ArrowRight size={12} />
+            {svc.cta_label || t('member.cta_contact')} <ArrowRight size={12} />
           </a>
         )}
       </div>
@@ -175,27 +177,26 @@ export default function CitadelleMyServices() {
         {/* Fil d'Ariane */}
         <div className="flex items-center gap-2 mb-8 text-xs" style={{ color: CITADELLE_COLORS.textMuted }}>
           <Link to="/citadelle/espace-membre" className="hover:opacity-70 transition-opacity">
-            ← Espace membre
+            {t('member.breadcrumb_member')}
           </Link>
           <span>/</span>
-          <span className="font-semibold" style={{ color: CITADELLE_COLORS.blue }}>Mes services</span>
+          <span className="font-semibold" style={{ color: CITADELLE_COLORS.blue }}>{t('member.my_services_title')}</span>
         </div>
 
-        {/* En-tête */}
         <div className="mb-10">
           <h1 className="text-3xl font-black mb-2"
             style={{ fontFamily: "'Montserrat', sans-serif", color: CITADELLE_COLORS.blue }}>
-            Mes services
+            {t('member.my_services_title')}
           </h1>
           <p className="text-sm" style={{ color: CITADELLE_COLORS.textMuted }}>
-            Commandez un service ou consultez l'historique de vos demandes.
+            {t('member.my_services_sub')}
           </p>
         </div>
 
         {/* ── Section 1 : Catalogue par catégorie ──────────────────────────── */}
         <section className="mb-12">
           <h2 className="text-base font-bold mb-6" style={{ color: CITADELLE_COLORS.blue }}>
-            Services disponibles
+            {t('member.section_available')}
           </h2>
 
           {loadingServices ? (
@@ -206,7 +207,7 @@ export default function CitadelleMyServices() {
             </div>
           ) : services.length === 0 ? (
             <p className="text-sm py-8 text-center" style={{ color: CITADELLE_COLORS.textMuted }}>
-              Aucun service disponible pour le moment.
+              {t('member.empty_services')}
             </p>
           ) : (
             <div>
@@ -225,10 +226,10 @@ export default function CitadelleMyServices() {
                   <div className="flex-shrink-0">
                     <h3 className="text-base font-black"
                       style={{ color: CITADELLE_COLORS.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                      Inclus gratuitement
+                      {t('member.free_included_title')}
                     </h3>
                     <p className="text-xs mt-0.5" style={{ color: CITADELLE_COLORS.textMuted }}>
-                      Fonctionnalités accessibles sans frais pour tout membre inscrit.
+                      {t('member.free_included_sub')}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
@@ -244,14 +245,14 @@ export default function CitadelleMyServices() {
                 </div>
               )}
               {renderCategory(
-                "Pour les vendeurs",
-                "Évaluez, optimisez et valorisez votre projet avant la vente.",
+                t('member.cat_sellers_title'),
+                t('member.cat_sellers_sub'),
                 TrendingUp,
                 services.filter(s => s.target_category === "vendeur" && s.service_type !== "free")
               )}
               {renderCategory(
-                "Pour les acheteurs",
-                "Sécurisez votre investissement avant et après l'acquisition.",
+                t('member.cat_buyers_title'),
+                t('member.cat_buyers_sub'),
                 Search,
                 services.filter(s => s.target_category === "acheteur" && s.service_type !== "free"),
                 true

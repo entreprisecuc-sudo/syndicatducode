@@ -5,28 +5,32 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Eye, Edit2, Trash2, AlertCircle, Clock, CheckCircle, XCircle, ShoppingBag, ShieldCheck, LogOut, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import citadelleApi from "@/services/citadelleApi";
 import { CITADELLE_COLORS, getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
 
+/* STATUS_CONFIG — le label est résolu via t('member.status_<status>') dans le rendu */
 const STATUS_CONFIG = {
-  draft:     { label: "Brouillon",  color: CITADELLE_COLORS.textMuted, bg: "rgba(95,102,114,0.1)",  icon: Edit2 },
-  pending:   { label: "En attente", color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  icon: Clock },
-  active:    { label: "Publiée",    color: "#22C55E", bg: "rgba(34,197,94,0.1)",   icon: CheckCircle },
-  rejected:  { label: "Rejetée",   color: "#DC2626", bg: "rgba(220,38,38,0.1)",   icon: XCircle },
-  sold:      { label: "Vendue",     color: CITADELLE_COLORS.gold, bg: "rgba(201,164,92,0.1)", icon: ShoppingBag },
-  expired:   { label: "Expirée",   color: CITADELLE_COLORS.textMuted, bg: "rgba(95,102,114,0.1)", icon: Clock },
-  withdrawn: { label: "Retirée",   color: "#64748B", bg: "rgba(100,116,139,0.1)", icon: LogOut },
+  draft:     { color: CITADELLE_COLORS.textMuted, bg: "rgba(95,102,114,0.1)",  icon: Edit2 },
+  pending:   { color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  icon: Clock },
+  active:    { color: "#22C55E", bg: "rgba(34,197,94,0.1)",   icon: CheckCircle },
+  rejected:  { color: "#DC2626", bg: "rgba(220,38,38,0.1)",   icon: XCircle },
+  sold:      { color: CITADELLE_COLORS.gold, bg: "rgba(201,164,92,0.1)", icon: ShoppingBag },
+  expired:   { color: CITADELLE_COLORS.textMuted, bg: "rgba(95,102,114,0.1)", icon: Clock },
+  withdrawn: { color: "#64748B", bg: "rgba(100,116,139,0.1)", icon: LogOut },
 };
 
+/* Clés de raison de retrait — le label est résolu via t() dans le rendu */
 const WITHDRAW_REASONS = [
-  { key: "sold",              label: "Le bien est vendu" },
-  { key: "not_exist",         label: "Le bien n'existe plus" },
-  { key: "no_longer_selling", label: "Je ne souhaite plus le vendre" },
+  { key: "sold" },
+  { key: "not_exist" },
+  { key: "no_longer_selling" },
 ];
 
 export default function CitadelleMyListings() {
+  const { t } = useTranslation();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
@@ -55,13 +59,13 @@ export default function CitadelleMyListings() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Supprimer cette annonce ? Cette action est irréversible.")) return;
+    if (!window.confirm(t('member.confirm_delete'))) return;
     setDeletingId(id);
     try {
       await citadelleApi.delete(`/listings/${id}`);
       setListings(prev => prev.filter(l => l.id !== id));
     } catch (err) {
-      alert(err.response?.data?.detail || "Impossible de supprimer cette annonce");
+      alert(err.response?.data?.detail || t('member.err_delete'));
     } finally {
       setDeletingId(null);
     }
@@ -82,7 +86,7 @@ export default function CitadelleMyListings() {
       ));
       setWithdrawModal({ open: false, listingId: null, listingTitle: "" });
     } catch (err) {
-      alert(err.response?.data?.detail || "Impossible de retirer l'annonce");
+      alert(err.response?.data?.detail || t('member.err_withdraw'));
     } finally {
       setWithdrawing(false);
     }
@@ -94,17 +98,17 @@ export default function CitadelleMyListings() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-black" style={{ fontFamily: "'Montserrat', sans-serif", color: CITADELLE_COLORS.blue }}>
-              Mes annonces
+              {t('member.my_listings_title')}
             </h1>
             <p className="text-sm mt-1" style={{ color: CITADELLE_COLORS.textMuted }}>
-              {listings.length} annonce{listings.length > 1 ? "s" : ""}
+              {t('member.listing_count', { count: listings.length })}
             </p>
           </div>
           <Link to="/citadelle/espace-membre/mes-annonces/creer"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105"
             style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}
             data-testid="create-listing-btn">
-            <Plus size={16} /> Nouvelle annonce
+            <Plus size={16} /> {t('member.new_listing_btn')}
           </Link>
         </div>
 
@@ -117,18 +121,18 @@ export default function CitadelleMyListings() {
         ) : listings.length === 0 ? (
           <div className="py-20 text-center">
             <p className="text-5xl mb-4">🏰</p>
-            <h2 className="text-lg font-bold mb-2" style={{ color: CITADELLE_COLORS.blue }}>Aucune annonce pour le moment</h2>
-            <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>Publiez votre premier actif numérique gratuitement</p>
+            <h2 className="text-lg font-bold mb-2" style={{ color: CITADELLE_COLORS.blue }}>{t('member.empty_listings_title')}</h2>
+            <p className="text-sm mb-6" style={{ color: CITADELLE_COLORS.textMuted }}>{t('member.empty_listings_sub')}</p>
             <Link to="/citadelle/espace-membre/mes-annonces/creer"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm"
               style={{ background: CITADELLE_COLORS.gold, color: CITADELLE_COLORS.night }}>
-              <Plus size={16} /> Créer une annonce
+              <Plus size={16} /> {t('member.create_listing_btn')}
             </Link>
           </div>
         ) : (
           <div className="space-y-4">
             {listings.map(listing => {
-              const { label, color, bg, icon: StatusIcon } = STATUS_CONFIG[listing.status] || STATUS_CONFIG.draft;
+              const { color, bg, icon: StatusIcon } = STATUS_CONFIG[listing.status] || STATUS_CONFIG.draft;
               return (
                 <div key={listing.id} className="flex items-center gap-4 p-4 rounded-2xl"
                   style={{ background: "white", border: `1px solid ${CITADELLE_COLORS.border}` }}
@@ -154,7 +158,7 @@ export default function CitadelleMyListings() {
                           }}
                           data-testid={`my-listing-garde-badge-${listing.id}`}
                         >
-                          <ShieldCheck size={10} /> Vérifié La Garde
+                          <ShieldCheck size={10} /> {t('member.garde_verified')}
                         </span>
                       )}
                     </div>
@@ -170,7 +174,7 @@ export default function CitadelleMyListings() {
                   {/* Statut */}
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0"
                     style={{ background: bg, color }}>
-                    <StatusIcon size={12} /> {label}
+                    <StatusIcon size={12} /> {t(`member.status_${listing.status}`) || listing.status}
                   </span>
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
@@ -178,7 +182,7 @@ export default function CitadelleMyListings() {
                       <Link to={`/citadelle/annonces/${listing.slug}`}
                         className="p-2 rounded-lg transition-all hover:scale-110"
                         style={{ background: CITADELLE_COLORS.bg, color: CITADELLE_COLORS.blue }}
-                        title="Voir">
+                        title={t('member.action_view')}>
                         <Eye size={15} />
                       </Link>
                     )}
@@ -186,7 +190,7 @@ export default function CitadelleMyListings() {
                       <Link to={`/citadelle/espace-membre/mes-annonces/${listing.id}/modifier`}
                         className="p-2 rounded-lg transition-all hover:scale-110"
                         style={{ background: CITADELLE_COLORS.bg, color: CITADELLE_COLORS.blue }}
-                        title="Modifier">
+                        title={t('member.action_edit')}>
                         <Edit2 size={15} />
                       </Link>
                     )}
@@ -194,16 +198,16 @@ export default function CitadelleMyListings() {
                       <button onClick={() => openWithdrawModal(listing)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
                         style={{ background: "rgba(100,116,139,0.1)", color: "#64748B" }}
-                        title="Retirer l'annonce de la vente"
+                        title={t('member.action_withdraw')}
                         data-testid={`withdraw-btn-${listing.id}`}>
-                        <LogOut size={13} /> Retirer
+                        <LogOut size={13} /> {t('member.action_withdraw')}
                       </button>
                     )}
                     {["draft", "rejected"].includes(listing.status) && (
                       <button onClick={() => handleDelete(listing.id)} disabled={deletingId === listing.id}
                         className="p-2 rounded-lg transition-all hover:scale-110 disabled:opacity-50"
                         style={{ background: "rgba(220,38,38,0.07)", color: "#DC2626" }}
-                        title="Supprimer">
+                        title={t('member.action_delete')}>
                         <Trash2 size={15} />
                       </button>
                     )}
@@ -227,8 +231,8 @@ export default function CitadelleMyListings() {
               style={{ background: CITADELLE_COLORS.night, borderBottom: `1px solid rgba(201,164,92,0.2)` }}>
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest mb-0.5"
-                  style={{ color: CITADELLE_COLORS.gold }}>Retrait d'annonce</p>
-                <h2 className="text-base font-black text-white">Retirer l'annonce de la vente</h2>
+                  style={{ color: CITADELLE_COLORS.gold }}>{t('member.withdraw_modal_badge')}</p>
+                <h2 className="text-base font-black text-white">{t('member.withdraw_modal_title')}</h2>
               </div>
               <button onClick={() => setWithdrawModal({ open: false, listingId: null, listingTitle: "" })}
                 className="p-1.5 rounded-lg opacity-60 hover:opacity-100 transition-opacity"
@@ -239,15 +243,15 @@ export default function CitadelleMyListings() {
             </div>
             {/* Corps modal */}
             <div className="px-6 py-5">
-              <p className="text-sm mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>Annonce :</p>
+              <p className="text-sm mb-1" style={{ color: CITADELLE_COLORS.textMuted }}>{t('member.withdraw_listing_label')}</p>
               <p className="text-sm font-bold mb-5 truncate" style={{ color: CITADELLE_COLORS.blue }}>
                 "{withdrawModal.listingTitle}"
               </p>
               <p className="text-sm font-semibold mb-3" style={{ color: CITADELLE_COLORS.blue }}>
-                Quelle est la raison du retrait ?
+                {t('member.withdraw_reason_question')}
               </p>
               <div className="flex flex-col gap-2 mb-6">
-                {WITHDRAW_REASONS.map(({ key, label }) => (
+                {WITHDRAW_REASONS.map(({ key }) => (
                   <button key={key}
                     onClick={() => setWithdrawReason(key)}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-left transition-all"
@@ -263,7 +267,7 @@ export default function CitadelleMyListings() {
                       }}>
                       {withdrawReason === key && <span className="w-2.5 h-2.5 rounded-full bg-white" />}
                     </span>
-                    {label}
+                    {t(`member.withdraw_reason_${key}`)}
                   </button>
                 ))}
               </div>
@@ -272,14 +276,14 @@ export default function CitadelleMyListings() {
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-70"
                   style={{ background: CITADELLE_COLORS.bg, color: CITADELLE_COLORS.textMuted }}
                   data-testid="withdraw-cancel-btn">
-                  Annuler
+                  {t('member.withdraw_cancel')}
                 </button>
                 <button onClick={handleWithdraw}
                   disabled={!withdrawReason || withdrawing}
                   className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40"
                   style={{ background: withdrawReason ? CITADELLE_COLORS.night : CITADELLE_COLORS.border, color: "white" }}
                   data-testid="withdraw-confirm-btn">
-                  {withdrawing ? "Retrait en cours…" : "Confirmer le retrait"}
+                  {withdrawing ? t('member.withdraw_loading') : t('member.withdraw_confirm')}
                 </button>
               </div>
             </div>

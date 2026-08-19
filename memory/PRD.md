@@ -7,7 +7,20 @@
 
 ---
 
-## ⭐ Session 19/08/2026 — Phase 4 i18n : Pages Auth + Pages Légales ✅
+## ⭐ Session 19/08/2026 — Phase 5 i18n : Espace Membre ✅
+
+### Fichiers modifiés (3 composants + 2 JSON)
+- `fr.json` + `en.json` : ajout section `member` (79 clés, parité parfaite FR/EN)
+- `CitadelleDashboard.js` — `useTranslation()` + zéro hardcoding (KPI, sections, modal retrait, vue banni)
+- `CitadelleMyListings.js` — `useTranslation()` + `STATUS_CONFIG` sans labels (résolus via `t('member.status_<status>')`) + `window.confirm` et `alert` traduits + WITHDRAW_REASONS sans labels
+- `CitadelleMyServices.js` — `useTranslation()` + `TYPE_LABELS` supprimé (résolu via `t('member.type_<type>')`) + catégories et CTA traduits
+
+### Dette technique documentée (Règle 11)
+`WITHDRAW_REASONS` toujours dupliqué dans Dashboard.js et MyListings.js — refactoring DRY prévu lors d'une prochaine session dédiée.
+
+---
+
+
 
 ### Fichiers modifiés (8 composants + 2 JSON)
 - `fr.json` : ajout sections `auth` (59 clés) + `legal` (10 clés) + clés modal

@@ -11,6 +11,7 @@ import {
   MessageSquare, ShieldCheck, Briefcase, User, FileText, ChevronRight,
   Eye, Edit2, Clock, CheckCircle, ShoppingBag, X,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useCitadelleAuth } from "@/context/CitadelleAuthContext";
 import { useCitadelleModeration } from "@/hooks/useCitadelleModeration";
 import CitadelleLayout from "@/components/citadelle/CitadelleLayout";
@@ -21,10 +22,11 @@ import { CITADELLE_COLORS } from "@/config/citadelleConstants";
 
 const C = CITADELLE_COLORS;
 
+/* Clés de raison de retrait — le label est résolu via t() dans le rendu */
 const WITHDRAW_REASONS = [
-  { key: "sold",              label: "Le bien est vendu" },
-  { key: "not_exist",         label: "Le bien n'existe plus" },
-  { key: "no_longer_selling", label: "Je ne souhaite plus le vendre" },
+  { key: "sold" },
+  { key: "not_exist" },
+  { key: "no_longer_selling" },
 ];
 
 /* Carte KPI cliquable — chiffre clé + libellé, navigue au clic */
@@ -76,6 +78,7 @@ function SectionLink({ icon: Icon, title, desc, href, testId }) {
 }
 
 export default function CitadelleDashboard() {
+  const { t } = useTranslation();
   const { user, logout, isAuthenticated } = useCitadelleAuth();
   const { banned } = useCitadelleModeration();
   const navigate = useNavigate();
@@ -140,15 +143,15 @@ export default function CitadelleDashboard() {
           <div className="max-w-2xl mx-auto">
             <div className="p-8 rounded-2xl bg-white" style={{ border: `1px solid ${C.border}` }} data-testid="banned-restricted-view">
               <h1 className="text-xl font-bold mb-2" style={{ color: C.blue, fontFamily: "'Montserrat', sans-serif" }}>
-                Accès restreint
+                {t('member.banned_title')}
               </h1>
               <p className="text-sm mb-6" style={{ color: C.textMuted }}>
-                Votre compte a été banni. Vous conservez uniquement l'accès à vos factures et à vos documents de transmission.
+                {t('member.banned_desc')}
               </p>
               <div className="space-y-3">
-                <SectionLink icon={FileText} title="Mes factures" desc="Consulter et télécharger vos factures"
+                <SectionLink icon={FileText} title={t('member.nav_invoices_title')} desc={t('member.banned_invoices_desc')}
                   href="/citadelle/espace-membre/factures" testId="banned-link-invoices" />
-                <SectionLink icon={ShieldCheck} title="Mes documents de transmission" desc="Accéder à vos dossiers de transmission"
+                <SectionLink icon={ShieldCheck} title={t('member.banned_transmissions_title')} desc={t('member.banned_transmissions_desc')}
                   href="/citadelle/espace-membre/transmissions" testId="banned-link-transmissions" />
               </div>
               <button
@@ -156,7 +159,7 @@ export default function CitadelleDashboard() {
                 className="mt-6 flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
                 style={{ border: `1px solid ${C.border}`, color: C.textMuted }}
                 data-testid="banned-logout">
-                <LogOut size={15} /> Déconnexion
+                <LogOut size={15} /> {t('member.logout')}
               </button>
             </div>
           </div>
@@ -177,14 +180,14 @@ export default function CitadelleDashboard() {
                 <div className="flex items-center gap-2 mb-2">
                   <Shield size={18} style={{ color: C.gold }} />
                   <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.gold }}>
-                    Espace Membre
+                    {t('member.space_badge')}
                   </span>
                 </div>
                 <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  Bonjour, {user?.first_name || "Membre"} !
+                  {t('member.hello', { name: user?.first_name || 'Membre' })}
                 </h1>
                 <p className="mt-1 text-sm" style={{ color: "rgba(255,255,255,0.55)" }}>
-                  Bienvenue sur votre espace La Citadelle Numérique
+                  {t('member.welcome_sub')}
                 </p>
               </div>
               <button
@@ -194,7 +197,7 @@ export default function CitadelleDashboard() {
                 data-testid="citadelle-member-logout"
               >
                 <LogOut size={15} />
-                Déconnexion
+                {t('member.logout')}
               </button>
             </div>
 
@@ -218,16 +221,16 @@ export default function CitadelleDashboard() {
                 <PlusCircle size={22} strokeWidth={1.5} style={{ color: C.gold }} />
               </div>
               <div className="mt-4">
-                <p className="text-base font-bold text-white leading-tight">Publier une annonce</p>
-                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>Mettez votre actif en vente</p>
+                <p className="text-base font-bold text-white leading-tight">{t('member.publish_cta')}</p>
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>{t('member.publish_cta_sub')}</p>
               </div>
             </Link>
 
-            <KpiCard icon={LayoutList} label="Annonces actives" value={activeListings}
+            <KpiCard icon={LayoutList} label={t('member.kpi_listings')} value={activeListings}
               href="/citadelle/espace-membre/mes-annonces" testId="kpi-annonces-actives" />
-            <KpiCard icon={ArrowRightLeft} label="Transactions en cours" value={unreadTransactions}
+            <KpiCard icon={ArrowRightLeft} label={t('member.kpi_transactions')} value={unreadTransactions}
               href="/citadelle/espace-membre/transactions" testId="kpi-transactions" />
-            <KpiCard icon={MessageSquare} label="Messages non lus" value={unreadMessages}
+            <KpiCard icon={MessageSquare} label={t('member.kpi_messages')} value={unreadMessages}
               href="/citadelle/espace-membre/messages" testId="kpi-messages" />
           </div>
 
@@ -240,25 +243,24 @@ export default function CitadelleDashboard() {
               {/* Administration — encadré bleu */}
               <div className="rounded-2xl p-5 md:p-6" style={{ border: `2px solid ${C.blue}`, background: "rgba(15,39,71,0.02)" }}>
                 <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: C.blue }}>
-                  Administration
+                  {t('member.section_admin')}
                 </h2>
                 <div className="flex flex-col gap-3">
-                  <SectionLink icon={User} title="Mon profil" desc="Modifier mes informations"
+                  <SectionLink icon={User} title={t('member.nav_profile_title')} desc={t('member.nav_profile_desc')}
                     href="/citadelle/espace-membre/profil" testId="nav-mon-profil" />
-                  <SectionLink icon={FileText} title="Mes factures" desc="Téléchargez vos PDF"
+                  <SectionLink icon={FileText} title={t('member.nav_invoices_title')} desc={t('member.nav_invoices_desc')}
                     href="/citadelle/espace-membre/factures" testId="nav-mes-factures" />
                 </div>
               </div>
 
-              {/* Gestion & Services */}
               <div>
                 <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: C.blue }}>
-                  Gestion & Services
+                  {t('member.section_management')}
                 </h2>
                 <div className="flex flex-col gap-3">
-                  <SectionLink icon={ShieldCheck} title="Transmissions & commandes" desc="Attestations La Garde & vos services"
+                  <SectionLink icon={ShieldCheck} title={t('member.nav_transmissions_title')} desc={t('member.nav_transmissions_desc')}
                     href="/citadelle/espace-membre/transmissions" testId="nav-mes-transmissions" />
-                  <SectionLink icon={Briefcase} title="Mes services" desc="Évaluations et audits"
+                  <SectionLink icon={Briefcase} title={t('member.nav_services_title')} desc={t('member.nav_services_desc')}
                     href="/citadelle/espace-membre/mes-services" testId="nav-mes-services" />
                 </div>
               </div>
@@ -269,12 +271,12 @@ export default function CitadelleDashboard() {
               data-testid="dashboard-active-listings">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-bold uppercase tracking-wider" style={{ color: C.blue }}>
-                  Mes annonces en cours de publication
+                  {t('member.active_listings_title')}
                 </h2>
                 <Link to="/citadelle/espace-membre/mes-annonces"
                   className="text-xs font-semibold flex items-center gap-1 transition-opacity hover:opacity-70"
                   style={{ color: C.gold }}>
-                  Toutes mes annonces <ChevronRight size={13} />
+                  {t('member.all_listings_link')} <ChevronRight size={13} />
                 </Link>
               </div>
 
@@ -285,12 +287,12 @@ export default function CitadelleDashboard() {
                     <LayoutList size={22} strokeWidth={1.5} style={{ color: C.gold }} />
                   </div>
                   <p className="text-sm text-center" style={{ color: C.textMuted }}>
-                    Aucune annonce active pour le moment
+                    {t('member.empty_listings')}
                   </p>
                   <Link to="/citadelle/espace-membre/mes-annonces/creer"
                     className="text-xs font-bold px-4 py-2 rounded-lg transition-all hover:opacity-80"
                     style={{ background: C.blue, color: "white" }}>
-                    Publier une annonce
+                    {t('member.publish_cta')}
                   </Link>
                 </div>
               ) : (
@@ -326,7 +328,7 @@ export default function CitadelleDashboard() {
                                 color:      isActive ? "#16A34A" : "#B45309",
                               }}>
                               {isPending && <Clock size={11} />}
-                              {isActive ? "Publiée" : "En attente de validation"}
+                              {isActive ? t('member.status_published') : t('member.status_pending_validation')}
                             </span>
                             {listing.price && (
                               <span className="text-xs font-bold" style={{ color: C.gold }}>
@@ -342,22 +344,22 @@ export default function CitadelleDashboard() {
                             <Link to={`/citadelle/annonces/${listing.slug}`}
                               className="p-2 rounded-lg transition-all hover:scale-110"
                               style={{ background: "rgba(15,39,71,0.06)", color: C.blue }}
-                              title="Voir l'annonce">
+                              title={t('member.action_view')}>
                               <Eye size={14} />
                             </Link>
                           )}
                           <Link to={`/citadelle/espace-membre/mes-annonces/${listing.id}/modifier`}
                             className="p-2 rounded-lg transition-all hover:scale-110"
                             style={{ background: "rgba(15,39,71,0.06)", color: C.blue }}
-                            title="Modifier">
+                            title={t('member.action_edit')}>
                             <Edit2 size={14} />
                           </Link>
                           <button onClick={() => openWithdrawModal(listing)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
                             style={{ background: "rgba(100,116,139,0.1)", color: "#64748B" }}
-                            title="Retirer l'annonce de la vente"
+                            title={t('member.action_withdraw')}
                             data-testid={`dashboard-withdraw-btn-${listing.id}`}>
-                            <LogOut size={13} /> Retirer
+                            <LogOut size={13} /> {t('member.action_withdraw')}
                           </button>
                         </div>
                       </div>
@@ -381,8 +383,8 @@ export default function CitadelleDashboard() {
               style={{ background: C.night, borderBottom: `1px solid rgba(201,164,92,0.2)` }}>
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest mb-0.5"
-                  style={{ color: C.gold }}>Retrait d'annonce</p>
-                <h2 className="text-base font-black text-white">Retirer l'annonce de la vente</h2>
+                  style={{ color: C.gold }}>{t('member.withdraw_modal_badge')}</p>
+                <h2 className="text-base font-black text-white">{t('member.withdraw_modal_title')}</h2>
               </div>
               <button onClick={() => setWithdrawModal({ open: false, listingId: null, listingTitle: "" })}
                 className="p-1.5 rounded-lg opacity-60 hover:opacity-100 transition-opacity"
@@ -393,15 +395,15 @@ export default function CitadelleDashboard() {
             </div>
             {/* Corps modal */}
             <div className="px-6 py-5">
-              <p className="text-sm mb-1" style={{ color: C.textMuted }}>Annonce :</p>
+              <p className="text-sm mb-1" style={{ color: C.textMuted }}>{t('member.withdraw_listing_label')}</p>
               <p className="text-sm font-bold mb-5 truncate" style={{ color: C.blue }}>
                 "{withdrawModal.listingTitle}"
               </p>
               <p className="text-sm font-semibold mb-3" style={{ color: C.blue }}>
-                Quelle est la raison du retrait ?
+                {t('member.withdraw_reason_question')}
               </p>
               <div className="flex flex-col gap-2 mb-6">
-                {WITHDRAW_REASONS.map(({ key, label }) => (
+                {WITHDRAW_REASONS.map(({ key }) => (
                   <button key={key}
                     onClick={() => setWithdrawReason(key)}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left transition-all"
@@ -417,7 +419,7 @@ export default function CitadelleDashboard() {
                         <span className="w-2 h-2 rounded-full" style={{ background: C.blue }} />
                       )}
                     </span>
-                    {label}
+                    {t(`member.withdraw_reason_${key}`)}
                   </button>
                 ))}
               </div>
@@ -426,7 +428,7 @@ export default function CitadelleDashboard() {
                 className="w-full py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-40"
                 style={{ background: C.blue, color: "white" }}
                 data-testid="dashboard-withdraw-confirm-btn">
-                {withdrawing ? "Retrait en cours…" : "Confirmer le retrait"}
+                {withdrawing ? t('member.withdraw_loading') : t('member.withdraw_confirm')}
               </button>
             </div>
           </div>
