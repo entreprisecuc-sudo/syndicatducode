@@ -2,6 +2,20 @@
 
 > Journal des sessions. Le PRD historique complet reste dans PRD.md.
 
+## ⚡ Session 20/08/2026 (après-midi) — OPTIMISATIONS PERFORMANCES PageSpeed
+
+- **Logo** : PNG 1,4 MB → WebP 13 KB (−99%) + rognage tagline + `fetchpriority="high"` + `<link rel="preload">`
+- **JS bundle** : 619 KB → 247 KB (−60%) via React.lazy() sur 98 chunks (admin, membre, blog, légal…)
+- **Google Fonts** : chargement non-bloquant (`rel="preload"` + `onload`) + `display=swap`
+- **Cache Nginx** : `expires 1y` + `Cache-Control: public, immutable` sur les deux domaines
+- **Compression images d'annonces** : à l'upload → WebP 1400px max qualité 82 via Pillow
+- **Script migration** : `deploy/migrate_images_webp.py` pour convertir les anciennes images en batch
+- **DomainGuard** : composant React qui redirige `/citadelle/*` de `syndicatducode.fr` → `lacitadellenumerique.fr`
+- **SEC-001 Nginx** : `location ^~ /api/uploads/citadelle/documents/ { return 403; }` actif
+- **Déployé et vérifié** : logo WebP `HTTP 200` + `Cache-Control: public, immutable` ✅
+
+---
+
 ## 🚀 Session 20/08/2026 — DÉPLOIEMENT VPS RÉUSSI — SEC-001 + SEC-002 en production
 
 - **SEC-001 VPS** : Ajout d'un bloc Nginx `location ^~ /api/uploads/citadelle/documents/ { return 403; }` AVANT le bloc `location /api/uploads/` dans `/etc/nginx/sites-enabled/syndicatducode.fr`. Double protection : Nginx retourne 403 au niveau réseau ET le middleware FastAPI bloque côté application.
