@@ -2,6 +2,18 @@
 
 > Journal des sessions. Le PRD historique complet reste dans PRD.md.
 
+## 🚀 Session 20/08/2026 (soir) — IMAGES RESPONSIVES + FIX NGINX
+
+- **Fix Nginx critique** : Ajout de `^~` sur `location /api/uploads/` dans `sites-enabled/syndicatducode.fr` — la regex `~* \.webp$` interceptait les images avant le bloc alias → corrigé + `systemctl restart nginx`
+- **Migration WebP** : 79 images d'annonces converties en WebP via `deploy/migrate_images_webp.py` (~42 MB libérés)
+- **Images responsives (srcset)** : `ListingCard.js` + `ListingsCarousel.jsx` utilisent `srcset="..._thumb.webp 600w, ...webp 1400w"` — mobile reçoit des thumbnails 600px (~20-50 KB) au lieu des 1400px (~300 KB)
+- **Thumbnails automatiques** : Backend (`listings.py`) génère un `_thumb.webp` (600px, qualité 75) à chaque upload
+- **Migration thumbnails** : `deploy/generate_thumbs.py` — 79 thumbnails générés pour les images existantes
+- **`getListingThumbUrl`** : Helper centralisé dans `citadelleConstants.js`
+- **Branche déployée** : `main-projet-10-english-version`
+
+---
+
 ## ⚡ Session 20/08/2026 (après-midi) — OPTIMISATIONS PERFORMANCES PageSpeed
 
 - **Logo** : PNG 1,4 MB → WebP 13 KB (−99%) + rognage tagline + `fetchpriority="high"` + `<link rel="preload">`
