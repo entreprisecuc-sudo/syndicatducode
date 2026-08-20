@@ -159,6 +159,21 @@ export const getListingThumbUrl = (path) => {
   }
   return getListingImageUrl(path);
 };
+/**
+ * Résout l'URL complète d'un thumbnail 400px d'annonce (format carte mobile).
+ * - Chemins locaux /uploads/*.webp → version _small.webp
+ * - URLs externes → retournées telles quelles
+ * - null/undefined → null
+ */
+export const getListingSmallUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  if (path.startsWith("/uploads/") && path.endsWith(".webp")) {
+    const smallPath = path.replace(".webp", "_small.webp");
+    return `${process.env.REACT_APP_BACKEND_URL}/api${smallPath}`;
+  }
+  return getListingImageUrl(path);
+};
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"];
 // Extensions reconnues comme documents
 const DOCUMENT_EXTENSIONS = [".pdf", ".doc", ".docx"];

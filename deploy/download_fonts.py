@@ -17,6 +17,7 @@ FONTS_URL  = (
     "https://fonts.googleapis.com/css2"
     "?family=Montserrat:wght@700;800;900"
     "&family=Inter:wght@400;500;600"
+    "&family=DM+Sans:wght@400;500;700"
     "&display=swap"
 )
 UA = (

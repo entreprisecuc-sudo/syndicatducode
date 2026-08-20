@@ -137,7 +137,7 @@ async def upload_listing_image(
             file_path = CITADELLE_UPLOADS_DIR / filename
             img.save(file_path, "WebP", quality=82, method=4)
             logger.info(f"[Citadelle] Image compressée → WebP: {filename} ({file_path.stat().st_size//1024} KB)")
-            # Thumbnail 600px pour mobile (responsive images / srcset)
+            # Thumbnail 900px pour écrans intermédiaires (srcset)
             try:
                 thumb_filename = filename.replace(".webp", "_thumb.webp")
                 thumb_path = CITADELLE_UPLOADS_DIR / thumb_filename
@@ -149,6 +149,18 @@ async def upload_listing_image(
                 logger.info(f"[Citadelle] Thumbnail généré: {thumb_filename} ({thumb_path.stat().st_size//1024} KB)")
             except Exception as thumb_err:
                 logger.warning(f"[Citadelle] Thumbnail non généré: {thumb_err}")
+            # Thumbnail 400px pour mobile (format réduit pour les cartes)
+            try:
+                small_filename = filename.replace(".webp", "_small.webp")
+                small_path = CITADELLE_UPLOADS_DIR / small_filename
+                img_small = img.copy()
+                SMALL_SIDE = 400
+                if img_small.width > SMALL_SIDE or img_small.height > SMALL_SIDE:
+                    img_small.thumbnail((SMALL_SIDE, SMALL_SIDE), PilImage.LANCZOS)
+                img_small.save(small_path, "WebP", quality=75, method=4)
+                logger.info(f"[Citadelle] Small généré: {small_filename} ({small_path.stat().st_size//1024} KB)")
+            except Exception as small_err:
+                logger.warning(f"[Citadelle] Small non généré: {small_err}")
         except Exception as e:
             logger.warning(f"[Citadelle] Compression échouée, sauvegarde brute: {e}")
             with open(file_path, "wb") as buffer:

@@ -8,7 +8,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
-import { getListingImageUrl, getListingThumbUrl, isImageFile, CITADELLE_CONFIG } from "@/config/citadelleConstants";
+import { getListingImageUrl, getListingThumbUrl, getListingSmallUrl, isImageFile, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 
 export default function ListingsCarousel({ variant = "dark", title = "Dernières annonces", limit = 8 }) {
   const [listings, setListings] = useState([]);
@@ -75,6 +75,7 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
           const img = l.images?.filter(Boolean).find(isImageFile);
           const cover = l.is_adult ? null : (img ? getListingImageUrl(img) : null);
           const thumb = l.is_adult ? null : (img ? getListingThumbUrl(img) : null);
+          const small = l.is_adult ? null : (img ? getListingSmallUrl(img) : null);
           return (
             <Link key={l.id} to={`/citadelle/annonces/${l.slug}`} className={cardClasses} data-testid={`carousel-card-${l.slug}`}>
               {/* Zone visuelle */}
@@ -86,8 +87,8 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
                 ) : cover ? (
                   <>
                     <img src={cover}
-                    srcSet={thumb && thumb !== cover ? `${thumb} 900w, ${cover} 1400w` : undefined}
-                    sizes={thumb && thumb !== cover ? "(max-width: 768px) 100vw, 300px" : undefined}
+                    srcSet={thumb && thumb !== cover ? `${small} 400w, ${thumb} 900w, ${cover} 1400w` : undefined}
+                    sizes={thumb && thumb !== cover ? "220px" : undefined}
                     alt={l.title}
                     width="300" height="120"
                       className="w-full h-full object-cover object-top transform transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110"
@@ -98,7 +99,8 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
                   <div className={placeholderWrap}>
                     {dark ? (
                       <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name}
-                        className="relative z-10 max-h-[86px] w-auto object-contain px-4 opacity-95" />
+                        className="relative z-10 max-h-[86px] w-auto object-contain px-4 opacity-95"
+                        width="170" height="86" />
                     ) : (
                       <div className="relative z-10 bg-white rounded-xl px-4 py-3 shadow-md">
                         <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="max-h-[54px] w-auto object-contain" />
