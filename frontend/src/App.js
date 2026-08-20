@@ -21,6 +21,20 @@ function ScrollToTop() {
   return null;
 }
 
+// La Citadelle Numérique doit toujours être servie sur lacitadellenumerique.fr
+// Redirige automatiquement si un user arrive sur syndicatducode.fr/citadelle/*
+function DomainGuard() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const isSyndicatDomain = hostname === 'syndicatducode.fr' || hostname === 'www.syndicatducode.fr';
+    if (isSyndicatDomain && pathname.startsWith('/citadelle')) {
+      window.location.replace('https://www.lacitadellenumerique.fr' + pathname + window.location.search);
+    }
+  }, [pathname]);
+  return null;
+}
+
 // Pages publiques
 import HomePage from "@/pages/HomePage";
 import CGV from "@/pages/CGV";
@@ -172,6 +186,7 @@ function App() {
             <BrowserRouter>
               {/* Scroll en haut à chaque navigation */}
               <ScrollToTop />
+              <DomainGuard />
               {/* Suivi statistique anonyme (RGPD) */}
               <AnalyticsTracker />
               {/* Alertes globales (bannières et popups) */}
