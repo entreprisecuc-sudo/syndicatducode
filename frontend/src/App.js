@@ -35,124 +35,119 @@ function DomainGuard() {
   return null;
 }
 
-// Pages publiques
-import HomePage from "@/pages/HomePage";
-import CGV from "@/pages/CGV";
-import CGU from "@/pages/CGU";
-import RGPD from "@/pages/RGPD";
-import Rejoindre from "@/pages/Rejoindre";
-import MembersPage from "@/pages/MembersPage";
-import MemberDetailPage from "@/pages/MemberDetailPage";
-
-// Pages d'authentification
-import {
-  LoginPage,
-  RegisterPage,
-  ForgotPasswordPage,
-  ResetPasswordPage,
-  ChooseRolePage
-} from "@/pages/auth";
-
-// Pages Espace Commercial
-import {
-  CommercialDashboard,
-  CommercialProfile,
-  CommercialDocuments,
-  CommercialAffaires
-} from "@/pages/commercial";
-
-// Pages Espace Développeur
-import {
-  DeveloperDashboard,
-  DeveloperProfile,
-  DeveloperDocuments,
-  DeveloperOpportunities,
-  DeveloperProjects,
-  DeveloperSubscription,
-  DeveloperBook,
-  DeveloperMessages
-} from "@/pages/developer";
-import ProjectRoom from "@/pages/developer/ProjectRoom";
-
-// Pages Admin
-import {
-  AdminDashboard,
-  AdminUsers,
-  AdminContacts,
-  AdminLogs,
-  AdminProjects,
-  AdminProjectDetail,
-  AdminAnnouncements,
-  AdminAlerts,
-  AdminSubscriptions,
-  AdminPartners,
-  AdminPortfolioValidation,
-  AdminUserDetail,
-  AdminBruteForce,
-  AdminBackup
-} from "@/pages/admin";
-import AdminProjectRooms from "@/pages/admin/AdminProjectRooms";
-import AdminProjectRoomDetail from "@/pages/admin/AdminProjectRoomDetail";
-import AdminCitadelle from "@/pages/admin/AdminCitadelle";
-
-// Pages La Citadelle Numérique — Socle
-import CitadelleHome from "@/pages/citadelle/CitadelleHome";
-import CitadelleServices from "@/pages/citadelle/CitadelleServices";
-import CitadelleLogin from "@/pages/citadelle/CitadelleLogin";
-import CitadelleGoogleCallback from "@/pages/citadelle/CitadelleGoogleCallback";
-import CitadelleRegister from "@/pages/citadelle/CitadelleRegister";
-import CitadelleForgotPassword from "@/pages/citadelle/CitadelleForgotPassword";
-import CitadelleResetPassword from "@/pages/citadelle/CitadelleResetPassword";
-import CitadelleDashboard from "@/pages/citadelle/member/CitadelleDashboard";
 import { CitadelleAuthProvider } from "@/context/CitadelleAuthContext";
 
-// Pages La Citadelle Numérique — Phase B (Marketplace Annonces)
-import CitadelleListings from "@/pages/citadelle/CitadelleListings";
-// Lazy loading des 4 composants les plus lourds (économise ~160KB JS au chargement initial)
-const CitadelleListingDetail    = lazy(() => import("@/pages/citadelle/CitadelleListingDetail"));
+// ─── CHARGEMENT IMMÉDIAT : pages critiques du premier rendu ───────────────────
+// Citadelle : page d'accueil + auth + annonces (visitées dès l'arrivée)
+import CitadelleHome         from "@/pages/citadelle/CitadelleHome";
+import CitadelleListings     from "@/pages/citadelle/CitadelleListings";
+import CitadelleLogin        from "@/pages/citadelle/CitadelleLogin";
+import CitadelleRegister     from "@/pages/citadelle/CitadelleRegister";
+import CitadelleGoogleCallback   from "@/pages/citadelle/CitadelleGoogleCallback";
+import CitadelleForgotPassword   from "@/pages/citadelle/CitadelleForgotPassword";
+import CitadelleResetPassword    from "@/pages/citadelle/CitadelleResetPassword";
+
+// ─── LAZY LOADING : tout le reste (jamais sur la page d'accueil) ──────────────
+// Syndicat du Code — pages publiques
+const HomePage         = lazy(() => import("@/pages/HomePage"));
+const CGV              = lazy(() => import("@/pages/CGV"));
+const CGU              = lazy(() => import("@/pages/CGU"));
+const RGPD             = lazy(() => import("@/pages/RGPD"));
+const Rejoindre        = lazy(() => import("@/pages/Rejoindre"));
+const MembersPage      = lazy(() => import("@/pages/MembersPage"));
+const MemberDetailPage = lazy(() => import("@/pages/MemberDetailPage"));
+
+// Syndicat du Code — authentification
+const LoginPage          = lazy(() => import("@/pages/auth/LoginPage"));
+const RegisterPage       = lazy(() => import("@/pages/auth/RegisterPage"));
+const ForgotPasswordPage = lazy(() => import("@/pages/auth/ForgotPasswordPage"));
+const ResetPasswordPage  = lazy(() => import("@/pages/auth/ResetPasswordPage"));
+const ChooseRolePage     = lazy(() => import("@/pages/auth/ChooseRolePage"));
+
+// Syndicat du Code — espaces membres
+const CommercialDashboard    = lazy(() => import("@/pages/commercial/CommercialDashboard"));
+const CommercialProfile      = lazy(() => import("@/pages/commercial/CommercialProfile"));
+const CommercialDocuments    = lazy(() => import("@/pages/commercial/CommercialDocuments"));
+const CommercialAffaires     = lazy(() => import("@/pages/commercial/CommercialAffaires"));
+const DeveloperDashboard     = lazy(() => import("@/pages/developer/DeveloperDashboard"));
+const DeveloperProfile       = lazy(() => import("@/pages/developer/DeveloperProfile"));
+const DeveloperDocuments     = lazy(() => import("@/pages/developer/DeveloperDocuments"));
+const DeveloperOpportunities = lazy(() => import("@/pages/developer/DeveloperOpportunities"));
+const DeveloperProjects      = lazy(() => import("@/pages/developer/DeveloperProjects"));
+const DeveloperSubscription  = lazy(() => import("@/pages/developer/DeveloperSubscription"));
+const DeveloperBook          = lazy(() => import("@/pages/developer/DeveloperBook"));
+const DeveloperMessages      = lazy(() => import("@/pages/developer/DeveloperMessages"));
+const ProjectRoom            = lazy(() => import("@/pages/developer/ProjectRoom"));
+const MemberPartners         = lazy(() => import("@/pages/shared/MemberPartners"));
+const MemberBilling          = lazy(() => import("@/pages/shared/MemberBilling"));
+
+// Admin Syndicat du Code
+const AdminLoginPage          = lazy(() => import("@/pages/admin/AdminLoginPage"));
+const AdminDashboard          = lazy(() => import("@/pages/admin/AdminDashboard"));
+const AdminUsers              = lazy(() => import("@/pages/admin/AdminUsers"));
+const AdminContacts           = lazy(() => import("@/pages/admin/AdminContacts"));
+const AdminLogs               = lazy(() => import("@/pages/admin/AdminLogs"));
+const AdminProjects           = lazy(() => import("@/pages/admin/AdminProjects"));
+const AdminProjectDetail      = lazy(() => import("@/pages/admin/AdminProjectDetail"));
+const AdminAnnouncements      = lazy(() => import("@/pages/admin/AdminAnnouncements"));
+const AdminAlerts             = lazy(() => import("@/pages/admin/AdminAlerts"));
+const AdminSubscriptions      = lazy(() => import("@/pages/admin/AdminSubscriptions"));
+const AdminPartners           = lazy(() => import("@/pages/admin/AdminPartners"));
+const AdminPortfolioValidation = lazy(() => import("@/pages/admin/AdminPortfolioValidation"));
+const AdminUserDetail         = lazy(() => import("@/pages/admin/AdminUserDetail"));
+const AdminBruteForce         = lazy(() => import("@/pages/admin/AdminBruteForce"));
+const AdminBackup             = lazy(() => import("@/pages/admin/AdminBackup"));
+const AdminProjectRooms       = lazy(() => import("@/pages/admin/AdminProjectRooms"));
+const AdminProjectRoomDetail  = lazy(() => import("@/pages/admin/AdminProjectRoomDetail"));
+const AdminLiveApp            = lazy(() => import("@/pages/admin/AdminLiveApp"));
+const AdminInstallApp         = lazy(() => import("@/pages/admin/AdminInstallApp"));
+
+// Admin La Citadelle Numérique (jamais chargé sur la homepage)
+const AdminCitadelle            = lazy(() => import("@/pages/admin/AdminCitadelle"));
+const AdminCitadelleInvoices    = lazy(() => import("@/pages/admin/AdminCitadelleInvoices"));
+const AdminCitadelleListings    = lazy(() => import("@/pages/admin/AdminCitadelleListings"));
+const AdminCitadelleTransactions = lazy(() => import("@/pages/admin/AdminCitadelleTransactions"));
+const AdminCitadelleReports     = lazy(() => import("@/pages/admin/AdminCitadelleReports"));
+const AdminCitadelleServices    = lazy(() => import("@/pages/admin/AdminCitadelleServices"));
+const AdminCitadelleNewsletter  = lazy(() => import("@/pages/admin/AdminCitadelleNewsletter"));
+const AdminCitadelleCommission  = lazy(() => import("@/pages/admin/AdminCitadelleCommission"));
+const AdminCitadelleUsers       = lazy(() => import("@/pages/admin/AdminCitadelleUsers"));
+const AdminCitadelleBlog        = lazy(() => import("@/pages/admin/AdminCitadelleBlog"));
+const AdminCitadelleAnalytics   = lazy(() => import("@/pages/admin/AdminCitadelleAnalytics"));
+const AdminCitadelleTransmission = lazy(() => import("@/pages/admin/AdminCitadelleTransmission"));
+
+// La Citadelle Numérique — espace membre
+const CitadelleDashboard        = lazy(() => import("@/pages/citadelle/member/CitadelleDashboard"));
+const CitadelleMyListings       = lazy(() => import("@/pages/citadelle/member/CitadelleMyListings"));
+const CitadelleCreateListing    = lazy(() => import("@/pages/citadelle/member/CitadelleCreateListing"));
+const CitadelleEditListing      = lazy(() => import("@/pages/citadelle/member/CitadelleEditListing"));
+const CitadelleMyTransactions   = lazy(() => import("@/pages/citadelle/member/CitadelleMyTransactions"));
+const CitadelleMyInvoices       = lazy(() => import("@/pages/citadelle/member/CitadelleMyInvoices"));
+const CitadelleMyMessages       = lazy(() => import("@/pages/citadelle/member/CitadelleMyMessages"));
+const CitadelleMyServices       = lazy(() => import("@/pages/citadelle/member/CitadelleMyServices"));
+const CitadelleConversationDetail = lazy(() => import("@/pages/citadelle/member/CitadelleConversationDetail"));
+const CitadelleMyTransmissions  = lazy(() => import("@/pages/citadelle/member/CitadelleMyTransmissions"));
+const CitadelleNotifications    = lazy(() => import("@/pages/citadelle/member/CitadelleNotifications"));
 const CitadelleTransactionDetail = lazy(() => import("@/pages/citadelle/member/CitadelleTransactionDetail"));
 const CitadelleProfile          = lazy(() => import("@/pages/citadelle/member/CitadelleProfile"));
-const CitadelleEstimation       = lazy(() => import("@/pages/citadelle/CitadelleEstimation"));
-import CitadelleMyListings from "@/pages/citadelle/member/CitadelleMyListings";
-import CitadelleCreateListing from "@/pages/citadelle/member/CitadelleCreateListing";
-import CitadelleEditListing from "@/pages/citadelle/member/CitadelleEditListing";
-import CitadelleMyTransactions from "@/pages/citadelle/member/CitadelleMyTransactions";
-import CitadelleMyInvoices from "@/pages/citadelle/member/CitadelleMyInvoices";
-import AdminCitadelleInvoices from "@/pages/admin/AdminCitadelleInvoices";
-import CitadelleMyMessages from "@/pages/citadelle/member/CitadelleMyMessages";
-import CitadelleMyServices from "@/pages/citadelle/member/CitadelleMyServices";
-import CitadelleConversationDetail from "@/pages/citadelle/member/CitadelleConversationDetail";
-import AdminCitadelleListings from "@/pages/admin/AdminCitadelleListings";
-import AdminCitadelleTransactions from "@/pages/admin/AdminCitadelleTransactions";
-import AdminCitadelleReports from "@/pages/admin/AdminCitadelleReports";
-import AdminCitadelleServices from "@/pages/admin/AdminCitadelleServices";
-import AdminCitadelleNewsletter from "@/pages/admin/AdminCitadelleNewsletter";
-import AdminCitadelleCommission from "@/pages/admin/AdminCitadelleCommission";
-import AdminCitadelleUsers from "@/pages/admin/AdminCitadelleUsers";
-import CitadelleBlog from "@/pages/citadelle/CitadelleBlog";
-import CitadelleParutions from "@/pages/citadelle/CitadelleParutions";
-import CitadelleChroniques from "@/pages/citadelle/CitadelleChroniques";
-import CitadelleGuides from "@/pages/citadelle/CitadelleGuides";
-import CitadelleBlogPost from "@/pages/citadelle/CitadelleBlogPost";
-import CitadelleContact from "@/pages/citadelle/CitadelleContact";
-import CitadelleVendre from "@/pages/citadelle/CitadelleVendre";
-import CitadellePaymentSuccess from "@/pages/citadelle/CitadellePaymentSuccess";
-import CitadelleMentionsLegales from "@/pages/citadelle/CitadelleMentionsLegales";
-import CitadelleCGU from "@/pages/citadelle/CitadelleCGU";
-import CitadelleCGV from "@/pages/citadelle/CitadelleCGV";
-import CitadelleConfidentialite from "@/pages/citadelle/CitadelleConfidentialite";
-import AdminCitadelleBlog from "@/pages/admin/AdminCitadelleBlog";
-import AdminCitadelleAnalytics from "@/pages/admin/AdminCitadelleAnalytics";
-import AdminCitadelleTransmission from "@/pages/admin/AdminCitadelleTransmission";
-import CitadelleMyTransmissions from "@/pages/citadelle/member/CitadelleMyTransmissions";import CitadelleVerifyTransmission from "@/pages/citadelle/CitadelleVerifyTransmission";
-import CitadelleNotifications from "@/pages/citadelle/member/CitadelleNotifications";
-import AdminLoginPage from "@/pages/admin/AdminLoginPage";
-import AdminLiveApp from "@/pages/admin/AdminLiveApp";
-import AdminInstallApp from "@/pages/admin/AdminInstallApp";
 
-// Pages partagées (tous les membres)
-import MemberPartners from "@/pages/shared/MemberPartners";
-import MemberBilling from "@/pages/shared/MemberBilling";
+// La Citadelle Numérique — pages secondaires
+const CitadelleListingDetail    = lazy(() => import("@/pages/citadelle/CitadelleListingDetail"));
+const CitadelleEstimation       = lazy(() => import("@/pages/citadelle/CitadelleEstimation"));
+const CitadelleServices         = lazy(() => import("@/pages/citadelle/CitadelleServices"));
+const CitadelleVendre           = lazy(() => import("@/pages/citadelle/CitadelleVendre"));
+const CitadelleContact          = lazy(() => import("@/pages/citadelle/CitadelleContact"));
+const CitadellePaymentSuccess   = lazy(() => import("@/pages/citadelle/CitadellePaymentSuccess"));
+const CitadelleBlog             = lazy(() => import("@/pages/citadelle/CitadelleBlog"));
+const CitadelleParutions        = lazy(() => import("@/pages/citadelle/CitadelleParutions"));
+const CitadelleChroniques       = lazy(() => import("@/pages/citadelle/CitadelleChroniques"));
+const CitadelleGuides           = lazy(() => import("@/pages/citadelle/CitadelleGuides"));
+const CitadelleBlogPost         = lazy(() => import("@/pages/citadelle/CitadelleBlogPost"));
+const CitadelleMentionsLegales  = lazy(() => import("@/pages/citadelle/CitadelleMentionsLegales"));
+const CitadelleCGU              = lazy(() => import("@/pages/citadelle/CitadelleCGU"));
+const CitadelleCGV              = lazy(() => import("@/pages/citadelle/CitadelleCGV"));
+const CitadelleConfidentialite  = lazy(() => import("@/pages/citadelle/CitadelleConfidentialite"));
+const CitadelleVerifyTransmission = lazy(() => import("@/pages/citadelle/CitadelleVerifyTransmission"));
 
 // Composants de layout
 import Navigation from "@/components/layout/Navigation";
