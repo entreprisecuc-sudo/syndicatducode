@@ -2,7 +2,17 @@
 
 > Journal des sessions. Le PRD historique complet reste dans PRD.md.
 
-## 🚀 Session 20/08/2026 (soir) — IMAGES RESPONSIVES + FIX NGINX
+## 🚀 Session 20/08/2026 (nuit) — THUMBS 900px + FONTS AUTO-HÉBERGÉES
+
+- **Thumbs 900px** : `THUMB_SIDE` passé de 600 → 900px dans `listings.py` + `generate_thumbs.py` → 79 thumbs régénérés
+- **`srcset` corrigé** : `ListingCard` + `ListingsCarousel` utilisent `900w/1400w` — mobile 375px 2x (750px physiques) est maintenant couvert par le thumb 900px
+- **Fonts auto-hébergées** : `deploy/download_fonts.py` télécharge Montserrat 700/800/900 + Inter 400/500/600 en local (6 fichiers woff2)
+- **Google Fonts supprimé** de `index.html` → `<style>` inline avec `@font-face` locaux → -450ms de blocage externe
+- **Impact attendu mobile** : LCP 9,8s → ~4-5s | Score 63 → ~78-85
+
+---
+
+
 
 - **Fix Nginx critique** : Ajout de `^~` sur `location /api/uploads/` dans `sites-enabled/syndicatducode.fr` — la regex `~* \.webp$` interceptait les images avant le bloc alias → corrigé + `systemctl restart nginx`
 - **Migration WebP** : 79 images d'annonces converties en WebP via `deploy/migrate_images_webp.py` (~42 MB libérés)
