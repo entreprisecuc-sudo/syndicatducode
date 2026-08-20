@@ -144,7 +144,21 @@ export const getListingImageUrl = (path) => {
   return path;
 };
 
-// Extensions reconnues comme images
+/**
+ * Résout l'URL complète d'un thumbnail d'annonce (version 600px pour mobile).
+ * - Chemins locaux /uploads/*.webp → version _thumb.webp
+ * - URLs externes → retournées telles quelles (pas de thumb disponible)
+ * - null/undefined → null
+ */
+export const getListingThumbUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  if (path.startsWith("/uploads/") && path.endsWith(".webp")) {
+    const thumbPath = path.replace(".webp", "_thumb.webp");
+    return `${process.env.REACT_APP_BACKEND_URL}/api${thumbPath}`;
+  }
+  return getListingImageUrl(path);
+};
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"];
 // Extensions reconnues comme documents
 const DOCUMENT_EXTENSIONS = [".pdf", ".doc", ".docx"];

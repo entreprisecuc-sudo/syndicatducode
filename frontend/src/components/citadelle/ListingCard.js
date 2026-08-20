@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Globe, ShoppingCart, Cloud, Monitor, Users, TrendingUp, TrendingDown, BarChart2, Calendar, ShieldCheck, Star, Hammer, Clock } from "lucide-react";
-import { CITADELLE_COLORS, getListingImageUrl, isImageFile } from "@/config/citadelleConstants";
+import { CITADELLE_COLORS, getListingImageUrl, getListingThumbUrl, isImageFile } from "@/config/citadelleConstants";
 import { useTranslation } from "react-i18next";
 
 const TYPE_CONFIG = {
@@ -25,6 +25,7 @@ export default function ListingCard({ listing, search = "" }) {
   const typeLabel = t(`card.${typeKey}`);
   const firstImage = listing.images?.filter(Boolean).find(img => isImageFile(img));
   const mainImage = firstImage ? getListingImageUrl(firstImage) : PLACEHOLDER_IMG;
+  const thumbImage = firstImage ? getListingThumbUrl(firstImage) : PLACEHOLDER_IMG;
   const isSold = listing.status === "sold";
   const isAdult = listing.is_adult;
 
@@ -63,7 +64,11 @@ export default function ListingCard({ listing, search = "" }) {
         ) : (
           <img
             src={mainImage}
+            srcSet={thumbImage !== mainImage ? `${thumbImage} 600w, ${mainImage} 1400w` : undefined}
+            sizes={thumbImage !== mainImage ? "(max-width: 768px) 100vw, 400px" : undefined}
             alt={listing.title}
+            width="400"
+            height="160"
             className={`w-full h-full object-cover transition-transform duration-300 ${!isSold ? "group-hover:scale-105" : ""}`}
             style={{ filter: isSold ? "grayscale(40%)" : "none" }}
             onError={e => { e.target.src = PLACEHOLDER_IMG; }}

@@ -8,7 +8,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import citadelleApi from "@/services/citadelleApi";
-import { getListingImageUrl, isImageFile, CITADELLE_CONFIG } from "@/config/citadelleConstants";
+import { getListingImageUrl, getListingThumbUrl, isImageFile, CITADELLE_CONFIG } from "@/config/citadelleConstants";
 
 export default function ListingsCarousel({ variant = "dark", title = "Dernières annonces", limit = 8 }) {
   const [listings, setListings] = useState([]);
@@ -74,6 +74,7 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
         {listings.map((l) => {
           const img = l.images?.filter(Boolean).find(isImageFile);
           const cover = l.is_adult ? null : (img ? getListingImageUrl(img) : null);
+          const thumb = l.is_adult ? null : (img ? getListingThumbUrl(img) : null);
           return (
             <Link key={l.id} to={`/citadelle/annonces/${l.slug}`} className={cardClasses} data-testid={`carousel-card-${l.slug}`}>
               {/* Zone visuelle */}
@@ -84,7 +85,11 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
                   </div>
                 ) : cover ? (
                   <>
-                    <img src={cover} alt={l.title}
+                    <img src={cover}
+                    srcSet={thumb && thumb !== cover ? `${thumb} 600w, ${cover} 1400w` : undefined}
+                    sizes={thumb && thumb !== cover ? "(max-width: 768px) 100vw, 300px" : undefined}
+                    alt={l.title}
+                    width="300" height="120"
                       className="w-full h-full object-cover object-top transform transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110"
                       onError={(e) => { e.currentTarget.style.display = "none"; }} />
                     <div className={`absolute inset-0 pointer-events-none z-10 ${dark ? "bg-gradient-to-t from-[#101F33] via-transparent to-transparent opacity-70 mix-blend-multiply" : "bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-500"}`} />
