@@ -9,6 +9,8 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="La Citadelle Numérique" />
         <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+        <!-- Préchargement du logo LCP critique -->
+        <link rel="preload" as="image" href="/citadelle-logo.webp" type="image/webp" />
 
         <!-- Meta tags par défaut (surchargés dynamiquement par react-helmet-async) -->
         <meta name="description" content="La Citadelle Numérique — Marketplace française d'achat et de vente de sites web, SaaS, boutiques e-commerce et actifs numériques. Transactions sécurisées, estimations professionnelles." />
@@ -31,7 +33,10 @@
         <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://syndicatducode.fr" crossorigin />
+        <!-- Google Fonts chargé de façon non-bloquante (économise ~1200ms FCP) -->
+        <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+        <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" /></noscript>
 
         <!-- Titre adapté selon le domaine (avant exécution React) -->
         <title>La Citadelle Numérique | Marketplace d'actifs numériques</title>

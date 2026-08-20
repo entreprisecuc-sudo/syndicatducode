@@ -5,7 +5,7 @@
 
 import "@/App.css";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "sonner";
 import { ModalProvider } from "@/context/ModalContext";
@@ -108,15 +108,17 @@ import { CitadelleAuthProvider } from "@/context/CitadelleAuthContext";
 
 // Pages La Citadelle Numérique — Phase B (Marketplace Annonces)
 import CitadelleListings from "@/pages/citadelle/CitadelleListings";
-import CitadelleListingDetail from "@/pages/citadelle/CitadelleListingDetail";
+// Lazy loading des 4 composants les plus lourds (économise ~160KB JS au chargement initial)
+const CitadelleListingDetail    = lazy(() => import("@/pages/citadelle/CitadelleListingDetail"));
+const CitadelleTransactionDetail = lazy(() => import("@/pages/citadelle/member/CitadelleTransactionDetail"));
+const CitadelleProfile          = lazy(() => import("@/pages/citadelle/member/CitadelleProfile"));
+const CitadelleEstimation       = lazy(() => import("@/pages/citadelle/CitadelleEstimation"));
 import CitadelleMyListings from "@/pages/citadelle/member/CitadelleMyListings";
 import CitadelleCreateListing from "@/pages/citadelle/member/CitadelleCreateListing";
 import CitadelleEditListing from "@/pages/citadelle/member/CitadelleEditListing";
-import CitadelleProfile from "@/pages/citadelle/member/CitadelleProfile";
 import CitadelleMyTransactions from "@/pages/citadelle/member/CitadelleMyTransactions";
 import CitadelleMyInvoices from "@/pages/citadelle/member/CitadelleMyInvoices";
 import AdminCitadelleInvoices from "@/pages/admin/AdminCitadelleInvoices";
-import CitadelleTransactionDetail from "@/pages/citadelle/member/CitadelleTransactionDetail";
 import CitadelleMyMessages from "@/pages/citadelle/member/CitadelleMyMessages";
 import CitadelleMyServices from "@/pages/citadelle/member/CitadelleMyServices";
 import CitadelleConversationDetail from "@/pages/citadelle/member/CitadelleConversationDetail";
@@ -134,7 +136,6 @@ import CitadelleGuides from "@/pages/citadelle/CitadelleGuides";
 import CitadelleBlogPost from "@/pages/citadelle/CitadelleBlogPost";
 import CitadelleContact from "@/pages/citadelle/CitadelleContact";
 import CitadelleVendre from "@/pages/citadelle/CitadelleVendre";
-import CitadelleEstimation from "@/pages/citadelle/CitadelleEstimation";
 import CitadellePaymentSuccess from "@/pages/citadelle/CitadellePaymentSuccess";
 import CitadelleMentionsLegales from "@/pages/citadelle/CitadelleMentionsLegales";
 import CitadelleCGU from "@/pages/citadelle/CitadelleCGU";
@@ -192,6 +193,12 @@ function App() {
               {/* Alertes globales (bannières et popups) */}
               <GlobalAlerts />
             
+            <Suspense fallback={
+              <div style={{display:'flex',justifyContent:'center',alignItems:'center',minHeight:'60vh'}}>
+                <div style={{width:32,height:32,border:'3px solid #C9A45C',borderTopColor:'transparent',borderRadius:'50%',animation:'spin 0.7s linear infinite'}} />
+                <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+              </div>
+            }>
             <Routes>
               {/* ============================================ */}
               {/* PAGES PUBLIQUES */}
@@ -491,6 +498,7 @@ function App() {
               />
 
             </Routes>
+            </Suspense>
           </BrowserRouter>
         </div>
         </AdminThemeProvider>

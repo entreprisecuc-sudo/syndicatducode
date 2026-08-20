@@ -133,7 +133,7 @@ const CitadelleNav = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-32 flex items-center justify-between">
           {/* Logo */}
           <Link to="/citadelle" className="flex items-center gap-3" data-testid="citadelle-logo">
-            <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-28 w-auto" />
+            <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-28 w-auto" width="112" height="112" loading="eager" fetchpriority="high" />
           </Link>
 
           {/* Liens desktop */}
@@ -298,7 +298,7 @@ const CitadelleFooter = () => {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
         {/* Marque */}
         <div>
-          <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-14 w-auto mb-4" />
+          <img src={CITADELLE_CONFIG.logo} alt={CITADELLE_CONFIG.name} className="h-14 w-auto mb-4" width="56" height="56" loading="lazy" />
           <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
             {t("footer.description")}
           </p>

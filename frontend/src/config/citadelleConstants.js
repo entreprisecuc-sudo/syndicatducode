@@ -11,7 +11,7 @@ export const CITADELLE_CONFIG = {
   tagline: "Achetez. Vendez. Sécurisez.",
   description: "La plateforme française dédiée à l'achat et à la vente d'actifs numériques.",
   promise: "Vendez votre projet numérique en toute confiance.",
-  logo: "/citadelle-logo.png",
+  logo: "/citadelle-logo.webp",
   email: "lagarde@lacitadellenumerique.fr",
 };
 
