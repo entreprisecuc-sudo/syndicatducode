@@ -19,12 +19,24 @@ import io
 import sys
 import logging
 from pathlib import Path
-from dotenv import load_dotenv
+
+# Lecture manuelle du .env (pas besoin de python-dotenv)
+def load_env(path):
+    try:
+        with open(path) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                key, _, val = line.partition('=')
+                os.environ.setdefault(key.strip(), val.strip().strip('"').strip("'"))
+    except FileNotFoundError:
+        pass
+
+load_env("/var/www/syndicatducode.fr/backend/.env")
+
 from PIL import Image as PilImage
 from pymongo import MongoClient
-
-# ── Configuration ──────────────────────────────────────────────────────────────
-load_dotenv("/var/www/syndicatducode.fr/backend/.env")
 
 MONGO_URL  = os.environ["MONGO_URL"]
 DB_NAME    = os.environ["DB_NAME"]
