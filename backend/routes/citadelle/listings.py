@@ -8,8 +8,9 @@ from pydantic import BaseModel, Field, HttpUrl
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-import re, uuid, shutil, random
+import re, uuid, shutil, random, io
 import logging
+from PIL import Image as PilImage
 
 from routes.citadelle.dependencies import require_admin, require_citadelle_user, require_can_transact
 from services.auth_service import decode_access_token
@@ -112,7 +113,7 @@ async def upload_listing_image(
             detail="Fichier trop volumineux. Taille maximale : 5 Mo"
         )
 
-    # Génération du nom de fichier unique
+    # Génération du nom de fichier (extension provisoire, sera remplacée en WebP pour les images)
     ext_map = {
         ".jpg": ".jpg", ".jpeg": ".jpg", ".png": ".png", ".webp": ".webp",
         ".gif": ".gif", ".svg": ".svg", ".pdf": ".pdf", ".doc": ".doc", ".docx": ".docx"
@@ -122,9 +123,28 @@ async def upload_listing_image(
     filename = f"listing_{uuid.uuid4().hex}{ext}"
     file_path = CITADELLE_UPLOADS_DIR / filename
 
-    # Sauvegarde
-    with open(file_path, "wb") as buffer:
-        buffer.write(content)
+    # Sauvegarde avec compression automatique pour les images
+    IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+    if file.content_type in IMAGE_MIME_TYPES:
+        try:
+            img = PilImage.open(io.BytesIO(content)).convert("RGB")
+            # Redimensionner si trop large (max 1400px sur le grand côté)
+            MAX_SIDE = 1400
+            if img.width > MAX_SIDE or img.height > MAX_SIDE:
+                img.thumbnail((MAX_SIDE, MAX_SIDE), PilImage.LANCZOS)
+            # Toujours sauvegarder en WebP pour un gain max
+            filename = f"listing_{uuid.uuid4().hex}.webp"
+            file_path = CITADELLE_UPLOADS_DIR / filename
+            img.save(file_path, "WebP", quality=82, method=4)
+            logger.info(f"[Citadelle] Image compressée → WebP: {filename} ({file_path.stat().st_size//1024} KB)")
+        except Exception as e:
+            logger.warning(f"[Citadelle] Compression échouée, sauvegarde brute: {e}")
+            with open(file_path, "wb") as buffer:
+                buffer.write(content)
+    else:
+        # Fichiers non-image (PDF, DOC...) : sauvegarde brute
+        with open(file_path, "wb") as buffer:
+            buffer.write(content)
 
     url = f"/uploads/citadelle/{filename}"
     logger.info(f"[Citadelle] Image uploadée: {url}")
