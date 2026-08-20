@@ -2,6 +2,15 @@
 
 > Journal des sessions. Le PRD historique complet reste dans PRD.md.
 
+## 🚀 Session 20/08/2026 — DÉPLOIEMENT VPS RÉUSSI — SEC-001 + SEC-002 en production
+
+- **SEC-001 VPS** : Ajout d'un bloc Nginx `location ^~ /api/uploads/citadelle/documents/ { return 403; }` AVANT le bloc `location /api/uploads/` dans `/etc/nginx/sites-enabled/syndicatducode.fr`. Double protection : Nginx retourne 403 au niveau réseau ET le middleware FastAPI bloque côté application.
+- **SEC-002 VPS** : Clé `TRANSMISSION_ENC_KEY` injectée dans le `.env` de production. PM2 redémarré avec `--update-env` pour charger la nouvelle variable.
+- **Frontend** : Build de production React (`yarn build`) compilé (619 kB gzip, Done in 87s).
+- **Validé (curl prod)** : `/api/uploads/citadelle/documents/` → **HTTP/1.1 403** ✅ | `/api/` → `{"status":"online","version":"2.0.0"}` ✅ | PM2 logs → démarrage sans erreur ✅.
+
+---
+
 ## 🔐 Session 19/08/2026 (soir) — Corrections de sécurité SEC-002 + SEC-001 (PREVIEW, testé)
 - **SEC-002 — Chiffrement IBAN/BIC au repos (RGPD)** : `routes/citadelle/auth.py`. IBAN + BIC chiffrés en Fernet (`encrypt_value`) à l'écriture dans `citadelle_update_billing`, déchiffrés (`decrypt_value_or_original`) à la lecture dans `citadelle_get_billing`. Rétro-compatibilité : les anciens IBAN en clair restent lisibles et sont chiffrés au prochain enregistrement (aucune migration DB requise). Clé = `TRANSMISSION_ENC_KEY` (.env, déjà utilisée par le module Transmission).
 - **SEC-001 — Documents KYC non publics** : (1) nouvel endpoint authentifié `GET /api/citadelle/auth/documents/{user_id}/{doc_type}` (propriétaire OU admin uniquement ; token en query param ou header, pattern identique aux factures) ; (2) middleware `server.py` `block_direct_kyc_documents` → **403** sur tout chemin contenant `/uploads/citadelle/documents/` (bloque l'ancien accès public via montage statique) ; (3) vues admin `AdminCitadelleUsers.js` + `AdminUserDetail.js` migrées vers un chargement par blob authentifié (token) au lieu du lien direct `/api/uploads/...`.
