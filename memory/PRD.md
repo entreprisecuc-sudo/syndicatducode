@@ -7,6 +7,13 @@
 
 ---
 
+## 🔐 Session 19/08/2026 (soir) — Sécurité SEC-002 (chiffrement IBAN/BIC) + SEC-001 (docs KYC privés) ✅ testé
+- **SEC-002** : IBAN/BIC chiffrés Fernet au repos (`auth.py` : write chiffre, read déchiffre, rétro-compat via `decrypt_value_or_original`). Aucune migration DB. Clé `TRANSMISSION_ENC_KEY`.
+- **SEC-001** : endpoint authentifié `GET /api/citadelle/auth/documents/{user_id}/{doc_type}` (owner/admin) + middleware `server.py` bloquant 403 tout `/uploads/citadelle/documents/` + admin frontend (`AdminCitadelleUsers.js`, `AdminUserDetail.js`) migré vers blob authentifié.
+- Testé curl + vérif base (IBAN `gAAAA...` chiffré, GET déchiffré ; 403/401/403/404 conformes). Détails dans CHANGELOG.md.
+- **Checklist déploiement VPS SEC** : (1) confirmer `TRANSMISSION_ENC_KEY` présent dans `backend/.env` VPS (sinon crash à l'enregistrement bancaire) ; (2) vérifier que Nginx ne possède PAS de `location /uploads/` servant les docs KYC directement du disque (contournerait le middleware) — les docs KYC doivent transiter par `/api/` (backend). Images d'annonces publiques = OK. (3) Aucune migration DB.
+
+
 ## ⭐ Session 19/08/2026 (suite) — i18n EN : Espace Membre (P1) + Pages Juridiques (P2) ✅
 - **Espace Membre 100 % localisé** : `CitadelleProfile.js` (clés `profile`, 113) + `CitadelleTransactionDetail.js` (clés `transaction`, 117) traduits FR/EN.
 - **Pages Juridiques 100 % bilingues** (option A, traduction complète) : Mentions Légales, CGU, CGV, Confidentialité — contenu Markdown bilingue dans `legalDocs.*`, rendu via ReactMarkdown/`.blog-content`. ⚠️ Relecture juridique client recommandée.

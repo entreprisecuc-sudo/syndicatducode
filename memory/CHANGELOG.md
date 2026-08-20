@@ -2,6 +2,13 @@
 
 > Journal des sessions. Le PRD historique complet reste dans PRD.md.
 
+## 🔐 Session 19/08/2026 (soir) — Corrections de sécurité SEC-002 + SEC-001 (PREVIEW, testé)
+- **SEC-002 — Chiffrement IBAN/BIC au repos (RGPD)** : `routes/citadelle/auth.py`. IBAN + BIC chiffrés en Fernet (`encrypt_value`) à l'écriture dans `citadelle_update_billing`, déchiffrés (`decrypt_value_or_original`) à la lecture dans `citadelle_get_billing`. Rétro-compatibilité : les anciens IBAN en clair restent lisibles et sont chiffrés au prochain enregistrement (aucune migration DB requise). Clé = `TRANSMISSION_ENC_KEY` (.env, déjà utilisée par le module Transmission).
+- **SEC-001 — Documents KYC non publics** : (1) nouvel endpoint authentifié `GET /api/citadelle/auth/documents/{user_id}/{doc_type}` (propriétaire OU admin uniquement ; token en query param ou header, pattern identique aux factures) ; (2) middleware `server.py` `block_direct_kyc_documents` → **403** sur tout chemin contenant `/uploads/citadelle/documents/` (bloque l'ancien accès public via montage statique) ; (3) vues admin `AdminCitadelleUsers.js` + `AdminUserDetail.js` migrées vers un chargement par blob authentifié (token) au lieu du lien direct `/api/uploads/...`.
+- **Tests (curl + vérif DB, Règle 6 respectée — accord client)** : IBAN stocké chiffré en base (`gAAAA...`), GET renvoie le clair ✅ ; accès direct KYC via `/api/uploads/...` → 403 ✅ ; endpoint auth sans token → 401, token client vers autre user → 403, propriétaire doc absent → 404 ✅ ; images d'annonces non impactées ✅. Frontend compilé (warnings eslint préexistants uniquement).
+- **⚠️ NON DÉPLOYÉ VPS** : voir checklist déploiement dans PRD.md (confirmer `TRANSMISSION_ENC_KEY` en prod + s'assurer que Nginx ne sert PAS `/uploads/citadelle/documents/` directement depuis le disque en contournant le backend).
+
+
 ## 🩹 Session 03/08/2026 — Correctif prod : Centre d'aide (/aide) page blanche
 - **Cause 1 (routage)** : `/aide` est rendu par le backend (`/api/aide`, pas de route React). Le VPS n'avait AUCUN proxy Nginx `/aide` → le SPA se chargeait sans route → page blanche. Ajout dans `sites-available/lacitadellenumerique.fr` : `location = /aide` + `location ^~ /aide/` → proxy vers `127.0.0.1:8001/api/aide`. nginx -t OK + reload OK. `/aide` renvoie 200 avec « Centre d'aide ».
 - **Cause 2 (données)** : la collection `citadelle_help_articles` était VIDE en prod (103 articles générés seulement sur preview, jamais copiés). Export versionné `backend/scripts/seed/help_articles.json` (879 KB, 103 articles) + script idempotent `backend/scripts/seed_help_articles.py` (upsert par slug, lit MONGO_URL/DB_NAME). À exécuter une fois sur le VPS pour peupler /aide.
