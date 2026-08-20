@@ -36,7 +36,7 @@
 ```bash
 # 1. Récupérer le code
 cd /var/www/syndicatducode.fr
-git pull origin main-projet-9
+git pull origin main-projet-10-english-version
 
 # 2. Build frontend
 cd frontend && yarn install && yarn build
