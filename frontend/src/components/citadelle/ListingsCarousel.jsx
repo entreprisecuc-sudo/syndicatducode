@@ -86,7 +86,7 @@ export default function ListingsCarousel({ variant = "dark", title = "Dernières
                 ) : cover ? (
                   <>
                     <img src={cover}
-                    srcSet={thumb && thumb !== cover ? `${thumb} 600w, ${cover} 1400w` : undefined}
+                    srcSet={thumb && thumb !== cover ? `${thumb} 900w, ${cover} 1400w` : undefined}
                     sizes={thumb && thumb !== cover ? "(max-width: 768px) 100vw, 300px" : undefined}
                     alt={l.title}
                     width="300" height="120"

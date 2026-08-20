@@ -64,7 +64,7 @@ export default function ListingCard({ listing, search = "" }) {
         ) : (
           <img
             src={mainImage}
-            srcSet={thumbImage !== mainImage ? `${thumbImage} 600w, ${mainImage} 1400w` : undefined}
+            srcSet={thumbImage !== mainImage ? `${thumbImage} 900w, ${mainImage} 1400w` : undefined}
             sizes={thumbImage !== mainImage ? "(max-width: 768px) 100vw, 400px" : undefined}
             alt={listing.title}
             width="400"

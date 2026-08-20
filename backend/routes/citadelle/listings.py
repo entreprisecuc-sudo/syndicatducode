@@ -142,7 +142,7 @@ async def upload_listing_image(
                 thumb_filename = filename.replace(".webp", "_thumb.webp")
                 thumb_path = CITADELLE_UPLOADS_DIR / thumb_filename
                 img_thumb = img.copy()
-                THUMB_SIDE = 600
+                THUMB_SIDE = 900
                 if img_thumb.width > THUMB_SIDE or img_thumb.height > THUMB_SIDE:
                     img_thumb.thumbnail((THUMB_SIDE, THUMB_SIDE), PilImage.LANCZOS)
                 img_thumb.save(thumb_path, "WebP", quality=75, method=4)

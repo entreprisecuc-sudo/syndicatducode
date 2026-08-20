@@ -31,12 +31,16 @@
         <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16.png" />
         <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link rel="preconnect" href="https://syndicatducode.fr" crossorigin />
-        <!-- Google Fonts chargé de façon non-bloquante (économise ~1200ms FCP) -->
-        <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-        <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" /></noscript>
+        <!-- Google Fonts auto-hébergés — polices servies localement (0 requête externe) -->
+        <style>
+            @font-face{font-family:'Montserrat';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/montserrat-700.woff2') format('woff2')}
+            @font-face{font-family:'Montserrat';font-style:normal;font-weight:800;font-display:swap;src:url('/fonts/montserrat-800.woff2') format('woff2')}
+            @font-face{font-family:'Montserrat';font-style:normal;font-weight:900;font-display:swap;src:url('/fonts/montserrat-900.woff2') format('woff2')}
+            @font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/inter-400.woff2') format('woff2')}
+            @font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/inter-500.woff2') format('woff2')}
+            @font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/inter-600.woff2') format('woff2')}
+        </style>
 
         <!-- Titre adapté selon le domaine (avant exécution React) -->
         <title>La Citadelle Numérique | Marketplace d'actifs numériques</title>

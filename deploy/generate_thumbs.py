@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
 log = logging.getLogger(__name__)
 
 UPLOADS_DIR = Path("/var/www/syndicatducode.fr/backend/uploads/citadelle")
-THUMB_SIDE  = 600
+THUMB_SIDE  = 900
 QUALITY     = 75
 
 try:
